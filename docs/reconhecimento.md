@@ -214,3 +214,72 @@ Só registro. Nenhuma fórmula, corte ou regra foi mudada.
 10. **DFC pelo método direto.** Não conferi a conta 6.01 nem as linhas por texto na `DFC_MD` (186 empresa-anos consolidadas e 367 individuais).
 11. **Código CVM do gabarito.** O cadastro tem dois códigos ligados ao caso Americanas: 8087 (Lojas Americanas SA) e 20990 (Americanas S.A. - Em Recuperação Judicial). O IRB é 24180. O `cd_cvm` do gabarito continua vazio, e qual código entra é decisão sua.
 12. **Versão em inglês.** Este documento e o `fontes.md` estão só em português por enquanto.
+
+## 4. Anexo da Emenda 5 (registrado em 05/11/2026, antes do congelamento)
+
+A Emenda 5 manda anexar a este documento a lista exata de setores financeiros e os padrões finais de texto da DFC. Os dois ficam fixos daqui em diante: mudar qualquer um exige nova emenda. As contagens desta parte são só de estrutura e saem de `scripts/fase0/grupos.py` e `scripts/fase0/dfc.py`.
+
+### 4.1 Quem é financeira
+
+**Regra**, decidida por Roberto em 05/11/2026 ao fechar a lista: o setor define a candidata a financeira, e o plano de contas usado na DFP decide o grupo. A regra usa só a estrutura do arquivo, nunca valores.
+
+1. **Setor:** o do FCA do próprio ano (`Setor_Atividade`). Se não houver FCA naquele ano, vale o do cadastro (`SETOR_ATIV`). Quando o FCA do ano tem mais de uma versão, os scripts usam a última versão do ano.
+2. **Candidata a financeira:** empresa cujo setor tem um destes nomes exatos.
+   - Bancos
+   - Intermediação Financeira
+   - Arrendamento Mercantil
+   - Seguradoras e Corretoras
+   - Crédito Imobiliário
+   - Emp. Adm. Part. - Bancos
+   - Emp. Adm. Part. - Intermediação Financeira
+   - Emp. Adm. Part. - Arrendamento Mercantil
+   - Emp. Adm. Part. - Seguradoras e Corretoras
+   - Emp. Adm. Part. - Crédito Imobiliário
+3. **Grupo:** a candidata vai para o grupo das **financeiras** se a DFP usada (consolidada quando existir; senão, individual) está no plano de contas de banco (conta 3.01 "Receitas da Intermediação Financeira" ou "Receitas de Intermediação Financeira") ou de seguradora (3.01 "Receitas das Operações" ou "Receitas das Atividades Seguradoras/Resseguradoras"). Se a DFP usa o plano não financeiro (3.01 "Receita de Venda de Bens e/ou Serviços"), a empresa-ano vai para as **não financeiras**. Isso vale também para corretoras de seguros e para as holdings da lista.
+4. **Não são candidatas:** Securitização de Recebíveis, Emp. Adm. Part. - Securitização de Recebíveis, Factoring, Bolsas de Valores/Mercadorias e Futuros, Emp. Adm. Part.-Bolsas de Valores/Mercadorias e Futuros, Cooperativas e todos os outros setores.
+
+**Como a regra divide a base:** empresa-anos de 2010 a 2025, sem Americanas e IRB, uma DFP por empresa-ano.
+
+| | Plano de banco | Plano de seguradora | Plano não financeiro |
+| --- | --- | --- | --- |
+| Candidata | 565 → financeira | 27 → financeira | 258 → não financeira |
+| Não candidata | 49 → não financeira | 1 → não financeira | 9.884 → não financeira |
+
+O setor veio do FCA do ano em 10.195 empresa-anos, do cadastro em 571, e faltou em 18.
+
+**Observação, sem proposta:** 50 empresa-anos não candidatas usam plano de banco ou de seguradora. São 30 de Securitização de Recebíveis, 16 de Emp. Adm. Part. - Sem Setor Principal, 3 sem setor e 1 de Emp. Adm. Part. - Telecomunicações. Pela regra, ficam nas não financeiras, onde os sinais usam contas que esse plano não tem e tendem a sair "não calculável".
+
+### 4.2 Padrões finais de texto da DFC
+
+**Como se aplicam**
+
+- O texto comparado é o `DS_CONTA` em minúsculas, sem acento e sem espaços nas pontas.
+- A linha precisa estar na seção indicada (prefixo do `CD_CONTA`), conter pelo menos um termo de cada grupo de "Contém" e nenhum termo de "Não contém".
+- Os termos são trechos de palavra: "aquisic" pega "aquisição" e "aquisições".
+- Se a conta-mãe e a subconta casam, conta só a mãe, como na Emenda 4, para não somar o mesmo valor duas vezes.
+- Os padrões valem para a DFC pelo método indireto (`DFC_MI`). A `DFC_MD` não foi conferida.
+
+| Linha | Seção | Contém (um termo de cada grupo) | Não contém | Uso |
+| --- | --- | --- | --- | --- |
+| depreciação | 6.01.01 | "deprecia" | — | DEPI, no MVP. Somam-se as linhas que casam; se alguma também contém "amortiza" ou "exaust", a empresa-ano é marcada (pré-registro 4.1 e Emenda 5) |
+| juros pagos | 6.01 e 6.03 | "juros" · "pago", "pagos", "pagamento" ou "pagamentos" | "capital proprio", "recebid" | padronizar o caixa operacional (pré-registro 4.1), no MVP |
+| capex | 6.02 | "aquisic", "adic", "compra" ou "investimento" · "imobilizado" ou "intangivel" | "venda", "alienac", "baixa", "recebimento" | fase 2 |
+| dividendos pagos | 6.03 | "dividendo" ou "capital proprio" | "recebid" | fase 2 |
+| IR e CSLL pagos | 6.01 | "imposto de renda", "ir e cs", "irpj", "ir/cs" ou "ir/csll" · "pago", "pagos", "pagamento" ou "pagamentos" | — | fase 3 |
+| emissões | 6.03 | "captac", "emiss" ou "ingress" | "pagamento", "amortiza", "liquida", "resgat" | fase 2; regra da Emenda 5 |
+
+**Cobertura:** empresa-anos do plano não financeiro com `DFC_MI`, 5.774 consolidadas e 9.716 individuais.
+
+| Linha | Achada (con / ind) | Antes, com o padrão do catálogo (con / ind) |
+| --- | --- | --- |
+| depreciação | 93,2% / 74,2% | 93,2% / 74,2% |
+| juros pagos | 67,8% / 54,0% | 40,0% / 29,5% |
+| capex | 77,3% / 60,6% | 75,6% / 59,3% |
+| dividendos pagos | 76,1% / 62,8% | 74,1% / 61,1% |
+| IR e CSLL pagos | 57,3% / 43,4% | 37,1% / 28,1% |
+| emissões | 63,3% / 52,1% | 60,8% / 52,2% |
+
+- A conta-mãe e a subconta nunca casaram ao mesmo tempo nessas seis linhas.
+- **Depreciação:** de 12.589 empresa-anos em que a linha é achada, 11.260 ficam marcadas porque a soma inclui amortização ou exaustão.
+- **Juros pagos em 6.02:** na Fase 0 apareceram 12 linhas assim, que ficam fora porque a seção não é 6.01 nem 6.03.
+- **Emissões:** "gastos com emissão de ações" é um custo de emissão, ou seja, uma saída, mas passa pela regra da Emenda 5, porque "gasto" e "custo" não estão entre as palavras de saída. Isso acontece em 2.473 empresa-anos. Emissões não entram no MVP.

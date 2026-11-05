@@ -21,11 +21,29 @@ Todos os arquivos vêm do Portal de Dados Abertos da CVM. Foram baixados para um
 
 ### Formulário Cadastral (FCA)
 
-Só a estrutura foi conferida, em um ano. Listagem: https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/DADOS/ (arquivos de 2010 a 2026).
+Fonte do setor de cada ano (Emenda 5). O arquivo de 2012 foi baixado em 05/11/2026 às 02:12 UTC; os outros, no mesmo dia, às 20:43 UTC (17:43 em Brasília). Os dois downloads de 2012 deram o mesmo hash.
 
-| Arquivo | URL | SHA-256 |
+Listagem: https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/DADOS/ · URL de cada arquivo: `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/DADOS/fca_cia_aberta_AAAA.zip`
+
+| Ano | Gerado em | SHA-256 |
 | --- | --- | --- |
-| `fca_cia_aberta_2012.zip` | https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/DADOS/fca_cia_aberta_2012.zip | `ba68b8e8c12b74fc56bf76a75ae582aa53e5adef1d61d940d5191c55b9be2e06` |
+| 2010 | 04/03/2024 | `9a9b933fa02c96f7cf632dbb1f7b004bb78696c81c989792b1eb60f70b001021` |
+| 2011 | 04/03/2024 | `f5c7aaa2a4464b4232a05d77c288d33bca5474edd72199a9295d6fa2a34012e8` |
+| 2012 | 04/03/2024 | `ba68b8e8c12b74fc56bf76a75ae582aa53e5adef1d61d940d5191c55b9be2e06` |
+| 2013 | 04/03/2024 | `d62ef489d8c1208ef3d41cfd25a093b8fcb5f6b47640e59288aece45d4962cce` |
+| 2014 | 04/03/2024 | `1f70b5e3a544535affb47b04a0c60a618bef872bc783e6909940d2e7dad89e3f` |
+| 2015 | 04/03/2024 | `74326a566c405d703b56af257c9fade687f112f372ae68b8624719becc8215f2` |
+| 2016 | 04/03/2024 | `229b2cfc8c0ac5e60083932381364bbdb6666f028422c13a1ac5f6dccc9e3e6c` |
+| 2017 | 04/03/2024 | `48127cf15d8baf4d31b9544b266f9511962db158d591fc9803e335a8ab081d45` |
+| 2018 | 04/03/2024 | `b20056b00927c5261ba587b668e52e4cdfe2d989e7d794491b2bb127fbd0a8cd` |
+| 2019 | 04/03/2024 | `09f84e5f5485217c8b36f8379c36f718dbdcd6d6908b4e96b68861394e76fe97` |
+| 2020 | 29/12/2024 | `ccf2ac081747da9ccefa50349a5494c263763d5dd8bb961565fd2ae64c264b20` |
+| 2021 | 28/12/2025 | `65ba4b0225e9b2106901cdf348215933be8affba79925fc71361e2f6818c7999` |
+| 2022 | 01/11/2026 | `1cf67f61d3fae38ae09e4bc333c9dada9eb30617abf4128350a23d5b0e4edeea` |
+| 2023 | 01/11/2026 | `62b09231d90e9140f1fa17b36432c24e50e80eaf684ba8cdbadc74626b8956a7` |
+| 2024 | 01/11/2026 | `fac9d73d0a6bd817aea969db48a71b18471f17d1a283b359f92479c22a2a25d5` |
+| 2025 | 01/11/2026 | `a1923e812ae255ea195d91baf30a5771e73cf39b7a03463a139d2883a9be14b9` |
+| 2026 | 01/11/2026 | `7cc2ed67a931f1056be04856fb20de2fb5184820bbadb05b82dab5dffb879c2f` |
 
 ### DFP (Demonstrações Financeiras Padronizadas)
 

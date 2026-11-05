@@ -112,3 +112,24 @@ Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima n�
 - **Conta-mãe e subconta:** entram no numerador só as linhas que contêm o texto e cuja conta-mãe **não** contém o mesmo texto (pelo código: `3.04.04` é mãe de `3.04.04.01`). Assim cada valor é contado uma vez, no nível mais alto em que aparece.
 - **Parte positiva:** é a parte positiva do **total**: numerador = máx(0, soma das linhas escolhidas). Linhas negativas abatem as positivas antes do corte em zero.
 - Exemplo: linhas de +100 e −30 → numerador = 70. Linhas de −50 e +20 → numerador = 0.
+
+### Emenda 5 · 05/11/2026 · decisões da Fase 0 (depois de ver só a estrutura dos arquivos, sem nenhum valor)
+
+- **Versões da época:** os dados abertos só guardam a última versão de cada DFP. Regra principal: se a versão disponível foi entregue (DT_RECEB) até a data de corte, usar essa versão. Se foi entregue depois, buscar no ENET a versão mais recente entregue até o corte, para qualquer empresa nessa situação. Só se o ENET falhar a empresa-ano fica "versão da época indisponível", sai da análise principal e é contada no relatório. Análise secundária, rotulada como tal: incluir essas empresas-ano com a versão disponível.
+- **Números de t−1:** vêm do comparativo da própria DFP de t (ORDEM_EXERC = PENÚLTIMO), que é o que o mercado via na época de t.
+- **Consolidado ou individual:** consolidado quando existir; senão, individual. O tipo usado é registrado por empresa-ano.
+- **Data de corte para exercício que não termina em 31/12:** último dia do quarto mês depois do fim do exercício.
+- **Empresa-ano sem nenhuma versão entregue até o corte:** fica de fora naquele ano e é contada no relatório.
+- **Quem é financeira:** classificação pelo setor do FCA do próprio ano; se não houver FCA naquele ano, pelo cadastro. Entram bancos, seguradoras e resseguradoras, intermediação financeira, arrendamento mercantil e sociedades de crédito. A lista exata de nomes de setor é anexada ao reconhecimento e não muda depois.
+- **Fórmula das financeiras (substitui o texto da emenda 2, mantida a emenda 4):** numerador = máx(0, soma das linhas da DRE cujo DS_CONTA começa com "outras receitas", aplicada a regra de conta-mãe da emenda 4); denominador = valor absoluto da linha cujo DS_CONTA começa com "resultado antes dos tributos". Vale para "Outras Receitas Operacionais" e "Outras Receitas e Despesas Operacionais". Sem a linha do denominador (leiaute antigo de bancos), o sinal fica "não calculável".
+- **Regra boba:** passivo = passivo circulante + passivo não circulante (contas 2.01 + 2.02), sem o patrimônio líquido, dividido pelo ativo total. Decil superior de cada ano, dentro de cada grupo.
+- **Americanas no gabarito:** código CVM da empresa com o CNPJ 00.776.574/0006-60, o CNPJ informado no fato relevante de 16/07/2024.
+- **Linhas da DFC:** depreciação e amortização numa linha só seguem a escolha já feita (usar o total e marcar). Para emissões, o texto tem que indicar entrada ("captação", "emissão", "ingresso") e não pode indicar saída ("pagamento", "amortização", "liquidação", "resgate"). Os padrões finais ficam listados no reconhecimento.
+
+### Emenda 6 · 05/11/2026 · ampliação do gabarito (antes de calcular qualquer sinal)
+
+- **Por quê:** com dois casos, um erro pesa demais e o IRB não pode ser acertado (emenda 3).
+- **Regra de seleção, fixada antes de qualquer sinal:** entra no gabarito toda companhia aberta brasileira que, com fatos entre 2010 e 2023, tenha (a) condenação em processo administrativo sancionador da CVM por irregularidade na elaboração ou divulgação das demonstrações financeiras, ou (b) fraude contábil confirmada pela própria companhia em fato relevante. Termo de compromisso sem condenação não entra.
+- **Campos de cada caso:** data_publica = primeira data pública documentada (fato relevante, instauração do processo ou primeira notícia com fonte); período afetado = exercícios citados na decisão ou no fato relevante. Sem documento que dê os anos, o caso entra com período vazio e não conta como acertável.
+- **Casos já existentes:** Americanas e IRB continuam como estão.
+- **Coleta:** feita só em documentos públicos (decisões da CVM, fatos relevantes), sem abrir nenhum valor da DFP. A lista completa, com fonte de cada caso, é revisada por Roberto antes da Fase 1. Casos descobertos depois da revisão só entram por nova emenda.
