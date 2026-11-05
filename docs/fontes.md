@@ -73,3 +73,35 @@ Listagem: https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/ · URL de cad
 
 - Formato do link, tirado da coluna `LINK_DOC` do índice da DFP: `http://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=<n>&NumeroSequencialDocumento=<n>`.
 - Teste de download feito em 05/11/2026 com uma empresa fora do gabarito (DFP 2019, versões 1 e 2). Os dois downloads chegaram cortados nas três tentativas, e o conteúdo do `.dfp` não foi confirmado (ver `reconhecimento.md`, parte 3).
+
+## 05/11/2026 · autorizações e gabarito ampliado (depois do congelamento)
+
+### Sistema ENET da CVM, segundo teste
+
+- Pacotes de versões antigas, pelo `LINK_DOC` do índice da DFP: testados em 05/11/2026 às 20h–21h UTC, com curl e com `scripts/fase0/enet_teste.py`. Nenhum chegou inteiro (ver `reconhecimento.md`, parte 5.4).
+- Visualização HTML de cada documento: `https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=<n>&CodigoTipoInstituicao=2`. Respondeu com HTTP 200 nos três documentos testados.
+
+### Decisões da CVM e fatos relevantes lidos para `data/gabarito_candidatos.csv`
+
+Consulta em 05/11/2026. Cada caso do arquivo traz a sua fonte principal e, quando houver, uma secundária. Documentos lidos no texto integral (PDF):
+
+| Caso | Documento | URL |
+| --- | --- | --- |
+| Banco Panamericano | Extrato, PAS CVM 01/2011 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/012011_Banco_Panamericanocx.pdf |
+| Via Varejo | Fato relevante de 12/12/2019 | https://api.mziq.com/mzfilemanager/v2/d/ce9bff9f-fb19-49b9-9588-c4c6b7052c9c/ff43ced3-e5c7-a49a-f33d-57fa4a9fdb4c?origin=1 |
+| Taurus | Voto, PAS CVM RJ2014/13977 | https://conteudo.cvm.gov.br/export/sites/cvm/noticias/anexos/2020/20200130_PAS_CVM_RJ2014_13977_voto_diretor_gustavo_gonzalez.pdf |
+| OGX | Extrato e decisão, PAS CVM RJ2014/12838 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ201412838__COMPLETO.pdf |
+| OSX | Extrato e decisão, PAS CVM RJ2015/1421 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/20190625_PAS_RJ20151421.pdf |
+| Metalúrgica Duque | Extrato e decisão, PAS CVM RJ2014/4077 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20144077__COMPLETO.pdf |
+| Mundial (2016) | Extrato, PAS CVM RJ2013/6224 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2016/20160513_PAS_RJ20136224.pdf |
+| Mundial (2017) e Hércules | Extrato, PAS CVM RJ2017/565 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2017/RJ2017565_Mundial_SA.pdf |
+| Teka | Extrato, PAS CVM RJ2015/6229 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20156229_TEKA.pdf |
+| IGB Eletrônica | Extrato, PAS CVM RJ2015/6280 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20156280_IGB_Eletronica_.pdf |
+| Tecnosolo | Extrato, PAS CVM RJ2015/2651 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2017/RJ20152651_Tecnosolo_vf.pdf |
+| Schlosser | Extrato, PAS CVM RJ2014/12056 | http://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2017/RJ201412056_Cia_Industrial_Schlosser.pdf |
+| Brasil Brokers | Voto, PAS CVM 19957.009415/2019-96 | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2021/20210316_PAS_CVM_19957_0094152019_96_SP2019_617_voto_presidente_marcelo_barbosa.pdf |
+| Oi (DFs de 2014) | Extrato, PAS CVM 19957.004416/2016-00 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2023/SEI_19957004416_2016_00_1.pdf |
+| Oi (DFs de 2015 e 2016), não incluído | Relatório, PAS CVM 19957.004207/2021-15 | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2026/20260825-pas-cvm-19957-004207-2021-15-relatorio-diretora-marina-copola.pdf |
+| IRB (contabilidade de 2019), caso existente | Voto do relator, PAS CVM 19957.003588/2023-87 | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2026/20261006-pas-cvm-19957-003588-2023-87-diretor-igor-muniz-voto.pdf |
+
+Processos lidos e descartados por não tratarem do conteúdo das DFs ou por tratarem só de atraso: RJ2014/5099 (WLM), 19957.003052/2018-02 (GPC Participações), 19957.003549/2018-12 (J&F), 19957.008462/2019-12, 19957.001933/2021-86 (Intrader DTVM), 19957.010135/2018-40 (Companhia Aurífera Brasileira), RJ2016/5786 (relatório de J.B. Duarte, sem a decisão) e a decisão 1510/19 sobre o FIDC ligado ao Banco Cruzeiro do Sul, todos no portal de processos sancionadores e decisões da CVM (`conteudo.cvm.gov.br`).
