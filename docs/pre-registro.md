@@ -106,3 +106,9 @@ Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima n�
 
 - Com a regra da seção 5, o IRB não pode ser acertado: o período afetado é 2019 e a DFP de 2019 saiu depois da data pública (10/02/2020). O máximo possível no estudo principal é **1 acerto em 2 casos**, e isso vai escrito no resumo.
 - **Métrica secundária, rotulada como tal:** alerta na última DFP publicada antes da data pública, mesmo fora do período afetado (no IRB, a DFP de 2018). Ela mede alerta antecipado, não acerto, e não entra na conta principal.
+
+### Emenda 4 · 04/11/2026 · duas ambiguidades da emenda 2 (antes de qualquer dado)
+
+- **Conta-mãe e subconta:** entram no numerador só as linhas que contêm o texto e cuja conta-mãe **não** contém o mesmo texto (pelo código: `3.04.04` é mãe de `3.04.04.01`). Assim cada valor é contado uma vez, no nível mais alto em que aparece.
+- **Parte positiva:** é a parte positiva do **total**: numerador = máx(0, soma das linhas escolhidas). Linhas negativas abatem as positivas antes do corte em zero.
+- Exemplo: linhas de +100 e −30 → numerador = 70. Linhas de −50 e +20 → numerador = 0.
