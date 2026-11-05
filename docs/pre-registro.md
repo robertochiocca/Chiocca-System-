@@ -84,4 +84,25 @@ Assinado por: Roberto Chiocca · Data: 04/11/2026
 
 ## Emendas
 
-Nenhuma até agora. Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima não é editado.
+Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima não é editado.
+
+### Emenda 1 · 04/11/2026 · período afetado da Americanas (antes de qualquer dado)
+
+- **Fonte:** release de resultados de 2022 da Americanas. Ele reapresenta 2021 ano a ano e diz que todos os efeitos da fraude ocorridos antes de 31/12/2020 foram ajustados no saldo de abertura de 01/01/2021, **sem separar por ano**. O fato relevante de 16/07/2024 confirma a fraude, mas não dá anos.
+- **Regra principal:** período afetado = **2021**, único exercício com efeito documentado ano a ano. Fica registrado no gabarito antes da Fase 1.
+- **Análise secundária, rotulada como tal:** acerto se houver alerta em qualquer exercício até 2021 cuja DFP saiu antes de 11/01/2023. Ela é reportada à parte e nunca substitui a principal.
+- Se um documento oficial posterior der os anos (relatório do comitê, processo da CVM), isso vira nova emenda, feita antes de abrir o período de teste.
+
+### Emenda 2 · 04/11/2026 · fórmula do peso_nao_recorrente para financeiras
+
+- O catálogo e o PROMPT já marcam o sinal como `mvp` para financeiras.
+- Bancos e seguradoras usam outro plano de contas na DFP, então os códigos 3.04.04 e 3.05 não valem para eles. A fórmula para financeiras fica definida pelo **texto** da conta, não pelo código:
+  - **numerador:** soma das linhas da DRE cujo `DS_CONTA` contém "outras receitas operacionais" (sem diferenciar maiúsculas e acentos), só a parte positiva;
+  - **denominador:** valor absoluto da linha "resultado antes dos tributos sobre o lucro";
+  - se alguma das duas não for encontrada, o sinal fica "não calculável" e a falha entra no relatório.
+- Na Fase 0, o agente só **confirma** se essas linhas existem nos arquivos e registra os códigos. Se não existirem, a fórmula muda por nova emenda antes de qualquer cálculo.
+
+### Emenda 3 · 04/11/2026 · teto de acerto e métrica secundária
+
+- Com a regra da seção 5, o IRB não pode ser acertado: o período afetado é 2019 e a DFP de 2019 saiu depois da data pública (10/02/2020). O máximo possível no estudo principal é **1 acerto em 2 casos**, e isso vai escrito no resumo.
+- **Métrica secundária, rotulada como tal:** alerta na última DFP publicada antes da data pública, mesmo fora do período afetado (no IRB, a DFP de 2018). Ela mede alerta antecipado, não acerto, e não entra na conta principal.
