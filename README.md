@@ -49,6 +49,7 @@ Ficha de alerta: qual sinal disparou, com qual número e de qual conta da DFP
 - **Salto no prazo de fornecedores:** dívida com banco registrada como "fornecedores" alonga o prazo de pagamento. Foi o mecanismo do risco sacado na Americanas.
 - **Juro implícito:** despesa financeira alta demais para a dívida declarada pode indicar financiamento fora da linha de empréstimos.
 - **Lucro que não vira caixa:** a diferença entre lucro e caixa operacional.
+- **Peso de ganhos não recorrentes (só financeiras):** quanto do resultado vem de outras receitas operacionais. Bancos e seguradoras formam um grupo à parte, avaliado só por este sinal, porque os outros não se aplicam a eles.
 
 Fórmulas, contas da DFP e referências de cada sinal, inclusive os das próximas fases, estão em [`catalogo_sinais.yaml`](catalogo_sinais.yaml). O código lê esse arquivo, que é a fonte única dos sinais, com nome e descrição nos dois idiomas.
 
@@ -57,7 +58,7 @@ Fórmulas, contas da DFP e referências de cada sinal, inclusive os das próxima
 O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos reais, cada um com o período afetado, a data em que veio a público e a fonte. Começa com dois:
 
 - **Americanas (2023):** revelado por dentro. O Comitê Independente confirmou contratos fictícios de verba de propaganda e operações de risco sacado lançadas em "fornecedores" ([fato relevante de 16/07/2024](https://api.mziq.com/mzfilemanager/v2/d/347dba24-05d2-479e-a775-2ea8677c50f2/fbd1eb14-1e3f-f8ef-ecc5-f49db62d1b04?origin=1)).
-- **IRB Brasil (2020):** revelado de fora, pela tese de uma gestora de que o lucro recorrente era menor que o contábil ([InfoMoney](https://www.infomoney.com.br/?p=1397142)). Como é resseguradora, fica fora do M-score, que não se aplica a empresas financeiras.
+- **IRB Brasil (2020):** revelado de fora, pela tese de uma gestora de que o lucro recorrente era menor que o contábil ([InfoMoney](https://www.infomoney.com.br/?p=1397142)). Como é resseguradora, fica fora do M-score, que não se aplica a empresas financeiras, e é avaliado pelo peso de ganhos não recorrentes.
 
 ### Princípios
 
@@ -79,7 +80,7 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 | Glossário PT↔EN dos termos contábeis e do estudo | Avaliação conforme o pré-registro |
 | Pré-registro do estudo | Ficha de alerta e resumo de uma página, em PT e EN |
 | Exemplo resolvido com valores esperados (teste de referência) | |
-| Especificação para o agente de código ([`PROMPT.md`](PROMPT.md)) | Próximas fases: auditoria, ganhos não recorrentes, rendimento do caixa, dividendos sem caixa, F-score e teste de retorno das ações |
+| Especificação para o agente de código ([`PROMPT.md`](PROMPT.md)) | Próximas fases: auditoria, ganhos não recorrentes a partir das notas explicativas, rendimento do caixa, dividendos sem caixa, F-score e teste de retorno das ações |
 
 ### Estrutura
 
@@ -136,6 +137,7 @@ Alert sheet: which signal fired, with which figure, from which DFP account
 - **Jump in days payable outstanding:** bank debt booked as trade payables stretches the payment period. It was the *risco sacado* (supplier finance) mechanism in the Americanas case.
 - **Implied interest:** finance costs too high for the reported debt may point to financing outside the borrowings line.
 - **Earnings not backed by cash:** the gap between net income and operating cash flow.
+- **Share of non-recurring gains (financial companies only):** how much of profit comes from other operating income. Banks and insurers form a separate group, assessed only by this signal, because the others do not apply to them.
 
 Formulas, DFP accounts and references for each signal, including later phases, are in [`catalogo_sinais.yaml`](catalogo_sinais.yaml). The code reads that file, the single source of signals, with names and descriptions in both languages.
 
@@ -144,7 +146,7 @@ Formulas, DFP accounts and references for each signal, including later phases, a
 The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds real cases, each with the affected period, the date it became public and the source. It starts with two:
 
 - **Americanas (2023):** revealed from the inside. The Independent Committee confirmed fictitious cooperative advertising allowances and supplier-finance operations booked as trade payables ([material fact notice of 2024-07-16](https://api.mziq.com/mzfilemanager/v2/d/347dba24-05d2-479e-a775-2ea8677c50f2/fbd1eb14-1e3f-f8ef-ecc5-f49db62d1b04?origin=1), in Portuguese).
-- **IRB Brasil (2020):** revealed from the outside, by an asset manager's thesis that recurring profit was lower than reported profit ([InfoMoney](https://www.infomoney.com.br/?p=1397142), in Portuguese). As a reinsurer, it is excluded from the M-score, which does not apply to financial companies.
+- **IRB Brasil (2020):** revealed from the outside, by an asset manager's thesis that recurring profit was lower than reported profit ([InfoMoney](https://www.infomoney.com.br/?p=1397142), in Portuguese). As a reinsurer, it is excluded from the M-score, which does not apply to financial companies, and is assessed by the share of non-recurring gains.
 
 ### Principles
 
@@ -166,7 +168,7 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 | PT↔EN glossary of accounting and study terms | Evaluation as set in the pre-registration |
 | Study pre-registration | Alert sheet and one-page summary, in PT and EN |
 | Worked example with expected values (reference test) | |
-| Build specification for the coding agent ([`PROMPT.md`](PROMPT.md)) | Next phases: auditor signals, non-recurring gains, cash yield, dividends above free cash flow, F-score and stock-return test |
+| Build specification for the coding agent ([`PROMPT.md`](PROMPT.md)) | Next phases: auditor signals, non-recurring gains from the notes to the financial statements, cash yield, dividends above free cash flow, F-score and stock-return test |
 
 ### Structure
 

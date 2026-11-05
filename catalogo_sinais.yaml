@@ -24,7 +24,8 @@
 #   fase_3  -> exploratório
 #   manual  -> não sai de dado estruturado; exige leitura de documento
 
-versao_catalogo: 2  # v2: LVGI e DEPI conforme Beneish (1999); F-score com coeficientes; 4 sinais novos
+versao_catalogo: 3  # v3: peso_nao_recorrente entra no mvp, só para financeiras (pré-registro, Emenda 2)
+# v2: LVGI e DEPI conforme Beneish (1999); F-score com coeficientes; 4 sinais novos
 
 contas_dfp_a_confirmar:
   ativo_total: "1"
@@ -223,13 +224,23 @@ sinais:
     nome: "Peso de ganhos não recorrentes no resultado"
     nome_en: "Share of non-recurring gains in profit"
     o_que_mede_en: "How much of the result comes from one-off gains presented as if they were part of the business, including reversals of provisions."
-    fase: fase_2
+    fase: mvp
+    aplica_a: [financeiras]  # pré-registro: no estudo principal, só o grupo das financeiras
     o_que_mede: "Quanto do resultado vem de ganhos pontuais apresentados como se fossem do negócio, inclusive reversões de provisão."
     livro:
       capitulos: [5, 9]
       pdf_pp: "69-80; 123-141"
       nota: "Capítulo 5: resultado inflado com atividades pontuais; capítulo 9: reservas criadas e depois revertidas."
-    formula: "proxy: outras_receitas_operacionais_t / |ebit_t|; versão completa exige ler notas explicativas"
+    formula: "proxy para não financeiras (fora do estudo principal): outras_receitas_operacionais_t / |ebit_t|; versão completa exige ler notas explicativas"
+    formula_financeiras: >
+      Pré-registro, Emenda 2. Localizar as linhas por TEXTO em DS_CONTA, não
+      por código (bancos e seguradoras usam outro plano de contas na DFP).
+      Numerador: soma das linhas da DRE cujo DS_CONTA contém "outras receitas
+      operacionais" (sem diferenciar maiúsculas e acentos), só a parte
+      positiva. Denominador: valor absoluto da linha "resultado antes dos
+      tributos sobre o lucro". Se alguma das duas não for encontrada, "não
+      calculável", e a falha entra no relatório.
+    regra_de_alerta: "definida no pre-registro (proporção no decil superior do ano dentro do grupo das financeiras)"
     casos_br: [irb]
     observacao: "No IRB (seguradora/resseguradora) o M-score não se aplica; este é o sinal relevante."
 

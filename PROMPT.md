@@ -16,10 +16,10 @@ O objetivo não é acusar ninguém. O objetivo é um **estudo reproduzível** qu
 
 ## Arquivos que já existem (leia todos antes de escrever código)
 
-- **`catalogo_sinais.yaml`:** fonte única de verdade dos sinais. Para cada um, traz a fórmula, as contas da DFP, o capítulo e a página do livro e a fase (`mvp`, `fase_2`, `fase_3`, `manual`). Nesta tarefa, implemente **só os sinais `mvp`**: `mscore_beneish`, `dpo_salto`, `juro_implicito` e `lucro_sem_caixa`.
+- **`catalogo_sinais.yaml`:** fonte única de verdade dos sinais. Para cada um, traz a fórmula, as contas da DFP, o capítulo e a página do livro e a fase (`mvp`, `fase_2`, `fase_3`, `manual`). Nesta tarefa, implemente **só os sinais `mvp`**: `mscore_beneish`, `dpo_salto`, `juro_implicito` e `lucro_sem_caixa` para as não financeiras, e `peso_nao_recorrente` para as financeiras, com a fórmula da Emenda 2 do pré-registro (`formula_financeiras` no catálogo).
 - **`data/gabarito_casos.csv`:** os casos reais com `data_publica` e período afetado. Traz dois casos iniciais (Americanas e IRB) com fontes.
 - **`data/exemplo_resolvido.json`:** empresa fictícia com as entradas e os valores esperados de cada componente do M-score e de cada sinal da primeira versão, mais um exemplo de contagem da avaliação. Também traz valores de sinais da fase 2 (TATA na versão de balanço, rendimento do caixa, dividendos sem caixa, F-score): ficam como referência futura e não entram nesta tarefa. É o teste de referência: o código tem que reproduzir todos os valores dentro da tolerância do arquivo, inclusive o lado do corte do M-score. **Nunca altere um valor esperado para o teste passar;** se achar um erro no arquivo, pare e me mostre.
-- **`docs/pre-registro.md`:** as decisões do estudo (corte, regras de alerta, divisão no tempo), tomadas pelo Roberto **antes** de qualquer dado. **Você lê e obedece; nunca preenche nem altera.**
+- **`docs/pre-registro.md`:** as decisões do estudo (corte, regras de alerta, divisão no tempo), tomadas pelo Roberto **antes** de qualquer dado. As emendas no fim do arquivo valem tanto quanto o texto original. **Você lê e obedece; nunca preenche nem altera.**
 - **`glossario_pt_en.yaml`:** os termos contábeis e do estudo em português e inglês. É a referência de tradução de todo texto gerado.
 - **`referencias/` (local, fora do git):** o PDF de *Financial Shenanigans* (Schilit, Perler e Engelhart, 4ª ed., 2018) e os demais livros e artigos da trilha (Beneish, Dechow, Assaf Neto, Manual FIPECAFI, *Money Men*, Einhorn, McLean e Elkind, Benford). Use-os para entender cada sinal. As páginas no catálogo são do arquivo PDF; o guia de leitura do dossiê diz capítulo e página de cada assunto. **Não copie trechos do livro para o repositório:** cite capítulo e página na docstring e explique com suas palavras.
 
@@ -72,6 +72,7 @@ Português e inglês têm o mesmo peso neste projeto. "Eficiência máxima nos d
    - as colunas `VERSAO` e `ORDEM_EXERC` (os valores `ÚLTIMO` e `PENÚLTIMO`);
    - se existe data de recebimento do documento, e em qual arquivo;
    - os códigos de conta do catálogo, um por um;
+   - as linhas da DRE das financeiras que a Emenda 2 do pré-registro localiza por texto ("outras receitas operacionais" e "resultado antes dos tributos sobre o lucro"), com os códigos encontrados;
    - como empresas com registro cancelado e o setor de atividade aparecem no cadastro de companhias abertas.
 3. Escreva `docs/reconhecimento.md` com o que confirmou, o que mudou em relação ao catálogo e o que não conseguiu confirmar. **Pare e me mostre antes da Fase 1.**
 
@@ -80,7 +81,7 @@ Português e inglês têm o mesmo peso neste projeto. "Eficiência máxima nos d
 - **Download** da DFP anual de todos os anos disponíveis e do cadastro, incluindo empresas canceladas, para `data/brutos/` (fora do git). Inclua um script de verificação com hash dos arquivos.
 - **Guarde todas as versões** de cada demonstração. Função central: `como_era(cd_cvm, exercicio, data_corte)`, que devolve as contas da versão pública naquela data.
 - **Duas leituras de cada ano.** O valor original vem do ano como `ÚLTIMO` na DFP daquele ano, versão vigente na data de corte. O valor reapresentado aparece como `PENÚLTIMO` na DFP do ano seguinte. Guarde os dois: a diferença entre eles é o que o estudo mede.
-- **Financeiras de fora:** identifique bancos, seguradoras e resseguradoras pelo setor no cadastro e marque-as como excluídas. Elas ficam fora do M-score.
+- **Financeiras em grupo próprio:** identifique bancos, seguradoras, resseguradoras e demais instituições financeiras pelo setor no cadastro e marque-as. Elas ficam fora do M-score, do DPO e do juro implícito e são avaliadas só pelo `peso_nao_recorrente`.
 - **Testes:**
   - fixture de uma empresa fictícia que reapresenta o exercício anterior;
   - a função devolve o número original antes da reapresentação e o corrigido depois dela;
@@ -101,16 +102,17 @@ Português e inglês têm o mesmo peso neste projeto. "Eficiência máxima nos d
 
 ## Fase 3: avaliação, exatamente como o pré-registro manda
 
-- Calcule os sinais de todas as empresas não financeiras em todos os anos, sempre com `como_era`.
+- Calcule os sinais dos dois grupos do pré-registro (não financeiras e financeiras) em todos os anos, sempre com `como_era`, e avalie cada grupo separadamente.
 - Aplique as regras de alerta **do pré-registro, sem ajuste**.
 - **Métricas:**
   - taxa de alerta por ano;
   - casos do gabarito acertados, com alerta antes da `data_publica`;
   - alarmes por acerto;
-  - resultado da regra boba do pré-registro, lado a lado.
+  - resultado da regra boba do pré-registro, lado a lado;
+  - as métricas secundárias das Emendas 1 e 3, rotuladas como secundárias e fora da conta principal.
 - **Divisão no tempo:** o período de teste só é aberto uma vez, no fim. Registre a data e o commit em que foi aberto.
 - **Duas leituras da Americanas:** rode os sinais nos números originais e nos reapresentados e mostre a diferença componente por componente.
-- **O IRB não entra no M-score** (é resseguradora). No relatório, explique por quê e aponte o sinal da `fase_2` que se aplica a ele.
+- **O IRB não entra no M-score** (é resseguradora): é avaliado no grupo das financeiras pelo `peso_nao_recorrente`. No relatório, explique por quê e registre o teto de 1 acerto em 2 casos no estudo principal (Emenda 3).
 - Saídas geradas por script em `resultados/` (fora do git) e `docs/resultados.md` e `docs/en/results.md` agregados, com um teste que confere cada número dos dois contra o script.
 
 ## Fase 4: ficha de alerta
@@ -132,7 +134,7 @@ Para qualquer empresa e ano, `ficha(cd_cvm, exercicio, lang="pt")` gera um texto
 - método (citando o pré-registro);
 - resultado;
 - o que não funcionou;
-- limitações, entre elas: poucos casos no gabarito, sinais calibrados nos EUA, despesa financeira ruidosa e o fato de a fraude da Americanas ter sido revelada por dentro.
+- limitações, entre elas: poucos casos no gabarito, o teto de 1 acerto em 2 casos no estudo principal (Emenda 3 do pré-registro), sinais calibrados nos EUA, despesa financeira ruidosa e o fato de a fraude da Americanas ter sido revelada por dentro.
 
 Nenhum adjetivo sem número ao lado.
 
