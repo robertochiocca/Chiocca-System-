@@ -8,7 +8,7 @@ Consulted on 2026-11-05, from 02:12 UTC onwards (2026-11-04, 23:12 in Brasília)
 
 **How Phase 0 was done**
 
-- Structure only. No signal, ratio or M-score was computed. No script loaded the `VL_CONTA` column: account values never entered memory.
+- Structure only. No signal, ratio or M-score was computed. No script loaded the `VL_CONTA` column: account values never entered memory. Only exception, authorized on 2026-11-06: the ENET HTML-route test (part 7.2) loaded `VL_CONTA` only for three companies outside the ground truth and the candidates, to compare in memory, and printed only counts.
 - In parts 1 to 4, all rows of these CVM codes were dropped before any analysis: 8087 (Lojas Americanas SA), 20990 (Americanas S.A.), 24180 (IRB-Brasil Resseguros) and 22837 (Drogarias Americanas SA, dropped only because its name contains "Americanas"). Americanas and IRB metadata were opened only later, with authorization, in part 5.
 - The figures below are structure counts (companies, rows, presence of accounts) and come from the scripts in [`scripts/fase0/`](../../scripts/fase0/).
 - Downloaded files stayed outside the repository.
@@ -398,6 +398,8 @@ In parts 1.6 and 2, the banks' old layout appeared with 474 company-years; the c
 
 ## 6. Expanded ground truth (Amendment 6): candidates for review
 
+> First search, of 2026-11-05. The full sweep of 2026-11-06 (part 7.1) changed the list and corrected some of the exclusions below.
+
 - **File:** [`data/gabarito_candidatos.csv`](../../data/gabarito_candidatos.csv), with the same columns as the ground truth. `verificado_por` and `verificado_em` are empty. Nothing was added to `data/gabarito_casos.csv`.
 - **How I collected them:** web searches for CVM decisions and material fact notices, on 2026-11-05, and reading the text of CVM decision extracts and votes (PDF) and of the material fact notices. No DFP value was opened. CVM codes and CNPJs came from the registry.
 - **Result:** 18 rows, from 16 companies (Mundial and Inepar have two proceedings each).
@@ -418,6 +420,135 @@ In parts 1.6 and 2, the banks' old layout appeared with 474 company-years; the c
   - Others: Banco Cruzeiro do Sul (only fines for price manipulation; the 2023 document concerns a receivables fund), Intrader DTVM (not a listed company), Petrobras (the sanctions over the financial statements were on auditors, not on the company or its officers), Paranapanema (no fraud or sanction found) and Laep (information disclosure and failure to file).
 - **Limit:** the search was not exhaustive. A complete sweep requires going through CVM's list of decided sanctioning proceedings, year by year since 2010. I can do that before your review, if you want.
 - **IRB, existing case, not changed:** in the proceeding on the 2019 accounts (PAS 19957.003588/2023-87), the rapporteur's vote of 2026-10-06 is to acquit all defendants. Fernando Passos is acquitted because the conduct was already sanctioned in another proceeding. I did not check the Board's final decision. IRB's note in the ground truth ("ainda precisa ser conferido") stays as it is until you decide.
+
+## 7. Authorizations of 2026-11-06 and results (after freeze v4)
+
+Done after commit `76d72e9b559f4bf3a188b9bab69f9bbbb3053407` (Amendment 7), which the `congelamento-v4` branch points to. No Americanas or IRB value was read. Scripts: `varredura_pas.py` and `enet_html.py`.
+
+### 7.1 Sweep of CVM sanctioning proceedings (Amendment 6, criterion a)
+
+- **Source:** the date search on the CVM portal ("Processos Sancionadores Julgados"), year by year from 2010 to 2026 and page by page; then each proceeding's page, with the full summary and the PDF links. Result: 776 proceedings decided from 2010 to 2025.
+- **Portal gaps:** the search returns few proceedings in 2021 (6), 2022 (10) and 2025 (17), against 43 to 100 in neighboring years, and none in 2026. I filled in with the CVM sanctioning-proceedings dataset and the decision news releases on gov.br/cvm. The dataset has 584 proceedings, opened from 2013-03 onwards, but it only gives the number, subject, opening date and stage, not the outcome. Even so, the sweep may not be exhaustive for 2021, 2022, 2025 and 2026.
+- **Screening:**
+  - 195 of the 776 have an accounting-content keyword in the summary (`varredura_pas.py --filtrar`).
+  - 76 of those mention no auditor and are not only about late or missing filings. I read the decision extract or the vote of each one that could fit Amendment 6.
+  - Auditor cases were screened by the summary. When the summary also mentioned officers or the preparation of the financial statements, I read the extract.
+- **Rule applied (Amendment 6, criterion a):** a sanction on an officer or on the company for an irregularity in preparing or disclosing the financial statements, with facts from 2010 to 2023. Left out:
+  - only the auditor sanctioned;
+  - acquittals only;
+  - settlement (termo de compromisso);
+  - late or missing filings (Amendment 7);
+  - sanctions not about the content of the financial statements.
+- **Result in [`data/gabarito_candidatos.csv`](../../data/gabarito_candidatos.csv):** 39 rows (there were 18). `verificado_por` and `verificado_em` remain empty. Nothing was added to `data/gabarito_casos.csv`.
+  - **Inside the data period: 31 rows, from 30 companies** (Mundial has two proceedings).
+    - The 14 already there: Via Varejo, Taurus, OGX, OSX, Metalúrgica Duque, Mundial (2), Hércules, Teka, IGB, Tecnosolo, Schlosser, Brasil Brokers and Oi (2014 statements). Unchanged.
+    - Two corrected: Inepar (2013 statements) and Docas de Imbituba.
+    - 15 new: Inepar Equipamentos e Montagens, Petrobras, Recrusul, Springer, BRAZAL, CEB, Fibam, Marina de Iracema Park, Metalgráfica Iguaçu, Sultepa (2013 statements), Café Solúvel Brasília, Comercial Quintella, Cobrasma, Bahema and Indústrias J.B. Duarte.
+  - **Outside the data period (Amendment 7): 8 rows**, flagged at the start of the note: Banco Panamericano, Brasil Telecom, Sanepar, J. C. Barretto, Mendes Júnior, Sultepa (2001 to 2003 statements), Construtora Beter and Inepar (proceeding 17/2006).
+  - **Empty period:** Via Varejo (already so) and Mendes Júnior (the decision gives no year).
+  - **Period partly before 2010:** Metalgráfica Iguaçu (2007 to 2011) and Mundial (2009 to 2011).
+  - **`data_publica`:** filled in 17 of the 39 rows, always with a date written in a document I read. The sources are:
+    - a material fact notice, read directly or cited in the decision;
+    - the date of the charge or of the opening cited in the decision;
+    - the Data_Abertura field of the CVM dataset (Fibam).
+
+    In the other 22, the decision read does not give those dates, and the field is empty, with no estimate.
+- **Requested check (Inepar and Docas)**
+  - **Inepar S.A. (7595): two proceedings on the financial statements.**
+    - Proceeding 17/2006, decided on 2013-10-22: 2004 to 2008 statements. Outside the data period (row `inepar_2006`).
+    - RJ2014/7072, decided on 2018-03-27: 2013-12-31 statements and 2014-03-31 quarterly report (row `inepar_2013`, now with the extract read).
+    - The `inepar_2010` row was removed: no decision read sanctions 2010 statements. The IstoÉ report gives no case number, and the topics it cites (BNDES, CEMAT, tax installment programs) appear in RJ2014/7072, whose sanction covers only 2013.
+    - The subsidiary Inepar Equipamentos e Montagens (17868), with its own registration, was sanctioned in RJ2014/7351 for the 2013 statements (new row).
+  - **Docas de Imbituba (3174).** The proceeding on the financial statements is RJ2016/5649, decided on 2018-12-18: 2014-12-31 statements and 2015 quarterly reports.
+    - SEI 19957.000817/2015-00 in the previous row concerns acts of the controlling shareholder.
+    - RJ2015/6319 concerns a late filing, which stays out under Amendment 7.
+- **Corrections to part 6**
+  - **Petrobras.** Part 6 said the sanctions on the financial statements fell only on auditors, which is wrong. In SP2017/294 (2020-11-03), officers were fined for not running the impairment test of the Abreu e Lima refinery in the 2010 statements. The conviction for the 2012 statements, proposed by the rapporteur, did not prevail.
+  - **Recrusul.** The same proceeding as the capital increase also fined two officers for omitting related-party transactions from the 2011 to 2015 statements.
+  - **Indústrias J.B. Duarte.** I found the rapporteur's vote of 2021-06-22. It convicts over the 2015 consolidated statements, not 2013 to 2015. The board's final outcome was not checked, and the CSV note says so.
+  - **Brasil Telecom.** The sanction covers the 2007 and 2008 statements; the 2006 officer was acquitted.
+  - **Verolme-Ishibrás.** PAS 13/2014 (2019-11-05) concerns abuse of control and fiduciary duties, not the financial statements. Left out.
+- **No final decision:** Oi, 2015 and 2016 statements (PAS 19957.004207/2021-15). A commissioner asked for more time on 2026-08-25, and the CVM dataset still shows the case under judgment. Under Amendment 6, a case decided after your review only enters by a new amendment.
+- **Excluded after reading**
+  - **All acquitted on the financial-statement charge:** CCX (RJ2015/1954) and COPEL (19957.009104/2019-27).
+  - **Sanction not about the content of the financial statements:**
+    - Iguaçu Café Solúvel (08/2014: diligence in the face of signs of fraud);
+    - WLM (executive pay);
+    - GPC Participações and Eucatex (voting on their own accounts);
+    - Rima (reserves);
+    - Pettenati and Aliança da Bahia;
+    - Verolme;
+    - insider-trading cases.
+  - **Only late or missing filings (Amendment 7):** Maori, Docas de Imbituba (RJ2015/6319), Capitalpart, Intrader, Fontaine Ville, Advanced Digital Health, Companhia Aurífera Brasileira (2021), Reag, Ammo, Coteminas, TBM and proceeding 19957.008462/2019-12, among others.
+  - **Other:** proceedings where only auditors were sanctioned, and proceedings about funds.
+- **Borderline group, for your decision.** None of these is in the CSV.
+  - What they share: sanctions over bookkeeping and corporate books (art. 100 and art. 177, caput, of Law 6,404) or false registration data, with no charge on the content of the financial statements.
+  - The cases:
+    - RJ2017/905 (Deluxe Motors, 2017-12-11);
+    - RJ2016/891 (19957.009255/2016-32), RJ2017/628, RJ2016/9175, RJ2017/1852, RJ2016/7389 and RJ2017/17;
+    - RJ2017/3508 (Drogarias Americanas, which is not Americanas S.A.);
+    - Companhia Aurífera Brasileira: RJ2017/3530, RJ2017/3521, RJ2017/1069 and RJ2016/8143.
+  - The question is whether "irregularity in preparing the financial statements" includes failing to keep the books. If it does, I read each one and they enter.
+- **Criterion b, open question: Petrobras, 2014 statements.** The company booked in those statements a write-off of improperly capitalized costs linked to Lava Jato. I did not read the material fact notice and did not include the case under criterion b. Tell me whether to check it.
+- **IRB, existing case, unchanged.** The CVM dataset shows PAS 19957.003588/2023-87 (2019 accounts) as "Finalizado" on 2026-11-04. I did not read the final decision. IRB stays as it is in the ground truth (Amendment 6).
+
+### 7.2 ENET HTML-route test (Amendment 5)
+
+- **Choice of companies, by a fixed rule** (`enet_html.py escolher 2023`). All conditions:
+  - 2023 DFP with a single version, the same in ENET and in the open data;
+  - a consolidated balance sheet and a non-financial chart of accounts (account 3.01);
+  - outside the ground truth and the candidates.
+
+  Among those that qualify, the three with the most consolidated balance-sheet rows: codes 27499, 27766 and 20125. None is on the updated candidate list.
+- **Comparison.** For each company, I read the four statements (balance sheet assets and liabilities, income statement and cash flow), consolidated and individual, and compared row by row:
+  - the code;
+  - the description, with the Amendment 7 text comparison;
+  - the first two value columns: current year against `ÚLTIMO` and prior year against `PENÚLTIMO`, with a R$0.50 tolerance after the scale ("Reais Mil").
+
+  The script prints only counts.
+- **Result: not 100%.**
+
+| Company | Rows | Match | Do not match |
+| --- | --- | --- | --- |
+| 27499 | 550 | 546 | 4 |
+| 27766 | 504 | 504 | 0 |
+| 20125 | 669 | 669 | 0 |
+| **Total** | **1,723** | **1,719** | **4** |
+
+- **Where the differences are**
+  - Consolidated: all 871 rows match for the three companies.
+  - The 4 that do not match are in the individual balance-sheet liabilities of 27499, where 108 of 112 rows match. They are the prior-year column of four equity accounts: 2.03.01, 2.03.02, 2.03.02.06 and 2.03.02.07. Code, description and current year match.
+  - That is exactly the column Amendment 5 uses as year t−1.
+  - No account appears on one side only.
+- **Interpretations that need your confirmation**
+  1. **An empty HTML cell counts as 0 in the open data.** In the first run, without this rule, every difference was of this kind; with it, the 4 above remain.
+  2. **Repeated rows in the open data.**
+     - For the three test companies, each consolidated balance-sheet account appears 2 or 3 times in the file, with the same code, date and period. Description and value are equal across the repeats, and the comparison used one row per code.
+     - The selection rule (most rows) favored these companies.
+     - It is not limited to them. In the consolidated balance sheet, companies with a repeated code are 2 in 2019, 6 in 2022, 11 in 2023, 2 in 2024 and 2 in 2025; none in 2010–2018, 2020 and 2021 (ground truth excluded).
+     - Outside the three test companies, I did not check whether the repeated values are equal, because that would require opening values. Phase 1 will need a rule for these rows.
+- **How the route works** (for the record):
+  - The filing page (`frmGerenciaPaginaFRE.aspx`) only gives the address of the tables inside a cookie session, and some sessions return a reduced page. The script tries up to ten sessions.
+  - Each table comes from `frmDemonstracaoFinanceiraITR.aspx`, with the filing page as the Referer header.
+  - The statement codes are 2 (balance sheet assets), 3 (liabilities), 4 (income statement) and 99 (cash flow).
+  - The `Informacao` parameter picks the table: 2 for consolidated, 1 for individual. Changing `Grupo` alone is not enough.
+- **Consequence, under your rule:** the HTML route was **not** registered as the means of fetching the point-in-time version (Amendment 5). IRB 2019 stays "versão da época indisponível" (point-in-time version unavailable).
+- **IRB 2019, version 1 (row counts only).**
+  - I ran the count when only the consolidated statements had been compared and matched 100%, before widening the test to the individual ones. I record it as a fact; under your rule, it does not change IRB 2019's status.
+  - ENET confirmed the filing is version 1. The eight tables loaded with the same number of rows as version 5 in the open data:
+    - consolidated: 83 (balance sheet assets), 116 (liabilities), 75 (income statement) and 34 (cash flow);
+    - individual: 83, 106, 70 and 34, in the same order.
+  - No value was read from the open data or printed.
+
+### 7.3 What depends on you
+
+1. Case-by-case review of `data/gabarito_candidatos.csv`, before anything goes into `data/gabarito_casos.csv`.
+2. Borderline group (bookkeeping and corporate books): in or out.
+3. `data_publica`: I used the charge date cited in the decision as "opening of the proceeding" (Amendment 6), as in part 6. For Cobrasma and Comercial Quintella, the report gives the same date (2015-07-13), from the same rapporteur; worth checking.
+4. Indústrias J.B. Duarte: the board's final outcome was not checked.
+5. HTML route: the two interpretations in part 7.2, empty cell as 0 and repeated rows.
+6. Criterion b: whether to check Petrobras 2014.
+7. Oi, 2015 and 2016 statements: no final decision; it can only enter by a new amendment.
 
 ## Appendix A. Sector names in the registry and the FCA
 

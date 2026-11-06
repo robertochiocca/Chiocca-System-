@@ -107,3 +107,62 @@ Consulted on 2026-11-05. Each case in the file carries its main source and, wher
 | IRB (2019 accounts), existing case | Rapporteur's vote, PAS CVM 19957.003588/2023-87 | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2026/20261006-pas-cvm-19957-003588-2023-87-diretor-igor-muniz-voto.pdf |
 
 Proceedings read and set aside because they do not concern the content of the financial statements or concern only late filing: RJ2014/5099 (WLM), 19957.003052/2018-02 (GPC Participações), 19957.003549/2018-12 (J&F), 19957.008462/2019-12, 19957.001933/2021-86 (Intrader DTVM), 19957.010135/2018-40 (Companhia Aurífera Brasileira), RJ2016/5786 (J.B. Duarte report, without the decision) and decision 1510/19 on the receivables fund linked to Banco Cruzeiro do Sul, all on CVM's sanctioning-proceedings and decisions portal (`conteudo.cvm.gov.br`).
+
+## 2026-11-06 · sweep of sanctioning proceedings and ENET HTML-route test (after freeze v4)
+
+### Decided sanctioning proceedings (CVM portal)
+
+- Date search, year by year from 2010 to 2026 and page by page: `https://conteudo.cvm.gov.br/sancionadores/index.html?lastName=&dataInicio=01/01/<year>&dataFim=31/12/<year>&buscado=true&pasta=sancionador&contCategoriasCheck=1&filtro=todos&vimDaCategoria=/sancionadores/sancionador/&searchPage=<n>`. The portal refuses Python's default agent, so the script sends a generic User-Agent.
+- Then each proceeding's page (`https://conteudo.cvm.gov.br/sancionadores/sancionador/<year>/...html`), with the full summary and the PDF links.
+- Consulted on 2026-11-06, around 17:30–18:00 UTC, with `scripts/fase0/varredura_pas.py`. Result: 776 proceedings decided from 2010 to 2025 (see `reconnaissance.md`, part 7.1).
+
+### CVM sanctioning-proceedings dataset
+
+- `https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip`, consulted on 2026-11-06 at 17:29 UTC. SHA256 `19e9400d0c8e77f30b1aa927c45147152cbcceffa0a6b936df9cff8e43482b42`.
+- Dictionary: `https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/META/meta_processo_sancionador.zip`.
+- 584 proceedings, opened from 2013-03 onwards. The dataset gives number, subject, opening date and stage, not the outcome. Used to check the portal's coverage and for Fibam's `data_publica`.
+
+### CVM decisions read for `data/gabarito_candidatos.csv`
+
+Main source of each new or corrected row. In every case I read the session summary or the vote (PDF).
+
+| Case | Proceeding | URL |
+| --- | --- | --- |
+| `inepar_2013` | CVM proceeding RJ2014/7072 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20147072_INEPAR.pdf |
+| `docas_imbituba` | CVM proceeding RJ2016/5649 (SEI 19957.003408/2016-38) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20165649__Completo.pdf |
+| `inepar_equipamentos` | CVM proceeding RJ2014/7351 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20147351__Completo.pdf |
+| `petrobras` | CVM proceeding SP2017/294 (SEI 19957.005789/2017-71) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/SEI_19957005789_2017_71.pdf |
+| `recrusul` | CVM proceeding SEI 19957.007552/2016-43 (RJ2016/7929) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/SEI_19957007552_2016_43.pdf |
+| `springer` | CVM proceeding SEI 19957.010686/2017-22 (RJ2017/5122) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/SEI_19957010686_2017_22.pdf |
+| `brazal` | CVM proceeding RJ2015/13326 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ201513326COMPLETO.pdf |
+| `ceb` | CVM proceeding SEI 19957.009292/2017-21 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2021/SEI_19957009292_2017_21.pdf |
+| `fibam` | CVM proceeding SEI 19957.009140/2018-18 | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2022/20220621_PAS_CVM_19957_009140_2018_18_voto_diretor_alexandre_rangel.pdf |
+| `marina_iracema` | CVM proceeding RJ2014/918 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2014/20141104_PAS_RJ2014918.pdf |
+| `metalgrafica_iguacu` | CVM proceeding RJ2012/15235 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2016/20160322_PAS_RJ201215235.pdf |
+| `sultepa_2013` | CVM proceeding RJ2015/1823 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2016/20160802_PAS_RJ20151823.pdf |
+| `cafe_soluvel_brasilia` | CVM proceeding RJ2014/1442 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2015/20150602_PAS_RJ20141442.pdf |
+| `comercial_quintella` | CVM proceeding RJ2015/4456 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2017/RJ20154456_Comercial_Quintella.pdf |
+| `cobrasma` | CVM proceeding RJ2016/2159 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2017/RJ20162159_Cobrasma.pdf |
+| `bahema` | CVM proceeding SP2017/493 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/SP2017-493.pdf |
+| `jb_duarte` | CVM proceeding SEI 19957.003864/2016-88 (RJ2016/5786) | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2021/20210622_PAS_CVM_SEI_19957_003864_2016_88_voto_diretor_alexandre_rangel.pdf |
+| `brasil_telecom` | CVM proceeding 03/2011 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/03-2011.pdf |
+| `sanepar` | CVM proceeding 08/2012 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2014/20141216_PAS_082012.pdf |
+| `jc_barretto` | CVM proceeding RJ2013/1402 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2014/20140722_PAS_RJ20131402.pdf |
+| `mendes_junior` | CVM proceeding 14/2009 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2015/20150811_PAS_142009.pdf |
+| `sultepa_2003` | CVM proceeding 16/2010 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/162010__COMPLETO.pdf |
+| `beter` | CVM proceeding RJ2010/14248 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2012/20121030_PAS_RJ201014248.pdf |
+| `inepar_2006` | CVM sanctioning proceeding 17/2006 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2013/20131022_PAS_172006.pdf |
+
+Other sources used:
+- Petrobras, final outcome (2010 only): https://istoedinheiro.com.br/cvm-condena-ex-diretores-da-petrobras-nos-casos-da-refinaria-abreu-lima-e-comperj
+- Fibam: https://www.gov.br/cvm/pt-br/assuntos/noticias/2022/cvm-julga-processos-envolvendo-fibam-companhia-industrial and commissioner Flávia Perlingeiro's separate vote (https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2022/20220621_PAS_CVM_19957_009140_2018_18_manifestacao_de_voto_diretora_flavia_perlingeiro.pdf).
+- J.B. Duarte, report: https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2021/20210622_PAS_CVM_SEI_19957_003864_2016_88_relatorio_diretor_alexandre_rangel.pdf
+- Verolme-Ishibrás, set aside: https://conteudo.cvm.gov.br/sancionadores/sancionador/2019/20191105-PAS-13-2014.html
+- CVM codes and CNPJs came from the listed-company registry. J.B. Duarte (now Blue Tech Solutions EQI S.A.) came from the 2012, 2015 and 2016 FCA and the registry. J. C. Barretto Fertilizantes was not found in the registry or the FCA.
+
+### CVM's ENET system, HTML route
+
+- Filing page: `https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=<n>&CodigoTipoInstituicao=2`, opened in a cookie session.
+- Tables: `https://www.rad.cvm.gov.br/ENET/frmDemonstracaoFinanceiraITR.aspx?...`, with the address taken from the filing page and that page as the Referer.
+- Parameters: `Demonstracao` (2 balance sheet assets, 3 liabilities, 4 income statement, 99 cash flow) and `Informacao` (2 consolidated, 1 individual).
+- Consulted on 2026-11-06, around 17:50 UTC, with `scripts/fase0/enet_html.py`. Filings of the 2023 DFPs of codes 27499, 27766 and 20125, and IRB's (24180) 2019 DFP, version 1, for row counts only.

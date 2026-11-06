@@ -105,3 +105,62 @@ Consulta em 05/11/2026. Cada caso do arquivo traz a sua fonte principal e, quand
 | IRB (contabilidade de 2019), caso existente | Voto do relator, PAS CVM 19957.003588/2023-87 | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2026/20261006-pas-cvm-19957-003588-2023-87-diretor-igor-muniz-voto.pdf |
 
 Processos lidos e descartados por não tratarem do conteúdo das DFs ou por tratarem só de atraso: RJ2014/5099 (WLM), 19957.003052/2018-02 (GPC Participações), 19957.003549/2018-12 (J&F), 19957.008462/2019-12, 19957.001933/2021-86 (Intrader DTVM), 19957.010135/2018-40 (Companhia Aurífera Brasileira), RJ2016/5786 (relatório de J.B. Duarte, sem a decisão) e a decisão 1510/19 sobre o FIDC ligado ao Banco Cruzeiro do Sul, todos no portal de processos sancionadores e decisões da CVM (`conteudo.cvm.gov.br`).
+
+## 06/11/2026 · varredura dos processos sancionadores e teste da rota HTML do ENET (depois do congelamento v4)
+
+### Processos sancionadores julgados (portal da CVM)
+
+- Busca por data, ano a ano de 2010 a 2026 e página a página: `https://conteudo.cvm.gov.br/sancionadores/index.html?lastName=&dataInicio=01/01/<ano>&dataFim=31/12/<ano>&buscado=true&pasta=sancionador&contCategoriasCheck=1&filtro=todos&vimDaCategoria=/sancionadores/sancionador/&searchPage=<n>`. O portal recusa o agente padrão do Python, e por isso o script manda um User-Agent genérico.
+- Depois, a página de cada processo (`https://conteudo.cvm.gov.br/sancionadores/sancionador/<ano>/...html`), com a ementa completa e os links dos PDFs.
+- Consulta em 06/11/2026, por volta das 17h30–18h UTC, com `scripts/fase0/varredura_pas.py`. Resultado: 776 processos julgados de 2010 a 2025 (ver `reconhecimento.md`, parte 7.1).
+
+### Base de dados de processos sancionadores da CVM
+
+- `https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/DADOS/processo_sancionador.zip`, consultada em 06/11/2026 às 17:29 UTC. SHA256 `19e9400d0c8e77f30b1aa927c45147152cbcceffa0a6b936df9cff8e43482b42`.
+- Dicionário: `https://dados.cvm.gov.br/dados/PROCESSO/SANCIONADOR/META/meta_processo_sancionador.zip`.
+- 584 processos, abertos de 03/2013 em diante. A base traz número, objeto, data de abertura e fase, sem o resultado. Usada para conferir a cobertura do portal e para a `data_publica` da Fibam.
+
+### Decisões da CVM lidas para `data/gabarito_candidatos.csv`
+
+Fonte principal de cada linha nova ou corrigida. Em todos os casos li o extrato da sessão ou o voto (PDF).
+
+| Caso | Processo | URL |
+| --- | --- | --- |
+| `inepar_2013` | PAS CVM RJ2014/7072 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20147072_INEPAR.pdf |
+| `docas_imbituba` | PAS CVM RJ2016/5649 (SEI 19957.003408/2016-38) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20165649__Completo.pdf |
+| `inepar_equipamentos` | PAS CVM RJ2014/7351 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ20147351__Completo.pdf |
+| `petrobras` | PAS CVM SP2017/294 (SEI 19957.005789/2017-71) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/SEI_19957005789_2017_71.pdf |
+| `recrusul` | PAS CVM SEI 19957.007552/2016-43 (RJ2016/7929) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/SEI_19957007552_2016_43.pdf |
+| `springer` | PAS CVM SEI 19957.010686/2017-22 (RJ2017/5122) | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/SEI_19957010686_2017_22.pdf |
+| `brazal` | PAS CVM RJ2015/13326 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/RJ201513326COMPLETO.pdf |
+| `ceb` | PAS CVM SEI 19957.009292/2017-21 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2021/SEI_19957009292_2017_21.pdf |
+| `fibam` | PAS CVM SEI 19957.009140/2018-18 | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2022/20220621_PAS_CVM_19957_009140_2018_18_voto_diretor_alexandre_rangel.pdf |
+| `marina_iracema` | PAS CVM RJ2014/918 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2014/20141104_PAS_RJ2014918.pdf |
+| `metalgrafica_iguacu` | PAS CVM RJ2012/15235 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2016/20160322_PAS_RJ201215235.pdf |
+| `sultepa_2013` | PAS CVM RJ2015/1823 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2016/20160802_PAS_RJ20151823.pdf |
+| `cafe_soluvel_brasilia` | PAS CVM RJ2014/1442 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2015/20150602_PAS_RJ20141442.pdf |
+| `comercial_quintella` | PAS CVM RJ2015/4456 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2017/RJ20154456_Comercial_Quintella.pdf |
+| `cobrasma` | PAS CVM RJ2016/2159 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2017/RJ20162159_Cobrasma.pdf |
+| `bahema` | PAS CVM SP2017/493 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/SP2017-493.pdf |
+| `jb_duarte` | PAS CVM SEI 19957.003864/2016-88 (RJ2016/5786) | https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2021/20210622_PAS_CVM_SEI_19957_003864_2016_88_voto_diretor_alexandre_rangel.pdf |
+| `brasil_telecom` | PAS CVM 03/2011 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/03-2011.pdf |
+| `sanepar` | PAS CVM 08/2012 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2014/20141216_PAS_082012.pdf |
+| `jc_barretto` | PAS CVM RJ2013/1402 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2014/20140722_PAS_RJ20131402.pdf |
+| `mendes_junior` | PAS CVM 14/2009 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2015/20150811_PAS_142009.pdf |
+| `sultepa_2003` | PAS CVM 16/2010 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2018/162010__COMPLETO.pdf |
+| `beter` | PAS CVM RJ2010/14248 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2012/20121030_PAS_RJ201014248.pdf |
+| `inepar_2006` | Processo Sancionador CVM 17/2006 | https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2013/20131022_PAS_172006.pdf |
+
+Outras fontes usadas:
+- Petrobras, resultado final (só 2010): https://istoedinheiro.com.br/cvm-condena-ex-diretores-da-petrobras-nos-casos-da-refinaria-abreu-lima-e-comperj
+- Fibam: https://www.gov.br/cvm/pt-br/assuntos/noticias/2022/cvm-julga-processos-envolvendo-fibam-companhia-industrial e a manifestação de voto da diretora Flávia Perlingeiro (https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2022/20220621_PAS_CVM_19957_009140_2018_18_manifestacao_de_voto_diretora_flavia_perlingeiro.pdf).
+- J.B. Duarte, relatório: https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2021/20210622_PAS_CVM_SEI_19957_003864_2016_88_relatorio_diretor_alexandre_rangel.pdf
+- Verolme-Ishibrás, descartado: https://conteudo.cvm.gov.br/sancionadores/sancionador/2019/20191105-PAS-13-2014.html
+- Código CVM e CNPJ vieram do cadastro de companhias abertas. A J.B. Duarte (hoje Blue Tech Solutions EQI S.A.) veio do FCA de 2012, 2015 e 2016 e do cadastro. A J. C. Barretto Fertilizantes não foi achada no cadastro nem no FCA.
+
+### Sistema ENET da CVM, rota HTML
+
+- Página do documento: `https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=<n>&CodigoTipoInstituicao=2`, aberta numa sessão com cookie.
+- Tabelas: `https://www.rad.cvm.gov.br/ENET/frmDemonstracaoFinanceiraITR.aspx?...`, com o endereço tirado da página do documento e o Referer dessa página.
+- Parâmetros: `Demonstracao` (2 BPA, 3 BPP, 4 DRE, 99 DFC) e `Informacao` (2 consolidado, 1 individual).
+- Consulta em 06/11/2026, por volta das 17h50 UTC, com `scripts/fase0/enet_html.py`. Documentos das DFPs de 2023 dos códigos 27499, 27766 e 20125, e da DFP de 2019 do IRB (24180), versão 1, só para contagem de linhas.

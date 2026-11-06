@@ -6,7 +6,7 @@ Consulta feita em 05/11/2026, a partir das 02:12 UTC (04/11/2026, 23:12 em Bras�
 
 **Como a Fase 0 foi feita**
 
-- Só estrutura. Nenhum sinal, índice ou M-score foi calculado. A coluna `VL_CONTA` não foi carregada em nenhum script: os valores das contas não entraram na memória.
+- Só estrutura. Nenhum sinal, índice ou M-score foi calculado. A coluna `VL_CONTA` não foi carregada em nenhum script: os valores das contas não entraram na memória. Única exceção, autorizada em 06/11/2026: o teste da rota HTML do ENET (parte 7.2) carregou `VL_CONTA` só de três empresas fora do gabarito e dos candidatos, para comparar na memória, e imprimiu só contagens.
 - Nas partes 1 a 4, antes de qualquer análise, todas as linhas destes códigos CVM foram removidas: 8087 (Lojas Americanas SA), 20990 (Americanas S.A.), 24180 (IRB-Brasil Resseguros) e 22837 (Drogarias Americanas SA, removida só por ter "Americanas" no nome). Os metadados de Americanas e IRB só foram abertos depois, com autorização, na parte 5.
 - Os números abaixo são contagens de estrutura (empresas, linhas, presença de contas) e saem dos scripts em [`scripts/fase0/`](../scripts/fase0/).
 - Os arquivos baixados ficaram fora do repositório.
@@ -396,6 +396,8 @@ Nas partes 1.6 e 2, o leiaute antigo dos bancos aparecia com 474 empresa-anos; o
 
 ## 6. Gabarito ampliado (Emenda 6): candidatos para revisão
 
+> Primeira busca, de 05/11/2026. A varredura completa de 06/11/2026 (parte 7.1) mudou a lista e corrigiu algumas exclusões abaixo.
+
 - **Arquivo:** [`data/gabarito_candidatos.csv`](../data/gabarito_candidatos.csv), com as mesmas colunas do gabarito. `verificado_por` e `verificado_em` ficam vazios. Nada entrou em `data/gabarito_casos.csv`.
 - **Como coletei:** buscas na web por decisões da CVM e fatos relevantes, em 05/11/2026, e leitura do texto dos extratos e votos da CVM (PDF) e dos fatos relevantes. Nenhum valor de DFP foi aberto. Código CVM e CNPJ vieram do cadastro.
 - **Resultado:** 18 linhas, de 16 empresas (Mundial e Inepar têm dois processos cada).
@@ -416,6 +418,135 @@ Nas partes 1.6 e 2, o leiaute antigo dos bancos aparecia com 474 empresa-anos; o
   - Outros: Banco Cruzeiro do Sul (só multas por manipulação de preço; o documento de 2023 trata de um FIDC), Intrader DTVM (não é companhia aberta), Petrobras (as condenações sobre as DFs foram de auditores, não da companhia nem de seus administradores), Paranapanema (sem fraude nem condenação encontradas) e Laep (divulgação de informações e falta de entrega).
 - **Limite:** a busca não foi exaustiva. Uma varredura completa exige percorrer, ano a ano desde 2010, a lista de processos sancionadores julgados no site da CVM. Posso fazer isso antes da sua revisão, se você quiser.
 - **IRB, caso existente, não alterado:** no processo sobre a contabilidade de 2019 (PAS 19957.003588/2023-87), o voto do relator, de 06/10/2026, é pela absolvição de todos os acusados. Fernando Passos é absolvido porque a conduta já foi punida em outro processo. Não conferi a decisão final do Colegiado. A nota do IRB no gabarito ("ainda precisa ser conferido") fica como está até você decidir.
+
+## 7. Autorizações de 06/11/2026 e resultados (depois do congelamento v4)
+
+Feito depois do commit `76d72e9b559f4bf3a188b9bab69f9bbbb3053407` (Emenda 7), apontado pelo branch `congelamento-v4`. Nenhum valor de Americanas ou IRB foi lido. Scripts: `varredura_pas.py` e `enet_html.py`.
+
+### 7.1 Varredura dos processos sancionadores (Emenda 6, critério a)
+
+- **Fonte:** a busca por data do portal da CVM ("Processos Sancionadores Julgados"), ano a ano de 2010 a 2026 e página a página; depois, a página de cada processo, com a ementa completa e os links dos PDFs. Resultado: 776 processos julgados de 2010 a 2025.
+- **Buracos do portal:** a busca devolve poucos processos em 2021 (6), 2022 (10) e 2025 (17), contra 43 a 100 nos anos vizinhos, e nenhum em 2026. Completei com a base de dados de processos sancionadores da CVM e com as notícias de julgamento do gov.br/cvm. A base tem 584 processos, abertos de 03/2013 em diante, mas traz só número, objeto, data de abertura e fase, sem o resultado. Mesmo assim, a varredura pode não ser exaustiva em 2021, 2022, 2025 e 2026.
+- **Triagem:**
+  - 195 dos 776 têm palavra de conteúdo contábil na ementa (`varredura_pas.py --filtrar`).
+  - 76 desses não citam auditor e não são só atraso ou falta de entrega. Li o extrato ou o voto de cada um que podia caber na Emenda 6.
+  - Os casos de auditor foram vistos pela ementa. Quando a ementa citava também administradores ou a elaboração das DFs, li o extrato.
+- **Regra aplicada (Emenda 6, critério a):** condenação de administrador ou da companhia por irregularidade na elaboração ou divulgação das DFs, com fatos de 2010 a 2023. Ficaram de fora:
+  - só auditor condenado;
+  - só absolvições;
+  - termo de compromisso;
+  - atraso ou falta de entrega (Emenda 7);
+  - condenação que não trata do conteúdo das DFs.
+- **Resultado em [`data/gabarito_candidatos.csv`](../data/gabarito_candidatos.csv):** 39 linhas (eram 18). `verificado_por` e `verificado_em` continuam vazios. Nada entrou em `data/gabarito_casos.csv`.
+  - **No período dos dados: 31 linhas, de 30 empresas** (Mundial tem dois processos).
+    - As 14 que já estavam: Via Varejo, Taurus, OGX, OSX, Metalúrgica Duque, Mundial (2), Hércules, Teka, IGB, Tecnosolo, Schlosser, Brasil Brokers e Oi (DFs de 2014). Não mudaram.
+    - Duas corrigidas: Inepar (DFs de 2013) e Docas de Imbituba.
+    - 15 novas: Inepar Equipamentos e Montagens, Petrobras, Recrusul, Springer, BRAZAL, CEB, Fibam, Marina de Iracema Park, Metalgráfica Iguaçu, Sultepa (DFs de 2013), Café Solúvel Brasília, Comercial Quintella, Cobrasma, Bahema e Indústrias J.B. Duarte.
+  - **Fora do período dos dados (Emenda 7): 8 linhas**, marcadas no começo da nota: Banco Panamericano, Brasil Telecom, Sanepar, J. C. Barretto, Mendes Júnior, Sultepa (DFs de 2001 a 2003), Construtora Beter e Inepar (processo 17/2006).
+  - **Período vazio:** Via Varejo (já estava) e Mendes Júnior (a decisão não dá o ano).
+  - **Período em parte antes de 2010:** Metalgráfica Iguaçu (2007 a 2011) e Mundial (2009 a 2011).
+  - **`data_publica`:** preenchida em 17 das 39 linhas, sempre com data escrita num documento lido. As fontes são:
+    - fato relevante, lido diretamente ou citado na decisão;
+    - data do termo de acusação ou da instauração citada na decisão;
+    - campo Data_Abertura da base da CVM (Fibam).
+
+    Nas outras 22, a decisão lida não traz essas datas, e o campo ficou vazio, sem estimativa.
+- **Conferência pedida (Inepar e Docas)**
+  - **Inepar S.A. (7595): dois processos sobre as DFs.**
+    - Processo 17/2006, julgado em 22/10/2013: DFs de 2004 a 2008. Fica fora do período (linha `inepar_2006`).
+    - RJ2014/7072, julgado em 27/03/2018: DFs de 31/12/2013 e ITR de 31/03/2014 (linha `inepar_2013`, agora com o extrato lido).
+    - A linha `inepar_2010` saiu: nenhuma decisão lida condena DFs de 2010. A reportagem da IstoÉ não dá número de processo, e os temas que ela cita (BNDES, CEMAT, parcelamentos) aparecem no RJ2014/7072, cuja condenação é só sobre 2013.
+    - A controlada Inepar Equipamentos e Montagens (17868), com registro próprio, foi condenada no RJ2014/7351 pelas DFs de 2013 (linha nova).
+  - **Docas de Imbituba (3174).** O processo sobre as DFs é o RJ2016/5649, julgado em 18/12/2018: DFs de 31/12/2014 e ITRs de 2015.
+    - O SEI 19957.000817/2015-00 da linha anterior trata de atos do controlador.
+    - O RJ2015/6319 trata de atraso de entrega, que fica fora pela Emenda 7.
+- **Correções à parte 6**
+  - **Petrobras.** A parte 6 dizia que as condenações sobre as DFs foram só de auditores, e está errado. No SP2017/294 (03/11/2020), administradores foram multados por não fazerem o teste de impairment da Refinaria Abreu e Lima nas DFs de 2010. A condenação pelas DFs de 2012, proposta pelo relator, não prevaleceu.
+  - **Recrusul.** O mesmo processo do aumento de capital também multou dois administradores por omitirem transações com partes relacionadas nas DFs de 2011 a 2015.
+  - **Indústrias J.B. Duarte.** Achei o voto do relator, de 22/06/2021. Ele condena pelas DFs consolidadas de 2015, e não de 2013 a 2015. O resultado final do Colegiado não foi conferido, e a nota do CSV diz isso.
+  - **Brasil Telecom.** A condenação é pelas DFs de 2007 e 2008; o diretor de 2006 foi absolvido.
+  - **Verolme-Ishibrás.** O PAS 13/2014 (05/11/2019) trata de abuso de poder de controle e de deveres fiduciários, não das DFs. Fica fora.
+- **Sem decisão final:** Oi, DFs de 2015 e 2016 (PAS 19957.004207/2021-15). Houve pedido de vista em 25/08/2026, e a base da CVM ainda mostra o processo em julgamento. Pela Emenda 6, um caso decidido depois da sua revisão só entra por nova emenda.
+- **Excluídos depois da leitura**
+  - **Todos absolvidos da acusação sobre as DFs:** CCX (RJ2015/1954) e COPEL (19957.009104/2019-27).
+  - **Condenação que não trata do conteúdo das DFs:**
+    - Iguaçu Café Solúvel (08/2014: diligência diante de indícios de fraude);
+    - WLM (remuneração);
+    - GPC Participações e Eucatex (voto na aprovação das próprias contas);
+    - Rima (reservas);
+    - Pettenati e Aliança da Bahia;
+    - Verolme;
+    - casos de uso de informação privilegiada.
+  - **Só atraso ou falta de entrega (Emenda 7):** Maori, Docas de Imbituba (RJ2015/6319), Capitalpart, Intrader, Fontaine Ville, Advanced Digital Health, Companhia Aurífera Brasileira (2021), Reag, Ammo, Coteminas, TBM e o processo 19957.008462/2019-12, entre outros.
+  - **Outros:** processos em que só auditores foram condenados, e processos sobre fundos.
+- **Grupo de fronteira, para sua decisão.** Nenhum destes está no CSV.
+  - O que têm em comum: condenação por escrituração e livros (art. 100 e art. 177, caput, da Lei 6.404) ou por informação cadastral falsa, sem acusação sobre o conteúdo das DFs.
+  - Os casos:
+    - RJ2017/905 (Deluxe Motors, 11/12/2017);
+    - RJ2016/891 (19957.009255/2016-32), RJ2017/628, RJ2016/9175, RJ2017/1852, RJ2016/7389 e RJ2017/17;
+    - RJ2017/3508 (Drogarias Americanas, que não é a Americanas S.A.);
+    - Companhia Aurífera Brasileira: RJ2017/3530, RJ2017/3521, RJ2017/1069 e RJ2016/8143.
+  - A pergunta é se "irregularidade na elaboração das DFs" inclui não manter a escrituração. Se incluir, leio cada um e eles entram.
+- **Critério b, pergunta aberta: Petrobras, DFs de 2014.** A companhia registrou nessas DFs a baixa de gastos capitalizados indevidamente, ligados à Lava Jato. Não li o fato relevante e não incluí o caso pelo critério b. Diga se devo conferir.
+- **IRB, caso existente, não alterado.** A base da CVM mostra o PAS 19957.003588/2023-87 (contabilidade de 2019) como "Finalizado" em 04/11/2026. Não li a decisão final. O IRB no gabarito fica como está (Emenda 6).
+
+### 7.2 Teste da rota HTML do ENET (Emenda 5)
+
+- **Escolha das empresas, por regra fixa** (`enet_html.py escolher 2023`). Todas as condições:
+  - DFP de 2023 com uma versão só, a mesma no ENET e nos dados abertos;
+  - BPA consolidado e plano de não financeira (conta 3.01);
+  - fora do gabarito e dos candidatos.
+
+  Entre as que atendem, as três com mais linhas no BPA consolidado: códigos 27499, 27766 e 20125. Nenhuma está na lista de candidatos atualizada.
+- **Comparação.** Para cada empresa, li as quatro demonstrações (BPA, BPP, DRE e DFC), consolidadas e individuais, e comparei linha a linha:
+  - o código;
+  - a descrição, com a comparação de texto da Emenda 7;
+  - as duas primeiras colunas de valor: o exercício atual contra `ÚLTIMO` e o anterior contra `PENÚLTIMO`, com tolerância de R$ 0,50 depois da escala ("Reais Mil").
+
+  O script só imprime contagens.
+- **Resultado: não bateu 100%.**
+
+| Empresa | Linhas | Batem | Não batem |
+| --- | --- | --- | --- |
+| 27499 | 550 | 546 | 4 |
+| 27766 | 504 | 504 | 0 |
+| 20125 | 669 | 669 | 0 |
+| **Total** | **1.723** | **1.719** | **4** |
+
+- **Onde estão as diferenças**
+  - Consolidado: as 871 linhas batem nas três empresas.
+  - As 4 que não batem estão no BPP individual da 27499, onde 108 de 112 linhas batem. É a coluna do exercício anterior de quatro contas do patrimônio líquido: 2.03.01, 2.03.02, 2.03.02.06 e 2.03.02.07. Código, descrição e exercício atual batem.
+  - É justamente a coluna que a Emenda 5 usa como ano t−1.
+  - Nenhuma conta aparece só de um lado.
+- **Interpretações que precisam da sua confirmação**
+  1. **Célula vazia no HTML conta como 0 nos dados abertos.** Na primeira rodada, sem essa regra, todas as diferenças eram desse tipo; com ela, sobram as 4 acima.
+  2. **Linhas repetidas nos dados abertos.**
+     - Nas três empresas do teste, cada conta do BPA consolidado aparece 2 ou 3 vezes no arquivo, com o mesmo código, data e exercício. Descrição e valor são iguais entre as repetições, e a comparação usou uma linha por código.
+     - A regra de escolha (mais linhas) favoreceu essas empresas.
+     - Isso não acontece só com elas. No BPA consolidado, as empresas com código repetido são 2 em 2019, 6 em 2022, 11 em 2023, 2 em 2024 e 2 em 2025; nenhuma em 2010–2018, 2020 e 2021 (gabarito excluído).
+     - Fora das três do teste, não conferi se os valores repetidos são iguais, porque isso exigiria abrir valores. A Fase 1 vai precisar de uma regra para essas linhas.
+- **Como a rota funciona** (para registro):
+  - A página do documento (`frmGerenciaPaginaFRE.aspx`) só entrega o endereço das tabelas dentro de uma sessão com cookie, e algumas sessões devolvem uma página reduzida. O script tenta até dez sessões.
+  - Cada tabela vem de `frmDemonstracaoFinanceiraITR.aspx`, com o cabeçalho Referer da página do documento.
+  - Os códigos das demonstrações são 2 (BPA), 3 (BPP), 4 (DRE) e 99 (DFC).
+  - O parâmetro `Informacao` escolhe a tabela: 2 para consolidado, 1 para individual. Só trocar `Grupo` não basta.
+- **Consequência, pela sua regra:** a rota HTML **não** foi registrada como o meio de buscar a versão da época (Emenda 5). O IRB 2019 fica "versão da época indisponível".
+- **IRB 2019, versão 1 (só contagem de linhas).**
+  - Rodei a contagem quando só o consolidado tinha sido comparado e batia 100%, antes de ampliar o teste ao individual. Registro como fato; pela sua regra, isso não muda a situação do IRB 2019.
+  - O ENET confirmou que o documento é a versão 1. As oito tabelas carregaram com o mesmo número de linhas da versão 5 dos dados abertos:
+    - consolidado: 83 (BPA), 116 (BPP), 75 (DRE) e 34 (DFC);
+    - individual: 83, 106, 70 e 34, na mesma ordem.
+  - Nenhum valor foi lido nos dados abertos nem impresso.
+
+### 7.3 O que depende de você
+
+1. Revisão caso a caso de `data/gabarito_candidatos.csv`, antes de qualquer coisa entrar em `data/gabarito_casos.csv`.
+2. Grupo de fronteira (escrituração e livros): entra ou não.
+3. `data_publica`: usei a data do termo de acusação citada na decisão como "instauração do processo" (Emenda 6), como na parte 6. Em Cobrasma e Comercial Quintella, o relatório dá a mesma data (13/07/2015), do mesmo relator; vale conferir.
+4. Indústrias J.B. Duarte: o resultado final do Colegiado não foi conferido.
+5. Rota HTML: as duas interpretações da parte 7.2, célula vazia como 0 e linhas repetidas.
+6. Critério b: conferir ou não a Petrobras de 2014.
+7. Oi, DFs de 2015 e 2016: sem decisão final; só entra por nova emenda.
 
 ## Anexo A. Nomes de setor no cadastro e no FCA
 
