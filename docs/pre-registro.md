@@ -133,3 +133,13 @@ Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima n�
 - **Campos de cada caso:** data_publica = primeira data pública documentada (fato relevante, instauração do processo ou primeira notícia com fonte); período afetado = exercícios citados na decisão ou no fato relevante. Sem documento que dê os anos, o caso entra com período vazio e não conta como acertável.
 - **Casos já existentes:** Americanas e IRB continuam como estão.
 - **Coleta:** feita só em documentos públicos (decisões da CVM, fatos relevantes), sem abrir nenhum valor da DFP. A lista completa, com fonte de cada caso, é revisada por Roberto antes da Fase 1. Casos descobertos depois da revisão só entram por nova emenda.
+
+### Emenda 7 · 06/11/2026 · ajustes da revisão da Fase 0 (sem nenhum valor e sem nenhum sinal)
+
+- **Alcance do numerador das financeiras:** a frase "Vale para..." da emenda 5 restringe a regra. Entram só as linhas cujo DS_CONTA começa com "outras receitas operacionais" ou com "outras receitas e despesas operacionais". Linhas que fazem parte da receita da atividade, como "Outras Receitas de Resseguros", não entram. Mantidas a regra de conta-mãe da emenda 4 e a parte positiva do total.
+- **Comparação de texto:** todas as buscas por texto (emendas 2, 4, 5 e 7 e as linhas da DFC) ignoram maiúsculas, acentos e espaços repetidos.
+- **Regra boba, nos dois grupos:** alavancagem = (ativo total − patrimônio líquido consolidado, incluindo não controladores) / ativo total. Nas não financeiras isso equivale a 2.01 + 2.02; nos bancos e seguradoras vale pelo mesmo cálculo, achando a linha de patrimônio líquido de nível mais alto. Decil superior de cada ano, dentro de cada grupo.
+- **Americanas:** código CVM 20990. O CNPJ do fato relevante (00.776.574/0006-60) não está na base, mas a raiz 00.776.574 é do 20990, e a DFP de 2021 foi entregue com esse código.
+- **Versão do FCA:** a mais recente entregue até a data de corte do ano, pela mesma lógica de "como era na época".
+- **Atraso ou falta de entrega de demonstrações:** não entram no gabarito. Atraso é um sinal do catálogo (atraso_entrega); usá-lo como gabarito misturaria resposta e pergunta.
+- **Gabarito anterior a 2010:** casos com período afetado só antes de 2010 (por exemplo, Banco Panamericano, 2007–2009) ficam listados, marcados como "fora do período dos dados", e não contam como acertáveis.
