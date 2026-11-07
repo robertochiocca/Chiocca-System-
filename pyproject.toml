@@ -1,0 +1,32 @@
+[project]
+name = "chiocca"
+version = "0.1.0"
+description = "Alertas contábeis com dados abertos da CVM, calculados como eram na época · Accounting alerts from CVM open data, as they were at the time"
+requires-python = ">=3.11"
+dependencies = ["pandas", "numpy"]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "black", "mypy"]
+
+[tool.setuptools]
+packages = ["chiocca", "chiocca.sinais"]
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["scripts/fase0"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = true
+exclude = ["scripts/fase0/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
