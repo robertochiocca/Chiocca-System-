@@ -550,6 +550,107 @@ Done after commit `76d72e9b559f4bf3a188b9bab69f9bbbb3053407` (Amendment 7), whic
 6. Criterion b: whether to check Petrobras 2014.
 7. Oi, 2015 and 2016 statements: no final decision; it can only enter by a new amendment.
 
+## 8. Amendment 8: checks and closed lists (2026-11-07)
+
+Amendment 8 was appended to the pre-registration in the same commit as these lists, before any signal. No DFP value was read. In the companies' documents, values were neither noted nor used.
+
+### 8.1 Requested checks
+
+- **Indústrias J.B. Duarte: confirmed, enters the ground truth.**
+  - The CVM release of 2021-06-22 gives the board's outcome, unanimous and following the rapporteur. There are fines on the CEO, the IR officer and one board member over the 2015 consolidated statements (Cobrasmaq receivable).
+  - Not detectable in the main analysis: the only 2015 DFP was filed on 2016-05-05, after the 2016-04-30 cut-off (amendment 5).
+- **Petrobras, 2014 statements: enters the ground truth under criterion b, in my reading.**
+  - The document is the material fact notice of 2015-01-27 (filed on 2015-01-28), with the third-quarter 2014 information.
+  - In it the company says the Lava Jato testimonies revealed a supplier cartel and bribes to former employees, "indicating that payments to those suppliers were improperly recognized as part of the cost of our property, plant and equipment".
+  - It also says those amounts sit in historical cost and "should not have been capitalized", that there are "errors in the values of certain fixed assets", and it links the adjustment to "fraud and corruption".
+  - Period given: contracts from 2004-01-01 to 2012-04-30, hence 2004 to 2012 (in the data, 2010 to 2012).
+  - `data_publica` = 2014-10-10, the newspapers cited in the company's notice of 2014-10-14. The first material fact notice linking the case to the statements is of 2014-11-13.
+  - It is detectable: the 2010 to 2012 DFPs were filed by the cut-off and before that date.
+  - If you think the text is not "clear" in the sense of amendment 8, the case moves to observation by a new amendment.
+- **Via Varejo: not detectable.** The material fact notices of 2019-11-13, 2019-12-12, 2020-03-18 and 2020-03-25 do not give the affected years. The company booked the adjustments in 2019 and did not restate prior years.
+- **Cobrasma and Comercial Quintella: the 2015-07-13 date is doubtful, but it changes nothing.**
+  - In Quintella, the same report dates the PFE opinion on the charge to 2015-05-16 and an order to 2015-06-25, both before 2015-07-13.
+  - In Cobrasma, the proceeding is numbered in 2016 and the PFE opinion is dated 2016-03-28.
+  - Both reports are from the same rapporteur and use the same wording. I kept the written date, as amendment 8 requires, and recorded the doubt in the note.
+  - The classification does not depend on it: the DFPs for the affected years were filed in 2013, 2014 and on 2015-03-30, before any possible charge date.
+
+### 8.2 Charge date (amendment 8)
+
+- **With a charge date in a document (main analysis):**
+  - Metalúrgica Duque (2014-08-06), Mundial 2017 and Hércules (2017-03-06), Tecnosolo (2015-05-12, found now), Inepar Equipamentos (2014-09-19) and CEB (2017-09-29, first charge);
+  - Fibam (2018-11-08, from the rapporteur's report; the earlier date, 2018-10-01, was the CVM dataset's Data_Abertura, which is not the charge date);
+  - Metalgráfica Iguaçu (2012-12-20), Sultepa 2013 (2015-03-02, opening by the SEP, which is done by filing the charge), Café Solúvel Brasília (2012-09-15), Comercial Quintella and Cobrasma (2015-07-13) and J.B. Duarte (2016-07-04, first charge).
+- **No charge date in any document read (secondary analysis only): 17 cases.**
+  - Taurus, OGX, OSX, Mundial 2016, Teka, IGB, Schlosser, Brasil Brokers, Oi 2014, Inepar 2013, Docas de Imbituba, Petrobras 2010, Recrusul, Springer, BRAZAL, Marina de Iracema Park and Bahema.
+  - I read the available session summaries, reports and votes. The scanned PDFs of Docas and Taurus were read by OCR.
+- **`data_publica` for these 17 cases, for the secondary analysis** (the first documented public date):
+  - a material fact notice cited in the decision: Taurus (2013-08-14), OGX and OSX (2013-07-01);
+  - the opening of the proceeding in the CVM dataset, treated as its opening (amendment 6): Oi 2014 (2016-06-30);
+  - in the other 13 cases, the decision date, because the texts read give no earlier date of a public event about the irregularity.
+
+  Auditor qualifications published together with the statements themselves were not used as a public date. If you want a different rule for the secondary analysis, it goes in by amendment.
+- **Criterion b:** there is no charge. I kept the material fact notice as `data_publica` (amendment 6) for Americanas, Via Varejo and Petrobras 2014. This is my reading: the charge rule in amendment 8 concerns CVM proceedings.
+
+### 8.3 Public data before `data_publica`
+
+Under section 5 and amendments 3, 5 and 8, for each case with a valid main-analysis date I checked three things, using only DFP index metadata (versions and filing dates, no values):
+- whether any year of the affected period, between 2010 and 2023, has a DFP filed by the cut-off and before `data_publica`;
+- whether that version is the one in the open data;
+- if not, whether the company has consolidated statements, the only situation in which the ENET route is accepted (amendment 8).
+
+| Case | Result |
+| --- | --- |
+| Americanas | 2021 DFP, version 1, of 2022-02-24: detectable |
+| IRB | 2019 DFP, version 1, of 2020-02-18, after 2020-02-10: not detectable (amendment 3). Amendment 8 brings the company-year back into the sample, not the case |
+| Sultepa 2013 | only 2013 DFP filed on 2014-05-28, after the cut-off: not detectable |
+| J.B. Duarte | only 2015 DFP filed on 2016-05-05, after the cut-off: not detectable |
+| Café Solúvel Brasília and Comercial Quintella | the point-in-time version is not the open-data one; it comes from ENET (consolidated): detectable |
+| Other cases with a charge date | point-in-time version equals the open-data one: detectable |
+
+### 8.4 Final ground truth ([`data/gabarito_casos.csv`](../../data/gabarito_casos.csv))
+
+- **Size:** 42 rows, namely Americanas (20990), IRB (24180) and the 40 rows of [`data/gabarito_candidatos.csv`](../../data/gabarito_candidatos.csv): the 39 from part 7, with J.B. Duarte confirmed, plus Petrobras 2014.
+- **New columns:** `acertavel_principal` (sim/nao) and `motivo_nao_acertavel`.
+- **Detectable in the main analysis: 13.** Americanas, Metalúrgica Duque, Mundial 2017, Hércules, Tecnosolo, Inepar Equipamentos, CEB, Fibam, Metalgráfica Iguaçu, Café Solúvel Brasília, Comercial Quintella, Cobrasma and Petrobras 2014.
+- **Not detectable: 29.**
+  - 17 with no charge date (secondary only);
+  - 8 outside the data period (amendment 7);
+  - IRB (amendment 3);
+  - Via Varejo (no years);
+  - Sultepa 2013 and J.B. Duarte (DFP after the cut-off).
+- **Verification:** `verificado_por` and `verificado_em` (2026-11-07) were filled in the 40 rows I checked in a primary source. They are empty for Americanas and IRB. Amendment 6 keeps those two as they are, and checking their sources would mean opening documents with values of the two companies. Tell me how you prefer to fill them.
+- **New field value:** `como_veio_a_publico` = "externo_investigacao" (Petrobras 2014, Operation Lava Jato).
+- **Overlap:** Petrobras 2010 (secondary) and Petrobras 2014 (main) both cover fiscal 2010.
+
+### 8.5 Cases under observation ([`data/casos_em_observacao.csv`](../../data/casos_em_observacao.csv))
+
+There are 13 rows, with the ground-truth columns plus `motivo_observacao`:
+- **Oi, 2015 and 2016 statements** (PAS 19957.004207/2021-15): no final decision; a commissioner asked for more time on 2026-08-25. `data_publica` = opening of the proceeding in the CVM dataset (2021-05-17).
+- **The 12 companies of the borderline group**, all linked to Alexandre Azambuja and inspected under proceeding RJ2013/9741. The charges are over corporate books, bookkeeping (art. 177, caput) and false registration information (art. 14 of ICVM 480), with no charge on the content of the statements.
+  - No decision gives fiscal years, so the period is empty.
+  - With no charge date, `data_publica` is the decision date.
+
+**Corrections to part 7, in the borderline group:**
+- RJ2017/3530, RJ2017/3521 and RJ2017/1069 concern Atletas Brasileiros, Tekno Waste (in the registry, "Tecno Waste") and Ekoparking. The portal summary repeats the text of Companhia Aurífera Brasileira, whose proceeding is RJ2016/8143 only.
+- The "RJ2016/891" in part 7 is RJ2016/8914, of Intellectual Services.
+- Drogarias Americanas (22837) is not Americanas S.A. In Phase 0 it was dropped from the counts only because of its name; in Phase 1 it must be kept apart.
+
+### 8.6 Sources for this step
+
+- **Material fact notices and communications (Petrobras and Via Varejo):** the CVM IPE index, `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_<year>.zip` (2014, 2015, 2019 and 2020), consulted on 2026-11-06. SHA256:
+  - 2014: `ec6ac4b2ef19cf69058a4a16fc64efd14bca6c40b50d1ae63ce5647c2ed208bd`
+  - 2015: `35442297cf883e17194d026ec459b406ed14162048f88d8373333ac691404154`
+  - 2019: `1ece808881dc17f09dfaaa5cd81ee5ff9f96cb705f23787f269ebce24450ee55`
+  - 2020: `757704676e462302d7c5234bd48f8ea5fa7a4b2dda7f15b1f882f3025429b910`
+
+  The documents come from ENET, through each row's `Link_Download`. Petrobras: protocols 442523 (2014-10-14), 446273 (2014-11-13), 453469 (2015-01-28), 465027 (2015-04-13) and 466117 (2015-04-22). Via Varejo: 721260, 726118, 746616 and 748459.
+- **J.B. Duarte:** https://www.gov.br/cvm/pt-br/assuntos/noticias/2021/cvm-aplica-advertencia-por-alienacoes-de-acoes-em-periodo-de-opa
+- **Fibam, report:** https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2022/20220620_PAS_CVM_19957_009140_2018_18_relatorio_diretor_alexandre_rangel.pdf
+- **Taurus, session summary and full decision:** https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/RJ201413977.pdf
+- **Brasil Brokers:** CVM release and report. https://www.gov.br/cvm/pt-br/assuntos/noticias/2021/cvm-julga-acusados-de-descumprimento-de-normas-contabeis-em-demonstracoes-financeiras-de-companhia and https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2021/20210315_PAS_CVM_19957_0094152019_96_SP2019_617_relatorio_presidente_marcelo_barbosa.pdf
+- **Borderline group:** the 12 session summaries on the sanctioning-proceedings portal. The links are in `data/casos_em_observacao.csv`.
+- **OCR:** Tesseract 5 (Portuguese), only to read dates in the scanned PDFs of Docas de Imbituba and Taurus.
+
 ## Appendix A. Sector names in the registry and the FCA
 
 "Companies" counts distinct CVM codes: in the registry, by current sector; in the FCA, in any year from 2010 to 2026. Generated by `scripts/fase0/setores.py --tabela`. Sector names are the official CVM names, in Portuguese.

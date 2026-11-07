@@ -548,6 +548,107 @@ Feito depois do commit `76d72e9b559f4bf3a188b9bab69f9bbbb3053407` (Emenda 7), ap
 6. Critério b: conferir ou não a Petrobras de 2014.
 7. Oi, DFs de 2015 e 2016: sem decisão final; só entra por nova emenda.
 
+## 8. Emenda 8: conferências e listas fechadas (07/11/2026)
+
+A emenda 8 foi acrescentada ao pré-registro no mesmo commit destas listas, antes de qualquer sinal. Nenhum valor de DFP foi lido. Nos documentos das companhias, valores não foram anotados nem usados.
+
+### 8.1 Conferências pedidas
+
+- **Indústrias J.B. Duarte: confirmada, entra no gabarito.**
+  - A notícia da CVM de 22/06/2021 dá o resultado do Colegiado, por unanimidade e acompanhando o relator. Há multas ao diretor-presidente, ao DRI e a uma conselheira pelas DFs consolidadas de 2015 (crédito Cobrasmaq).
+  - Não é acertável na análise principal: a única DFP de 2015 foi entregue em 05/05/2016, depois do corte de 30/04/2016 (emenda 5).
+- **Petrobras, DFs de 2014: entra no gabarito pelo critério b, na minha leitura.**
+  - O documento é o fato relevante de 27/01/2015 (entregue em 28/01/2015), com as informações do 3º trimestre de 2014.
+  - Nele a companhia diz que os depoimentos da Lava Jato revelaram cartel de fornecedores e propinas a ex-empregados, "indicando que pagamentos a tais fornecedores foram indevidamente reconhecidos como parte do custo de nossos ativos imobilizados".
+  - Diz também que esses valores estão no custo histórico e "não deveriam ter sido capitalizados", que há "erros nos valores de determinados ativos imobilizados", e trata o ajuste como ligado a "fraude e corrupção".
+  - Período indicado: contratos de 01/01/2004 a 30/04/2012, portanto 2004 a 2012 (nos dados, 2010 a 2012).
+  - `data_publica` = 10/10/2014, os jornais citados no comunicado da companhia de 14/10/2014. O primeiro fato relevante que liga o caso às demonstrações é de 13/11/2014.
+  - É acertável: as DFPs de 2010 a 2012 saíram até o corte e antes dessa data.
+  - Se você achar que o texto não é "claro" no sentido da emenda 8, o caso passa para observação por nova emenda.
+- **Via Varejo: não acertável.** Os fatos relevantes de 13/11/2019, 12/12/2019, 18/03/2020 e 25/03/2020 não dão os exercícios afetados. A companhia lançou os ajustes em 2019 e não reapresentou exercícios anteriores.
+- **Cobrasma e Comercial Quintella: a data de 13/07/2015 é duvidosa, mas não muda nada.**
+  - Em Quintella, o mesmo relatório põe o parecer da PFE sobre o termo em 16/05/2015 e um despacho em 25/06/2015, antes de 13/07/2015.
+  - Em Cobrasma, o processo é numerado em 2016 e o parecer da PFE é de 28/03/2016.
+  - Os dois relatórios são do mesmo relator e usam o mesmo texto. Mantive a data escrita, como manda a emenda 8, e registrei a dúvida na nota.
+  - A classificação não depende dela: as DFPs dos anos afetados saíram em 2013, 2014 e 30/03/2015, antes de qualquer data possível do termo.
+
+### 8.2 Data do termo de acusação (emenda 8)
+
+- **Com data do termo num documento (análise principal):**
+  - Metalúrgica Duque (06/08/2014), Mundial 2017 e Hércules (06/03/2017), Tecnosolo (12/05/2015, achada agora), Inepar Equipamentos (19/09/2014) e CEB (29/09/2017, primeiro termo);
+  - Fibam (08/11/2018, pelo relatório do diretor relator; a data anterior, 01/10/2018, era a Data_Abertura da base da CVM, que não é a data do termo);
+  - Metalgráfica Iguaçu (20/12/2012), Sultepa 2013 (02/03/2015, instauração pela SEP, que se faz pelo termo), Café Solúvel Brasília (15/09/2012), Comercial Quintella e Cobrasma (13/07/2015) e J.B. Duarte (04/07/2016, primeiro termo).
+- **Sem data do termo em nenhum documento lido (só análise secundária): 17 casos.**
+  - Taurus, OGX, OSX, Mundial 2016, Teka, IGB, Schlosser, Brasil Brokers, Oi 2014, Inepar 2013, Docas de Imbituba, Petrobras 2010, Recrusul, Springer, BRAZAL, Marina de Iracema Park e Bahema.
+  - Li os extratos, relatórios e votos disponíveis. Os PDFs digitalizados de Docas e Taurus foram lidos por OCR.
+- **`data_publica` desses 17 casos, para a análise secundária** (a primeira data pública documentada):
+  - fato relevante citado na decisão: Taurus (14/08/2013), OGX e OSX (01/07/2013);
+  - abertura do processo na base de dados da CVM, tratada como instauração (emenda 6): Oi 2014 (30/06/2016);
+  - nos outros 13 casos, a data do julgamento, porque os textos lidos não trazem data anterior de um fato público sobre a irregularidade.
+
+  Ressalvas de auditor publicadas junto com as próprias demonstrações não foram usadas como data pública. Se você quiser outra regra para a secundária, ela entra por emenda.
+- **Critério b:** não há termo de acusação. Mantive o fato relevante como `data_publica` (emenda 6) para Americanas, Via Varejo e Petrobras 2014. É a minha leitura: a regra do termo, na emenda 8, trata de processos da CVM.
+
+### 8.3 Dados públicos antes da `data_publica`
+
+Pela seção 5 e pelas emendas 3, 5 e 8, para cada caso com data válida na análise principal conferi três coisas, só com metadados do índice da DFP (versões e datas de entrega, sem valores):
+- se algum ano do período afetado, entre 2010 e 2023, tem DFP entregue até o corte e antes da `data_publica`;
+- se essa versão é a mesma dos dados abertos;
+- se não for, se a empresa tem demonstrações consolidadas, única situação em que a rota do ENET é aceita (emenda 8).
+
+| Caso | Resultado |
+| --- | --- |
+| Americanas | DFP de 2021, versão 1, de 24/02/2022: acertável |
+| IRB | DFP de 2019, versão 1, de 18/02/2020, depois de 10/02/2020: não acertável (emenda 3). A emenda 8 traz a empresa-ano de volta à amostra, não o caso |
+| Sultepa 2013 | única DFP de 2013 entregue em 28/05/2014, depois do corte: não acertável |
+| J.B. Duarte | única DFP de 2015 entregue em 05/05/2016, depois do corte: não acertável |
+| Café Solúvel Brasília e Comercial Quintella | a versão da época não é a dos dados abertos; vem do ENET (consolidado): acertáveis |
+| Demais casos com termo | versão da época igual à dos dados abertos: acertáveis |
+
+### 8.4 Gabarito final ([`data/gabarito_casos.csv`](../data/gabarito_casos.csv))
+
+- **Tamanho:** 42 linhas, que são Americanas (20990), IRB (24180) e as 40 linhas de [`data/gabarito_candidatos.csv`](../data/gabarito_candidatos.csv): as 39 da parte 7, com J.B. Duarte confirmada, mais Petrobras 2014.
+- **Colunas novas:** `acertavel_principal` (sim/nao) e `motivo_nao_acertavel`.
+- **Acertáveis na análise principal: 13.** Americanas, Metalúrgica Duque, Mundial 2017, Hércules, Tecnosolo, Inepar Equipamentos, CEB, Fibam, Metalgráfica Iguaçu, Café Solúvel Brasília, Comercial Quintella, Cobrasma e Petrobras 2014.
+- **Não acertáveis: 29.**
+  - 17 sem data do termo (só secundária);
+  - 8 fora do período dos dados (emenda 7);
+  - IRB (emenda 3);
+  - Via Varejo (sem anos);
+  - Sultepa 2013 e J.B. Duarte (DFP depois do corte).
+- **Verificação:** `verificado_por` e `verificado_em` (07/11/2026) foram preenchidos nas 40 linhas que conferi em fonte primária. Ficaram vazios em Americanas e IRB. A emenda 6 manda manter os dois como estão, e conferir as fontes deles exigiria abrir documentos com valores das duas empresas. Diga como prefere preencher.
+- **Valor novo de campo:** `como_veio_a_publico` = "externo_investigacao" (Petrobras 2014, Operação Lava Jato).
+- **Sobreposição:** Petrobras 2010 (secundária) e Petrobras 2014 (principal) cobrem o exercício de 2010.
+
+### 8.5 Casos em observação ([`data/casos_em_observacao.csv`](../data/casos_em_observacao.csv))
+
+São 13 linhas, com as colunas do gabarito mais `motivo_observacao`:
+- **Oi, DFs de 2015 e 2016** (PAS 19957.004207/2021-15): sem decisão final, com pedido de vista em 25/08/2026. `data_publica` = abertura do processo na base da CVM (17/05/2021).
+- **As 12 companhias do grupo de fronteira**, todas ligadas a Alexandre Azambuja e inspecionadas a partir do processo RJ2013/9741. As acusações são por livros sociais, escrituração contábil (art. 177, caput) e informação falsa no registro (art. 14 da ICVM 480), sem acusação sobre o conteúdo das DFs.
+  - Nenhuma decisão dá exercícios, então o período ficou vazio.
+  - Sem data do termo, a `data_publica` é a do julgamento.
+
+**Correções à parte 7, no grupo de fronteira:**
+- RJ2017/3530, RJ2017/3521 e RJ2017/1069 são de Atletas Brasileiros, Tekno Waste (no cadastro, "Tecno Waste") e Ekoparking. A ementa do portal repete o texto da Companhia Aurífera Brasileira, cujo processo é só o RJ2016/8143.
+- O "RJ2016/891" da parte 7 é o RJ2016/8914, da Intellectual Services.
+- Drogarias Americanas (22837) não é a Americanas S.A. Na Fase 0, ela saiu das contagens só pelo nome; na Fase 1 precisa ficar separada.
+
+### 8.6 Fontes desta etapa
+
+- **Fatos relevantes e comunicados (Petrobras e Via Varejo):** índice IPE da CVM, `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_<ano>.zip` (2014, 2015, 2019 e 2020), consultado em 06/11/2026. SHA256:
+  - 2014: `ec6ac4b2ef19cf69058a4a16fc64efd14bca6c40b50d1ae63ce5647c2ed208bd`
+  - 2015: `35442297cf883e17194d026ec459b406ed14162048f88d8373333ac691404154`
+  - 2019: `1ece808881dc17f09dfaaa5cd81ee5ff9f96cb705f23787f269ebce24450ee55`
+  - 2020: `757704676e462302d7c5234bd48f8ea5fa7a4b2dda7f15b1f882f3025429b910`
+
+  Os documentos vêm do ENET, pelo `Link_Download` de cada linha. Petrobras: protocolos 442523 (14/10/2014), 446273 (13/11/2014), 453469 (28/01/2015), 465027 (13/04/2015) e 466117 (22/04/2015). Via Varejo: 721260, 726118, 746616 e 748459.
+- **J.B. Duarte:** https://www.gov.br/cvm/pt-br/assuntos/noticias/2021/cvm-aplica-advertencia-por-alienacoes-de-acoes-em-periodo-de-opa
+- **Fibam, relatório:** https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2022/20220620_PAS_CVM_19957_009140_2018_18_relatorio_diretor_alexandre_rangel.pdf
+- **Taurus, extrato e decisão completa:** https://conteudo.cvm.gov.br/export/sites/cvm/sancionadores/sancionador/anexos/2020/RJ201413977.pdf
+- **Brasil Brokers:** notícia da CVM e relatório. https://www.gov.br/cvm/pt-br/assuntos/noticias/2021/cvm-julga-acusados-de-descumprimento-de-normas-contabeis-em-demonstracoes-financeiras-de-companhia e https://www.gov.br/cvm/pt-br/assuntos/noticias/anexos/2021/20210315_PAS_CVM_19957_0094152019_96_SP2019_617_relatorio_presidente_marcelo_barbosa.pdf
+- **Grupo de fronteira:** os 12 extratos no portal de processos sancionadores. Os links estão em `data/casos_em_observacao.csv`.
+- **OCR:** Tesseract 5 (português), só para ler datas nos PDFs digitalizados de Docas de Imbituba e Taurus.
+
 ## Anexo A. Nomes de setor no cadastro e no FCA
 
 "Empresas" conta códigos CVM distintos: no cadastro, pelo setor atual; no FCA, por qualquer ano de 2010 a 2026. Gerado por `scripts/fase0/setores.py --tabela`.
