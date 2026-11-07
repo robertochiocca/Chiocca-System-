@@ -12,31 +12,62 @@ Uso: python -m chiocca.relatorio_resultados
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
+from chiocca import descritiva, ficha, robustez
 from chiocca import metricas as mt
 from chiocca.base import RAIZ
 from chiocca.sinais_amostra import AMOSTRA_FIN, AMOSTRA_NF, CORTE_M, PERCENTIL, SPREAD_PP
 from chiocca.textos_resultados import render
+from chiocca.textos_resumo import render as render_resumo
 
 SINAIS = RAIZ / "resultados" / "sinais_empresa_ano.csv"
 EXECUCAO = RAIZ / "resultados" / "execucao.json"
 LIMIARES = RAIZ / "resultados" / "limiares.csv"
+SINAIS_E5 = RAIZ / "resultados" / "sinais_emenda5.csv"
+AMERICANAS = RAIZ / "resultados" / "americanas.json"
+META = RAIZ / "data" / "base" / "empresa_ano.csv"
+PRE_REGISTRO = RAIZ / "docs" / "pre-registro.md"
 GABARITO = RAIZ / "data" / "gabarito_casos.csv"
 OBSERVACAO = RAIZ / "data" / "casos_em_observacao.csv"
 NUMEROS = RAIZ / "docs" / "resultados_numeros.json"
 DOCS = {"pt": RAIZ / "docs" / "resultados.md", "en": RAIZ / "docs" / "en" / "results.md"}
+RESUMO = {"pt": RAIZ / "docs" / "resumo.md", "en": RAIZ / "docs" / "summary.md"}  # caminhos do PROMPT.md, Fase 5
 # Primeira vez que os sinais do período de teste foram calculados (PROMPT.md, Fase 3: registrar data e commit).
 ABERTURA_TESTE = {"data": "2026-11-07", "commit": "9e8c758c775972ad033ff8423ace5bc4392894f9"}
 
 
-def numeros(s: pd.DataFrame, gab: pd.DataFrame, obs: pd.DataFrame, execucao: dict[str, Any]) -> dict[str, Any]:
+def _mudaram(antes: dict[str, Any], depois: dict[str, Any]) -> dict[str, list[list[int]]]:
+    """Casos cujos exercícios em alerta mudaram entre duas avaliações: {caso: [antes, depois]}."""
+    return {
+        k: [antes["casos"][k]["anos_em_alerta"], v["anos_em_alerta"]]
+        for k, v in depois["casos"].items()
+        if v["anos_em_alerta"] != antes["casos"][k]["anos_em_alerta"]
+    }
+
+
+def numeros(
+    s: pd.DataFrame,
+    gab: pd.DataFrame,
+    obs: pd.DataFrame,
+    execucao: dict[str, Any],
+    extras: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """extras (opcionais): s5 (sinais da secundária da emenda 5), americanas (duas leituras), meta e lim (ficha)."""
+    extras = extras or {}
     s = mt.prepara(s)
     fora = set(obs.cd_cvm.dropna().astype(str))
+    texto_pr = PRE_REGISTRO.read_text(encoding="utf-8")
+    assinatura = re.search(r"Assinado por: .*? · Data: (\d{2})/(\d{2})/(\d{4})", texto_pr)
     n: dict[str, Any] = {
+        "pre_registro": {
+            "emendas": len(re.findall(r"^### Emenda \d+", texto_pr, re.M)),
+            "assinatura": f"{assinatura.group(3)}-{assinatura.group(2)}-{assinatura.group(1)}" if assinatura else None,
+        },
         "execucao": execucao,
         "abertura_teste": ABERTURA_TESTE,
         "regras": {"corte_m": CORTE_M, "spread_pp": SPREAD_PP, "percentil": PERCENTIL},
@@ -91,10 +122,6 @@ def numeros(s: pd.DataFrame, gab: pd.DataFrame, obs: pd.DataFrame, execucao: dic
         casos.append(r)
     n["casos"] = casos
     principais = [c for c in casos if c["acertavel"]]
-    acertados = {g: sum(1 for c in principais if c["acertado"] and g in c["grupos"]) for g in (AMOSTRA_NF, AMOSTRA_FIN)}
-    acertados_boba = {
-        g: sum(1 for c in principais if c["acertado_boba"] and g in c["grupos"]) for g in (AMOSTRA_NF, AMOSTRA_FIN)
-    }
     n["acerto"] = {
         "casos_no_gabarito": len(casos),
         "acertaveis": len(principais),
@@ -106,12 +133,44 @@ def numeros(s: pd.DataFrame, gab: pd.DataFrame, obs: pd.DataFrame, execucao: dic
             1 for c in principais if c["acertado"] and any(a in mt.TESTE for a in c["anos_em_alerta"])
         ),
     }
+    sinais = mt.avaliacao(s, gab, fora, mt.ALERTA_SINAIS, "avaliada")
+    boba = mt.avaliacao(s, gab, fora, mt.ALERTA_BOBA, "boba_avaliada")
+    n["acerto"]["acertados_teste"] = sinais["acertados_teste"]
+    n["acerto"]["acertados_boba_teste"] = boba["acertados_teste"]
     n["alarmes"] = {
-        "nf": mt.alarmes(s, AMOSTRA_NF, mt.ALERTA_SINAIS, "avaliada", acertados[AMOSTRA_NF], fora),
-        "fin": mt.alarmes(s, AMOSTRA_FIN, mt.ALERTA_SINAIS, "avaliada", acertados[AMOSTRA_FIN], fora),
-        "nf_boba": mt.alarmes(s, AMOSTRA_NF, mt.ALERTA_BOBA, "boba_avaliada", acertados_boba[AMOSTRA_NF], fora),
-        "fin_boba": mt.alarmes(s, AMOSTRA_FIN, mt.ALERTA_BOBA, "boba_avaliada", acertados_boba[AMOSTRA_FIN], fora),
+        "nf": sinais["alarmes"]["nf"],
+        "fin": sinais["alarmes"]["fin"],
+        "nf_boba": boba["alarmes"]["nf"],
+        "fin_boba": boba["alarmes"]["fin"],
     }
+    sn = robustez.neutros(s)
+    neutros = mt.avaliacao(sn, gab, fora, "em_alerta_neutro", "avaliada_neutro")
+    nf_rows = sn[sn.amostra == AMOSTRA_NF]
+    n["robustez"] = {
+        "avaliacao": neutros,
+        "usou_neutro": int(nf_rows.usou_neutro.sum()),
+        "m_calculaveis": int(nf_rows.mscore_neutro.notna().sum()),
+        "alertas_m": int(nf_rows.alerta_mscore_neutro.sum()),
+        "mudaram": _mudaram(sinais, neutros),
+    }
+    if extras.get("s5") is not None:
+        s5 = mt.prepara(extras["s5"])
+        inc = s5[s5.incluida_emenda5.astype(str) == "True"]
+        e5 = mt.avaliacao(s5, gab, fora, mt.ALERTA_SINAIS, "avaliada")
+        e5b = mt.avaliacao(s5, gab, fora, mt.ALERTA_BOBA, "boba_avaliada")
+        n["emenda5"] = {
+            "incluidas": {k: int(v) for k, v in inc.amostra.value_counts().items()},
+            "incluidas_total": int(len(inc)),
+            "sinais": e5,
+            "boba": e5b,
+            "mudaram": _mudaram(sinais, e5),
+            "mudaram_boba": _mudaram(boba, e5b),
+        }
+    if extras.get("americanas") is not None:
+        n["americanas"] = extras["americanas"]
+    n["descritiva"] = {"juro": descritiva.juro_por_ano(s), "depi": descritiva.depi(s, sn, gab)}
+    if extras.get("meta") is not None and extras.get("lim") is not None:
+        n["ficha_exemplo"] = ficha.dados_ficha("20990", 2021, s, extras["meta"], extras["lim"])
     secundarios = {}
     for parte in ("2a", "2b"):
         cs = [c for c in casos if c["parte_secundaria"] == parte]
@@ -158,14 +217,22 @@ def main() -> None:
     lim = pd.read_csv(LIMIARES)
     lim = lim[(lim.grupo == AMOSTRA_FIN) & (lim.sinal == "peso_nao_recorrente")]
     s.attrs["limiares"] = {str(a): v for a, v in zip(lim.exercicio, lim.limite_p90) if a in (2018, 2019)}
-    n = numeros(s, gab, obs, execucao)
+    extras = {
+        "s5": pd.read_csv(SINAIS_E5, dtype={"cd_cvm": str}, low_memory=False) if SINAIS_E5.exists() else None,
+        "americanas": json.loads(AMERICANAS.read_text(encoding="utf-8")) if AMERICANAS.exists() else None,
+        "meta": pd.read_csv(META, dtype={"cd_cvm": str, "num_doc": str}),
+        "lim": pd.read_csv(LIMIARES),
+    }
+    n = numeros(s, gab, obs, execucao, extras)
     NUMEROS.write_text(json.dumps(n, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     escreve_docs(json.loads(NUMEROS.read_text(encoding="utf-8")))
 
 
-def escreve_docs(n: dict[str, Any], docs: dict[str, Path] = DOCS) -> None:
+def escreve_docs(n: dict[str, Any], docs: dict[str, Path] = DOCS, resumo: dict[str, Path] = RESUMO) -> None:
     for lang, caminho in docs.items():
         caminho.write_text(render(n, lang), encoding="utf-8")
+    for lang, caminho in resumo.items():
+        caminho.write_text(render_resumo(n, lang), encoding="utf-8")
 
 
 if __name__ == "__main__":

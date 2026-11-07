@@ -178,3 +178,13 @@ Outras fontes usadas:
 - **Snapshot versionado:** [`data/cdi_sgs4389.csv`](../data/cdi_sgs4389.csv), 4.269 dias de 02/01/2009 a 31/12/2025, SHA256 `aecfe83578f6850c42fc9fd9d945916f9103c56b5a09d524bfc38fd557ad5dcb`.
 - **Conferência da série:** a página de metadados do SGS (`www3.bcb.gov.br/sgspub/consultarmetadados/...hdOidSerieMetadados=4389`) devolveu erro 502 nas três tentativas de 07/11/2026. A identificação foi conferida nos próprios dados: em 05/01/2015, a série 4389 vale 11,57% a.a., igual à série 12 (CDI, % a.d.) anualizada em 252 dias úteis, e diferente da Selic anualizada (série 1178, 11,65% a.a.).
 - **Uso:** "CDI médio do ano" é a média simples das taxas diárias nos 12 meses que terminam na data de referência da DFP (`chiocca/cdi.py`).
+
+## 07/11/2026 · Explicação depois do resultado: incorporação da Lojas Americanas pela B2W
+
+Usado só na análise descritiva (a) de [`docs/resultados.md`](resultados.md), feita depois de ver os resultados e rotulada como "explicação depois do resultado, não teste".
+
+- **Índice IPE da CVM de 2021:** `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/IPE/DADOS/ipe_cia_aberta_2021.zip`, consultado em 07/11/2026. SHA256 `b5ad4dcc2c0376027a23ed372469feaea11bf0dfd7ac75e2bbe99fd6b8f78ee7`. Os documentos abaixo vêm do ENET, pelo `Link_Download` das linhas do código CVM 20990 (B2W – Companhia Digital, CNPJ 00.776.574/0006-60, depois Americanas S.A.).
+- **Fato relevante de 19/02/2021** (protocolo 833599), potencial combinação operacional dos negócios de Lojas Americanas e B2W. SHA256 `b908c6b35f161c86fc632faf0e4750fed6813be06c4cae7d1591c359cce1e877`.
+- **Fato relevante de 28/04/2021** (protocolo 858751, versão 2): protocolo da cisão parcial da Lojas Americanas com versão do acervo cindido para a B2W; "todos os ativos operacionais de Lojas Americanas e passivos a eles relacionados" vertidos pelo valor contábil de 31/12/2020, e "as variações patrimoniais relativas aos elementos que compõem o Acervo Cindido, apuradas a partir da mesma data base", apropriadas pela B2W. SHA256 `298cc4babae20cc142626d33ad1b01ec38ba17b3f87b1a4a58802d32eabbd638`.
+- **Ata da assembleia geral extraordinária da B2W de 10/06/2021** (protocolo 875411): aprova a cisão parcial com incorporação do acervo cindido, efetivada "linha a linha", e a nova denominação "americanas s.a."; as novas ações "participarão integralmente dos resultados do exercício social em curso". SHA256 `fbd901da26543fe9d1aeee4e829ac88fd2ec7db8c28da31d70a883ba1bb71b7c`.
+- **Números usados:** as DFPs de 2020 e 2021 do código 20990 e a DFP de 2020 do código 8087, da base "como era na época" (Fase 1). Para as duas leituras, a DFP de 2022 do código 20990 (versão 1, entregue em 16/11/2023), dos dados abertos já listados no manifesto.

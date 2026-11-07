@@ -25,8 +25,9 @@ def test_documento_igual_a_saida_do_script(lang: str) -> None:
 def _extrai(texto: str, lang: str) -> list[float]:
     # Identificadores não são quantidades: código de conta entre parênteses (2.01.02), seção ou parte de documento
     # (seção 4.1, parte 1.4) e identificadores de caso em código (`mundial_2017`).
-    texto = re.sub(r"`[^`]*`", " ", texto)
-    texto = re.sub(r"\(\d+(?:\.\d+)+\)", " ", texto)
+    texto = re.sub(r"`[^`\n]*`", " ", texto)
+    texto = re.sub(r"\b\d+(?:\.\d{2}){2,}\b", " ", texto)  # códigos com dois pontos ou mais (2.01.04, 6.01.01)
+    texto = re.sub(r"(?<=\()\d+\.\d{2}(?=[,)])", " ", texto)  # código logo depois de "(" (6.01, ...) ou (3.01)
     texto = re.sub(r"\b(seção|seções|section|sections|parte|part)\s+\d+(?:\.\d+)+", r"\1", texto)
     if lang == "pt":
         texto = re.sub(r"(\d{2})/(\d{2})/(\d{4})", r"\3 \2 \1", texto)

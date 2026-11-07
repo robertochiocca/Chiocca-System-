@@ -168,8 +168,11 @@ def alertas_por_sinal(
     return out
 
 
-def alarmes(s: pd.DataFrame, grupo: str, alerta: str, avaliada: str, acertados: int, fora: set[str]) -> dict:
-    t = s[(s.amostra == grupo) & s.exercicio.isin(TESTE) & ~s.cd_cvm.isin(fora)]
+def alarmes(
+    s: pd.DataFrame, grupo: str, alerta: str, avaliada: str, acertados: int, fora: set[str], anos: range = TESTE
+) -> dict:
+    """(empresas em alerta − casos acertados) ÷ casos acertados, com empresas distintas com alerta em `anos`."""
+    t = s[(s.amostra == grupo) & s.exercicio.isin(anos) & ~s.cd_cvm.isin(fora)]
     em_alerta = int(t[t[alerta]].cd_cvm.nunique())
     return {
         "empresas_avaliadas": int(t[t[avaliada]].cd_cvm.nunique()),
@@ -177,6 +180,68 @@ def alarmes(s: pd.DataFrame, grupo: str, alerta: str, avaliada: str, acertados: 
         "casos_acertados": acertados,
         "alarmes_por_acerto": None if acertados == 0 else (em_alerta - acertados) / acertados,
     }
+
+
+def acerto_por_coluna(s: pd.DataFrame, cd_cvm: str, anos: list[int], data_publica: str, alerta: str) -> dict:
+    """Acerto de um caso (seção 5) com uma coluna de alerta qualquer, no período inteiro e no período de teste."""
+    linhas = linhas_do_caso(s, cd_cvm, anos, data_publica)
+    eleg = linhas[linhas.elegivel]
+    em_alerta = sorted(set(int(a) for a in eleg[eleg[alerta]].exercicio))
+    return {
+        "anos_em_alerta": em_alerta,
+        "acertado": bool(em_alerta),
+        "acertado_teste": any(a in TESTE for a in em_alerta),
+        "grupos": sorted(set(str(g) for g in eleg.amostra)),
+        "elegivel": not eleg.empty,
+    }
+
+
+def avaliacao(s: pd.DataFrame, gab: pd.DataFrame, fora: set[str], alerta: str, avaliada: str) -> dict[str, Any]:
+    """Pacote de métricas de uma regra de alerta: acerto, alarmes por acerto (emendas 10 e 11), 2a e 2b, taxa.
+
+    Emenda 11: (a) período de teste, 2017–2023, com os casos acertados por alerta dentro dele; (b) período inteiro,
+    2010–2023, com todos os casos acertados. A versão da emenda 10 (empresas do teste, acertos de todo o período)
+    fica junto, identificada como inconsistente.
+    """
+    casos: dict[str, dict[str, Any]] = {}
+    for c in gab.itertuples(index=False):
+        if pd.isna(c.cd_cvm) or pd.isna(c.data_publica):
+            continue
+        acertavel = c.acertavel_principal == "sim"
+        parte = None if pd.isna(c.parte_secundaria) else str(c.parte_secundaria)
+        if not acertavel and not parte:
+            continue
+        anos = anos_do_periodo(c.periodo_afetado_inicio, c.periodo_afetado_fim)
+        r = acerto_por_coluna(s, str(c.cd_cvm), anos, str(c.data_publica), alerta)
+        casos[str(c.caso_id)] = r | {"acertavel": acertavel, "parte_secundaria": parte}
+    principais = [r for r in casos.values() if r["acertavel"]]
+    out: dict[str, Any] = {
+        "acertados": sum(r["acertado"] for r in principais),
+        "acertados_teste": sum(r["acertado_teste"] for r in principais),
+        "acertaveis": len(principais),
+        "casos": {k: {"acertado": r["acertado"], "acertado_teste": r["acertado_teste"],
+                      "anos_em_alerta": r["anos_em_alerta"]} for k, r in casos.items()},
+        "secundaria": {},
+        "alarmes": {},
+        "taxa": {},
+    }  # fmt: skip
+    for parte in ("2a", "2b"):
+        cs = [r for r in casos.values() if r["parte_secundaria"] == parte]
+        out["secundaria"][parte] = {"casos": len(cs), "efetivos": sum(r["elegivel"] for r in cs),
+                                    "acertados": sum(r["acertado"] for r in cs)}  # fmt: skip
+    for grupo, chave in ((AMOSTRA_NF, "nf"), (AMOSTRA_FIN, "fin")):
+        a_tudo = sum(1 for r in principais if r["acertado"] and grupo in r["grupos"])
+        a_teste = sum(1 for r in principais if r["acertado_teste"] and grupo in r["grupos"])
+        out["alarmes"][chave] = {
+            "emenda_10": alarmes(s, grupo, alerta, avaliada, a_tudo, fora, TESTE),
+            "teste": alarmes(s, grupo, alerta, avaliada, a_teste, fora, TESTE),
+            "inteiro": alarmes(s, grupo, alerta, avaliada, a_tudo, fora, ANOS),
+        }
+        g = s[s.amostra == grupo]
+        em = sum(int(g[(g.exercicio == a) & g[alerta]].cd_cvm.nunique()) for a in ANOS)
+        av = sum(int(g[(g.exercicio == a) & g[avaliada]].cd_cvm.nunique()) for a in ANOS)
+        out["taxa"][chave] = {"em_alerta": em, "avaliadas": av}
+    return out
 
 
 def nao_calculaveis(s: pd.DataFrame) -> dict[str, dict[str, Any]]:
