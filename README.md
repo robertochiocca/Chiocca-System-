@@ -71,16 +71,18 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 
 ### Estado do projeto
 
-**Fase 1: base "como era na época".** Os sinais ainda não foram calculados com dados reais.
+**Fase 2: sinais da primeira versão calculados na amostra inteira, como era na época, com as métricas do pré-registro.** Os números, inclusive o caso a caso do gabarito e a comparação com a regra boba, estão em [`docs/resultados.md`](docs/resultados.md). As fases seguintes dependem de autorização.
 
 | Implementado | Roadmap |
 | --- | --- |
-| Catálogo de 16 sinais, em PT e EN, com fórmulas e referências | Sinais da primeira versão nos dados reais (Fase 2) |
+| Catálogo de 16 sinais, em PT e EN, com fórmulas e referências | Duas leituras da Americanas, teste de robustez com valores neutros e secundária da emenda 5 |
 | Gabarito ampliado e casos em observação, com fontes e notas em PT e EN | |
 | Reconhecimento dos dados da CVM ([`docs/reconhecimento.md`](docs/reconhecimento.md)) | |
 | Download com verificação por hash e base "como era na época" ([`docs/base.md`](docs/base.md)) | |
 | Fórmulas dos sinais da primeira versão, conferidas pelo teste de referência | |
-| Glossário PT↔EN dos termos contábeis e do estudo | Avaliação conforme o pré-registro |
+| Sinais e alertas na amostra inteira e métricas do pré-registro ([`docs/resultados.md`](docs/resultados.md)) | |
+| CDI do Banco Central (SGS 4389) com fonte registrada ([`docs/fontes.md`](docs/fontes.md)) | |
+| Glossário PT↔EN dos termos contábeis e do estudo | |
 | Pré-registro do estudo | Ficha de alerta e resumo de uma página, em PT e EN |
 | Exemplo resolvido com valores esperados (teste de referência) | |
 | Especificação para o agente de código ([`PROMPT.md`](PROMPT.md)) | Próximas fases: auditoria, ganhos não recorrentes a partir das notas explicativas, rendimento do caixa, dividendos sem caixa, F-score e teste de retorno das ações |
@@ -97,6 +99,8 @@ chiocca/                  código: download, base "como era na época", sinais e
 tests/                    testes sem rede, inclusive o teste de referência
 docs/reconhecimento.md    reconhecimento dos dados da CVM (Fase 0) e revisão do gabarito
 docs/base.md              números da base "como era na época", gerados por script
+docs/resultados.md        sinais, alertas e métricas do pré-registro, gerados por script
+data/cdi_sgs4389.csv      CDI diário do Banco Central (SGS 4389), snapshot versionado
 data/exemplo_resolvido.json  empresa fictícia com valores esperados (teste de referência)
 docs/pre-registro.md      decisões do estudo, assinadas antes dos dados
 PROMPT.md                 especificação de construção para o agente de código
@@ -112,6 +116,8 @@ python -m chiocca.montar_base         # monta a base e lista as versões da épo
 python -m chiocca.enet data/cache/enet/pendentes.txt   # baixa essas versões (só consolidado)
 python -m chiocca.montar_base         # monta de novo, agora com as versões do ENET
 python -m chiocca.relatorio_base      # gera docs/base.md e docs/en/base.md
+python -m chiocca.sinais_amostra      # sinais e alertas de todas as empresa-anos, em resultados/ (fora do git)
+python -m chiocca.relatorio_resultados  # gera docs/resultados.md e docs/en/results.md
 python -m pytest                      # testes sem rede
 ```
 
@@ -181,16 +187,18 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 
 ### Project status
 
-**Phase 1: point-in-time base.** The signals have not been computed on real data yet.
+**Phase 2: first-version signals computed on the whole sample, point-in-time, with the pre-registered metrics.** The figures, including the ground truth case by case and the comparison with the naive baseline rule, are in [`docs/en/results.md`](docs/en/results.md). The next phases depend on authorization.
 
 | Done | Roadmap |
 | --- | --- |
-| Catalog of 16 signals, in PT and EN, with formulas and references | First-version signals on real data (Phase 2) |
+| Catalog of 16 signals, in PT and EN, with formulas and references | Two readings of Americanas, robustness test with neutral values and the amendment 5 secondary analysis |
 | Expanded ground truth and cases under observation, with sources and notes in PT and EN | |
 | Reconnaissance of the CVM data ([`docs/en/reconnaissance.md`](docs/en/reconnaissance.md)) | |
 | Download with hash checks and point-in-time base ([`docs/en/base.md`](docs/en/base.md)) | |
 | First-version signal formulas, checked by the reference test | |
-| PT↔EN glossary of accounting and study terms | Evaluation as set in the pre-registration |
+| Signals and alerts on the whole sample and pre-registered metrics ([`docs/en/results.md`](docs/en/results.md)) | |
+| Banco Central CDI rate (SGS 4389) with a recorded source ([`docs/en/sources.md`](docs/en/sources.md)) | |
+| PT↔EN glossary of accounting and study terms | |
 | Study pre-registration | Alert sheet and one-page summary, in PT and EN |
 | Worked example with expected values (reference test) | |
 | Build specification for the coding agent ([`PROMPT.md`](PROMPT.md)) | Next phases: auditor signals, non-recurring gains from the notes to the financial statements, cash yield, dividends above free cash flow, F-score and stock-return test |
@@ -207,6 +215,8 @@ chiocca/                  code: download, point-in-time base, signals and evalua
 tests/                    offline tests, including the reference test
 docs/en/reconnaissance.md  reconnaissance of the CVM data (Phase 0) and ground-truth review
 docs/en/base.md           point-in-time base figures, generated by script
+docs/en/results.md        signals, alerts and pre-registered metrics, generated by script
+data/cdi_sgs4389.csv      daily CDI rate from Banco Central (SGS 4389), versioned snapshot
 data/exemplo_resolvido.json  fictitious company with expected values (reference test)
 docs/pre-registro.md      study decisions, signed before the data
 PROMPT.md                 build specification for the coding agent
@@ -222,6 +232,8 @@ python -m chiocca.montar_base         # builds the base and lists the point-in-t
 python -m chiocca.enet data/cache/enet/pendentes.txt   # downloads those versions (consolidated only)
 python -m chiocca.montar_base         # builds again, now with the ENET versions
 python -m chiocca.relatorio_base      # generates docs/base.md and docs/en/base.md
+python -m chiocca.sinais_amostra      # signals and alerts for every company-year, in resultados/ (not in git)
+python -m chiocca.relatorio_resultados  # generates docs/resultados.md and docs/en/results.md
 python -m pytest                      # offline tests
 ```
 
