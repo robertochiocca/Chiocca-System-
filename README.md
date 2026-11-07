@@ -55,7 +55,7 @@ Fórmulas, contas da DFP e referências de cada sinal, inclusive os das próxima
 
 ### Casos de referência
 
-O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos reais, cada um com o período afetado, a data em que veio a público e a fonte. Começa com dois:
+O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos reais, cada um com o período afetado, a data em que veio a público, a fonte e se o caso é acertável na análise principal. Ele foi ampliado pelas emendas 6 a 9 do pré-registro com processos sancionadores da CVM; casos sem decisão final ficam em [`data/casos_em_observacao.csv`](data/casos_em_observacao.csv). Os dois casos de partida:
 
 - **Americanas (2023):** revelado por dentro. O Comitê Independente confirmou contratos fictícios de verba de propaganda e operações de risco sacado lançadas em "fornecedores" ([fato relevante de 16/07/2024](https://api.mziq.com/mzfilemanager/v2/d/347dba24-05d2-479e-a775-2ea8677c50f2/fbd1eb14-1e3f-f8ef-ecc5-f49db62d1b04?origin=1)).
 - **IRB Brasil (2020):** revelado de fora, pela tese de uma gestora de que o lucro recorrente era menor que o contábil ([InfoMoney](https://www.infomoney.com.br/?p=1397142)). Como é resseguradora, fica fora do M-score, que não se aplica a empresas financeiras, e é avaliado pelo peso de ganhos não recorrentes.
@@ -71,12 +71,15 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 
 ### Estado do projeto
 
-**Fase 0: fundação.** Ainda não há código de cálculo.
+**Fase 1: base "como era na época".** Os sinais ainda não foram calculados com dados reais.
 
 | Implementado | Roadmap |
 | --- | --- |
-| Catálogo de 16 sinais, em PT e EN, com fórmulas e referências | Base "como era na época" com os dados da CVM |
-| Gabarito inicial com 2 casos e fontes, notas em PT e EN | Sinais da primeira versão, com testes |
+| Catálogo de 16 sinais, em PT e EN, com fórmulas e referências | Sinais da primeira versão nos dados reais (Fase 2) |
+| Gabarito ampliado e casos em observação, com fontes e notas em PT e EN | |
+| Reconhecimento dos dados da CVM ([`docs/reconhecimento.md`](docs/reconhecimento.md)) | |
+| Download com verificação por hash e base "como era na época" ([`docs/base.md`](docs/base.md)) | |
+| Fórmulas dos sinais da primeira versão, conferidas pelo teste de referência | |
 | Glossário PT↔EN dos termos contábeis e do estudo | Avaliação conforme o pré-registro |
 | Pré-registro do estudo | Ficha de alerta e resumo de uma página, em PT e EN |
 | Exemplo resolvido com valores esperados (teste de referência) | |
@@ -87,10 +90,29 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 ```
 catalogo_sinais.yaml      sinais: fórmula, contas da DFP, referências, fase (PT e EN)
 glossario_pt_en.yaml      termos contábeis e do estudo, PT ↔ EN
-data/gabarito_casos.csv   casos reais com datas, fontes e notas (PT e EN)
+data/gabarito_casos.csv   casos reais com datas, fontes, notas (PT e EN) e se são acertáveis
+data/casos_em_observacao.csv  casos sem decisão final ou de fronteira (emenda 8)
+data/manifesto_brutos.csv  URL, tamanho e SHA256 de cada arquivo baixado da CVM
+chiocca/                  código: download, base "como era na época", sinais e avaliação
+tests/                    testes sem rede, inclusive o teste de referência
+docs/reconhecimento.md    reconhecimento dos dados da CVM (Fase 0) e revisão do gabarito
+docs/base.md              números da base "como era na época", gerados por script
 data/exemplo_resolvido.json  empresa fictícia com valores esperados (teste de referência)
 docs/pre-registro.md      decisões do estudo, assinadas antes dos dados
 PROMPT.md                 especificação de construção para o agente de código
+```
+
+### Como reproduzir
+
+```
+python -m pip install pandas numpy pytest
+python -m chiocca.dados baixar        # baixa DFP, FCA e cadastro da CVM para data/brutos/ e grava o manifesto
+python -m chiocca.dados verificar     # confere os arquivos contra os hashes do manifesto
+python -m chiocca.montar_base         # monta a base e lista as versões da época que precisam do ENET
+python -m chiocca.enet data/cache/enet/pendentes.txt   # baixa essas versões (só consolidado)
+python -m chiocca.montar_base         # monta de novo, agora com as versões do ENET
+python -m chiocca.relatorio_base      # gera docs/base.md e docs/en/base.md
+python -m pytest                      # testes sem rede
 ```
 
 ### Referências
@@ -143,7 +165,7 @@ Formulas, DFP accounts and references for each signal, including later phases, a
 
 ### Reference cases
 
-The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds real cases, each with the affected period, the date it became public and the source. It starts with two:
+The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds real cases, each with the affected period, the date it became public, the source and whether the case is detectable in the main analysis. Amendments 6 to 9 of the pre-registration expanded it with CVM sanctioning proceedings; cases without a final decision are kept in [`data/casos_em_observacao.csv`](data/casos_em_observacao.csv). The two starting cases:
 
 - **Americanas (2023):** revealed from the inside. The Independent Committee confirmed fictitious cooperative advertising allowances and supplier-finance operations booked as trade payables ([material fact notice of 2024-07-16](https://api.mziq.com/mzfilemanager/v2/d/347dba24-05d2-479e-a775-2ea8677c50f2/fbd1eb14-1e3f-f8ef-ecc5-f49db62d1b04?origin=1), in Portuguese).
 - **IRB Brasil (2020):** revealed from the outside, by an asset manager's thesis that recurring profit was lower than reported profit ([InfoMoney](https://www.infomoney.com.br/?p=1397142), in Portuguese). As a reinsurer, it is excluded from the M-score, which does not apply to financial companies, and is assessed by the share of non-recurring gains.
@@ -159,12 +181,15 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 
 ### Project status
 
-**Phase 0: foundation.** There is no calculation code yet.
+**Phase 1: point-in-time base.** The signals have not been computed on real data yet.
 
 | Done | Roadmap |
 | --- | --- |
-| Catalog of 16 signals, in PT and EN, with formulas and references | Point-in-time base from CVM data |
-| Initial ground truth with 2 sourced cases, notes in PT and EN | First-version signals, with tests |
+| Catalog of 16 signals, in PT and EN, with formulas and references | First-version signals on real data (Phase 2) |
+| Expanded ground truth and cases under observation, with sources and notes in PT and EN | |
+| Reconnaissance of the CVM data ([`docs/en/reconnaissance.md`](docs/en/reconnaissance.md)) | |
+| Download with hash checks and point-in-time base ([`docs/en/base.md`](docs/en/base.md)) | |
+| First-version signal formulas, checked by the reference test | |
 | PT↔EN glossary of accounting and study terms | Evaluation as set in the pre-registration |
 | Study pre-registration | Alert sheet and one-page summary, in PT and EN |
 | Worked example with expected values (reference test) | |
@@ -175,10 +200,29 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 ```
 catalogo_sinais.yaml      signals: formula, DFP accounts, references, phase (PT and EN)
 glossario_pt_en.yaml      accounting and study terms, PT ↔ EN
-data/gabarito_casos.csv   real cases with dates, sources and notes (PT and EN)
+data/gabarito_casos.csv   real cases with dates, sources, notes (PT and EN) and detectability
+data/casos_em_observacao.csv  cases without a final decision or borderline (amendment 8)
+data/manifesto_brutos.csv  URL, size and SHA256 of each file downloaded from the CVM
+chiocca/                  code: download, point-in-time base, signals and evaluation
+tests/                    offline tests, including the reference test
+docs/en/reconnaissance.md  reconnaissance of the CVM data (Phase 0) and ground-truth review
+docs/en/base.md           point-in-time base figures, generated by script
 data/exemplo_resolvido.json  fictitious company with expected values (reference test)
 docs/pre-registro.md      study decisions, signed before the data
 PROMPT.md                 build specification for the coding agent
+```
+
+### How to reproduce
+
+```
+python -m pip install pandas numpy pytest
+python -m chiocca.dados baixar        # downloads CVM DFP, FCA and registry files to data/brutos/ and writes the manifest
+python -m chiocca.dados verificar     # checks the files against the manifest hashes
+python -m chiocca.montar_base         # builds the base and lists the point-in-time versions that need ENET
+python -m chiocca.enet data/cache/enet/pendentes.txt   # downloads those versions (consolidated only)
+python -m chiocca.montar_base         # builds again, now with the ENET versions
+python -m chiocca.relatorio_base      # generates docs/base.md and docs/en/base.md
+python -m pytest                      # offline tests
 ```
 
 ### References

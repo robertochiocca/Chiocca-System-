@@ -166,3 +166,9 @@ Other sources used:
 - Tables: `https://www.rad.cvm.gov.br/ENET/frmDemonstracaoFinanceiraITR.aspx?...`, with the address taken from the filing page and that page as the Referer.
 - Parameters: `Demonstracao` (2 balance sheet assets, 3 liabilities, 4 income statement, 99 cash flow) and `Informacao` (2 consolidated, 1 individual).
 - Consulted on 2026-11-06, around 17:50 UTC, with `scripts/fase0/enet_html.py`. Filings of the 2023 DFPs of codes 27499, 27766 and 20125, and IRB's (24180) 2019 DFP, version 1, for row counts only.
+
+## 2026-11-07 · Phase 1: download and point-in-time base
+
+- **CVM open data:** annual DFP from 2010 to 2026, FCA from 2010 to 2026, the listed-company registry and the DFP, FCA and registry dictionaries, downloaded by `python -m chiocca.dados baixar` on 2026-11-07. URL, size, SHA256 and time of each file are in [`data/manifesto_brutos.csv`](../../data/manifesto_brutos.csv). Compared with the Phase 0 download (2026-11-05), only the registry changed.
+- **FCA dictionary:** `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/META/fca_cia_aberta.zip`.
+- **ENET, HTML route (consolidated only, amendment 8):** `https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=<n>&CodigoTipoInstituicao=2` and the tables in `frmDemonstracaoFinanceiraITR.aspx`, consulted on 2026-11-07 by `python -m chiocca.enet`. The list of filings is in `data/cache/enet/pendentes.txt` and the tables in `data/cache/enet/` (outside git). How many filings and the outcome are in [`base.md`](base.md).

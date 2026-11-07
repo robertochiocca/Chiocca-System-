@@ -164,3 +164,9 @@ Outras fontes usadas:
 - Tabelas: `https://www.rad.cvm.gov.br/ENET/frmDemonstracaoFinanceiraITR.aspx?...`, com o endereço tirado da página do documento e o Referer dessa página.
 - Parâmetros: `Demonstracao` (2 BPA, 3 BPP, 4 DRE, 99 DFC) e `Informacao` (2 consolidado, 1 individual).
 - Consulta em 06/11/2026, por volta das 17h50 UTC, com `scripts/fase0/enet_html.py`. Documentos das DFPs de 2023 dos códigos 27499, 27766 e 20125, e da DFP de 2019 do IRB (24180), versão 1, só para contagem de linhas.
+
+## 07/11/2026 · Fase 1: download e base "como era na época"
+
+- **Dados abertos da CVM:** DFP anual de 2010 a 2026, FCA de 2010 a 2026, cadastro de companhias abertas e os dicionários da DFP, do FCA e do cadastro, baixados por `python -m chiocca.dados baixar` em 07/11/2026. URL, tamanho, SHA256 e hora de cada arquivo estão em [`data/manifesto_brutos.csv`](../data/manifesto_brutos.csv). Em relação ao download da Fase 0 (05/11/2026), só o cadastro mudou.
+- **Dicionário do FCA:** `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/META/fca_cia_aberta.zip`.
+- **ENET, rota HTML (só consolidado, emenda 8):** `https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=<n>&CodigoTipoInstituicao=2` e as tabelas em `frmDemonstracaoFinanceiraITR.aspx`, consultadas em 07/11/2026 por `python -m chiocca.enet`. A lista de documentos fica em `data/cache/enet/pendentes.txt` e as tabelas em `data/cache/enet/` (fora do git). Quantos documentos e o resultado estão em [`base.md`](base.md).
