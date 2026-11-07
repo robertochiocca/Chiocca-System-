@@ -94,6 +94,8 @@ def test_dfc_pelo_metodo_direto() -> None:
     assert v.metodo_dfc(c) == "DFC_MD"
     assert t.valores["depreciacao"] is None  # sem linha de depreciação: DEPI não calculável
     assert t.valores["caixa_operacional"] == 105.0
+    t1 = v.le_ordem(c, P)  # sem nenhuma linha da DFC nessa ordem
+    assert t1.valores["depreciacao"] is None and t1.valores["caixa_operacional"] is None
 
 
 def test_padroes_ignoram_maiusculas_acentos_e_espacos() -> None:

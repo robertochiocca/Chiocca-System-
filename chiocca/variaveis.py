@@ -113,9 +113,12 @@ class LinhasDFC:
 def linhas_dfc(dfc: pd.DataFrame, padrao: Padrao, secoes: tuple[str, ...] | None = None) -> LinhasDFC:
     """Linhas de uma DFC (uma ordem só) que casam com o padrão; `secoes` restringe a parte delas."""
     alvo = padrao.secoes if secoes is None else secoes
-    casadas = dfc[[na_secao(c, padrao.secoes) and casa(d, padrao) for c, d in zip(dfc.cd_conta, dfc.ds_conta)]]
+    mascara = [na_secao(c, padrao.secoes) and casa(d, padrao) for c, d in zip(dfc.cd_conta, dfc.ds_conta)]
+    casadas = dfc[pd.Series(mascara, index=dfc.index, dtype=bool)]
     topo = set(so_no_topo(list(casadas.cd_conta)))
-    escolhidas = casadas[[c in topo and na_secao(c, alvo) for c in casadas.cd_conta]]
+    escolhidas = casadas[
+        pd.Series([c in topo and na_secao(c, alvo) for c in casadas.cd_conta], index=casadas.index, dtype=bool)
+    ]
     if escolhidas.empty:
         return LinhasDFC(None)
     return LinhasDFC(float(escolhidas.valor.sum()), tuple(escolhidas.cd_conta), tuple(escolhidas.ds_conta))
