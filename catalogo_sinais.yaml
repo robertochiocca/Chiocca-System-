@@ -1,0 +1,382 @@
+# Catálogo de sinais do detector de alertas contábeis.
+# Signal catalog of the accounting-alert detector (bilingual: PT-BR + EN).
+#
+# Projeto bilíngue: todo sinal tem nome e descrição em português e em inglês
+# (nome / nome_en, o_que_mede / o_que_mede_en). Sinal novo só entra com os dois.
+#
+# Fonte única de verdade: o código lê este arquivo e a documentação é GERADA
+# a partir dele. Ninguém digita a tabela de sinais à mão em outro lugar.
+#
+# Referências ao livro: Schilit, Perler e Engelhart, "Financial Shenanigans",
+# 4ª ed. (McGraw Hill, 2018). "pdf_pp" é a numeração do ARQUIVO PDF local do
+# Roberto, não a do livro impresso. O livro é referência de estudo: cite
+# capítulo e página, nunca copie trechos para o repositório. O guia de leitura
+# do dossiê (seção 3) diz onde ler sobre cada sinal nos outros livros e artigos.
+#
+# Códigos de conta: são os usuais da DFP para empresas NÃO financeiras. Foram
+# escritos de memória e PRECISAM ser confirmados no dicionário de dados e nos
+# próprios arquivos da CVM antes do primeiro uso (Fase 0 do PROMPT.md).
+# Despesas aparecem com sinal negativo na DFP: trate o sinal explicitamente.
+#
+# fase: mvp | fase_2 | fase_3 | manual
+#   mvp     -> entra na primeira versão
+#   fase_2  -> depois que o MVP tiver resultado
+#   fase_3  -> exploratório
+#   manual  -> não sai de dado estruturado; exige leitura de documento
+
+versao_catalogo: 3  # v3: peso_nao_recorrente entra no mvp, só para financeiras (pré-registro, Emenda 2)
+# v2: LVGI e DEPI conforme Beneish (1999); F-score com coeficientes; 4 sinais novos
+
+contas_dfp_a_confirmar:
+  ativo_total: "1"
+  ativo_circulante: "1.01"
+  caixa_equivalentes: "1.01.01"
+  aplicacoes_financeiras: "1.01.02"
+  contas_a_receber: "1.01.03"
+  estoques: "1.01.04"
+  ativo_nao_circulante: "1.02"
+  investimentos: "1.02.02"
+  imobilizado: "1.02.03"
+  intangivel: "1.02.04"
+  passivo_circulante: "2.01"
+  fornecedores: "2.01.02"
+  ir_csll_a_pagar: "2.01.03 (subconta de IR e CSLL, localizar por texto)"
+  emprestimos_cp: "2.01.04"
+  passivo_nao_circulante: "2.02"
+  emprestimos_lp: "2.02.01"
+  patrimonio_liquido: "2.03"
+  receita_liquida: "3.01"
+  custo_vendas: "3.02"
+  resultado_bruto: "3.03"
+  despesas_vendas: "3.04.01"
+  despesas_gerais_adm: "3.04.02"
+  outras_receitas_operacionais: "3.04.04"
+  ebit: "3.05"
+  receitas_financeiras: "3.06.01"
+  despesas_financeiras: "3.06.02"
+  ir_csll_corrente: "3.08.01"
+  lucro_operacoes_continuadas: "3.09"
+  lucro_liquido: "3.11"
+  caixa_operacional: "6.01"
+  # Sem código fixo, localizar por texto em DS_CONTA e registrar cada falha:
+  #   depreciacao      -> subcontas de 6.01.01 ("deprecia"). O M-score usa só
+  #                       depreciação; se a DFC trouxer "depreciação e amortização"
+  #                       numa linha só, usar o total e marcar a empresa-ano.
+  #   juros_pagos      -> 6.01 ou 6.03 ("juros pagos"); a empresa escolhe a seção
+  #                       (CPC 03). Padronizar antes de comparar caixa operacional.
+  #   capex            -> 6.02 ("aquisição de imobilizado", "intangível").
+  #   dividendos_pagos -> 6.03 ("dividendos", "juros sobre o capital próprio").
+  #   ir_csll_pagos    -> 6.01 ("imposto de renda e contribuição social pagos").
+  #   emissao_titulos  -> 6.03 ("captação", "emissão de ações", "debêntures").
+
+sinais:
+
+  - id: mscore_beneish
+    nome: "M-score de Beneish (8 variáveis)"
+    nome_en: "Beneish M-score (8 variables)"
+    o_que_mede_en: "Probability of earnings manipulation from eight indices that compare year t with year t-1."
+    fase: mvp
+    o_que_mede: >
+      Probabilidade de manipulação de resultados a partir de oito índices que
+      comparam o ano t com o ano t-1.
+    referencia_academica: "Beneish (1999), Financial Analysts Journal 55(5); Beneish, Lee e Nichols (2013), FAJ 69(2)"
+    livro:
+      capitulos: [3, 4, 6, 7, 12]
+      nota: >
+        Não está no livro como fórmula; cada componente corresponde a uma
+        família de truques (receita antecipada, despesa empurrada, caixa
+        inflado).
+    formula: >
+      M = -4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI
+          + 0.115*DEPI - 0.172*SGAI + 4.679*TATA - 0.327*LVGI
+    componentes:
+      DSRI: "(contas_a_receber_t / receita_liquida_t) / (contas_a_receber_t-1 / receita_liquida_t-1), com saldos finais"
+      GMI: "margem_bruta_t-1 / margem_bruta_t, com margem = resultado_bruto / receita_liquida"
+      AQI: "[1 - (ativo_circulante_t + imobilizado_t) / ativo_total_t] / [mesmo em t-1]"
+      SGI: "receita_liquida_t / receita_liquida_t-1"
+      DEPI: "taxa_dep_t-1 / taxa_dep_t, com taxa = depreciacao / (depreciacao + imobilizado); só depreciação, sem amortização de intangíveis"
+      SGAI: "(|desp_vendas_t| + |desp_gerais_adm_t|) / receita_liquida_t, dividido pelo mesmo em t-1"
+      TATA: "padrão (fluxo de caixa, Beneish, Lee e Nichols 2013): (lucro_operacoes_continuadas_t - caixa_operacional_t) / ativo_total_t"
+      TATA_balanco: "alternativa (Beneish 1999): [dAC - dCaixa e aplicações - (dPC - dEmpréstimos CP - dIR e CSLL a pagar) - depreciacao] / ativo_total_t"
+      LVGI: "[(passivo_circulante_t + emprestimos_lp_t) / ativo_total_t] / [mesmo em t-1] (Beneish 1999: passivo circulante + dívida de longo prazo)"
+    corte: "definido no pre-registro (-1.78 ou -2.22), nunca depois de ver os dados"
+    valores_neutros: >
+      O artigo de 1999 usa AQI = 1 quando o denominador é zero e DEPI = SGAI = 1
+      quando falta dado, e apara as variáveis em 1% e 99%. O padrão do projeto
+      é "não calculável"; a alternativa do artigo roda como robustez. A escolha
+      vai para o pré-registro.
+    cuidados: >
+      (1) CPC 06 (R2) a partir de 2019 coloca arrendamentos no balanço: ativo,
+      dívida, depreciação e juros sobem sem fraude, o que mexe em AQI, DEPI e
+      LVGI no ano da adoção. (2) Juros pagos podem estar no caixa operacional
+      ou no de financiamento (CPC 03): padronizar antes de calcular TATA.
+      (3) Risco sacado mantido em Fornecedores não entra no LVGI; somar quando
+      a nota explicativa permitir.
+    previsao_americanas: >
+      A VPC fictícia aumentou a margem bruta, o que reduz o GMI (vai contra o
+      alerta). AQI e TATA são os componentes com mais chance de disparar.
+      Registrar esta previsão no pré-registro antes de calcular.
+    exclui: [financeiras]
+    casos_br: [americanas]
+
+  - id: dpo_salto
+    nome: "Salto no prazo médio de pagamento a fornecedores"
+    nome_en: "Jump in days payable outstanding"
+    o_que_mede_en: "Days payable outstanding (DPO) rising sharply year over year or far above peers. Paying suppliers later inflates operating cash flow in a non-recurring way. When a bank pays the supplier and the company repays the bank later, the obligation is bank debt; kept under trade payables, it hides borrowing."
+    fase: mvp
+    o_que_mede: >
+      Dias de fornecedores (DPO) subindo muito de um ano para o outro ou bem
+      acima dos pares. Pagar fornecedor mais tarde infla o caixa operacional de
+      forma não recorrente. Quando um banco paga o fornecedor e a empresa paga
+      o banco depois, a obrigação é dívida bancária; mantida em "Fornecedores",
+      ela esconde endividamento.
+    livro:
+      capitulos: [12, 14]
+      pdf_pp: "168-185; 203-219"
+      nota: "Capítulo 12: alongamento de pagamentos e financiamento de fornecedores via banco. Capítulo 14: métricas de balanço maquiadas."
+    norma: "Ofício-Circular CVM/SNC/SEP 01/2017 (risco sacado como passivo oneroso) e 01/2018 (forfait), descritos no Manual FIPECAFI, pp. 1032-1033 e 253 do PDF"
+    formula: "DPO_t = fornecedores_t / |custo_vendas_t| * 365; sinal = DPO_t - DPO_t-1 e DPO_t vs mediana do setor"
+    regra_de_alerta: "definida no pre-registro (ex.: variação no decil superior do ano)"
+    observacao: >
+      Na Americanas, lançamentos em sentidos opostos dentro de Fornecedores (VPC
+      reduzindo, risco sacado aumentando) podem ter deixado o DPO estável. Medir,
+      não supor.
+    exclui: [financeiras]
+    casos_br: [americanas]
+
+  - id: juro_implicito
+    nome: "Juro implícito sobre a dívida declarada"
+    nome_en: "Implied interest on reported debt"
+    o_que_mede_en: "Finance costs divided by average bank borrowings. Far above the market rate for the year, it suggests part of the financing sits outside the borrowings line. A HYPOTHESIS to test, not a rule: finance costs also include lease interest, receivables discounting and FX losses."
+    fase: mvp
+    o_que_mede: >
+      Despesa financeira dividida pela dívida bancária média. Muito acima da
+      taxa de mercado do ano, sugere que parte do financiamento está fora da
+      linha de empréstimos. É HIPÓTESE a testar, não regra: despesa financeira
+      também inclui juros de arrendamento, desconto de recebíveis e variação
+      cambial.
+    livro:
+      capitulos: [10, 12]
+      pdf_pp: "142-155; 168-185"
+      nota: "Capítulos 10 e 12: financiamento que aparece fora da seção de financiamento."
+    formula: "|despesas_financeiras_t| / media(emprestimos_cp + emprestimos_lp, t e t-1); comparar com CDI médio do ano"
+    dependencia: "série do CDI com procedência registrada (reaproveitar o módulo de CDI da Calahonda, se existir)"
+    regra_de_alerta: "definida no pre-registro (ex.: juro implícito > CDI médio + X p.p.)"
+    observacao: >
+      Só funciona se os juros escondidos passarem pela despesa financeira. Na
+      Americanas, parte dos juros foi abatida de Fornecedores (R$ 915 mi
+      reclassificados para 2021); no forfait, o juro fica no custo do estoque.
+      Nos dois casos este sinal não pega.
+    exclui: [financeiras]
+    casos_br: [americanas]
+
+  - id: rendimento_caixa
+    nome: "Rendimento do caixa abaixo do mercado"
+    nome_en: "Cash yield below market rates"
+    o_que_mede_en: "Finance income divided by average cash and short-term investments, compared with the CDI rate. A large cash balance that earns far less than the market rate may be restricted, held by third parties or not exist. A HYPOTHESIS to test: finance income also includes interest from customers and FX gains, and companies hold some cash in non-interest accounts."
+    fase: fase_2
+    o_que_mede: >
+      Receita financeira dividida pelo caixa e aplicações médios, comparada ao
+      CDI. Caixa grande que rende muito abaixo do mercado pode estar
+      bloqueado, nas mãos de terceiros ou não existir. É HIPÓTESE a testar:
+      receita financeira também inclui juros de clientes e variação cambial, e
+      parte do caixa fica em contas sem remuneração.
+    origem: "Money Men (Wirecard: € 1,9 bi em contas fiduciárias que não existiam); Americanas (empréstimos no fim do trimestre para inflar o caixa)"
+    formula: "receitas_financeiras_t / media(caixa_equivalentes + aplicacoes_financeiras, t e t-1); comparar com CDI médio do ano"
+    regra_de_alerta: "definida no pre-registro (ex.: rendimento < CDI - X p.p. com caixa > Y% do ativo)"
+    exclui: [financeiras]
+    casos_br: [americanas]
+
+  - id: lucro_sem_caixa
+    nome: "Lucro que não vira caixa (accruals)"
+    nome_en: "Earnings not backed by cash (accruals)"
+    o_que_mede_en: "Gap between net income and operating cash flow. Already part of the M-score through TATA; shown on its own in the alert sheet."
+    fase: mvp
+    o_que_mede: "Diferença entre lucro e caixa operacional. Já entra no M-score via TATA; aqui aparece sozinho na ficha de alerta."
+    referencia_academica: "Sloan (1996), The Accounting Review"
+    livro:
+      capitulos: [7]
+      pdf_pp: "100-112"
+      nota: "Capítulo 7: créditos de fornecedor que geram lucro sem caixa."
+    formula: "(lucro_liquido_t - caixa_operacional_t) / media(ativo_total, t e t-1)"
+    exclui: [financeiras]
+    casos_br: [americanas]
+
+  - id: verbas_fornecedor
+    nome: "Margem bruta subindo sem caixa (verbas e descontos de fornecedor)"
+    nome_en: "Gross margin rising without cash (vendor allowances and rebates)"
+    o_que_mede_en: "Vendor rebates or allowances lower cost and raise gross margin. Fictitious allowances show up as margin above peers with no matching cash. The detail is in the notes to the financial statements."
+    fase: fase_2
+    o_que_mede: >
+      Descontos ou verbas de fornecedores reduzem o custo e aumentam a margem.
+      Verbas fictícias aparecem como margem acima dos pares sem caixa
+      correspondente. O detalhe está nas notas explicativas.
+    livro:
+      capitulos: [4, 7]
+      pdf_pp: "56-68; 100-112"
+      nota: "Capítulo 4: descontos de fornecedor tratados como receita; capítulo 7: descontos simulados que reduzem despesa."
+    norma: "CPC 16 (custo do estoque líquido de descontos e abatimentos; Manual FIPECAFI, p. 250 do PDF); CPC 47 item 70 do lado do fornecedor"
+    formula: "variação da margem bruta vs mediana do setor, cruzada com variação de caixa_operacional / receita_liquida"
+    exclui: [financeiras]
+    casos_br: [americanas]
+
+  - id: peso_nao_recorrente
+    nome: "Peso de ganhos não recorrentes no resultado"
+    nome_en: "Share of non-recurring gains in profit"
+    o_que_mede_en: "How much of the result comes from one-off gains presented as if they were part of the business, including reversals of provisions."
+    fase: mvp
+    aplica_a: [financeiras]  # pré-registro: no estudo principal, só o grupo das financeiras
+    o_que_mede: "Quanto do resultado vem de ganhos pontuais apresentados como se fossem do negócio, inclusive reversões de provisão."
+    livro:
+      capitulos: [5, 9]
+      pdf_pp: "69-80; 123-141"
+      nota: "Capítulo 5: resultado inflado com atividades pontuais; capítulo 9: reservas criadas e depois revertidas."
+    formula: "proxy para não financeiras (fora do estudo principal): outras_receitas_operacionais_t / |ebit_t|; versão completa exige ler notas explicativas"
+    formula_financeiras: >
+      Pré-registro, Emenda 2. Localizar as linhas por TEXTO em DS_CONTA, não
+      por código (bancos e seguradoras usam outro plano de contas na DFP).
+      Numerador: soma das linhas da DRE cujo DS_CONTA contém "outras receitas
+      operacionais" (sem diferenciar maiúsculas e acentos), só a parte
+      positiva. Denominador: valor absoluto da linha "resultado antes dos
+      tributos sobre o lucro". Se alguma das duas não for encontrada, "não
+      calculável", e a falha entra no relatório.
+    regra_de_alerta: "definida no pre-registro (proporção no decil superior do ano dentro do grupo das financeiras)"
+    casos_br: [irb]
+    observacao: "No IRB (seguradora/resseguradora) o M-score não se aplica; este é o sinal relevante."
+
+  - id: dividendos_sem_caixa
+    nome: "Dividendos acima do fluxo de caixa livre"
+    nome_en: "Dividends above free cash flow"
+    o_que_mede_en: "Dividends and interest on equity paid compared with free cash flow (operating cash flow minus capex). Paying out more than the business generates, year after year, with new debt or equity covering the gap, is what Allied Capital did; at Americanas, inflated profit supported the payout."
+    fase: fase_2
+    o_que_mede: >
+      Dividendos e juros sobre capital próprio pagos comparados ao fluxo de
+      caixa livre (caixa operacional menos investimento em imobilizado e
+      intangível). Distribuir mais do que o negócio gera, ano após ano, com
+      dívida ou emissão cobrindo a diferença, é o que a Allied Capital fazia; na
+      Americanas, o lucro inflado sustentava o dividendo.
+    origem: "Einhorn, caps. 6 e 32; caso FGV da Americanas"
+    formula: "|dividendos_pagos_t| / (caixa_operacional_t - |capex_t|); se o fluxo livre for <= 0 com dividendo pago, marcar sem calcular a razão"
+    regra_de_alerta: "definida no pre-registro (ex.: cobertura > 1 em 2 de 3 anos)"
+    exclui: [financeiras]
+    casos_br: [americanas]
+
+  - id: parecer_auditoria
+    nome: "Ressalva, abstenção de opinião ou troca de auditor"
+    nome_en: "Qualified opinion, disclaimer of opinion or auditor change"
+    o_que_mede_en: "Auditor signals. In the Brazilian M-score study of the power sector, two companies with a disclaimer of opinion had low M-scores (false negatives). A clean opinion proves nothing (Wirecard had clean opinions for a decade); changes in the wording of the opinion and special audits do count."
+    fase: fase_2
+    o_que_mede: >
+      Sinais do auditor. No artigo brasileiro de M-score do setor elétrico, duas
+      empresas com abstenção de opinião tiveram M-score baixo (falsos negativos).
+      Parecer limpo não prova nada (a Wirecard teve pareceres limpos por dez
+      anos); mudança na redação do parecer e auditoria especial contam.
+    fonte_dados: "seção de pareceres da DFP e auditor informado no Formulário de Referência (confirmar campos); honorários de outros serviços sobre honorários de auditoria, também no Formulário de Referência"
+    referencia_academica: "Alves e Oliveira, Congresso USP (M-score no setor elétrico)"
+    casos_br: []
+
+  - id: atraso_entrega
+    nome: "Atraso na entrega das demonstrações"
+    nome_en: "Late filing of financial statements"
+    o_que_mede_en: "Financial statements filed after the deadline or refiled many times. Wirecard postponed its 2019 annual report several times before collapsing."
+    fase: fase_2
+    o_que_mede: "Demonstração entregue depois do prazo ou reentregue muitas vezes. A Wirecard adiou o balanço de 2019 várias vezes antes de quebrar."
+    fonte_dados: "data de recebimento e versão do documento na base da CVM (confirmar se o campo existe)"
+    casos_br: []
+
+  - id: swing_caixa_operacional
+    nome: "Caixa operacional puxado por capital de giro"
+    nome_en: "Operating cash flow driven by working capital"
+    o_que_mede_en: "Operating cash flow growth that comes from payables and inventories, not from sales. Acquisitions can also lift operating cash flow, because the price goes to investing while the acquired working capital is collected as operating cash."
+    fase: fase_2
+    o_que_mede: >
+      Crescimento do caixa operacional que vem de fornecedores e estoques, não de
+      vendas. Aquisições também podem inflar o caixa operacional: o preço sai no
+      investimento e o capital de giro comprado entra como operacional.
+    livro:
+      capitulos: [12, 16]
+      pdf_pp: "168-185; 229-241"
+    formula: "participação das variações de fornecedores e estoques (subcontas de 6.01.02, por texto) na variação de 6.01; ver também caixa livre depois de aquisições"
+    casos_br: [americanas]
+
+  - id: fscore_dechow
+    nome: "F-score de Dechow et al."
+    nome_en: "Dechow et al. F-score"
+    o_que_mede_en: "Probability of a material misstatement (logit, Model 1), estimated on cases sanctioned by the SEC from 1982 to 2005, divided by the unconditional probability 0.0037. Needs recalibration for Brazil."
+    fase: fase_2
+    referencia_academica: "Dechow, Ge, Larson e Sloan (2011), Contemporary Accounting Research (Tabela 7 da versão de trabalho)"
+    o_que_mede: >
+      Probabilidade de distorção relevante (logit, Modelo 1), estimada com casos
+      punidos pela SEC de 1982 a 2005, dividida pela probabilidade incondicional
+      de 0,0037. Exige recalibrar para o Brasil.
+    formula: >
+      v = -7.893 + 0.790*rsst_acc + 2.518*ch_rec + 1.191*ch_inv + 1.979*soft_assets
+          + 0.171*ch_cs - 0.932*ch_roa + 1.029*issue;
+      p = exp(v) / (1 + exp(v)); F = p / 0.0037
+    componentes:
+      rsst_acc: "(dWC + dNCO + dFIN) / ativo médio; WC = (AC - caixa e aplicações) - (PC - empréstimos CP); NCO = (AT - AC - investimentos) - (passivo total - PC - empréstimos LP); FIN = (aplicações + investimentos) - (empréstimos LP + empréstimos CP)"
+      ch_rec: "variação de contas_a_receber / ativo médio"
+      ch_inv: "variação de estoques / ativo médio"
+      soft_assets: "(ativo_total - imobilizado - caixa e aplicações) / ativo_total"
+      ch_cs: "variação % das vendas em caixa, com vendas em caixa = receita - variação de contas_a_receber"
+      ch_roa: "lucro_liquido_t / ativo médio_t - lucro_liquido_t-1 / ativo médio_t-1"
+      issue: "1 se houve emissão de ações ou dívida no ano, senão 0"
+    corte: "F > 1 (pega 68,6% e sinaliza 36,3% das demais nos EUA) ou F > 2,45 (18,8% e 5%); escolher no pré-registro"
+    exclui: [financeiras]
+    casos_br: []
+
+  - id: benford
+    nome: "Lei de Benford nos valores reportados"
+    nome_en: "Benford's law on reported figures"
+    o_que_mede_en: "First-digit distribution. With few accounts per filing, the test has little power and apparent anomalies can come from the shape of the data; use only leaf accounts, compare with a simulated reference and treat it as exploratory."
+    fase: fase_3
+    livro_complementar: "Miller (org.), Benford's Law: Theory and Applications (Princeton, 2015), caps. 1, 8 (Nigrini), 10 e 12"
+    o_que_mede: >
+      Distribuição dos primeiros dígitos. Com poucas contas por DFP, o teste tem
+      pouco poder e anomalias aparentes podem vir da forma dos dados; usar só
+      contas folha, comparar com referência simulada e tratar como exploratório.
+    casos_br: []
+
+  - id: imposto_caixa_vs_despesa
+    nome: "Imposto pago muito abaixo do imposto corrente"
+    nome_en: "Cash taxes far below current tax expense"
+    o_que_mede_en: "Income tax and social contribution paid in cash (cash flow statement) compared with current tax expense in the income statement, over several years. A persistent gap may come from legitimate tax credits, but in Sino-Forest third parties allegedly paid taxes on the company's behalf."
+    fase: fase_3
+    o_que_mede: >
+      IR e CSLL pagos em caixa (DFC) comparados à despesa de imposto corrente da
+      DRE, ao longo de vários anos. Diferença persistente pode vir de créditos
+      fiscais legítimos, mas na Sino-Forest terceiros teriam pago impostos em
+      nome da empresa.
+    origem: "Acusação da OSC contra a Sino-Forest (2012)"
+    formula: "soma de |ir_csll_pagos| em 3 anos / soma de |ir_csll_corrente| em 3 anos"
+    exclui: [financeiras]
+    casos_br: []
+
+  - id: partes_relacionadas
+    nome: "Receitas, ganhos e transferências com partes relacionadas"
+    nome_en: "Revenue, gains and transfers with related parties"
+    o_que_mede_en: "Material revenue, gains or asset transfers with related parties, especially near the end of a quarter or when the counterparty cannot pay in cash (Enron's LJM, Allied Capital's BLX, Sino-Forest's undisclosed intermediaries)."
+    fase: manual
+    o_que_mede: >
+      Receitas, ganhos ou transferências de ativos relevantes com partes
+      relacionadas, principalmente perto do fim do trimestre ou quando a
+      contraparte não consegue pagar em caixa (LJM na Enron, BLX na Allied
+      Capital, intermediários ocultos na Sino-Forest).
+    fonte_dados: "nota de partes relacionadas (CPC 05) e Formulário de Referência"
+    casos_br: []
+
+  - id: governanca_remuneracao_recompra
+    nome: "Bônus acima do aprovado e recompra acima do limite"
+    nome_en: "Bonuses above the approved cap and buybacks above the authorized limit"
+    o_que_mede_en: "Incentives to inflate the share price. Appeared in the CVM case against former IRB executives (acquitted in July 2026 in the disclosure case). Also look at pay tied to profit targets and board independence (Enron, Americanas)."
+    fase: manual
+    o_que_mede: >
+      Incentivos para inflar o preço da ação. Apareceu no processo da CVM contra
+      ex-diretores do IRB (absolvidos em julho de 2026 no processo de
+      divulgação). Olhar também remuneração atrelada a meta de lucro e
+      independência do conselho (Enron, Americanas).
+    fonte_dados: "Formulário de Referência, atas e processos da CVM"
+    casos_br: [irb]
+
+# Uso proibido como SINAL: reapresentação de demonstrações. Ela é fonte de
+# GABARITO (data_publica e período afetado). Usá-la como sinal vaza a resposta.

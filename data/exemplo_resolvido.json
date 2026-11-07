@@ -1,0 +1,171 @@
+{
+  "sobre": "Empresa FICTÍCIA para teste de referência. Valores em R$ mil, com a convenção de sinal da DFP (custos e despesas negativos). O CDI e as contagens da avaliação são ilustrativos. O software tem que reproduzir cada valor esperado dentro da tolerância.",
+  "about_en": "FICTITIOUS company for a reference test. Values in R$ thousand, using the DFP sign convention (costs and expenses negative). The CDI rate and the evaluation counts are illustrative. The software must reproduce every expected value within the tolerance.",
+  "tolerancia_absoluta": 0.0001,
+  "entradas": {
+    "t-2": {
+      "ativo_total": 8400,
+      "contas_a_receber": 1400
+    },
+    "t-1": {
+      "receita_liquida": 10000,
+      "custo_vendas": -7000,
+      "resultado_bruto": 3000,
+      "despesas_vendas": -1200,
+      "despesas_gerais_adm": -600,
+      "outras_receitas_operacionais": 0,
+      "ebit": 1200,
+      "despesas_financeiras": -300,
+      "lucro_operacoes_continuadas": 600,
+      "lucro_liquido": 600,
+      "caixa_operacional": 700,
+      "contas_a_receber": 1500,
+      "ativo_circulante": 4000,
+      "imobilizado": 3000,
+      "ativo_total": 9000,
+      "depreciacao": 300,
+      "fornecedores": 1400,
+      "emprestimos_cp": 800,
+      "emprestimos_lp": 1700,
+      "passivo_circulante": 3000,
+      "passivo_nao_circulante": 2200,
+      "patrimonio_liquido": 3800,
+      "caixa_equivalentes": 600,
+      "aplicacoes_financeiras": 400,
+      "estoques": 1200,
+      "investimentos": 0,
+      "ir_csll_a_pagar": 90,
+      "receitas_financeiras": 60,
+      "dividendos_pagos": -120,
+      "capex": -300,
+      "emissao_titulos": 0
+    },
+    "t": {
+      "receita_liquida": 11500,
+      "custo_vendas": -7820,
+      "resultado_bruto": 3680,
+      "despesas_vendas": -1250,
+      "despesas_gerais_adm": -620,
+      "outras_receitas_operacionais": 150,
+      "ebit": 1960,
+      "despesas_financeiras": -520,
+      "lucro_operacoes_continuadas": 1000,
+      "lucro_liquido": 1000,
+      "caixa_operacional": 400,
+      "contas_a_receber": 2300,
+      "ativo_circulante": 5200,
+      "imobilizado": 3100,
+      "ativo_total": 10600,
+      "depreciacao": 280,
+      "fornecedores": 2600,
+      "emprestimos_cp": 700,
+      "emprestimos_lp": 1600,
+      "passivo_circulante": 4000,
+      "passivo_nao_circulante": 2000,
+      "patrimonio_liquido": 4600,
+      "caixa_equivalentes": 450,
+      "aplicacoes_financeiras": 550,
+      "estoques": 1500,
+      "investimentos": 0,
+      "ir_csll_a_pagar": 140,
+      "receitas_financeiras": 40,
+      "dividendos_pagos": -200,
+      "capex": -380,
+      "emissao_titulos": 0
+    }
+  },
+  "cdi_medio_t_ilustrativo": 0.12,
+  "esperado": {
+    "mscore_beneish": {
+      "componentes": {
+        "DSRI": 1.3333,
+        "GMI": 0.9375,
+        "AQI": 0.9764,
+        "SGI": 1.15,
+        "DEPI": 1.0974,
+        "SGAI": 0.9034,
+        "TATA": 0.0566,
+        "LVGI": 1.0116
+      },
+      "contribuicoes": {
+        "DSRI": 1.2267,
+        "GMI": 0.495,
+        "AQI": 0.3945,
+        "SGI": 1.0258,
+        "DEPI": 0.1262,
+        "SGAI": -0.1554,
+        "TATA": 0.2648,
+        "LVGI": -0.3308
+      },
+      "M": -1.7932,
+      "acima_de_-1.78": false,
+      "acima_de_-2.22": true
+    },
+    "dpo_salto": {
+      "DPO_t-1_dias": 73.0,
+      "DPO_t_dias": 121.3555,
+      "variacao_dias": 48.3555
+    },
+    "juro_implicito": {
+      "divida_media": 2400.0,
+      "juro_implicito": 0.2167,
+      "cdi_medio_ilustrativo": 0.12,
+      "spread_pp": 9.6667
+    },
+    "lucro_sem_caixa": {
+      "accruals_sobre_ativo_medio": 0.0612
+    },
+    "peso_nao_recorrente_proxy": {
+      "outras_receitas_sobre_ebit": 0.0765
+    },
+    "tata_versao_balanco": {
+      "variacoes": {
+        "ativo_circulante": 1200,
+        "caixa_e_aplicacoes": 0,
+        "passivo_circulante": 1000,
+        "emprestimos_cp": -100,
+        "ir_csll_a_pagar": 50
+      },
+      "TATA_balanco": -0.0123,
+      "TATA_fluxo_de_caixa_usado_no_M": 0.0566
+    },
+    "rendimento_caixa": {
+      "caixa_medio": 1000.0,
+      "rendimento": 0.04,
+      "cdi_medio_ilustrativo": 0.12,
+      "diferenca_pp": -8.0
+    },
+    "dividendos_sem_caixa": {
+      "fluxo_livre": 20,
+      "dividendos_pagos": 200,
+      "cobertura_dividendos_sobre_fluxo_livre": 10.0,
+      "dividendos_sobre_caixa_operacional": 0.5
+    },
+    "fscore_dechow": {
+      "variaveis": {
+        "rsst_acc": 0.0969,
+        "ch_rec": 0.0816,
+        "ch_inv": 0.0306,
+        "soft_assets": 0.6132,
+        "ch_cs": 0.0808,
+        "ch_roa": 0.0331,
+        "issue": 0
+      },
+      "valor_previsto": -6.3779,
+      "probabilidade": 0.001696,
+      "F": 0.4583,
+      "acima_de_1": false,
+      "acima_de_2.45": false
+    }
+  },
+  "avaliacao_exemplo": {
+    "empresas_avaliadas": 300,
+    "empresas_em_alerta": 30,
+    "casos_no_gabarito": 3,
+    "casos_acertados": 2,
+    "taxa_de_alerta": 0.1,
+    "acerto": 0.6667,
+    "alertas_fora_do_gabarito": 28,
+    "alarmes_por_acerto": 14.0
+  }
+}
