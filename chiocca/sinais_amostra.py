@@ -74,6 +74,7 @@ def sinais_nao_financeira(contas: pd.DataFrame, dt_refer: str) -> dict[str, Any]
         "marca_depreciacao_combinada": t.depreciacao_combinada or t1.depreciacao_combinada,
         "juros_pagos_linhas_6_01": len(t.juros_pagos_em_6_01),
         "juros_pagos_linhas_6_03": len(t.juros_pagos_em_6_03),
+        "sem_penultimo": bool((contas.ordem == variaveis.PENULTIMO).sum() == 0),
     }
     m = mscore.calcula(t.valores, t1.valores)
     for nome, r in m.componentes.items():
