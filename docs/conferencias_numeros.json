@@ -1,0 +1,1025 @@
+{
+ "ultimo_exercicio": 2023,
+ "empresa_anos": 8594,
+ "planos": {
+  "nao_financeiro": 8027,
+  "banco": 526,
+  "seguradora": 32,
+  "outro": 9
+ },
+ "origens": {
+  "dados_abertos": 8253,
+  "enet": 341
+ },
+ "conferencias": {
+  "ativo_igual_passivo": {
+   "tipo": "identidade",
+   "nome_pt": "ativo total = passivo total",
+   "nome_en": "total assets = total liabilities and equity",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8594,
+     "falhas": 1,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 1
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 1
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 8507,
+     "falhas": 0,
+     "nao_aplicaveis": {
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "ativo_partes": {
+   "tipo": "identidade",
+   "nome_pt": "ativo total = circulante + não circulante",
+   "nome_en": "total assets = current + non-current",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 3,
+     "nao_aplicaveis": {
+      "plano": 567
+     },
+     "faixas": {
+      "ate_0_1": 1,
+      "ate_1": 0,
+      "ate_10": 2,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 3
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 1,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 1,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 1
+     }
+    }
+   }
+  },
+  "passivo_partes": {
+   "tipo": "identidade",
+   "nome_pt": "passivo total = circulante + não circulante + patrimônio líquido",
+   "nome_en": "total liabilities and equity = current + non-current + equity",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 1,
+     "nao_aplicaveis": {
+      "plano": 567
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 1
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 1
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "dre_resultado_bruto": {
+   "tipo": "identidade",
+   "nome_pt": "resultado bruto = receita + custo",
+   "nome_en": "gross profit = revenue + cost of sales",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 3,
+     "nao_aplicaveis": {
+      "plano": 567
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 1,
+      "acima_10": 2
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 3
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "dre_ebit": {
+   "tipo": "identidade",
+   "nome_pt": "resultado antes do financeiro = bruto + despesas e receitas operacionais",
+   "nome_en": "operating profit = gross profit + operating expenses and income",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 3,
+     "nao_aplicaveis": {
+      "plano": 567
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 3
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 3
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "dre_antes_tributos": {
+   "tipo": "identidade",
+   "nome_pt": "resultado antes dos tributos = antes do financeiro + resultado financeiro",
+   "nome_en": "profit before taxes = operating profit + finance result",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 0,
+     "nao_aplicaveis": {
+      "plano": 567
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "dre_continuadas": {
+   "tipo": "identidade",
+   "nome_pt": "operações continuadas = antes dos tributos + IR e CSLL",
+   "nome_en": "continuing operations = profit before taxes + income taxes",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 4,
+     "nao_aplicaveis": {
+      "plano": 567
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 4
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 4
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 2,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 2
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 2
+     }
+    }
+   }
+  },
+  "dre_lucro": {
+   "tipo": "identidade",
+   "nome_pt": "lucro do período = continuadas + descontinuadas",
+   "nome_en": "profit for the period = continuing + discontinued",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 3,
+     "nao_aplicaveis": {
+      "plano": 567
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 3
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 3
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 2,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 2
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 2
+     }
+    }
+   }
+  },
+  "dfc_soma": {
+   "tipo": "identidade",
+   "nome_pt": "variação do caixa = operacional + investimento + financiamento + variação cambial",
+   "nome_en": "change in cash = operating + investing + financing + exchange differences",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8591,
+     "falhas": 12,
+     "nao_aplicaveis": {
+      "conta_ausente": 3
+     },
+     "faixas": {
+      "ate_0_1": 1,
+      "ate_1": 2,
+      "ate_10": 0,
+      "acima_10": 9
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 10,
+      "enet": 2
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 8504,
+     "falhas": 6,
+     "nao_aplicaveis": {
+      "sem_coluna": 87,
+      "conta_ausente": 3
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 6
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 5,
+      "enet": 1
+     }
+    }
+   }
+  },
+  "dfc_saldos": {
+   "tipo": "identidade",
+   "nome_pt": "variação do caixa = saldo final − saldo inicial",
+   "nome_en": "change in cash = closing − opening balance",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8594,
+     "falhas": 9,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 2,
+      "ate_1": 0,
+      "ate_10": 1,
+      "acima_10": 6
+     },
+     "falhas_por_origem": {
+      "enet": 2,
+      "dados_abertos": 7
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 8507,
+     "falhas": 5,
+     "nao_aplicaveis": {
+      "sem_coluna": 87
+     },
+     "faixas": {
+      "ate_0_1": 1,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 4
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 4,
+      "enet": 1
+     }
+    }
+   }
+  },
+  "dfc_saldo_final_no_balanco": {
+   "tipo": "reconciliacao",
+   "nome_pt": "saldo final da DFC = caixa e equivalentes do balanço",
+   "nome_en": "cash flow closing balance = cash and cash equivalents on the balance sheet",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8026,
+     "falhas": 1025,
+     "nao_aplicaveis": {
+      "plano": 567,
+      "conta_ausente": 1
+     },
+     "faixas": {
+      "ate_0_1": 19,
+      "ate_1": 26,
+      "ate_10": 86,
+      "acima_10": 894
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 973,
+      "enet": 52
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7947,
+     "falhas": 1006,
+     "nao_aplicaveis": {
+      "plano": 559,
+      "sem_coluna": 87,
+      "conta_ausente": 1
+     },
+     "faixas": {
+      "ate_0_1": 17,
+      "ate_1": 22,
+      "ate_10": 86,
+      "acima_10": 881
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 956,
+      "enet": 50
+     }
+    }
+   }
+  },
+  "dfc_saldo_inicial_no_balanco": {
+   "tipo": "reconciliacao",
+   "nome_pt": "saldo inicial da DFC = caixa e equivalentes do balanço anterior",
+   "nome_en": "cash flow opening balance = cash and cash equivalents on the prior balance sheet",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 7947,
+     "falhas": 1029,
+     "nao_aplicaveis": {
+      "plano": 567,
+      "conta_ausente": 80
+     },
+     "faixas": {
+      "ate_0_1": 16,
+      "ate_1": 18,
+      "ate_10": 72,
+      "acima_10": 923
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 977,
+      "enet": 52
+     }
+    }
+   }
+  },
+  "ativo_total_positivo": {
+   "tipo": "plausibilidade",
+   "nome_pt": "ativo total positivo",
+   "nome_en": "positive total assets",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8594,
+     "falhas": 16,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 15,
+      "enet": 1
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 8507,
+     "falhas": 88,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 82,
+      "enet": 6
+     }
+    }
+   }
+  },
+  "saldo_negativo:1.01": {
+   "tipo": "plausibilidade",
+   "nome_pt": "ativo circulante (1.01) não negativa",
+   "nome_en": "current assets (1.01) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "saldo_negativo:1.01.01": {
+   "tipo": "plausibilidade",
+   "nome_pt": "caixa e equivalentes (1.01.01) não negativa",
+   "nome_en": "cash and cash equivalents (1.01.01) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8026,
+     "falhas": 3,
+     "nao_aplicaveis": {
+      "conta_ausente": 1
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 3
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7947,
+     "falhas": 1,
+     "nao_aplicaveis": {
+      "conta_ausente": 1
+     },
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "enet": 1
+     }
+    }
+   }
+  },
+  "saldo_negativo:1.01.03": {
+   "tipo": "plausibilidade",
+   "nome_pt": "contas a receber (1.01.03) não negativa",
+   "nome_en": "trade receivables (1.01.03) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "saldo_negativo:1.01.04": {
+   "tipo": "plausibilidade",
+   "nome_pt": "estoques (1.01.04) não negativa",
+   "nome_en": "inventories (1.01.04) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "saldo_negativo:1.02": {
+   "tipo": "plausibilidade",
+   "nome_pt": "ativo não circulante (1.02) não negativa",
+   "nome_en": "non-current assets (1.02) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 2,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 2
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 1,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 1
+     }
+    }
+   }
+  },
+  "saldo_negativo:1.02.03": {
+   "tipo": "plausibilidade",
+   "nome_pt": "imobilizado (1.02.03) não negativa",
+   "nome_en": "property, plant and equipment (1.02.03) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "saldo_negativo:2.01": {
+   "tipo": "plausibilidade",
+   "nome_pt": "passivo circulante (2.01) não negativa",
+   "nome_en": "current liabilities (2.01) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 1,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 1
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "saldo_negativo:2.01.02": {
+   "tipo": "plausibilidade",
+   "nome_pt": "fornecedores (2.01.02) não negativa",
+   "nome_en": "trade payables (2.01.02) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    }
+   }
+  },
+  "saldo_negativo:2.02": {
+   "tipo": "plausibilidade",
+   "nome_pt": "passivo não circulante (2.02) não negativa",
+   "nome_en": "non-current liabilities (2.02) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 0,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {}
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 3,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 3
+     }
+    }
+   }
+  },
+  "sinal_dre:3.01": {
+   "tipo": "plausibilidade",
+   "nome_pt": "receita (3.01) não negativa",
+   "nome_en": "net revenue (3.01) not negative",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 14,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 13,
+      "enet": 1
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 11,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 9,
+      "enet": 2
+     }
+    }
+   }
+  },
+  "sinal_dre:3.02": {
+   "tipo": "plausibilidade",
+   "nome_pt": "custo das vendas (3.02) não positiva",
+   "nome_en": "cost of sales (3.02) not positive",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 14,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "enet": 6,
+      "dados_abertos": 8
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 11,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 6,
+      "enet": 5
+     }
+    }
+   }
+  },
+  "sinal_dre:3.04.01": {
+   "tipo": "plausibilidade",
+   "nome_pt": "despesas com vendas (3.04.01) não positiva",
+   "nome_en": "selling expenses (3.04.01) not positive",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 31,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 29,
+      "enet": 2
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 29,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 29
+     }
+    }
+   }
+  },
+  "sinal_dre:3.04.02": {
+   "tipo": "plausibilidade",
+   "nome_pt": "despesas gerais e administrativas (3.04.02) não positiva",
+   "nome_en": "general and administrative expenses (3.04.02) not positive",
+   "colunas": {
+    "ÚLTIMO": {
+     "aplicaveis": 8027,
+     "falhas": 42,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 41,
+      "enet": 1
+     }
+    },
+    "PENÚLTIMO": {
+     "aplicaveis": 7948,
+     "falhas": 30,
+     "nao_aplicaveis": {},
+     "faixas": {
+      "ate_0_1": 0,
+      "ate_1": 0,
+      "ate_10": 0,
+      "acima_10": 0
+     },
+     "falhas_por_origem": {
+      "dados_abertos": 29,
+      "enet": 1
+     }
+    }
+   }
+  }
+ },
+ "empresa_anos_com_falha": {
+  "reconciliacao": 1182,
+  "qualquer": 1296,
+  "plausibilidade": 116,
+  "identidade": 25
+ },
+ "por_ano": {
+  "2010": {
+   "empresa_anos": 569,
+   "com_falha_de_identidade": 0
+  },
+  "2011": {
+   "empresa_anos": 603,
+   "com_falha_de_identidade": 0
+  },
+  "2012": {
+   "empresa_anos": 595,
+   "com_falha_de_identidade": 0
+  },
+  "2013": {
+   "empresa_anos": 602,
+   "com_falha_de_identidade": 0
+  },
+  "2014": {
+   "empresa_anos": 586,
+   "com_falha_de_identidade": 0
+  },
+  "2015": {
+   "empresa_anos": 589,
+   "com_falha_de_identidade": 0
+  },
+  "2016": {
+   "empresa_anos": 572,
+   "com_falha_de_identidade": 0
+  },
+  "2017": {
+   "empresa_anos": 586,
+   "com_falha_de_identidade": 0
+  },
+  "2018": {
+   "empresa_anos": 576,
+   "com_falha_de_identidade": 0
+  },
+  "2019": {
+   "empresa_anos": 557,
+   "com_falha_de_identidade": 0
+  },
+  "2020": {
+   "empresa_anos": 650,
+   "com_falha_de_identidade": 0
+  },
+  "2021": {
+   "empresa_anos": 727,
+   "com_falha_de_identidade": 15
+  },
+  "2022": {
+   "empresa_anos": 692,
+   "com_falha_de_identidade": 10
+  },
+  "2023": {
+   "empresa_anos": 690,
+   "com_falha_de_identidade": 0
+  }
+ },
+ "tolerancia_por_parcela": 1000.0,
+ "diagnostico": {
+  "caixa_falhas": 1025,
+  "caixa_fecha_com_aplicacoes": 692,
+  "ativo_zero": {
+   "ÚLTIMO": 16,
+   "PENÚLTIMO": 88
+  },
+  "identidade_falhas": 39,
+  "identidade_lado_zero": 14
+ }
+}

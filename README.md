@@ -73,7 +73,7 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 
 **Estudo da primeira versão concluído.** O resumo de uma página está em [`docs/resumo.md`](docs/resumo.md), e os números completos, inclusive o caso a caso do gabarito, a regra boba lado a lado, as análises secundárias e a robustez, em [`docs/resultados.md`](docs/resultados.md). Qualquer mudança de regra ou estudo novo depende de autorização.
 
-**Chiocca System v2, do estudo ao produto (em andamento).** O estudo 1 está congelado no branch `estudo-1-final`, e o produto usa o motor v1 como está. Fase A concluída: inventário do código da Carchuna, da Calahonda e do DireitoAberto ([`docs/inventario.md`](docs/inventario.md)), contratos de dados ([`docs/contratos.md`](docs/contratos.md)), plano das fases B a F ([`docs/plano-v2.md`](docs/plano-v2.md)) e lacre dos exercícios de 2024 em diante (`chiocca/v2/lacre.py`), reservados ao estudo 2.
+**Chiocca System v2, do estudo ao produto (em andamento).** O estudo 1 está congelado no branch `estudo-1-final`, e o produto usa o motor v1 como está. Fase A concluída: inventário do código da Carchuna, da Calahonda e do DireitoAberto ([`docs/inventario.md`](docs/inventario.md)), contratos de dados ([`docs/contratos.md`](docs/contratos.md)), plano das fases B a F ([`docs/plano-v2.md`](docs/plano-v2.md)) e lacre dos exercícios de 2024 em diante (`chiocca/v2/lacre.py`), reservados ao estudo 2. Fase B concluída: validade, conferências dos dados da CVM, linhagem e confiança ([`docs/motor-de-confianca.md`](docs/motor-de-confianca.md)), com o resultado das conferências na base inteira em [`docs/conferencias.md`](docs/conferencias.md), e CI no GitHub Actions.
 
 | Implementado | Roadmap |
 | --- | --- |
@@ -134,6 +134,7 @@ python -m chiocca.emenda5             # secundária da emenda 5, em resultados/
 python -m chiocca.americanas          # duas leituras da Americanas, em resultados/
 python -m chiocca.relatorio_resultados  # gera os resultados e o resumo, em PT e EN
 python -m chiocca.ficha 20990 2021 pt  # ficha de alerta de uma empresa-ano
+python -m chiocca.v2.relatorio_conferencias  # conferências de qualidade na base, até o lacre
 python -m pytest                      # testes sem rede
 ```
 
@@ -205,7 +206,7 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 
 **First-version study complete.** The one-page summary is in [`docs/summary.md`](docs/summary.md), and the full figures, including the ground truth case by case, the naive baseline rule side by side, the secondary analyses and the robustness test, are in [`docs/en/results.md`](docs/en/results.md). Any rule change or new study depends on authorization.
 
-**Chiocca System v2, from study to product (in progress).** Study 1 is frozen on the `estudo-1-final` branch, and the product uses engine v1 as it is. Phase A complete: inventory of the code from Carchuna, Calahonda and DireitoAberto ([`docs/en/inventory.md`](docs/en/inventory.md)), data contracts ([`docs/en/contracts.md`](docs/en/contracts.md)), plan for phases B to F ([`docs/en/plan-v2.md`](docs/en/plan-v2.md)) and the seal on fiscal years 2024 onward (`chiocca/v2/lacre.py`), reserved for study 2.
+**Chiocca System v2, from study to product (in progress).** Study 1 is frozen on the `estudo-1-final` branch, and the product uses engine v1 as it is. Phase A complete: inventory of the code from Carchuna, Calahonda and DireitoAberto ([`docs/en/inventory.md`](docs/en/inventory.md)), data contracts ([`docs/en/contracts.md`](docs/en/contracts.md)), plan for phases B to F ([`docs/en/plan-v2.md`](docs/en/plan-v2.md)) and the seal on fiscal years 2024 onward (`chiocca/v2/lacre.py`), reserved for study 2. Phase B complete: validity, CVM data checks, lineage and confidence ([`docs/en/trust-engine.md`](docs/en/trust-engine.md)), with the result of the checks on the whole base in [`docs/en/data-checks.md`](docs/en/data-checks.md), and CI on GitHub Actions.
 
 | Done | Roadmap |
 | --- | --- |
@@ -266,6 +267,7 @@ python -m chiocca.emenda5             # amendment 5 secondary analysis, in resul
 python -m chiocca.americanas          # two readings of Americanas, in resultados/
 python -m chiocca.relatorio_resultados  # generates the results and the summary, in PT and EN
 python -m chiocca.ficha 20990 2021 en  # alert sheet for one company-year
+python -m chiocca.v2.relatorio_conferencias  # data quality checks on the base, up to the seal
 python -m pytest                      # offline tests
 ```
 

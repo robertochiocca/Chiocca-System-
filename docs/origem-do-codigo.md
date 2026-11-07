@@ -10,4 +10,8 @@ Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.m
 
 | Arquivo no Chiocca | Projeto | Caminho de origem | Commit | O que mudou | Fase |
 | --- | --- | --- | --- | --- | --- |
-| — | — | — | — | Nenhum arquivo trazido ainda (Fase A) | — |
+| `chiocca/v2/validade.py` | Carchuna | `carchuna/validade.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Classe de resultado com três estados e `variacao_percentual`; float em vez de Decimal, motivo em PT e EN, ponte para o motor v1; sem os limiares de margem | B |
+| `chiocca/v2/linhagem.py` | Carchuna | `carchuna/linhagem.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Formato da ficha; colunas de planilha viraram linhas da DFP, com a linha do arquivo de origem; montador novo para o motor v1 | B |
+| `chiocca/v2/confianca.py` | Carchuna | `carchuna/confianca.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Só a estrutura de componentes com motivo; sem a nota de 0 a 100; critérios e nível categórico novos | B |
+| `chiocca/v2/conferencias.py` | Carchuna | `carchuna/margem.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Só o princípio (identidade, reconciliação por outro caminho e plausibilidade); conferências novas para a CVM | B |
+| `.github/workflows/ci.yml` | DireitoAberto | `.github/workflows/ci.yml` | `102e3e2d9d70e87249d8df9215737e2d98b6358d` | Só o job de Python, com os comandos do Chiocca | B |

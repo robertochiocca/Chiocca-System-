@@ -14,6 +14,7 @@ PARES = [
     ("docs/plano-v2.md", "docs/en/plan-v2.md"),
     ("docs/origem-do-codigo.md", "docs/en/code-origin.md"),
     ("docs/roadmap.md", "docs/en/roadmap.md"),
+    ("docs/motor-de-confianca.md", "docs/en/trust-engine.md"),
 ]
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
 AVISO_EN = "Statistical signal based on public financial statements. Not an accusation, not investment advice."
