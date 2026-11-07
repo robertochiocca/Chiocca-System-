@@ -27,7 +27,9 @@ Uso: python -m chiocca.sinais_amostra
 
 from __future__ import annotations
 
-from datetime import date
+import json
+import subprocess
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -175,13 +177,25 @@ def alertas(s: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     return s, pd.DataFrame(limiares)
 
 
+def _git(*args: str) -> str:
+    return subprocess.run(["git", *args], cwd=RAIZ, capture_output=True, text=True, check=True).stdout.strip()
+
+
 def main() -> None:
+    inicio = datetime.now(timezone.utc).isoformat(timespec="seconds")
     meta = pd.read_csv(BASE / "empresa_ano.csv", dtype={"cd_cvm": str, "num_doc": str})
     meta = meta[meta.exercicio.isin(ANOS)]
     s, limiares = alertas(calcula(meta))
     SAIDA.mkdir(exist_ok=True)
     s.to_csv(SAIDA / "sinais_empresa_ano.csv", index=False)
     limiares.to_csv(SAIDA / "limiares.csv", index=False)
+    execucao = {
+        "commit": _git("rev-parse", "HEAD"),
+        "codigo_sem_alteracao_local": _git("status", "--porcelain", "--untracked-files=no", "--", "chiocca") == "",
+        "inicio_utc": inicio,
+        "fim_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    (SAIDA / "execucao.json").write_text(json.dumps(execucao, indent=1) + "\n", encoding="utf-8")
     print(s.amostra.value_counts().to_string())
 
 
