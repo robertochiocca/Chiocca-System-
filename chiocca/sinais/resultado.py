@@ -13,6 +13,7 @@ from typing import Mapping
 CONTA_AUSENTE = "conta_ausente"
 DIVISAO_POR_ZERO = "divisao_por_zero"
 EMPRESA_FINANCEIRA = "empresa_financeira"
+DENOMINADOR_NEGATIVO = "denominador_negativo"
 
 
 @dataclass(frozen=True)
@@ -48,3 +49,10 @@ def divide(numerador: float, denominador: float, nome: str) -> float:
     if denominador == 0:
         raise NaoCalculavel(DIVISAO_POR_ZERO, nome)
     return numerador / denominador
+
+
+def divide_por_positivo(numerador: float, denominador: float, nome: str) -> float:
+    """Divisão em que o denominador tem que ser positivo (pré-registro, emenda 10: receita ≤ 0)."""
+    if denominador < 0:
+        raise NaoCalculavel(DENOMINADOR_NEGATIVO, nome)
+    return divide(numerador, denominador, nome)

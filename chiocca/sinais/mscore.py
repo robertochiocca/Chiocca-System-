@@ -19,7 +19,9 @@ Convenção de sinal: na DFP, despesas vêm negativas. O SGAI usa o valor absolu
 depreciação entra positiva, como na DFC indireta.
 
 Conta faltante ou denominador zero: "não calculável" (pré-registro, 4.1). Os valores neutros do artigo
-de 1999 ficam só para o teste de robustez.
+de 1999 ficam só para o teste de robustez. Receita negativa: a empresa-ano fica na amostra, e os índices que
+dividem pela receita (DSRI, GMI, SGI e SGAI) ficam "não calculável" quando a receita do denominador é ≤ 0
+(emenda 10).
 """
 
 from __future__ import annotations
@@ -27,7 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping
 
-from chiocca.sinais.resultado import NaoCalculavel, Resultado, conta, divide
+from chiocca.sinais.resultado import NaoCalculavel, Resultado, conta, divide, divide_por_positivo
 
 Valores = Mapping[str, float | None]
 
@@ -45,14 +47,14 @@ COEFICIENTES: dict[str, float] = {
 
 
 def dsri(t: Valores, t1: Valores) -> float:
-    a = divide(conta(t, "contas_a_receber"), conta(t, "receita_liquida"), "DSRI receita t")
-    b = divide(conta(t1, "contas_a_receber"), conta(t1, "receita_liquida"), "DSRI receita t-1")
+    a = divide_por_positivo(conta(t, "contas_a_receber"), conta(t, "receita_liquida"), "DSRI receita t")
+    b = divide_por_positivo(conta(t1, "contas_a_receber"), conta(t1, "receita_liquida"), "DSRI receita t-1")
     return divide(a, b, "DSRI t-1")
 
 
 def gmi(t: Valores, t1: Valores) -> float:
-    margem_t = divide(conta(t, "resultado_bruto"), conta(t, "receita_liquida"), "GMI receita t")
-    margem_t1 = divide(conta(t1, "resultado_bruto"), conta(t1, "receita_liquida"), "GMI receita t-1")
+    margem_t = divide_por_positivo(conta(t, "resultado_bruto"), conta(t, "receita_liquida"), "GMI receita t")
+    margem_t1 = divide_por_positivo(conta(t1, "resultado_bruto"), conta(t1, "receita_liquida"), "GMI receita t-1")
     return divide(margem_t1, margem_t, "GMI margem t")
 
 
@@ -66,7 +68,7 @@ def aqi(t: Valores, t1: Valores) -> float:
 
 
 def sgi(t: Valores, t1: Valores) -> float:
-    return divide(conta(t, "receita_liquida"), conta(t1, "receita_liquida"), "SGI receita t-1")
+    return divide_por_positivo(conta(t, "receita_liquida"), conta(t1, "receita_liquida"), "SGI receita t-1")
 
 
 def _taxa_depreciacao(v: Valores, rotulo: str) -> float:
@@ -80,7 +82,7 @@ def depi(t: Valores, t1: Valores) -> float:
 
 def _peso_sga(v: Valores, rotulo: str) -> float:
     sga = abs(conta(v, "despesas_vendas")) + abs(conta(v, "despesas_gerais_adm"))
-    return divide(sga, conta(v, "receita_liquida"), f"SGAI receita {rotulo}")
+    return divide_por_positivo(sga, conta(v, "receita_liquida"), f"SGAI receita {rotulo}")
 
 
 def sgai(t: Valores, t1: Valores) -> float:
