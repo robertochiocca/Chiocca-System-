@@ -1,0 +1,38 @@
+# Origem: DireitoAberto (github.com/robertochiocca/direitoaberto), .github/workflows/ci.yml,
+# commit 102e3e2d9d70e87249d8df9215737e2d98b6358d. Adaptado para o Chiocca System.
+# O que mudou: só o job de Python (o web entra na Fase E); comandos do Chiocca (ruff, black, mypy e pytest).
+# Não usa segredos nem faz deploy; só lê o repositório. Os testes rodam sem rede e sem os dados brutos da CVM
+# (data/brutos, data/base e resultados/ ficam fora do git): os documentos gerados são conferidos contra os JSON
+# versionados.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]  # a versão mínima declarada e a usada no desenvolvimento
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check chiocca tests
+      - name: Formatação
+        run: black --check chiocca tests
+      - name: Tipos
+        run: mypy chiocca tests
+      - name: Testes
+        run: python -m pytest -q
