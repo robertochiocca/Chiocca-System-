@@ -163,3 +163,9 @@ Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima n�
 - **Petrobras 2014:** o fato relevante de 27/01/2015 é considerado claro ("indevidamente reconhecidos", "erros", "fraude e corrupção"). O caso fica no gabarito pelo critério (b).
 - **Verificação da Americanas e do IRB:** verificado_por = "Roberto Chiocca, documentos lidos na fase de estudo, antes do pré-registro"; verificado_em = 2026-11-04. Fontes: release de resultados de 2022 e fato relevante de 16/07/2024 (Americanas); documento da Squadra de 10/02/2020 e processos da CVM (IRB).
 - **Empresas sem receita:** casos acertáveis cuja empresa-ano não tiver receita saem da amostra pela emenda 5, e o número efetivo de casos acertáveis é informado no relatório final.
+
+### Emenda 10 · 07/11/2026 · métricas e receita (depois da Fase 1, sem nenhum sinal calculado em dados reais)
+
+- **Alarmes por acerto:** (empresas em alerta − casos acertados) ÷ casos acertados, como no exemplo resolvido. Conta empresas distintas com pelo menos um alerta no período de teste. Casos em observação ficam fora do numerador e do denominador e são reportados na tabela própria (emenda 8).
+- **Receita negativa:** a empresa-ano fica na amostra; os índices que dividem pela receita ficam "não calculável" nela, pela regra de denominador ≤ 0.
+- **Versões guardadas:** bastam os metadados de todas as versões e os valores da versão da época e da última versão. Versões intermediárias não são necessárias.
