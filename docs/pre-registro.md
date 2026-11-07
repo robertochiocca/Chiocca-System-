@@ -169,3 +169,11 @@ Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima n�
 - **Alarmes por acerto:** (empresas em alerta − casos acertados) ÷ casos acertados, como no exemplo resolvido. Conta empresas distintas com pelo menos um alerta no período de teste. Casos em observação ficam fora do numerador e do denominador e são reportados na tabela própria (emenda 8).
 - **Receita negativa:** a empresa-ano fica na amostra; os índices que dividem pela receita ficam "não calculável" nela, pela regra de denominador ≤ 0.
 - **Versões guardadas:** bastam os metadados de todas as versões e os valores da versão da época e da última versão. Versões intermediárias não são necessárias.
+
+### Emenda 11 · 07/11/2026 · correção da métrica de alarmes (feita DEPOIS de ver os resultados da Fase 2)
+
+- **Aviso:** esta emenda foi escrita depois de ver os números. Ela não muda nenhum sinal, corte ou caso; só corrige uma inconsistência da emenda 10.
+- **Problema:** a emenda 10 conta as empresas em alerta só no período de teste (2017–2023), mas desconta os casos acertados de todo o período. Numerador e acertos ficaram em janelas diferentes.
+- **Correção:** alarmes por acerto passa a ser reportado nas duas janelas, com numerador e acertos na mesma janela: (a) período de teste, 2017–2023, só com casos acertados por alerta dentro dele; (b) período inteiro, 2010–2023. A versão da emenda 10 continua no relatório, identificada como inconsistente.
+- **"Ganhar" da regra boba:** a seção 7 não definiu o termo, e ele não será definido depois dos resultados. O relatório mostra acerto e alarmes por acerto lado a lado, sem declarar vencedor.
+- **Escolhas de implementação da Fase 2 (itens 1 a 7 do relatório):** aceitas como registradas, inclusive a DFC pelo método direto sem linha de depreciação, que fica como limitação.
