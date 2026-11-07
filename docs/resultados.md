@@ -1,19 +1,19 @@
-# Resultados (Fase 2)
+# Resultados do estudo
 
 Gerado por `python -m chiocca.relatorio_resultados` a partir de `resultados/sinais_empresa_ano.csv` (fora do git), que sai de `python -m chiocca.sinais_amostra`. Não edite à mão: um teste compara este arquivo com a saída do script. Só aparecem números agregados, os casos do gabarito, que são públicos, e a tabela dos casos em observação (emenda 8). Nenhuma lista de empresas em alerta sai deste repositório.
 
-Sinais calculados em 07/11/2026 com o código do commit `ca1256c`. O período de teste (exercícios de 2017 a 2023, pré-registro, seção 8) foi aberto em 07/11/2026, com o commit `9e8c758`, na primeira execução da amostra inteira. As regras foram aplicadas como estão no pré-registro, sem nenhum corte alternativo testado. O resultado é mostrado como saiu (seção 9).
+Sinais calculados em 07/11/2026 com o código do commit `891d599`. O período de teste (exercícios de 2017 a 2023, pré-registro, seção 8) foi aberto em 07/11/2026, com o commit `9e8c758`, na primeira execução da amostra inteira. As regras foram aplicadas como estão no pré-registro, sem nenhum corte alternativo testado, e o resultado é mostrado como saiu (seção 9). Depois de ver os resultados, entrou só a emenda 11, que corrige a métrica de alarmes por acerto e não muda sinal, corte ou caso.
 
 ## Números principais
 
 - **Amostra, 2010 a 2023:** 6.938 empresa-anos de não financeiras com receita e 517 de financeiras, de 987 empresas. Ficaram de fora 1.139 empresa-anos de não financeiras sem receita (seção 2) e 880 sem versão da época (emenda 5).
 - **Acerto (seção 5):** 7 de 13 casos acertáveis. Depois da exclusão das empresas sem receita, continuam acertáveis 13 de 13 (emenda 9). Contando todos os 42 casos do gabarito, são 7 de 42, com teto de 13 de 42 no estudo principal.
 - **Regra boba (seção 7):** 6 de 13 casos acertáveis.
-- **Alarmes por acerto (emenda 10), não financeiras, 2017 a 2023:** 624 empresas em alerta, de 758 avaliadas; (624 − 7) ÷ 7 = 88,1. Com a regra boba: 109 empresas em alerta, de 775; (109 − 6) ÷ 6 = 17,2.
-- **Financeiras, 2017 a 2023:** 11 empresas em alerta, de 36 avaliadas. Alarmes por acerto não calculável: nenhum caso acertável é financeira. Com a regra boba: 13 empresas em alerta, de 46.
-- Dos 7 casos acertados, 2 têm alerta no período de teste. A fórmula da emenda 10 desconta os 7 casos acertados das empresas em alerta.
+- **Alarmes por acerto, não financeiras (emenda 11, numerador e acertos na mesma janela):** no período de teste, 2017 a 2023, (624 − 2) ÷ 2 = 311,0, com 624 empresas em alerta de 758 avaliadas e 2 casos acertados por alerta dentro do período; no período inteiro, 2010 a 2023, (765 − 7) ÷ 7 = 108,3, com 765 empresas em alerta de 907. Com a regra boba: (109 − 1) ÷ 1 = 108,0 no período de teste e (167 − 6) ÷ 6 = 26,8 no período inteiro.
+- **Financeiras:** 11 empresas em alerta de 36 avaliadas no período de teste e 14 de 41 no período inteiro. Alarmes por acerto não calculável: nenhum caso acertável é financeira. Com a regra boba: 13 e 16 empresas em alerta.
+- **Versão da emenda 10, inconsistente** (empresas em alerta no período de teste, acertos de todo o período): 88,1 com os sinais e 17,2 com a regra boba. Fica registrada; a emenda 11 a substitui.
 - **Taxa de alerta, 2010 a 2023, somando os exercícios:** não financeiras, 3.345 empresas em alerta de 6.704 avaliadas (49,9%); financeiras, 36 de 300 (12,0%).
-- **Comparação com a regra boba:** o detector acerta 7 casos e a regra boba, 6. Nas não financeiras, o detector tem 88,1 alarmes por acerto e a regra boba, 17,2: 5,1 vezes mais. O pré-registro manda pôr essa comparação no resumo.
+- **Lado a lado, sem declarar vencedor (emenda 11):** acerto, 7 casos com os sinais e 6 com a regra boba; acertos por alerta no período de teste, 2 e 1; alarmes por acerto nas não financeiras, 311,0 e 108,0 no período de teste e 108,3 e 26,8 no período inteiro.
 
 ## Regras aplicadas
 
@@ -29,7 +29,7 @@ Sinais calculados em 07/11/2026 com o código do commit `ca1256c`. O período de
 
 ## Escolhas de implementação desta fase
 
-O pré-registro não desce a estes detalhes. Cada um foi fixado antes de rodar a amostra, sem testar alternativa, e fica aqui para revisão.
+O pré-registro não desce a estes detalhes. Cada um foi fixado antes de rodar a amostra, sem testar alternativa. A emenda 11 aceitou as escolhas como registradas; a DFC pelo método direto sem linha de depreciação fica como limitação.
 
 - **Decil superior:** valor maior ou igual ao percentil 90 dos valores calculáveis do exercício e do grupo (percentil com interpolação linear, o padrão do pandas).
 - **Empresa avaliada:** com pelo menos um sinal de alerta do grupo calculável. A taxa de alerta é empresas em alerta ÷ empresas avaliadas; o tamanho da amostra vem ao lado.
@@ -132,16 +132,24 @@ Os 13 casos acertáveis do gabarito (emendas 8 e 9). Exercícios avaliados: na a
 | `petrobras_2014` | 2011 | -2,46 | 1,9 | -6,9 | não | não |
 | `petrobras_2014` | 2012 | -2,59 | -5,7 | -2,2 | não | não |
 
-## Alarmes por acerto e regra boba (2017 a 2023)
+## Alarmes por acerto e regra boba
 
-Emenda 10: (empresas em alerta − casos acertados) ÷ casos acertados, com empresas distintas que tiveram pelo menos um alerta no período de teste. As 13 empresas dos casos em observação ficam fora. Casos acertados: os do estudo principal, em qualquer exercício do período afetado.
+Emenda 11: (empresas em alerta − casos acertados) ÷ casos acertados, com numerador e acertos na mesma janela. No período de teste entram só os casos acertados por alerta em exercício de 2017 a 2023; no período inteiro, todos. A versão da emenda 10 (empresas do período de teste, acertos de todo o período) fica na tabela, identificada como inconsistente. As 13 empresas dos casos em observação ficam fora. A emenda 11 foi escrita depois de ver os resultados da Fase 2.
 
-| Grupo | Regra | Empresas avaliadas | Empresas em alerta | Casos acertados | Alarmes por acerto |
-| --- | --- | --- | --- | --- | --- |
-| Não financeiras | Sinais | 758 | 624 | 7 | 88,1 |
-| Não financeiras | Regra boba | 775 | 109 | 6 | 17,2 |
-| Financeiras | Sinais | 36 | 11 | 0 | não calculável |
-| Financeiras | Regra boba | 46 | 13 | 0 | não calculável |
+| Grupo | Regra | Janela | Empresas avaliadas | Empresas em alerta | Casos acertados | Alarmes por acerto |
+| --- | --- | --- | --- | --- | --- | --- |
+| Não financeiras | Sinais | Teste, 2017–2023 (emenda 11) | 758 | 624 | 2 | 311,0 |
+| Não financeiras | Sinais | Inteiro, 2010–2023 (emenda 11) | 907 | 765 | 7 | 108,3 |
+| Não financeiras | Sinais | Emenda 10 (inconsistente) | 758 | 624 | 7 | 88,1 |
+| Não financeiras | Regra boba | Teste, 2017–2023 (emenda 11) | 775 | 109 | 1 | 108,0 |
+| Não financeiras | Regra boba | Inteiro, 2010–2023 (emenda 11) | 933 | 167 | 6 | 26,8 |
+| Não financeiras | Regra boba | Emenda 10 (inconsistente) | 775 | 109 | 6 | 17,2 |
+| Financeiras | Sinais | Teste, 2017–2023 (emenda 11) | 36 | 11 | 0 | não calculável |
+| Financeiras | Sinais | Inteiro, 2010–2023 (emenda 11) | 41 | 14 | 0 | não calculável |
+| Financeiras | Sinais | Emenda 10 (inconsistente) | 36 | 11 | 0 | não calculável |
+| Financeiras | Regra boba | Teste, 2017–2023 (emenda 11) | 46 | 13 | 0 | não calculável |
+| Financeiras | Regra boba | Inteiro, 2010–2023 (emenda 11) | 54 | 16 | 0 | não calculável |
+| Financeiras | Regra boba | Emenda 10 (inconsistente) | 46 | 13 | 0 | não calculável |
 
 ## Previsões do pré-registro (seção 4.2)
 
@@ -159,6 +167,68 @@ Emenda 10: (empresas em alerta − casos acertados) ÷ casos acertados, com empr
 | LVGI | 0,98 | -0,32 |
 
 **IRB.** Previsão: o sinal não dispara antes da data pública. A DFP de 2019 foi entregue em 18/02/2020, depois de 10/02/2020; a última antes da data é a de 2018. Peso não recorrente em 2018: 0,053 (limite do decil superior do ano nas financeiras: 1,024); sem alerta. Por isso o IRB não pode ser acertado (emenda 3).
+
+## Duas leituras da Americanas (exercício de 2021)
+
+Original: DFP de 2021, versão 1, entregue em 24/02/2022, a versão da época. Reapresentada: comparativo da DFP de 2022, versão 1, entregue em 16/11/2023, depois do corte de 30/04/2023; é uma leitura posterior, não "como era na época". A DFP de 2022 não traz 2020, e a reapresentação ajustou os efeitos anteriores a 2021 no saldo de abertura, sem separar por ano (emenda 1). Por isso t−1 é o mesmo nas duas leituras: o comparativo da DFP de 2021.
+
+| Item | Original | Reapresentada |
+| --- | --- | --- |
+| M | -0,24 | -0,90 |
+| Alerta do M-score | sim | sim |
+| DSRI | 1,70 | 1,71 |
+| GMI | 0,95 | 1,64 |
+| AQI | 1,21 | 0,80 |
+| SGI | 2,24 | 2,22 |
+| DEPI | 3,40 | 4,42 |
+| SGAI | 1,01 | 1,14 |
+| TATA | 0,03 | -0,10 |
+| LVGI | 0,98 | 2,04 |
+| Salto do DPO (dias) | -6,8 | 10,0 |
+| Alerta do DPO | não | não |
+| Juro implícito − CDI médio (p.p.) | 9,4 | 21,5 |
+| Alerta do juro implícito | não | sim |
+| Lucro sem caixa (do ativo médio) | 4,1% | -12,2% |
+
+**Contas de 2021 nas duas leituras, em R$ milhões:**
+
+| Conta | Original | Reapresentada | Diferença |
+| --- | --- | --- | --- |
+| Receita líquida (3.01) | 22.695,9 | 22.521,2 | -174,7 |
+| Custo dos bens e/ou serviços vendidos (3.02) | -15.934,1 | -18.630,2 | -2.696,1 |
+| Resultado bruto (3.03) | 6.761,8 | 3.891,0 | -2.870,8 |
+| Contas a receber (1.01.03) | 7.021,6 | 7.005,2 | -16,4 |
+| Estoques (1.01.04) | 5.228,0 | 5.304,0 | 76,0 |
+| Ativo circulante (1.01) | 21.912,9 | 20.771,5 | -1.141,4 |
+| Imobilizado (1.02.03) | 7.825,2 | 8.511,5 | 686,3 |
+| Ativo total (conta 1) | 44.518,8 | 37.518,2 | -7.000,6 |
+| Fornecedores (2.01.02) | 8.646,4 | 10.970,3 | 2.323,9 |
+| Passivo circulante (2.01) | 13.336,9 | 43.013,1 | 29.676,3 |
+| Empréstimos e financiamentos, curto prazo (2.01.04) | 1.052,9 | 13.719,7 | 12.666,8 |
+| Empréstimos e financiamentos, longo prazo (2.02.01) | 11.287,8 | 0,0 | -11.287,8 |
+| Despesas com vendas (3.04.01) | -3.990,1 | -4.401,7 | -411,6 |
+| Despesas gerais e administrativas (3.04.02) | -1.774,5 | -2.044,5 | -270,1 |
+| Despesas financeiras (3.06.02) | -1.396,1 | -2.785,0 | -1.388,9 |
+| Resultado líquido das operações continuadas (3.09) | 543,8 | -6.237,4 | -6.781,2 |
+| Lucro líquido (3.11) | 543,8 | -6.237,4 | -6.781,2 |
+| Caixa operacional sem juros pagos (seção 6.01) | -825,6 | -2.564,5 | -1.738,9 |
+| Depreciação, linhas da DFC (seção 6.01.01) | 1.300,3 | 1.048,0 | -252,3 |
+
+Nas duas leituras o M fica acima de -1,78: -0,24 e -0,90. Na reapresentada, o GMI vai de 0,95 para 1,64, o LVGI de 0,98 para 2,04 e o juro implícito de 9,4 para 21,5 p.p. acima do CDI médio.
+
+## Robustez com valores neutros (pré-registro, seção 4.1)
+
+Teste de robustez, fora da conta principal. AQI, DEPI e SGAI não calculáveis por conta ausente ou denominador zero recebem o valor neutro 1, como no artigo de 1999; os outros componentes e motivos ficam como estão. Valores neutros usados em 1.454 empresa-anos; M calculável em 6.516 empresa-anos (estudo principal: 5.390); alertas do M: 1.065 (estudo principal: 810). Casos cujos exercícios em alerta mudaram: `schlosser`: 2012 → 2012, 2013; `cafe_soluvel_brasilia`: — → 2011.
+
+| Métrica | Estudo principal | Valores neutros |
+| --- | --- | --- |
+| Casos acertados (de 13) | 7 | 8 |
+| Acertados por alerta em 2017–2023 | 2 | 2 |
+| Alarmes por acerto, não financeiras, período de teste | 311,0 | 324,0 |
+| Alarmes por acerto, não financeiras, período inteiro | 108,3 | 98,6 |
+| Taxa de alerta das não financeiras, 2010–2023 (soma dos exercícios) | 49,9% | 51,6% |
+| Secundária 2a, acertados (de 4) | 2 | 2 |
+| Secundária 2b, acertados (de 13) | 7 | 7 |
 
 ## Análises secundárias (rotuladas; fora da conta principal)
 
@@ -205,6 +275,23 @@ Emenda 10: (empresas em alerta − casos acertados) ÷ casos acertados, com empr
 | BRAZAL - Brasil Alimentos S.A. (`brazal`) | 2b | 2012, 2013 | 02/07/2019 | — | — | 2012: sem versão da época; 2013: sem versão da época | não | não |
 | Marina de Iracema Park S.A. (`marina_iracema`) | 2b | 2010, 2011, 2012 | 04/11/2014 | 2010, 2012 | — | 2011: sem versão da época | não | não |
 | Bahema S.A. (hoje Bioma Educação S.A.) (`bahema`) | 2b | 2011, 2012, 2013, 2014, 2015 | 24/09/2019 | — | — | 2011: sem receita; 2012: sem receita; 2013: sem receita; 2014: sem receita; 2015: sem receita | não | não |
+
+## Secundária da emenda 5 (rotulada; fora da conta principal)
+
+Inclui 190 empresa-anos sem versão da época, lidas na versão disponível, entregue depois do corte: 141 de não financeiras com receita, 21 de financeiras e 28 de não financeiras sem receita, que continuam fora. Os decis de cada ano foram recalculados com elas. Casos cujos exercícios em alerta mudaram: com os sinais, nenhum; com a regra boba, `mundial_2017`: 2012, 2013, 2014, 2015 → 2012, 2014, 2015.
+
+| Métrica | Estudo principal | Secundária da emenda 5 |
+| --- | --- | --- |
+| Casos acertados (de 13) | 7 | 7 |
+| Acertados por alerta em 2017–2023 | 2 | 2 |
+| Alarmes por acerto, não financeiras, período de teste | 311,0 | 311,0 |
+| Alarmes por acerto, não financeiras, período inteiro | 108,3 | 108,7 |
+| Taxa de alerta das não financeiras, 2010–2023 (soma dos exercícios) | 49,9% | 49,7% |
+| Secundária 2a, acertados (de 4) | 2 | 2 |
+| Secundária 2b, acertados (de 13) | 7 | 7 |
+| Regra boba: casos acertados (de 13) | 6 | 6 |
+| Regra boba: alarmes por acerto, período de teste | 108,0 | 112,0 |
+| Regra boba: alarmes por acerto, período inteiro | 26,8 | 27,5 |
 
 ## Casos em observação (emenda 8)
 
@@ -329,7 +416,84 @@ Empresa-anos da amostra de cada grupo, de 2010 a 2023. No M-score, uma empresa-a
 
 Depreciação somada com amortização ou exaustão: 5.184 empresa-anos de não financeiras. Exercícios marcados pelo CPC 06 (R2): 498. DFC pelo método direto: 190.
 
-## O que não foi feito nesta fase
+## Ficha de alerta (Fase 4)
 
-- As duas leituras da Americanas (números originais e reapresentados, componente por componente), o teste de robustez com valores neutros (pré-registro, seção 4.1) e a análise secundária da emenda 5 (empresa-anos com versão da época indisponível, pela versão disponível): ficam para a fase seguinte.
-- Ficha de alerta (Fase 4) e resumo de uma página (Fase 5).
+`python -m chiocca.ficha <código CVM> <exercício> [pt|en]` gera a ficha de qualquer empresa-ano a partir de `resultados/`, que fica fora do git. Exemplo com um caso do gabarito, que é público:
+
+> Ficha de alerta · AMERICANAS S.A. - EM RECUPERAÇÃO JUDICIAL (código CVM 20990) · exercício 2021
+>
+> DFP consolidada, versão 1, entregue em 24/02/2022; versão pública na data de corte (30/04/2022). Documento: https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=112049&CodigoTipoInstituicao=2
+>
+> Grupo: não financeiras (M-score, salto do DPO, juro implícito).
+> Em alerta neste exercício: sim.
+> Sinais que dispararam: M-score.
+> Sinais que não dispararam: salto do DPO, juro implícito.
+>
+> M-score: -0,24 (alerta se > -1,78).
+> - DSRI: 1,70 (contribuição 1,57); contas: contas a receber (1.01.03), receita (3.01).
+> - GMI: 0,95 (contribuição 0,50); contas: resultado bruto (3.03), receita (3.01).
+> - AQI: 1,21 (contribuição 0,49); contas: ativo circulante (1.01), imobilizado (1.02.03), ativo total (1).
+> - SGI: 2,24 (contribuição 2,00); contas: receita (3.01).
+> - DEPI: 3,40 (contribuição 0,39); contas: depreciação na DFC (6.01.01, por texto), imobilizado (1.02.03).
+> - SGAI: 1,01 (contribuição -0,17); contas: despesas com vendas (3.04.01) e gerais e administrativas (3.04.02), receita (3.01).
+> - TATA: 0,03 (contribuição 0,14); contas: resultado das operações continuadas (3.09), caixa operacional (6.01, sem juros pagos), ativo total (1).
+> - LVGI: 0,98 (contribuição -0,32); contas: passivo circulante (2.01), empréstimos de longo prazo (2.02.01), ativo total (1).
+>
+> Salto do DPO: -6,8 dias (alerta no decil superior do ano: ≥ 28,9 dias); contas: fornecedores (2.01.02), custo das vendas (3.02).
+> Juro implícito: 13,9% contra CDI médio de 4,5%, diferença de 9,4 p.p. (alerta se > 10 p.p.); contas: despesas financeiras (3.06.02), empréstimos (2.01.04 e 2.02.01).
+> Lucro sem caixa (só na ficha, não dispara alerta): 4,1% do ativo médio; contas: lucro líquido (3.11), caixa operacional (6.01, sem juros pagos), ativo total (1).
+>
+> Alerta estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento.
+
+## Explicação depois do resultado, não teste
+
+Análise descritiva feita depois de ver os resultados. Não muda regra, corte ou caso, e não serve como teste: as perguntas e as comparações foram escolhidas sabendo o resultado.
+
+**(a) SGI e DSRI da Americanas em 2021.**
+
+- Fonte: ata da assembleia geral extraordinária da B2W (código 20990, depois Americanas S.A.) de 10/06/2021, que aprovou a cisão parcial da Lojas Americanas (código 8087) com todos os ativos operacionais e passivos relacionados vertidos para a B2W pelo valor contábil de 31/12/2020; o fato relevante de 28/04/2021 diz que as variações patrimoniais a partir dessa data-base também ficam com a B2W. Documentos e hashes em docs/fontes.md.
+- SGI: o comparativo de 2020 na DFP de 2021 é só da B2W, com receita de R$ 10.124 milhões; a receita de 2021 é de R$ 22.696 milhões. A Lojas Americanas consolidada, que já incluía a B2W, teve receita de R$ 21.291 milhões em 2020. O SGI de 2,24 vem dessa troca de perímetro.
+- DSRI: contas a receber ÷ receita foi de 0,31 em 2021, 0,18 na B2W em 2020 e 0,16 na Lojas Americanas em 2020. O DSRI de 1,70 não se explica só pela fusão, porque a razão de 2021 fica acima das duas.
+- Trocando t−1 pela DFP consolidada de 2020 da Lojas Americanas (perímetros não idênticos): SGI 1,07, DSRI 1,96, AQI 1,71 e M = -0,96, alerta. Sem o efeito do SGI, o M continuaria acima de -1,78, puxado por DSRI e AQI.
+
+**(b) Quanto da taxa de alerta vem só do juro implícito.** Não financeiras; empresas por exercício.
+
+| Exercício | Avaliadas | Em alerta | Só pelo juro implícito | Parte dos alertas | Taxa de alerta sem o juro implícito |
+| --- | --- | --- | --- | --- | --- |
+| 2010 | 408 | 202 | 114 | 56,4% | 21,6% |
+| 2011 | 426 | 191 | 108 | 56,5% | 19,5% |
+| 2012 | 427 | 208 | 124 | 59,6% | 19,7% |
+| 2013 | 443 | 202 | 126 | 62,4% | 17,2% |
+| 2014 | 434 | 190 | 110 | 57,9% | 18,4% |
+| 2015 | 441 | 223 | 148 | 66,4% | 17,0% |
+| 2016 | 432 | 183 | 113 | 61,7% | 16,2% |
+| 2017 | 454 | 196 | 114 | 58,2% | 18,1% |
+| 2018 | 451 | 234 | 154 | 65,8% | 17,7% |
+| 2019 | 450 | 238 | 149 | 62,6% | 19,8% |
+| 2020 | 544 | 321 | 205 | 63,9% | 21,3% |
+| 2021 | 597 | 369 | 209 | 56,6% | 26,8% |
+| 2022 | 596 | 320 | 179 | 55,9% | 23,7% |
+| 2023 | 601 | 268 | 148 | 55,2% | 20,0% |
+| **2010–2018** | 3.916 | 1.829 | 1.111 | 60,7% | 18,3% |
+| **2019–2023** | 2.788 | 1.516 | 890 | 58,7% | 22,5% |
+
+De 2010 a 2018, 60,7% dos alertas vêm só do juro implícito; de 2019 a 2023, depois da adoção do CPC 06 (R2), 58,7%. Sem o juro implícito, a taxa de alerta seria 18,3% e 22,5%, contra 46,7% e 54,4% com ele.
+
+**(c) Casos que perderam o M-score por falta do DEPI.**
+
+Na amostra, 1.548 empresa-anos de não financeiras ficaram sem M; em 1.306, o DEPI está entre os componentes que faltaram, e em 901 ele é o único (157 delas com DFC pelo método direto). Dos 13 casos acertáveis, 7 ficaram sem M em todos os exercícios avaliados por causa do DEPI, e em 7 deles o DEPI foi o único componente que faltou. Com o valor neutro do teste de robustez, o M dispararia em 2 desses 7 casos; 1 deles não tinha sido acertado no estudo principal. Na análise secundária, outros 3 casos ficaram sem M com o DEPI entre os componentes que faltaram.
+
+| Caso | Exercícios | DFC pelo método direto | M com DEPI neutro | Acertado no estudo principal |
+| --- | --- | --- | --- | --- |
+| `hercules` | 2014 | não | -7,20 | não |
+| `tecnosolo` | 2013, 2014 | não | -6,02, -10,32 | sim |
+| `ceb` | 2011, 2012 | sim | -2,43, -2,20 | não |
+| `fibam` | 2016, 2017 | não | -5,61, -5,24 | sim |
+| `metalgrafica_iguacu` | 2010, 2011 | não | -2,40, **-1,54** | sim |
+| `cafe_soluvel_brasilia` | 2011 | sim | **5,78** | não |
+| `cobrasma` | 2014 | não | -19,09 | sim |
+
+## O que ficou de fora
+
+- Dados trimestrais (ITR), que seriam necessários para alcançar o IRB antes da data pública (pré-registro, seção 4.2).
+- Qualquer mudança de regra, corte ou caso: depende de novo pré-registro assinado.

@@ -71,17 +71,19 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 
 ### Estado do projeto
 
-**Fase 2: sinais da primeira versão calculados na amostra inteira, como era na época, com as métricas do pré-registro.** Os números, inclusive o caso a caso do gabarito e a comparação com a regra boba, estão em [`docs/resultados.md`](docs/resultados.md). As fases seguintes dependem de autorização.
+**Estudo da primeira versão concluído.** O resumo de uma página está em [`docs/resumo.md`](docs/resumo.md), e os números completos, inclusive o caso a caso do gabarito, a regra boba lado a lado, as análises secundárias e a robustez, em [`docs/resultados.md`](docs/resultados.md). Qualquer mudança de regra ou estudo novo depende de autorização.
 
 | Implementado | Roadmap |
 | --- | --- |
-| Catálogo de 16 sinais, em PT e EN, com fórmulas e referências | Duas leituras da Americanas, teste de robustez com valores neutros e secundária da emenda 5 |
+| Catálogo de 16 sinais, em PT e EN, com fórmulas e referências | Dados trimestrais (ITR), necessários para alcançar o IRB |
 | Gabarito ampliado e casos em observação, com fontes e notas em PT e EN | |
 | Reconhecimento dos dados da CVM ([`docs/reconhecimento.md`](docs/reconhecimento.md)) | |
 | Download com verificação por hash e base "como era na época" ([`docs/base.md`](docs/base.md)) | |
 | Fórmulas dos sinais da primeira versão, conferidas pelo teste de referência | |
 | Sinais e alertas na amostra inteira e métricas do pré-registro ([`docs/resultados.md`](docs/resultados.md)) | |
 | CDI do Banco Central (SGS 4389) com fonte registrada ([`docs/fontes.md`](docs/fontes.md)) | |
+| Duas leituras da Americanas, robustez com valores neutros, secundária da emenda 5 e análise descritiva rotulada | |
+| Ficha de alerta em PT e EN (`python -m chiocca.ficha`) e resumo de uma página ([`docs/resumo.md`](docs/resumo.md)) | |
 | Glossário PT↔EN dos termos contábeis e do estudo | |
 | Pré-registro do estudo | Ficha de alerta e resumo de uma página, em PT e EN |
 | Exemplo resolvido com valores esperados (teste de referência) | |
@@ -100,6 +102,7 @@ tests/                    testes sem rede, inclusive o teste de referência
 docs/reconhecimento.md    reconhecimento dos dados da CVM (Fase 0) e revisão do gabarito
 docs/base.md              números da base "como era na época", gerados por script
 docs/resultados.md        sinais, alertas e métricas do pré-registro, gerados por script
+docs/resumo.md            resumo de uma página, gerado por script
 data/cdi_sgs4389.csv      CDI diário do Banco Central (SGS 4389), snapshot versionado
 data/exemplo_resolvido.json  empresa fictícia com valores esperados (teste de referência)
 docs/pre-registro.md      decisões do estudo, assinadas antes dos dados
@@ -117,7 +120,10 @@ python -m chiocca.enet data/cache/enet/pendentes.txt   # baixa essas versões (s
 python -m chiocca.montar_base         # monta de novo, agora com as versões do ENET
 python -m chiocca.relatorio_base      # gera docs/base.md e docs/en/base.md
 python -m chiocca.sinais_amostra      # sinais e alertas de todas as empresa-anos, em resultados/ (fora do git)
-python -m chiocca.relatorio_resultados  # gera docs/resultados.md e docs/en/results.md
+python -m chiocca.emenda5             # secundária da emenda 5, em resultados/
+python -m chiocca.americanas          # duas leituras da Americanas, em resultados/
+python -m chiocca.relatorio_resultados  # gera os resultados e o resumo, em PT e EN
+python -m chiocca.ficha 20990 2021 pt  # ficha de alerta de uma empresa-ano
 python -m pytest                      # testes sem rede
 ```
 
@@ -187,17 +193,19 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 
 ### Project status
 
-**Phase 2: first-version signals computed on the whole sample, point-in-time, with the pre-registered metrics.** The figures, including the ground truth case by case and the comparison with the naive baseline rule, are in [`docs/en/results.md`](docs/en/results.md). The next phases depend on authorization.
+**First-version study complete.** The one-page summary is in [`docs/summary.md`](docs/summary.md), and the full figures, including the ground truth case by case, the naive baseline rule side by side, the secondary analyses and the robustness test, are in [`docs/en/results.md`](docs/en/results.md). Any rule change or new study depends on authorization.
 
 | Done | Roadmap |
 | --- | --- |
-| Catalog of 16 signals, in PT and EN, with formulas and references | Two readings of Americanas, robustness test with neutral values and the amendment 5 secondary analysis |
+| Catalog of 16 signals, in PT and EN, with formulas and references | Quarterly data (ITR), needed to reach IRB |
 | Expanded ground truth and cases under observation, with sources and notes in PT and EN | |
 | Reconnaissance of the CVM data ([`docs/en/reconnaissance.md`](docs/en/reconnaissance.md)) | |
 | Download with hash checks and point-in-time base ([`docs/en/base.md`](docs/en/base.md)) | |
 | First-version signal formulas, checked by the reference test | |
 | Signals and alerts on the whole sample and pre-registered metrics ([`docs/en/results.md`](docs/en/results.md)) | |
 | Banco Central CDI rate (SGS 4389) with a recorded source ([`docs/en/sources.md`](docs/en/sources.md)) | |
+| Two readings of Americanas, robustness test with neutral values, amendment 5 secondary analysis and a labeled descriptive analysis | |
+| Alert sheet in PT and EN (`python -m chiocca.ficha`) and one-page summary ([`docs/summary.md`](docs/summary.md)) | |
 | PT↔EN glossary of accounting and study terms | |
 | Study pre-registration | Alert sheet and one-page summary, in PT and EN |
 | Worked example with expected values (reference test) | |
@@ -216,6 +224,7 @@ tests/                    offline tests, including the reference test
 docs/en/reconnaissance.md  reconnaissance of the CVM data (Phase 0) and ground-truth review
 docs/en/base.md           point-in-time base figures, generated by script
 docs/en/results.md        signals, alerts and pre-registered metrics, generated by script
+docs/summary.md           one-page summary, generated by script
 data/cdi_sgs4389.csv      daily CDI rate from Banco Central (SGS 4389), versioned snapshot
 data/exemplo_resolvido.json  fictitious company with expected values (reference test)
 docs/pre-registro.md      study decisions, signed before the data
@@ -233,7 +242,10 @@ python -m chiocca.enet data/cache/enet/pendentes.txt   # downloads those version
 python -m chiocca.montar_base         # builds again, now with the ENET versions
 python -m chiocca.relatorio_base      # generates docs/base.md and docs/en/base.md
 python -m chiocca.sinais_amostra      # signals and alerts for every company-year, in resultados/ (not in git)
-python -m chiocca.relatorio_resultados  # generates docs/resultados.md and docs/en/results.md
+python -m chiocca.emenda5             # amendment 5 secondary analysis, in resultados/
+python -m chiocca.americanas          # two readings of Americanas, in resultados/
+python -m chiocca.relatorio_resultados  # generates the results and the summary, in PT and EN
+python -m chiocca.ficha 20990 2021 en  # alert sheet for one company-year
 python -m pytest                      # offline tests
 ```
 
