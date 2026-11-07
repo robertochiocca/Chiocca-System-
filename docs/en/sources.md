@@ -172,3 +172,11 @@ Other sources used:
 - **CVM open data:** annual DFP from 2010 to 2026, FCA from 2010 to 2026, the listed-company registry and the DFP, FCA and registry dictionaries, downloaded by `python -m chiocca.dados baixar` on 2026-11-07. URL, size, SHA256 and time of each file are in [`data/manifesto_brutos.csv`](../../data/manifesto_brutos.csv). Compared with the Phase 0 download (2026-11-05), only the registry changed.
 - **FCA dictionary:** `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/META/fca_cia_aberta.zip`.
 - **ENET, HTML route (consolidated only, amendment 8):** `https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=<n>&CodigoTipoInstituicao=2` and the tables in `frmDemonstracaoFinanceiraITR.aspx`, consulted on 2026-11-07 by `python -m chiocca.enet`. The list of filings is in `data/cache/enet/pendentes.txt` and the tables in `data/cache/enet/` (outside git). How many filings and the outcome are in [`base.md`](base.md).
+
+## 2026-11-07 · Phase 2: CDI rate for implied interest
+
+- **Series:** Banco Central do Brasil, SGS, code **4389**, "Taxa de juros - CDI anualizada base 252" (CDI rate annualized on a 252-business-day basis), daily, in % a year.
+- **URL:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.4389/dados?formato=json&dataInicial=01/01/2009&dataFinal=31/12/2025`, in five-year blocks, consulted on 2026-11-07 at 04:46 UTC by `python -m chiocca.cdi`.
+- **Versioned snapshot:** [`data/cdi_sgs4389.csv`](../../data/cdi_sgs4389.csv), 4,269 days from 2009-01-02 to 2025-12-31, SHA256 `aecfe83578f6850c42fc9fd9d945916f9103c56b5a09d524bfc38fd557ad5dcb`.
+- **Series check:** the SGS metadata page (`www3.bcb.gov.br/sgspub/consultarmetadados/...hdOidSerieMetadados=4389`) returned error 502 in all three attempts on 2026-11-07. The series was identified from the data itself: on 2015-01-05, series 4389 is 11.57% a year, equal to series 12 (CDI, % a day) annualized over 252 business days, and different from the annualized Selic rate (series 1178, 11.65% a year).
+- **Use:** "average CDI of the year" is the simple average of the daily rates over the 12 months ending on the DFP reference date (`chiocca/cdi.py`).

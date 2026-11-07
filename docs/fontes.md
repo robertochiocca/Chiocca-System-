@@ -170,3 +170,11 @@ Outras fontes usadas:
 - **Dados abertos da CVM:** DFP anual de 2010 a 2026, FCA de 2010 a 2026, cadastro de companhias abertas e os dicionários da DFP, do FCA e do cadastro, baixados por `python -m chiocca.dados baixar` em 07/11/2026. URL, tamanho, SHA256 e hora de cada arquivo estão em [`data/manifesto_brutos.csv`](../data/manifesto_brutos.csv). Em relação ao download da Fase 0 (05/11/2026), só o cadastro mudou.
 - **Dicionário do FCA:** `https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/FCA/META/fca_cia_aberta.zip`.
 - **ENET, rota HTML (só consolidado, emenda 8):** `https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=<n>&CodigoTipoInstituicao=2` e as tabelas em `frmDemonstracaoFinanceiraITR.aspx`, consultadas em 07/11/2026 por `python -m chiocca.enet`. A lista de documentos fica em `data/cache/enet/pendentes.txt` e as tabelas em `data/cache/enet/` (fora do git). Quantos documentos e o resultado estão em [`base.md`](base.md).
+
+## 07/11/2026 · Fase 2: CDI para o juro implícito
+
+- **Série:** Banco Central do Brasil, SGS, código **4389**, "Taxa de juros - CDI anualizada base 252", diária, em % a.a.
+- **URL:** `https://api.bcb.gov.br/dados/serie/bcdata.sgs.4389/dados?formato=json&dataInicial=01/01/2009&dataFinal=31/12/2025`, em blocos de cinco anos, consultada em 07/11/2026 às 04:46 UTC por `python -m chiocca.cdi`.
+- **Snapshot versionado:** [`data/cdi_sgs4389.csv`](../data/cdi_sgs4389.csv), 4.269 dias de 02/01/2009 a 31/12/2025, SHA256 `aecfe83578f6850c42fc9fd9d945916f9103c56b5a09d524bfc38fd557ad5dcb`.
+- **Conferência da série:** a página de metadados do SGS (`www3.bcb.gov.br/sgspub/consultarmetadados/...hdOidSerieMetadados=4389`) devolveu erro 502 nas três tentativas de 07/11/2026. A identificação foi conferida nos próprios dados: em 05/01/2015, a série 4389 vale 11,57% a.a., igual à série 12 (CDI, % a.d.) anualizada em 252 dias úteis, e diferente da Selic anualizada (série 1178, 11,65% a.a.).
+- **Uso:** "CDI médio do ano" é a média simples das taxas diárias nos 12 meses que terminam na data de referência da DFP (`chiocca/cdi.py`).
