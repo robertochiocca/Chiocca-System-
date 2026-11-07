@@ -205,3 +205,12 @@ def test_tabela_html_do_enet() -> None:
     assert v[("3.02", "ÚLTIMO")] == -700_000.0
     assert v[("3.02", "PENÚLTIMO")] == 0.0  # célula vazia vale 0 (emenda 8)
     assert t.ds_conta.iloc[0] == "Receita de Venda de Bens e/ou Serviços"
+
+
+def test_tabela_html_com_uma_coluna_de_valor() -> None:
+    pagina = (
+        "<table><tr><td>Conta</td><td>Descrição</td><td>31/12/2010</td></tr>"
+        "<tr><td>1</td><td>Ativo Total</td><td>500</td></tr></table>"
+    )
+    t = enet.parse_tabela(pagina, "BPA")
+    assert list(zip(t.ordem, t.valor)) == [("ÚLTIMO", 500.0)]  # sem PENÚLTIMO: a coluna não existe

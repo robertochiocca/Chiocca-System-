@@ -63,12 +63,17 @@ def numero(celula: str) -> float | None:
 
 
 def parse_tabela(pagina: str, demonstracao: str) -> pd.DataFrame:
-    """Linhas da tabela HTML de uma demonstração, com célula vazia = 0 (emenda 8) e escala em reais."""
+    """Linhas da tabela HTML de uma demonstração, com célula vazia = 0 (emenda 8) e escala em reais.
+
+    A 1ª coluna de valor é o exercício (ÚLTIMO) e a 2ª, o comparativo (PENÚLTIMO). Algumas versões antigas
+    (DFP de 2010) mostram só a coluna do exercício: aí só o ÚLTIMO é gravado, e o PENÚLTIMO fica ausente
+    (coluna que não existe não é célula vazia e não vira 0).
+    """
     mil = "Reais Mil" in _limpa(pagina)
     linhas = []
     for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", pagina, re.DOTALL | re.IGNORECASE)[1:]:
         tds = re.findall(r"<td[^>]*>(.*?)</td>", tr, re.DOTALL | re.IGNORECASE)
-        if len(tds) < 4:
+        if len(tds) < 3:
             continue
         conta, descricao = _limpa(tds[0]), _limpa(tds[1])
         for ordem, celula in zip(ORDENS, tds[2:4]):

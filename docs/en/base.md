@@ -17,49 +17,49 @@ Base built on 2026-11-07, with the raw files checked against `data/manifesto_bru
 
 | Fiscal year | Company-years | Ok, open data | Ok, ENET | No version by the cut-off | Point-in-time version unavailable (individual only) | Point-in-time version unavailable (ENET failure) | Pending in ENET | Repeated account with different values |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2010 | 663 | 523 | 0 | 69 | 18 | 0 | 53 | 0 |
-| 2011 | 684 | 562 | 0 | 59 | 21 | 0 | 42 | 0 |
-| 2012 | 662 | 573 | 0 | 48 | 18 | 0 | 23 | 0 |
-| 2013 | 652 | 582 | 0 | 36 | 13 | 0 | 21 | 0 |
-| 2014 | 652 | 574 | 0 | 51 | 14 | 0 | 13 | 0 |
-| 2015 | 633 | 568 | 0 | 33 | 11 | 0 | 21 | 0 |
-| 2016 | 626 | 552 | 0 | 40 | 12 | 0 | 22 | 0 |
-| 2017 | 632 | 567 | 0 | 38 | 7 | 0 | 20 | 0 |
-| 2018 | 631 | 558 | 0 | 38 | 17 | 0 | 18 | 0 |
-| 2019 | 671 | 541 | 0 | 104 | 6 | 0 | 19 | 1 |
-| 2020 | 733 | 636 | 0 | 72 | 10 | 0 | 15 | 0 |
-| 2021 | 771 | 706 | 0 | 37 | 6 | 0 | 22 | 0 |
-| 2022 | 731 | 648 | 0 | 29 | 7 | 0 | 46 | 1 |
-| 2023 | 733 | 663 | 0 | 31 | 7 | 0 | 29 | 3 |
-| 2024 | 709 | 655 | 0 | 26 | 7 | 0 | 21 | 0 |
-| 2025 | 669 | 639 | 0 | 20 | 5 | 0 | 5 | 0 |
-| **Total** | **10,852** | **9,547** | **0** | **731** | **179** | **0** | **390** | **5** |
+| 2010 | 663 | 523 | 46 | 69 | 25 | 0 | 0 | 0 |
+| 2011 | 684 | 562 | 41 | 59 | 22 | 0 | 0 | 0 |
+| 2012 | 662 | 573 | 22 | 48 | 19 | 0 | 0 | 0 |
+| 2013 | 652 | 582 | 20 | 36 | 14 | 0 | 0 | 0 |
+| 2014 | 652 | 574 | 12 | 51 | 15 | 0 | 0 | 0 |
+| 2015 | 633 | 568 | 21 | 33 | 11 | 0 | 0 | 0 |
+| 2016 | 626 | 552 | 20 | 40 | 14 | 0 | 0 | 0 |
+| 2017 | 632 | 567 | 19 | 38 | 8 | 0 | 0 | 0 |
+| 2018 | 631 | 558 | 18 | 38 | 17 | 0 | 0 | 0 |
+| 2019 | 671 | 541 | 16 | 104 | 9 | 0 | 0 | 1 |
+| 2020 | 733 | 636 | 14 | 72 | 11 | 0 | 0 | 0 |
+| 2021 | 771 | 706 | 21 | 37 | 7 | 0 | 0 | 0 |
+| 2022 | 731 | 648 | 44 | 29 | 9 | 0 | 0 | 1 |
+| 2023 | 733 | 663 | 27 | 31 | 9 | 0 | 0 | 3 |
+| 2024 | 709 | 655 | 20 | 26 | 8 | 0 | 0 | 0 |
+| 2025 | 669 | 639 | 5 | 20 | 5 | 0 | 0 | 0 |
+| **Total** | **10,852** | **9,547** | **366** | **731** | **203** | **0** | **0** | **5** |
 
 ## What was left out ("not computable" in this phase)
 
 - **No version by the cut-off:** 731 company-years. The first DFP version was filed after the cut-off date; under amendment 5, the company-year is left out that year and counted here.
-- **Point-in-time version unavailable, individual only:** 179 company-years. The open-data version postdates the cut-off and the company has no consolidated statements (or the point-in-time version had none), so the ENET route does not apply (amendment 8).
+- **Point-in-time version unavailable, individual only:** 203 company-years. The open-data version postdates the cut-off and the company has no consolidated statements (or the point-in-time version had none), so the ENET route does not apply (amendment 8).
 - **Point-in-time version unavailable, ENET failure:** 0 company-years (amendment 5).
-- **Pending in ENET:** 390 company-years whose table has not been downloaded yet.
+- **Pending in ENET:** 0 company-years whose table has not been downloaded yet.
 - **Repeated account with different values:** 5 company-years (amendment 8). In all of them the repetition happens within the same period, not across periods.
-- **No revenue:** 1,218 company-years in the non-financial group, with account 3.01 missing or equal to zero. They leave the non-financial sample (pre-registration, section 2, and amendment 9).
+- **No revenue:** 1,228 company-years in the non-financial group, with account 3.01 missing or equal to zero. They leave the non-financial sample (pre-registration, section 2, and amendment 9).
 
 ## Groups and sample
 
-- Company-years with the point-in-time version available: 9,547, from 1,223 companies.
-- **Financial companies:** 555. **Non-financial companies:** 8,992, of which 7,774 with revenue.
+- Company-years with the point-in-time version available: 9,913, from 1,223 companies.
+- **Financial companies:** 572. **Non-financial companies:** 9,341, of which 8,113 with revenue.
 - Chart of accounts not recognized from account 3.01: 9 company-years (kept with the non-financial companies).
 - Company-years where a repeated account with equal values was deduplicated: 22.
 - Source of the sector (all company-years): FCA 10,084, registry 744, no sector 24.
-- Status in today's registry, among available company-years: active 6,665, cancelled 2,695, SUSPENSO(A) - DECISÃO ADM 82, not in the registry 105. Delisted companies (registration cancelled) stay in the base.
+- Status in today's registry, among available company-years: active 6,950, cancelled 2,763, suspended by administrative decision 90, not in the registry 110. Delisted companies (registration cancelled) stay in the base.
 
 ## Two readings
 
-Company-years whose next fiscal year is also available, in the same type of statement (fiscal years up to 2024): 7,804. For these, the original figure can be compared with the restated one.
+Company-years whose next fiscal year is also available, in the same type of statement (fiscal years up to 2024): 8,361. For these, the original figure can be compared with the restated one.
 
 ## ENET route
 
-Filings requested from ENET: 390. With no consolidated statements in the point-in-time version: 4. Company-years that entered the base via ENET: 0; with total assets (account 1): 0; with revenue (account 3.01): 0; with operating cash flow (account 6.01): 0.
+Filings requested from ENET: 390. With no consolidated statements in the point-in-time version: 24. Company-years that entered the base via ENET: 366; with total assets (account 1): 366; with revenue (account 3.01): 366; with operating cash flow (account 6.01): 366. Old versions that show only the current-year column, without the comparative (PENÚLTIMO): 2; for these, anything that depends on t-1 will come out not computable.
 
 ## Detectable ground-truth cases in the base (no values)
 
@@ -74,9 +74,9 @@ Filings requested from ENET: 390. With no consolidated statements in the point-i
 | ceb | 2011–2012 | 2 of 2 | 0 |
 | fibam | 2016–2017 | 2 of 2 | 0 |
 | metalgrafica_iguacu | 2010–2011 | 2 of 2 | 0 |
-| cafe_soluvel_brasilia | 2011 | 0 of 1 | 0 |
-| comercial_quintella | 2012–2013 | 0 of 2 | 0 |
+| cafe_soluvel_brasilia | 2011 | 1 of 1 | 1 |
+| comercial_quintella | 2012–2013 | 2 of 2 | 2 |
 | cobrasma | 2014 | 1 of 1 | 0 |
 | petrobras_2014 | 2010–2012 | 3 of 3 | 0 |
 
-IRB, fiscal year 2019 (not detectable under amendment 3): status `versao_da_epoca_pendente_enet`, source `—`.
+IRB, fiscal year 2019 (not detectable under amendment 3): status `ok`, source `enet`.

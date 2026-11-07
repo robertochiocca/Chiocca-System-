@@ -43,10 +43,13 @@ def _status(linha: pd.Series) -> str:
 def chaves_enet(meta: pd.DataFrame, pasta_base: Path) -> dict[str, int]:
     """Empresa-anos vindas do ENET com as contas-chave: ativo total (1), receita (3.01) e caixa operacional (6.01)."""
     enet_ok = meta[(meta.status == base.OK) & (meta.fonte == "enet")]
-    conta = {"empresa_anos": int(len(enet_ok)), "com_1": 0, "com_301": 0, "com_601": 0}
+    conta = {"empresa_anos": int(len(enet_ok)), "com_1": 0, "com_301": 0, "com_601": 0, "sem_penultimo": 0}
     for ano, g in enet_ok.groupby("exercicio"):
-        c = pd.read_csv(pasta_base / f"contas_{ano}.csv.gz", dtype={"cd_cvm": str, "cd_conta": str})
-        c = c[c.ordem == "ÚLTIMO"].merge(g[["cd_cvm", "dt_refer"]], on=["cd_cvm", "dt_refer"])
+        todas = pd.read_csv(pasta_base / f"contas_{ano}.csv.gz", dtype={"cd_cvm": str, "cd_conta": str})
+        todas = todas.merge(g[["cd_cvm", "dt_refer"]], on=["cd_cvm", "dt_refer"])
+        com_pen = todas[todas.ordem == "PENÚLTIMO"][["cd_cvm", "dt_refer"]].drop_duplicates()
+        conta["sem_penultimo"] += int(len(g) - len(com_pen))
+        c = todas[todas.ordem == "ÚLTIMO"]
         for chave, dem, codigo in (("com_1", "BPA", "1"), ("com_301", "DRE", "3.01"), ("com_601", None, "6.01")):
             sel = c[(c.cd_conta == codigo) & ((c.demonstracao == dem) if dem else c.demonstracao.str.startswith("DFC"))]
             conta[chave] += int(sel[["cd_cvm", "dt_refer"]].drop_duplicates().shape[0])
@@ -72,10 +75,13 @@ def numeros(
     # Duas leituras: exercício t e t+1 com versão da época disponível e o mesmo tipo (consolidado ou individual).
     tipos = {(cd, int(ano)): tipo for cd, ano, tipo in zip(ok.cd_cvm, ok.exercicio, ok.tipo)}
     pares = sum(1 for (cd, ano), tipo in tipos.items() if ano <= 2024 and tipos.get((cd, ano + 1)) == tipo)
-    pedidos = [linha.split()[0] for linha in (cache_enet / "pendentes.txt").read_text().split("\n") if linha.strip()]
+    # Documentos baixados do ENET: os usados na base e os cuja versão da época não tinha consolidado (arquivo vazio).
+    usados = meta[(meta.status == base.OK) & (meta.fonte == "enet")].num_doc.astype(str).tolist()
+    candidatos = meta[meta.status == base.INDISPONIVEL_INDIVIDUAL].num_doc.dropna().astype(str).tolist()
     vazios = sum(
-        1 for n in pedidos if (p := cache_enet / f"{n}_con.csv").exists() and len(p.read_text().split("\n")) <= 2
+        1 for n in candidatos if (p := cache_enet / f"{n}_con.csv").exists() and len(p.read_text().split("\n")) <= 2
     )
+    pedidos = usados + ["vazio"] * vazios
     casos = []
     for caso in gabarito[gabarito.acertavel_principal == "sim"].itertuples():
         ini, fim = max(int(caso.periodo_afetado_inicio), 2010), min(int(caso.periodo_afetado_fim), 2023)
@@ -168,7 +174,8 @@ TEXTOS: dict[str, dict[str, str]] = {
         "enet_t": "## Rota do ENET",
         "enet": "Documentos pedidos ao ENET: {pedidos}. Sem demonstração consolidada na versão da época: {sem_con}. "
         "Empresa-anos que entraram na base pelo ENET: {n_enet}; com ativo total (conta 1): {c1}; com receita "
-        "(conta 3.01): {c301}; com caixa operacional (conta 6.01): {c601}.",
+        "(conta 3.01): {c301}; com caixa operacional (conta 6.01): {c601}. Versões antigas que mostram só a coluna do "
+        "exercício, sem o comparativo (PENÚLTIMO): {sem_pen}; nelas, o que depende de t-1 vai sair não calculável.",
         "casos_t": "## Casos acertáveis do gabarito na base (sem valores)",
         "casos_cab": "| Caso | Anos do período afetado nos dados | Anos com versão da época | Desses, pelo ENET |",
         "irb": "IRB, exercício de 2019 (não acertável pela emenda 3): situação `{status}`, fonte `{fonte}`.",
@@ -224,15 +231,27 @@ TEXTOS: dict[str, dict[str, str]] = {
         "enet_t": "## ENET route",
         "enet": "Filings requested from ENET: {pedidos}. With no consolidated statements in the point-in-time version: "
         "{sem_con}. Company-years that entered the base via ENET: {n_enet}; with total assets (account 1): {c1}; with "
-        "revenue (account 3.01): {c301}; with operating cash flow (account 6.01): {c601}.",
+        "revenue (account 3.01): {c301}; with operating cash flow (account 6.01): {c601}. Old versions that show only "
+        "the current-year column, without the comparative (PENÚLTIMO): {sem_pen}; for these, anything that depends on "
+        "t-1 will come out not computable.",
         "casos_t": "## Detectable ground-truth cases in the base (no values)",
         "casos_cab": "| Case | Affected years in the data | Years with the point-in-time version | Of which via ENET |",
         "irb": "IRB, fiscal year 2019 (not detectable under amendment 3): status `{status}`, source `{fonte}`.",
     },
 }
 SITUACOES = {
-    "pt": {"ATIVO": "ativo", "CANCELADA": "cancelado", "fora_do_cadastro": "fora do cadastro"},
-    "en": {"ATIVO": "active", "CANCELADA": "cancelled", "fora_do_cadastro": "not in the registry"},
+    "pt": {
+        "ATIVO": "ativo",
+        "CANCELADA": "cancelado",
+        "SUSPENSO(A) - DECISÃO ADM": "suspenso por decisão administrativa",
+        "fora_do_cadastro": "fora do cadastro",
+    },
+    "en": {
+        "ATIVO": "active",
+        "CANCELADA": "cancelled",
+        "SUSPENSO(A) - DECISÃO ADM": "suspended by administrative decision",
+        "fora_do_cadastro": "not in the registry",
+    },
 }
 
 
@@ -287,6 +306,7 @@ def render(n: dict[str, Any], lang: str) -> str:
             c1=i(n["enet"].get("com_1", 0)),
             c301=i(n["enet"].get("com_301", 0)),
             c601=i(n["enet"].get("com_601", 0)),
+            sem_pen=i(n["enet"].get("sem_penultimo", 0)),
         ),
         t["casos_t"],
         "\n".join(casos),
@@ -297,7 +317,7 @@ def render(n: dict[str, Any], lang: str) -> str:
 
 
 def main() -> None:
-    meta = pd.read_csv(RAIZ / "data" / "base" / "empresa_ano.csv", dtype={"cd_cvm": str})
+    meta = pd.read_csv(RAIZ / "data" / "base" / "empresa_ano.csv", dtype={"cd_cvm": str, "num_doc": str})
     gab = pd.read_csv(RAIZ / "data" / "gabarito_casos.csv", dtype=str)
     hoje = datetime.now(timezone.utc).date().isoformat()
     n = numeros(meta, gab, base.CACHE_ENET, hoje, chaves_enet(meta, RAIZ / "data" / "base"))
