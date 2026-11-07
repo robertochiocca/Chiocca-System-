@@ -91,6 +91,14 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 | Exemplo resolvido com valores esperados (teste de referência) | |
 | Especificação para o agente de código ([`PROMPT.md`](PROMPT.md)) | Próximas fases: auditoria, ganhos não recorrentes a partir das notas explicativas, rendimento do caixa, dividendos sem caixa, F-score e teste de retorno das ações |
 
+### Como este projeto foi feito
+
+O Chiocca System foi concebido, especificado e revisado por Roberto Chiocca. A pergunta de pesquisa, a metodologia e as decisões do estudo são dele: o pré-registro foi assinado antes de qualquer dado, cada emenda foi aprovada por ele com data e commit, e o resultado foi publicado como saiu, inclusive o que não funcionou.
+
+O código foi escrito com assistentes de IA para programação, trabalhando por fases a partir de especificação escrita, com parada obrigatória para revisão antes de cada fase seguinte. Nenhum número depende da palavra de ninguém: o exemplo resolvido tem o hash travado no teste, seus valores foram conferidos por um segundo cálculo independente, mais de cem testes automáticos rodam no CI, e um teste garante que os documentos em português e em inglês têm os mesmos números.
+
+Os módulos reaproveitados de outros projetos do autor (Carchuna, Calahonda e DireitoAberto) foram adaptados ao formato do Chiocca e têm a origem registrada em [docs/origem-do-codigo.md](docs/origem-do-codigo.md).
+
 ### Estrutura
 
 ```
@@ -214,6 +222,14 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 | Study pre-registration | Alert sheet and one-page summary, in PT and EN |
 | Worked example with expected values (reference test) | |
 | Build specification for the coding agent ([`PROMPT.md`](PROMPT.md)) | Next phases: auditor signals, non-recurring gains from the notes to the financial statements, cash yield, dividends above free cash flow, F-score and stock-return test |
+
+### How this project was built
+
+Chiocca System was conceived, specified and reviewed by Roberto Chiocca. The research question, the methodology and the study decisions are his: the pre-registration was signed before any data, every amendment was approved by him with a date and a commit, and the results were published as they came out, including what did not work.
+
+The code was written with AI coding assistants, working in phases from a written specification, with a mandatory review stop before each next phase. No number depends on anyone's word: the worked example has its hash locked in the tests, its values were checked by a second, independent calculation, more than a hundred automated tests run in CI, and a test ensures the Portuguese and English documents carry the same numbers.
+
+Modules reused from the author's other projects (Carchuna, Calahonda and DireitoAberto) were adapted to Chiocca's format and their origin is recorded in [docs/origem-do-codigo.md](docs/origem-do-codigo.md).
 
 ### Structure
 

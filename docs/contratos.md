@@ -16,7 +16,7 @@ Proposta da Fase A, para sua aprovação. Só o lacre (seção 1) já está no c
 - `chiocca/v2/lacre.py`: `ULTIMO_EXERCICIO_LIBERADO = 2023`, num lugar só, no código. Mudar exige um commit.
 - `garantir_liberado(exercicio)` levanta `ExercicioLacrado`; `so_liberados(tabela)` filtra antes de qualquer cálculo.
 - O teste `tests/test_v2_lacre.py` garante o limite, a recusa e que o cálculo do motor v1 reaproveitado para em 2023.
-- **Data de referência máxima: decisão sua** (pergunta 1 do [plano](plano-v2.md)). Proposta: 31/12/2024. Assim nenhuma DFP de exercício lacrado chega a ser lida, e o filtro por exercício continua valendo para quem fecha o exercício no meio do ano.
+- **Intervalo da data de referência** (decisão de 07/11/2026): de 30/04/2011 a 31/12/2024, em `DATA_REFERENCIA_MINIMA` e `DATA_REFERENCIA_MAXIMA`, com `garantir_data_referencia`. O lacre continua por exercício: nada acima de 2023 é calculado, em nenhuma data.
 
 ## 2. Entidades
 
@@ -34,7 +34,7 @@ Proposta da Fase A, para sua aprovação. Só o lacre (seção 1) já está no c
 
 ### DataReferencia
 
-Data (`AAAA-MM-DD`) informada pelo analista. Vale dentro do intervalo [data mínima, data máxima] que você decidir; fora dele, a consulta é recusada com o motivo.
+Data (`AAAA-MM-DD`) informada pelo analista, de 30/04/2011 a 31/12/2024; fora desse intervalo, a consulta é recusada com o motivo. Documentos entregues depois de 31/12/2024 só têm metadados e hash registrados pelo monitor: nada é lido, resumido ou extraído deles.
 
 ### ExercicioNaData
 
@@ -148,6 +148,7 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 | `mudancas` | O que mudou em relação aos exercícios anteriores e às versões anteriores conhecidas na data (reapresentações), com evidências |
 | `o_que_se_sabia` | Documentos públicos na data de referência (DFP, ITR e, na Fase F, fatos relevantes), com data de entrega |
 | `qualidade_dos_dados` | Conferências e confiança |
+| `parecer_e_auditor` | Seção factual (Fase C2): tipo do parecer, trecho do texto da DFP conferido literalmente, auditor e trocas de auditor pelo FCA. Não é família de sinais e não gera nota nem alerta |
 | `como_o_motor_foi_testado` | Ligação para o resultado do estudo 1, como saiu ([`docs/resumo.md`](resumo.md)) |
 | `limitacoes` | Gerais e do caso |
 | `motor`, `gerado_em`, `aviso` | Versão do motor, data e hora, aviso fixo |
@@ -157,12 +158,22 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 | Família | Sinais | Papel | Fonte | Gera alerta? |
 | --- | --- | --- | --- | --- |
 | Possível manipulação | Motor v1 (estudo 1): os oito componentes do M-score e o M, o salto do DPO, o juro implícito, o lucro sem caixa (só contexto, como no estudo) e, nas financeiras, o peso não recorrente | Alerta do motor v1, sempre com o contexto e com o resultado do estudo 1 ao lado | Pré-registro, seção 4, e emendas 1 a 11 | Sim, pela regra do estudo 1, sem mudança |
-| Risco financeiro | Altman Z'' (versão de 1995 para mercados emergentes) | Contexto descritivo | Altman, Hartzell e Peck (1995), a conferir na fonte primária antes de implementar | Não |
+| Risco financeiro | Altman Z'' puro, para empresas não industriais e mercados emergentes, sem a constante do Emerging Market Score | Contexto descritivo | Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", em `referencias/`, conferido com a página antes de implementar | Não |
 | Qualidade financeira | Piotroski F (2000), nove testes binários | Contexto descritivo | Piotroski (2000), Journal of Accounting Research, a conferir na fonte primária antes de implementar | Não |
 
-- O salto do DPO e o juro implícito ficam na família de possível manipulação porque, no motor v1, fazem parte do mesmo detector (pré-registro, seção 4); separá-los mudaria a regra "em alerta". Pergunta 3 do plano.
-- **Altman Z''**: os coeficientes, a constante de mercados emergentes e as faixas serão transcritos da fonte primária e registrados em `docs/fontes.md` antes da implementação, como manda a regra de lastro. Proposta de mapeamento das variáveis para as contas da CVM, a conferir: capital de giro (1.01 − 2.01) ÷ ativo total (1); lucros retidos (2.03.04 + 2.03.05) ÷ ativo total; EBIT (3.05) ÷ ativo total; patrimônio líquido (2.03) ÷ passivo exigível (2.01 + 2.02). Limites conhecidos: calibrado fora do Brasil; no Brasil os lucros do exercício são em grande parte distribuídos ou levados a reservas, o que afeta a variável de lucros retidos; não se aplica a financeiras. As faixas da fonte aparecem como "faixas do artigo original", nunca como veredito.
-- **Piotroski F**: os nove testes (rentabilidade, caixa operacional, variação da rentabilidade, accruals, alavancagem, liquidez, emissão de ações, margem bruta e giro do ativo) serão conferidos na fonte primária. A emissão de ações depende de `composicao_capital`, que só existe nos anos recentes. Para os anos sem ele, o mapeamento (linhas de emissão na DFC, pelo padrão congelado da parte 4.2 do reconhecimento, ou variação do capital social 2.03.01) será proposto na Fase C.
+- O salto do DPO e o juro implícito ficam na família de possível manipulação, como no motor v1 (decisão de 07/11/2026). Explicações alternativas obrigatórias no Achado, com fonte quando houver: no juro implícito, dívida cara, variação cambial e juros de arrendamento dentro da despesa financeira; no DPO, poder de negociação com fornecedores e mudança de mix de compras.
+- **Altman Z''** (decisão de 07/11/2026):
+  - versão Z'' pura, sem a constante de 3,25 do Emerging Market Score, que foi feito para dívida de emergentes e depende de ajustes qualitativos (câmbio, setor, posição competitiva) e de uma tabela de rating que não vamos aplicar;
+  - coeficientes e zonas (segura, cinzenta e de dificuldade) copiados do Altman (2000) para a versão Z'' pura, com a página do PDF, e registrados em `docs/fontes.md`. Nada de memória;
+  - X1 = (ativo circulante 1.01 − passivo circulante 2.01) ÷ ativo total (conta 1);
+  - X2 = (reservas de lucros + lucros ou prejuízos acumulados) ÷ ativo total, como **adaptação brasileira**: desde a Lei 11.638/2007, a S.A. não fecha o ano com saldo positivo em lucros acumulados, porque o lucro retido vai para as reservas de lucros. No plano das não financeiras, 2.03.04 e 2.03.05 (contas fixas, a confirmar e localizar por texto se variarem). Reservas de capital e ajustes de avaliação patrimonial não entram. A marca de adaptação vai na linhagem e no catálogo;
+  - X3 = EBIT (3.05, resultado antes do resultado financeiro e dos tributos) ÷ ativo total;
+  - X4 = patrimônio líquido consolidado, com não controladores (2.03) ÷ (passivo circulante 2.01 + passivo não circulante 2.02);
+  - não se aplica a financeiras: "não calculável", com o motivo;
+  - entrada nova no catálogo, família risco financeiro, fase `contexto_v2`, nome e descrição em PT e EN; nenhuma entrada do motor v1 muda;
+  - exemplo resolvido próprio da v2 (não o `data/exemplo_resolvido.json` do estudo 1), com o caso de lucros acumulados zerados e reservas positivas, e um teste que falha se o X2 usar só lucros acumulados;
+  - as zonas da fonte aparecem como "zonas do artigo original", nunca como veredito.
+- **Piotroski F** (decisão de 07/11/2026): cada um dos nove testes conferido no Piotroski (2000), com a página, e cada adaptação brasileira marcada na linhagem e no catálogo. Como a quantidade de ações só existe nos anos recentes, o teste de "não emitiu ações" usa a linha de emissão de ações da DFC, pelos padrões congelados da parte 4.2 do reconhecimento, marcado como adaptação; sem a linha, "não calculável". Entrada nova no catálogo, família qualidade financeira, fase `contexto_v2`.
 - O catálogo já tem um `fscore_dechow` (Dechow e outros, 2011), que mede outra coisa (probabilidade de reapresentação) e é sinal da fase 2 do catálogo. Ele não entra nesta etapa, e os nomes não se confundem.
 
 ## 4. Data de referência, versões e corte transversal

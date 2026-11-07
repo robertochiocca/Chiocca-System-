@@ -55,15 +55,33 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 - LLM só opcional, com toda citação passando pela mesma conferência. Sem chave, tudo funciona em modo extrativo.
 - Tamanho: cerca de 1.800 linhas e 50 testes.
 
-## Perguntas para você decidir
+## Perguntas e decisões
 
 1. **Data de referência máxima e mínima.** Proposta: máxima em 31/12/2024 e mínima em 30/04/2011, a primeira data de corte com DFP de 2010.
+   - **Decisão de Roberto, 07/11/2026:** de 30/04/2011 a 31/12/2024. O lacre segue por exercício: nada acima de 2023 é calculado, em nenhuma data.
 2. **Documentos entregues depois da data máxima** (fatos relevantes, ITR, comunicados). Proposta: o monitor registra só metadados e hash, sem ler nem resumir. Um fato relevante de 2024 ou depois pode revelar casos que o estudo 2 vai testar.
+   - **Decisão de Roberto, 07/11/2026:** o monitor registra só metadados e hash, sem ler, resumir ou extrair nada.
 3. **Salto do DPO e juro implícito na família de possível manipulação**, como no motor v1. Proposta: sim, porque separá-los mudaria a regra "em alerta" do estudo 1.
+   - **Decisão de Roberto, 07/11/2026:** ficam na família de manipulação; o invariante da Fase C continua valendo. Explicações alternativas no Achado, com fonte quando houver: no juro implícito, dívida cara, variação cambial e juros de arrendamento dentro da despesa financeira; no DPO, poder de negociação com fornecedores e mudança de mix de compras.
 4. **Confiança categórica, sem nota numérica.** Proposta: sim.
+   - **Aceita por padrão em 07/11/2026.**
 5. **PDF sem dependência** (gerador do DireitoAberto, só texto e tabelas) agora, em vez de matplotlib. Proposta: sim; gráficos ficam na interface.
+   - **Aceita por padrão em 07/11/2026.**
 6. **Teste binomial sobre o estudo 1** (adaptado do Kupiec da Calahonda). É uma estatística nova, não pré-registrada. Proposta: só com a sua autorização, e rotulada como descritiva, calculada depois do estudo.
+   - **Decisão de Roberto, 07/11/2026:** autorizado, como "análise descritiva depois do resultado, não pré-registrada", com a distribuição binomial de Poisson exata e sem scipy. A probabilidade de cada caso acertável ser acertado ao acaso é 1 − produto de (1 − taxa de alerta do grupo no ano) sobre os anos do período afetado, com as taxas observadas no estudo 1. Resultado em [`docs/analises-pos-estudo-1.md`](analises-pos-estudo-1.md), sem alterar nenhum arquivo do estudo 1.
 7. **Parâmetros de exibição:** `n` mínimo de 10 empresas para o percentil no setor e 5 exercícios para o histórico. Não são regras do motor e não criam alerta.
+   - **Aceita por padrão em 07/11/2026.**
 8. **Organização:** pacote `chiocca/v2/` e interface em `web/`.
+   - **Aceita por padrão em 07/11/2026.**
 9. **Busca no ENET** de versões que não estão no armazenamento. Proposta: só por comando separado; a API responde `versao_pendente_enet` e nunca baixa nada dentro de uma consulta.
+   - **Aceita por padrão em 07/11/2026.**
 10. **Altman Z'' e Piotroski F:** a fonte primária (artigo ou livro) precisa estar acessível para transcrever as fórmulas. Se você tiver os PDFs, eles entram em `referencias/` (fora do git); senão, busco as fontes publicadas e registro em `docs/fontes.md`.
+    - **Decisão de Roberto, 07/11/2026:** os PDFs de Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", e de Piotroski (2000), Journal of Accounting Research, vão para `referencias/`. Nenhum coeficiente ou teste entra antes de conferido neles, com a página.
+
+## Fase C dividida (decisão de Roberto, 07/11/2026)
+
+- **C1:** armazenamento temporal, motor v1 em qualquer data e o invariante do estudo 1. Para.
+- **C2:** contexto, Altman Z'', Piotroski F, JSON e PDF. Acréscimos:
+  - **Parecer e auditor:** seção factual na Investigacao, com o tipo do parecer, trecho do texto da DFP conferido literalmente, auditor e trocas de auditor pelo FCA. Não é família de sinais e não gera nota nem alerta.
+  - **Altman Z'':** versão Z'' pura, para empresas não industriais e mercados emergentes, sem a constante de 3,25 do Emerging Market Score (que foi feito para dívida de emergentes e depende de ajustes qualitativos e de uma tabela de rating que não vamos aplicar). Coeficientes e zonas copiados do Altman (2000), com a página. X1 = (ativo circulante − passivo circulante) ÷ ativo total; X2 = (reservas de lucros + lucros ou prejuízos acumulados) ÷ ativo total, como adaptação brasileira (desde a Lei 11.638/2007 o lucro retido vai para as reservas), sem reservas de capital nem ajustes de avaliação patrimonial; X3 = EBIT ÷ ativo total; X4 = patrimônio líquido consolidado com não controladores ÷ (passivo circulante + passivo não circulante). Não calculável em financeiras. Entrada nova no catálogo, família risco financeiro, fase `contexto_v2`, sem alterar o motor v1. Exemplo resolvido próprio da v2, com o caso de lucros acumulados zerados e reservas positivas, e um teste que falha se o X2 usar só lucros acumulados.
+  - **Piotroski F:** cada teste conferido no Piotroski (2000), com a página; adaptações brasileiras marcadas na linhagem e no catálogo. O teste de emissão de ações usa a linha de emissão da DFC (padrões congelados), marcado como adaptação; sem a linha, não calculável.

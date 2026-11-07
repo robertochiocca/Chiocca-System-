@@ -16,7 +16,7 @@ Phase A proposal, for your approval. Only the seal (section 1) is already in the
 - `chiocca/v2/lacre.py`: `ULTIMO_EXERCICIO_LIBERADO = 2023`, in a single place, in the code. Changing it requires a commit.
 - `garantir_liberado(exercicio)` raises `ExercicioLacrado`; `so_liberados(tabela)` filters before any computation.
 - The test `tests/test_v2_lacre.py` checks the limit, the refusal and that the reused engine v1 computation stops at 2023.
-- **Maximum reference date: your decision** (question 1 in the [plan](plan-v2.md)). Proposal: 2024-12-31. That way no DFP of a sealed fiscal year is ever read, and the fiscal-year filter still applies to companies whose fiscal year ends mid-year.
+- **Reference date range** (decision of 2026-11-07): from 2011-04-30 to 2024-12-31, in `DATA_REFERENCIA_MINIMA` and `DATA_REFERENCIA_MAXIMA`, with `garantir_data_referencia`. The seal stays by fiscal year: nothing above 2023 is computed, on any date.
 
 ## 2. Entities
 
@@ -34,7 +34,7 @@ Phase A proposal, for your approval. Only the seal (section 1) is already in the
 
 ### DataReferencia (reference date)
 
-Date (`YYYY-MM-DD`) entered by the analyst. It is valid within the [minimum date, maximum date] range you decide; outside it, the query is refused with the reason.
+Date (`YYYY-MM-DD`) entered by the analyst, from 2011-04-30 to 2024-12-31; outside that range, the query is refused with the reason. Documents filed after 2024-12-31 only have metadata and hash recorded by the monitor: nothing is read, summarized or extracted from them.
 
 ### ExercicioNaData (fiscal year as of the date)
 
@@ -148,6 +148,7 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
 | `mudancas` | What changed relative to previous fiscal years and to earlier versions known on the date (restatements), with evidence |
 | `o_que_se_sabia` | Documents public on the reference date (DFP, ITR and, in Phase F, material fact notices), with filing dates |
 | `qualidade_dos_dados` | Checks and confidence |
+| `parecer_e_auditor` | Factual section (Phase C2): type of auditor's report, an excerpt of the DFP text checked literally, the auditor and auditor changes from the FCA. It is not a signal family and produces no score or alert |
 | `como_o_motor_foi_testado` | Link to the study 1 result, as it came out ([`docs/summary.md`](../summary.md)) |
 | `limitacoes` | General and case-specific |
 | `motor`, `gerado_em`, `aviso` | Engine version, date and time, fixed notice |
@@ -157,12 +158,22 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
 | Family | Signals | Role | Source | Alerts? |
 | --- | --- | --- | --- | --- |
 | Possible manipulation | Engine v1 (study 1): the eight M-score components and M, the DPO jump, the implied interest rate, accruals (context only, as in the study) and, for financial companies, the non-recurring weight | Engine v1 alert, always with context and with the study 1 result alongside | Pre-registration, section 4, and amendments 1 to 11 | Yes, by the study 1 rule, unchanged |
-| Financial risk | Altman Z'' (1995 emerging-markets version) | Descriptive context | Altman, Hartzell and Peck (1995), to be checked against the primary source before implementation | No |
+| Financial risk | Pure Altman Z'', for non-manufacturing firms and emerging markets, without the Emerging Market Score constant | Descriptive context | Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", in `referencias/`, checked with the page before implementation | No |
 | Financial quality | Piotroski F (2000), nine binary tests | Descriptive context | Piotroski (2000), Journal of Accounting Research, to be checked against the primary source before implementation | No |
 
-- The DPO jump and the implied interest rate stay in the possible-manipulation family because, in engine v1, they are part of the same detector (pre-registration, section 4); separating them would change the "in alert" rule. Question 3 in the plan.
-- **Altman Z''**: the coefficients, the emerging-markets constant and the zones will be transcribed from the primary source and recorded in `docs/en/sources.md` before implementation, as the backing rule requires. Proposed mapping of the variables to CVM accounts, to be checked: working capital (1.01 − 2.01) ÷ total assets (1); retained earnings (2.03.04 + 2.03.05) ÷ total assets; EBIT (3.05) ÷ total assets; shareholders' equity (2.03) ÷ total liabilities (2.01 + 2.02). Known limits: calibrated outside Brazil; in Brazil, the year's profits are largely distributed or moved to reserves, which affects the retained-earnings variable; it does not apply to financial companies. The source's zones appear as "zones from the original article", never as a verdict.
-- **Piotroski F**: the nine tests (profitability, operating cash flow, change in profitability, accruals, leverage, liquidity, equity issuance, gross margin and asset turnover) will be checked against the primary source. Equity issuance depends on `composicao_capital`, which only exists in recent years. For the years without it, the mapping (issuance lines in the cash flow statement, by the frozen pattern in part 4.2 of the reconnaissance, or the change in share capital 2.03.01) will be proposed in Phase C.
+- The DPO jump and the implied interest rate stay in the possible-manipulation family, as in engine v1 (decision of 2026-11-07). Mandatory alternative explanations in the finding, with a source when available: for the implied interest rate, expensive debt, exchange differences and lease interest inside finance costs; for DPO, bargaining power with suppliers and a change in purchase mix.
+- **Altman Z''** (decision of 2026-11-07):
+  - the pure Z'' version, without the 3.25 constant of the Emerging Market Score, which was built for emerging-market debt and depends on qualitative adjustments (currency, industry, competitive position) and a rating table we will not apply;
+  - coefficients and zones (safe, grey and distress) copied from Altman (2000) for the pure Z'' version, with the PDF page, and recorded in `docs/en/sources.md`. Nothing from memory;
+  - X1 = (current assets 1.01 − current liabilities 2.01) ÷ total assets (account 1);
+  - X2 = (profit reserves + retained earnings or accumulated losses) ÷ total assets, as a **Brazilian adaptation**: since Law 11,638/2007, a Brazilian corporation does not close the year with a positive balance in retained earnings, because retained profit goes to profit reserves. In the non-financial chart of accounts, 2.03.04 and 2.03.05 (fixed accounts, to be confirmed and located by text if they vary). Capital reserves and equity valuation adjustments are excluded. The adaptation flag goes in the lineage and in the catalog;
+  - X3 = EBIT (3.05, operating profit before finance result and taxes) ÷ total assets;
+  - X4 = consolidated book equity, including non-controlling interests (2.03) ÷ (current liabilities 2.01 + non-current liabilities 2.02);
+  - it does not apply to financial companies: "not computable", with the reason;
+  - a new catalog entry, financial risk family, phase `contexto_v2`, name and description in PT and EN; no engine v1 entry changes;
+  - a v2 worked example of its own (not study 1's `data/exemplo_resolvido.json`), with the case of zero retained earnings and positive reserves, and a test that fails if X2 uses retained earnings alone;
+  - the source's zones appear as "zones from the original article", never as a verdict.
+- **Piotroski F** (decision of 2026-11-07): each of the nine tests checked against Piotroski (2000), with the page, and each Brazilian adaptation flagged in the lineage and the catalog. Since the number of shares only exists in recent years, the "did not issue shares" test uses the cash flow statement's share-issuance line, by the frozen patterns in part 4.2 of the reconnaissance, flagged as an adaptation; without the line, "not computable". A new catalog entry, financial quality family, phase `contexto_v2`.
 - The catalog already has an `fscore_dechow` (Dechow and others, 2011), which measures something else (likelihood of a restatement) and is a catalog phase 2 signal. It does not come in at this stage, and the names are not confused.
 
 ## 4. Reference date, versions and cross-section
