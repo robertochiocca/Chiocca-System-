@@ -155,3 +155,11 @@ Qualquer mudança entra aqui, com data, o que mudou e por quê; o texto acima n�
 - **Vão para "em observação":** Oi (DFs de 2015 e 2016), enquanto não houver decisão final; J.B. Duarte, se o resultado do Colegiado não for confirmado em fonte primária; Petrobras (DFs de 2014), se documento da própria companhia não disser claramente que demonstrações anteriores registraram valores indevidos por causa de fraude; e os processos do grupo de fronteira (escrituração e livros, sem acusação sobre o conteúdo das demonstrações).
 - **J.B. Duarte e Petrobras 2014 no gabarito:** J.B. Duarte entra no gabarito se o resultado do Colegiado for confirmado em fonte primária. Petrobras 2014 entra pelo critério (b) se o documento da companhia for claro, com o período afetado que ele indicar.
 - **Verificação:** verificado_por = "agente, fonte primária; revisado por Roberto Chiocca"; verificado_em = data da conferência.
+
+### Emenda 9 · 06/11/2026 · datas e verificação do gabarito final (sem nenhum valor e sem nenhum sinal)
+
+- **Fraude admitida (critério b):** sem processo da CVM, a data_publica é a do fato relevante. A regra do termo de acusação (emenda 8) vale só para processos da CVM.
+- **Análise secundária em duas partes:** 2a = casos com alguma data pública documentada anterior ao julgamento; 2b = casos em que a única data documentada é a do julgamento. As duas são reportadas separadamente, e a 2b é apresentada como teto otimista, porque uma data tardia deixa mais demonstrações disponíveis antes dela.
+- **Petrobras 2014:** o fato relevante de 27/01/2015 é considerado claro ("indevidamente reconhecidos", "erros", "fraude e corrupção"). O caso fica no gabarito pelo critério (b).
+- **Verificação da Americanas e do IRB:** verificado_por = "Roberto Chiocca, documentos lidos na fase de estudo, antes do pré-registro"; verificado_em = 2026-11-04. Fontes: release de resultados de 2022 e fato relevante de 16/07/2024 (Americanas); documento da Squadra de 10/02/2020 e processos da CVM (IRB).
+- **Empresas sem receita:** casos acertáveis cuja empresa-ano não tiver receita saem da amostra pela emenda 5, e o número efetivo de casos acertáveis é informado no relatório final.

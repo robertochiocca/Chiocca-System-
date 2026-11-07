@@ -649,6 +649,19 @@ São 13 linhas, com as colunas do gabarito mais `motivo_observacao`:
 - **Grupo de fronteira:** os 12 extratos no portal de processos sancionadores. Os links estão em `data/casos_em_observacao.csv`.
 - **OCR:** Tesseract 5 (português), só para ler datas nos PDFs digitalizados de Docas de Imbituba e Taurus.
 
+## 9. Emenda 9: datas e verificação do gabarito final (07/11/2026)
+
+A emenda 9 foi acrescentada ao pré-registro no mesmo commit desta parte, antes de qualquer sinal. Nenhum valor foi lido.
+
+- **Fraude admitida (critério b):** a emenda confirma o que a parte 8.2 já tinha feito. Americanas, Via Varejo e Petrobras 2014 usam o fato relevante como `data_publica`. Nenhuma data mudou.
+- **Coluna nova `parte_secundaria`** em [`data/gabarito_casos.csv`](../data/gabarito_casos.csv), preenchida só nos 17 casos que a emenda 8 manda para a análise secundária:
+  - **2a, data pública documentada anterior ao julgamento (4):** Taurus (fato relevante de 14/08/2013), OGX e OSX (fatos relevantes de 01/07/2013) e Oi 2014 (abertura do processo na base da CVM, 30/06/2016).
+  - **2b, só a data do julgamento (13):** Mundial 2016, Teka, IGB, Schlosser, Brasil Brokers, Inepar 2013, Docas de Imbituba, Petrobras 2010, Recrusul, Springer, BRAZAL, Marina de Iracema Park e Bahema. Pela emenda 9, a 2b é reportada como teto otimista.
+  - **Vazia (25):** os 13 acertáveis, os 8 fora do período, IRB, Via Varejo, Sultepa 2013 e J.B. Duarte, que não estão nessa análise secundária.
+- **Petrobras 2014:** fica no gabarito pelo critério b. Sem mudança no arquivo.
+- **Verificação da Americanas e do IRB:** `verificado_por` = "Roberto Chiocca, documentos lidos na fase de estudo, antes do pré-registro"; `verificado_em` = 2026-11-04. As fontes da emenda foram acrescentadas à nota de cada caso.
+- **Empresas sem receita:** é regra da Fase 1. O relatório final vai informar quantos dos 13 casos acertáveis sobram depois dessa exclusão.
+
 ## Anexo A. Nomes de setor no cadastro e no FCA
 
 "Empresas" conta códigos CVM distintos: no cadastro, pelo setor atual; no FCA, por qualquer ano de 2010 a 2026. Gerado por `scripts/fase0/setores.py --tabela`.
