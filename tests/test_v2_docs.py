@@ -15,6 +15,7 @@ PARES = [
     ("docs/origem-do-codigo.md", "docs/en/code-origin.md"),
     ("docs/roadmap.md", "docs/en/roadmap.md"),
     ("docs/motor-de-confianca.md", "docs/en/trust-engine.md"),
+    ("docs/referencias.md", "docs/en/references.md"),
 ]
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
 AVISO_EN = "Statistical signal based on public financial statements. Not an accusation, not investment advice."
@@ -23,6 +24,7 @@ AVISO_EN = "Statistical signal based on public financial statements. Not an accu
 def numeros(texto: str, lang: str) -> list[float]:
     """Números de um texto, depois de levar o formato PT (1.234,5 e 31/12/2025) ao formato EN."""
     texto = re.sub(r"`[^`\n]*`", " ", texto)  # identificadores e hashes em código
+    texto = re.sub(r"\]\([^)\s]*\)", "]", texto)  # destinos de links (URLs, DOIs e caminhos)
     if lang == "pt":
         texto = re.sub(r"(\d{2})/(\d{2})/(\d{4})", r"\3 \2 \1", texto)
         texto = re.sub(r"(?<=\d)\.(?=\d{3}\b)", "", texto)  # separador de milhar
@@ -47,3 +49,18 @@ def test_aviso_fixo_nos_contratos() -> None:
 
 def test_numeros_no_formato_de_cada_lingua() -> None:
     assert numeros("2.200 linhas, 0,053 e 31/12/2024", "pt") == numeros("2,200 lines, 0.053 and 2024-12-31", "en")
+
+
+def test_referencias_sem_pdf_no_git_e_com_licenca() -> None:
+    assert "referencias/" in (RAIZ / ".gitignore").read_text(encoding="utf-8").splitlines()
+    for caminho in ("docs/referencias.md", "docs/en/references.md"):
+        linhas = [
+            x
+            for x in (RAIZ / caminho).read_text(encoding="utf-8").splitlines()
+            if x.startswith("| ") and "---" not in x
+        ]
+        assert len(linhas) > 1 and all(x.count(" | ") == 4 for x in linhas)  # obra, uso, páginas, DOI ou link, licença
+    import subprocess
+
+    versionados = subprocess.run(["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True, check=True).stdout
+    assert not [f for f in versionados.splitlines() if f.lower().endswith(".pdf")]
