@@ -15,3 +15,5 @@ Commits inspected in Phase A (details in [`docs/en/inventory.md`](inventory.md))
 | `chiocca/v2/confianca.py` | Carchuna | `carchuna/confianca.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Only the structure of components with a reason; without the 0–100 score; new criteria and categorical level | B |
 | `chiocca/v2/conferencias.py` | Carchuna | `carchuna/margem.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Only the principle (identity, reconciliation through another path and plausibility); new checks for CVM data | B |
 | `.github/workflows/ci.yml` | DireitoAberto | `.github/workflows/ci.yml` | `102e3e2d9d70e87249d8df9215737e2d98b6358d` | Only the Python job, with Chiocca's commands | B |
+
+**Not from other projects.** `tests/referencia/gerar_exemplo_resolvido.py` came from the planning conversation (claude.ai, with Claude), written before the engine, and was handed over by Roberto on 2026-11-08. Its origin is in the file's own docstring. Changes: only black formatting and a type annotation required by mypy; no calculation changed.

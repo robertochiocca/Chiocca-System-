@@ -15,3 +15,5 @@ Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.m
 | `chiocca/v2/confianca.py` | Carchuna | `carchuna/confianca.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Só a estrutura de componentes com motivo; sem a nota de 0 a 100; critérios e nível categórico novos | B |
 | `chiocca/v2/conferencias.py` | Carchuna | `carchuna/margem.py` | `a3f30ac284eb01245b022b7655bb16c4b8474cc7` | Só o princípio (identidade, reconciliação por outro caminho e plausibilidade); conferências novas para a CVM | B |
 | `.github/workflows/ci.yml` | DireitoAberto | `.github/workflows/ci.yml` | `102e3e2d9d70e87249d8df9215737e2d98b6358d` | Só o job de Python, com os comandos do Chiocca | B |
+
+**Fora de outros projetos.** `tests/referencia/gerar_exemplo_resolvido.py` veio da conversa de planejamento (claude.ai, com o Claude), escrito antes do motor, e foi entregue por Roberto em 08/11/2026. A origem está no docstring do próprio arquivo. Mudanças: só a formatação do black e uma anotação de tipo pedida pelo mypy; nenhuma conta mudou.
