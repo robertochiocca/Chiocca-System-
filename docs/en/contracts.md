@@ -44,13 +44,13 @@ A company in a fiscal year, as it stood on the reference date. It is the output 
 | --- | --- | --- |
 | `cd_cvm`, `exercicio`, `dt_refer` | text, integer, date | `exercicio` goes through `garantir_liberado` |
 | `data_referencia` | date | The query's |
-| `situacao` | enumeration | `ok`, `sem_versao_ate_a_data`, `versao_indisponivel_individual`, `versao_pendente_enet` or `conta_repetida` (the states of `como_era`) |
+| `situacao` | enumeration | `ok`, `sem_documento`, `sem_versao_ate_a_data`, `versao_indisponivel_individual`, `versao_indisponivel_enet`, `versao_pendente_enet` or `conta_repetida` (the states of `como_era`, with the contract name in `chiocca.v2.na_data.SITUACAO`) |
 | `versao_usada`, `dt_receb` | integer, date | The most recent version filed by the reference date |
 | `versoes_conhecidas` | list of (version, filing date) | Only those filed by the reference date: the existence of a later version is information from the future and does not appear |
 | `tipo` | `con` or `ind` | Consolidated when it exists; otherwise individual |
 | `origem` | `dados_abertos` or `enet` | ENET only for consolidated statements (amendment 8) |
 | `num_doc`, `link` | text | Document sequence number and ENET page address |
-| `escala_original` | `MIL` or `UNIDADE` | Contract values are always in reais |
+| `escala_original` | `MIL` or `UNIDADE` | Contract values are always in reais. The C1 store keeps values already in reais, with the scale applied on reading, as in study 1; this field comes in C2 |
 | `contas` | list of `Evidencia` | The DFP lines used (ÚLTIMO for t and PENÚLTIMO for t−1) |
 
 ### Evidencia (evidence)
@@ -198,8 +198,8 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
 
 - **Version:** for each company and fiscal year, the most recent one filed by the reference date (`como_era` with `corte = data_referencia`). Consolidated when it exists; otherwise individual. Earlier versions come from ENET, consolidated only. t−1 comes from the PENÚLTIMO column of the same DFP.
 - **Cross-section:** engine v1's deciles (DPO jump and non-recurring weight) and the context percentiles are recomputed with the companies whose version was public on the reference date. It is the same study 1 rule, applied to the information of that date.
-- **Testable invariant:** with the reference date equal to the fiscal year's cut-off date, engine v1's signals and alerts match those of study 1 (`resultados/sinais_empresa_ano.csv`). This test comes in Phase C.
-- **Storage:** DuckDB over Parquet, built from `data/brutos` (already checked by hash) and `data/cache/enet`. Tables: `versoes` (metadata of every DFP version up to the seal), `contas` (per available version), `fca` and `cadastro`. A version that is not stored comes out as `versao_pendente_enet`. Fetching from ENET happens through a separate command, never inside an API query (question 9 in the plan).
+- **Testable invariant:** with the reference date equal to the fiscal year's cut-off date, engine v1's signals and alerts match those of study 1 (`resultados/sinais_empresa_ano.csv`). Implemented in C1 (`chiocca/v2/invariante.py`), with the result in [`docs/en/temporal-storage.md`](temporal-storage.md).
+- **Storage:** DuckDB over Parquet, built from `data/brutos` (already checked by hash) and `data/cache/enet`. Tables: `versoes` (metadata of every DFP version up to the seal), `contas` (per available version), `fca` and `cadastro`. A version that is not stored comes out as `versao_pendente_enet`. Fetching from ENET happens through a separate command, never inside an API query (question 9 in the plan). Implemented in C1 (`chiocca/v2/armazem.py`), with one more rule: for documents filed after 2024-12-31, the store keeps only metadata and the structure (which statements exist), with no account and no value; `como_era` uses that structure of the latest version to decide the ENET route (amendment 8).
 
 ## 5. Outputs
 

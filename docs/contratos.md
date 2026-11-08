@@ -44,13 +44,13 @@ Uma empresa num exercício, como era na data de referência. É a saída de `com
 | --- | --- | --- |
 | `cd_cvm`, `exercicio`, `dt_refer` | texto, inteiro, data | `exercicio` passa por `garantir_liberado` |
 | `data_referencia` | data | A da consulta |
-| `situacao` | enumeração | `ok`, `sem_versao_ate_a_data`, `versao_indisponivel_individual`, `versao_pendente_enet` ou `conta_repetida` (os estados de `como_era`) |
+| `situacao` | enumeração | `ok`, `sem_documento`, `sem_versao_ate_a_data`, `versao_indisponivel_individual`, `versao_indisponivel_enet`, `versao_pendente_enet` ou `conta_repetida` (os estados de `como_era`, com o nome do contrato em `chiocca.v2.na_data.SITUACAO`) |
 | `versao_usada`, `dt_receb` | inteiro, data | A versão mais recente entregue até a data de referência |
 | `versoes_conhecidas` | lista de (versão, data de entrega) | Só as entregues até a data de referência: a existência de uma versão posterior é informação do futuro e não aparece |
 | `tipo` | `con` ou `ind` | Consolidado quando existir; senão, individual |
 | `origem` | `dados_abertos` ou `enet` | ENET só para consolidado (emenda 8) |
 | `num_doc`, `link` | texto | Número sequencial do documento e endereço da página no ENET |
-| `escala_original` | `MIL` ou `UNIDADE` | Os valores do contrato estão sempre em reais |
+| `escala_original` | `MIL` ou `UNIDADE` | Os valores do contrato estão sempre em reais. O armazém da C1 guarda os valores já em reais, com a escala aplicada na leitura, como no estudo 1; este campo entra na C2 |
 | `contas` | lista de `Evidencia` | As linhas da DFP usadas (ÚLTIMO para t e PENÚLTIMO para t−1) |
 
 ### Evidencia
@@ -198,8 +198,8 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 
 - **Versão:** para cada empresa e exercício, a mais recente entregue até a data de referência (`como_era` com `corte = data_referencia`). Consolidado quando existir; senão, individual. Versões anteriores vêm do ENET, só no consolidado. O t−1 vem do PENÚLTIMO da mesma DFP.
 - **Corte transversal:** os decis do motor v1 (salto do DPO e peso não recorrente) e os percentis de contexto são recalculados com as empresas cuja versão era pública na data de referência. É a mesma regra do estudo 1, aplicada à informação daquela data.
-- **Invariante testável:** com a data de referência igual à data de corte do exercício, os sinais e alertas do motor v1 coincidem com os do estudo 1 (`resultados/sinais_empresa_ano.csv`). Esse teste entra na Fase C.
-- **Armazenamento:** DuckDB sobre Parquet, montado a partir de `data/brutos` (já conferido por hash) e de `data/cache/enet`. Tabelas: `versoes` (metadados de todas as versões de DFP até o lacre), `contas` (por versão disponível), `fca` e `cadastro`. Uma versão que não está armazenada sai como `versao_pendente_enet`. A busca no ENET acontece por comando separado, nunca dentro de uma consulta da API (pergunta 9 do plano).
+- **Invariante testável:** com a data de referência igual à data de corte do exercício, os sinais e alertas do motor v1 coincidem com os do estudo 1 (`resultados/sinais_empresa_ano.csv`). Implementado na C1 (`chiocca/v2/invariante.py`), com o resultado em [`docs/armazenamento-temporal.md`](armazenamento-temporal.md).
+- **Armazenamento:** DuckDB sobre Parquet, montado a partir de `data/brutos` (já conferido por hash) e de `data/cache/enet`. Tabelas: `versoes` (metadados de todas as versões de DFP até o lacre), `contas` (por versão disponível), `fca` e `cadastro`. Uma versão que não está armazenada sai como `versao_pendente_enet`. A busca no ENET acontece por comando separado, nunca dentro de uma consulta da API (pergunta 9 do plano). Implementado na C1 (`chiocca/v2/armazem.py`), com uma regra a mais: de documento entregue depois de 31/12/2024, o armazém guarda só metadados e a estrutura (quais demonstrações existem), sem nenhuma conta nem valor; o `como_era` usa essa estrutura da última versão para decidir a rota do ENET (emenda 8).
 
 ## 5. Saídas
 

@@ -82,6 +82,7 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
 ## Phase C split (Roberto's decision, 2026-11-07)
 
 - **C1:** temporal storage, engine v1 on any date and the study 1 invariant. Stop.
+  - **Completed on 2026-11-08:** `chiocca/v2/armazem.py`, `chiocca/v2/na_data.py` and `chiocca/v2/invariante.py`, with the result in [`docs/en/temporal-storage.md`](temporal-storage.md).
 - **C2:** context, Altman Z'', Piotroski F, JSON and PDF. Additions:
   - **Auditor's report and auditor:** a factual section in the investigation, with the type of report, an excerpt of the DFP text checked literally, the auditor and auditor changes from the FCA. It is not a signal family and produces no score or alert.
   - **Altman Z'':** specification of 2026-11-08 in `docs/en/contracts.md`, section 3: formula from p. 27 of Altman (2000), X2 as a Brazilian adaptation, no +3.25 constant and no rating table (a test fails if 3.25 appears), no zones (the 1.23 and 2.90 zones belong to Z'), point-in-time sector and year percentile (non-financial universe if the sector has fewer than 10 companies), "does not apply" for financial companies and a validity note. A v2 worked example of its own, with a test that fails if X2 uses retained earnings alone.

@@ -75,7 +75,7 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 
 **Depois do resultado (análise descritiva, não pré-registrada).** Com anos independentes, o acaso daria 8,56 acertos em média, e 7 ou mais com chance de 90,0%. Como os alertas se repetem na mesma empresa (73,8% das empresa-anos em alerta das não financeiras também estavam em alerta no ano anterior, contra taxa de alerta de 49,9% das empresa-anos não financeiras avaliadas), esse número é um teto. Com a chance de cada caso medida nas empresas do mesmo grupo, sem supor anos independentes, o acaso daria 7,37 acertos, e 7 ou mais com chance de 69,3%. Detalhes em [`docs/analises-pos-estudo-1.md`](docs/analises-pos-estudo-1.md).
 
-**Chiocca System v2, do estudo ao produto (em andamento).** O estudo 1 está congelado no branch `estudo-1-final`, e o produto usa o motor v1 como está. Fase A concluída: inventário do código da Carchuna, da Calahonda e do DireitoAberto ([`docs/inventario.md`](docs/inventario.md)), contratos de dados ([`docs/contratos.md`](docs/contratos.md)), plano das fases B a F ([`docs/plano-v2.md`](docs/plano-v2.md)) e lacre dos exercícios de 2024 em diante (`chiocca/v2/lacre.py`), reservados ao estudo 2. Fase B concluída: validade, conferências dos dados da CVM, linhagem e confiança ([`docs/motor-de-confianca.md`](docs/motor-de-confianca.md)), com o resultado das conferências na base inteira em [`docs/conferencias.md`](docs/conferencias.md), e CI no GitHub Actions.
+**Chiocca System v2, do estudo ao produto (em andamento).** O estudo 1 está congelado no branch `estudo-1-final`, e o produto usa o motor v1 como está. Fase A concluída: inventário do código da Carchuna, da Calahonda e do DireitoAberto ([`docs/inventario.md`](docs/inventario.md)), contratos de dados ([`docs/contratos.md`](docs/contratos.md)), plano das fases B a F ([`docs/plano-v2.md`](docs/plano-v2.md)) e lacre dos exercícios de 2024 em diante (`chiocca/v2/lacre.py`), reservados ao estudo 2. Fase B concluída: validade, conferências dos dados da CVM, linhagem e confiança ([`docs/motor-de-confianca.md`](docs/motor-de-confianca.md)), com o resultado das conferências na base inteira em [`docs/conferencias.md`](docs/conferencias.md), e CI no GitHub Actions. Fase C1 concluída: armazenamento temporal (DuckDB sobre Parquet), motor v1 em qualquer data de referência e o invariante do estudo 1 ([`docs/armazenamento-temporal.md`](docs/armazenamento-temporal.md)).
 
 | Implementado | Roadmap |
 | --- | --- |
@@ -130,7 +130,7 @@ PROMPT.md                 especificação de construção para o agente de códi
 ### Como reproduzir
 
 ```
-python -m pip install pandas numpy pytest
+python -m pip install pandas numpy duckdb pyarrow pytest
 python -m chiocca.dados baixar        # baixa DFP, FCA e cadastro da CVM para data/brutos/ e grava o manifesto
 python -m chiocca.dados verificar     # confere os arquivos contra os hashes do manifesto
 python -m chiocca.montar_base         # monta a base e lista as versões da época que precisam do ENET
@@ -143,6 +143,8 @@ python -m chiocca.americanas          # duas leituras da Americanas, em resultad
 python -m chiocca.relatorio_resultados  # gera os resultados e o resumo, em PT e EN
 python -m chiocca.ficha 20990 2021 pt  # ficha de alerta de uma empresa-ano
 python -m chiocca.v2.relatorio_conferencias  # conferências de qualidade na base, até o lacre
+python -m chiocca.v2.armazem          # armazém temporal em data/armazem (fora do git)
+python -m chiocca.v2.invariante       # invariante do estudo 1 e corte na data máxima
 python -m pytest                      # testes sem rede
 ```
 
@@ -218,7 +220,7 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 
 **After the result (descriptive analysis, not pre-registered).** With independent years, chance would produce 8.56 detections on average, and 7 or more with a probability of 90.0%. Since alerts repeat at the same company (73.8% of non-financial company-years in alert were also in alert in the previous year, against an alert rate of 49.9% of evaluated non-financial company-years), this number is a ceiling. With each case's chance measured on companies in the same group, without assuming independent years, chance would produce 7.37 detections, and 7 or more with a probability of 69.3%. Details in [`docs/en/post-study-1-analyses.md`](docs/en/post-study-1-analyses.md).
 
-**Chiocca System v2, from study to product (in progress).** Study 1 is frozen on the `estudo-1-final` branch, and the product uses engine v1 as it is. Phase A complete: inventory of the code from Carchuna, Calahonda and DireitoAberto ([`docs/en/inventory.md`](docs/en/inventory.md)), data contracts ([`docs/en/contracts.md`](docs/en/contracts.md)), plan for phases B to F ([`docs/en/plan-v2.md`](docs/en/plan-v2.md)) and the seal on fiscal years 2024 onward (`chiocca/v2/lacre.py`), reserved for study 2. Phase B complete: validity, CVM data checks, lineage and confidence ([`docs/en/trust-engine.md`](docs/en/trust-engine.md)), with the result of the checks on the whole base in [`docs/en/data-checks.md`](docs/en/data-checks.md), and CI on GitHub Actions.
+**Chiocca System v2, from study to product (in progress).** Study 1 is frozen on the `estudo-1-final` branch, and the product uses engine v1 as it is. Phase A complete: inventory of the code from Carchuna, Calahonda and DireitoAberto ([`docs/en/inventory.md`](docs/en/inventory.md)), data contracts ([`docs/en/contracts.md`](docs/en/contracts.md)), plan for phases B to F ([`docs/en/plan-v2.md`](docs/en/plan-v2.md)) and the seal on fiscal years 2024 onward (`chiocca/v2/lacre.py`), reserved for study 2. Phase B complete: validity, CVM data checks, lineage and confidence ([`docs/en/trust-engine.md`](docs/en/trust-engine.md)), with the result of the checks on the whole base in [`docs/en/data-checks.md`](docs/en/data-checks.md), and CI on GitHub Actions. Phase C1 complete: temporal storage (DuckDB over Parquet), engine v1 on any reference date and the study 1 invariant ([`docs/en/temporal-storage.md`](docs/en/temporal-storage.md)).
 
 | Done | Roadmap |
 | --- | --- |
@@ -273,7 +275,7 @@ PROMPT.md                 build specification for the coding agent
 ### How to reproduce
 
 ```
-python -m pip install pandas numpy pytest
+python -m pip install pandas numpy duckdb pyarrow pytest
 python -m chiocca.dados baixar        # downloads CVM DFP, FCA and registry files to data/brutos/ and writes the manifest
 python -m chiocca.dados verificar     # checks the files against the manifest hashes
 python -m chiocca.montar_base         # builds the base and lists the point-in-time versions that need ENET
@@ -286,6 +288,8 @@ python -m chiocca.americanas          # two readings of Americanas, in resultado
 python -m chiocca.relatorio_resultados  # generates the results and the summary, in PT and EN
 python -m chiocca.ficha 20990 2021 en  # alert sheet for one company-year
 python -m chiocca.v2.relatorio_conferencias  # data quality checks on the base, up to the seal
+python -m chiocca.v2.armazem          # temporal store in data/armazem (not in git)
+python -m chiocca.v2.invariante       # study 1 invariant and cross-section on the maximum date
 python -m pytest                      # offline tests
 ```
 

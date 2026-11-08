@@ -82,6 +82,7 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 ## Fase C dividida (decisão de Roberto, 07/11/2026)
 
 - **C1:** armazenamento temporal, motor v1 em qualquer data e o invariante do estudo 1. Para.
+  - **Concluída em 08/11/2026:** `chiocca/v2/armazem.py`, `chiocca/v2/na_data.py` e `chiocca/v2/invariante.py`, com o resultado em [`docs/armazenamento-temporal.md`](armazenamento-temporal.md).
 - **C2:** contexto, Altman Z'', Piotroski F, JSON e PDF. Acréscimos:
   - **Parecer e auditor:** seção factual na Investigacao, com o tipo do parecer, trecho do texto da DFP conferido literalmente, auditor e trocas de auditor pelo FCA. Não é família de sinais e não gera nota nem alerta.
   - **Altman Z'':** especificação de 08/11/2026 em `docs/contratos.md`, seção 3: fórmula da p. 27 do Altman (2000), X2 como adaptação brasileira, sem a constante +3,25 e sem tabela de rating (teste falha se 3,25 aparecer), sem zonas (as de 1,23 e 2,90 são do Z'), percentil no setor e no ano pelo "como era" (universo das não financeiras se o setor tiver menos de 10 empresas), "não se aplica" em financeiras e nota de validade. Exemplo resolvido próprio da v2, com teste que falha se o X2 usar só lucros acumulados.

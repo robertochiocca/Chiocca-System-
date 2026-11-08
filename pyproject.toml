@@ -3,7 +3,7 @@ name = "chiocca"
 version = "0.1.0"
 description = "Alertas contábeis com dados abertos da CVM, calculados como eram na época · Accounting alerts from CVM open data, as they were at the time"
 requires-python = ">=3.11"
-dependencies = ["pandas", "numpy"]
+dependencies = ["pandas", "numpy", "duckdb", "pyarrow"]
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff", "black", "mypy"]
@@ -39,6 +39,8 @@ addopts = "-q"
 "chiocca/textos_resumo.py" = ["E501"]  # catálogo de mensagens em prosa
 "chiocca/v2/analises_pos_estudo_1.py" = ["E501"]  # catálogo de mensagens em prosa
 "chiocca/v2/analises_pos_estudo_1_dados.py" = ["E501"]  # agregações com dicionários longos
+"chiocca/v2/armazem.py" = ["E501"]  # SQL e montagem das tabelas
+"chiocca/v2/invariante.py" = ["E501"]  # catálogo de mensagens em prosa
 "chiocca/v2/conferencias.py" = ["E501"]  # tabela de definições com textos PT e EN
 "chiocca/v2/confianca.py" = ["E501"]  # catálogo de mensagens em prosa
 "chiocca/v2/linhagem.py" = ["E501"]  # catálogo de mensagens em prosa
