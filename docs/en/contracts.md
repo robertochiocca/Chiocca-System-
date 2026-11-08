@@ -178,7 +178,7 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
   2. CFO > 0, with CFO = 6.01 (as reported) ÷ opening TA;
   3. ΔROA > 0;
   4. ACCRUAL: CFO ÷ opening TA > ROA;
-  5. ΔLEVER < 0, with leverage = 2.02.01 ÷ average TA. The rule for zero long-term debt in both years is recorded in the implementation, and the report counts the cases. Proposal, to be confirmed by Roberto: the formula applies without exception (the change is zero, not below zero, and the signal is 0), with the flag "no long-term debt in either year" in the lineage;
+  5. ΔLEVER < 0, with leverage = 2.02.01 ÷ average TA. Zero long-term debt in both years: signal 0, with the flag "no long-term debt in either year" in the lineage (Roberto's decision, 2026-11-08). The article only defines "fell = 1, rose = 0" (p. 8) and does not define a tie; the 0 for a tie is the project's choice. The implementation report counts the cases;
   6. ΔLIQUID > 0, with liquidity = 1.01 ÷ 2.01;
   7. EQ_OFFER: 1 if no shares were issued in the year, from the cash flow statement's issuance line found by text (frozen patterns in part 4.2 of the reconnaissance), with the account codes recorded; flagged as an adaptation; without the line, "not computable";
   8. ΔMARGIN > 0, with margin = 3.03 ÷ 3.01;
@@ -190,7 +190,7 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
   - a new catalog entry, financial quality family, phase `contexto_v2`.
 - **"Limits" section of the investigation page** (fixed text, 2026-11-08). The text comes from `chiocca.v2.limites`, with the numbers read from the study 1 output, and a test checks it matches this one:
   - No alert is not a clean bill of health. In Dechow, Sloan and Sweeney (1995), the most powerful accruals model rejected 'no manipulation' for only 28.1% of 32 companies sanctioned by the SEC (Table 7, p. 32).
-  - In study 1, 49.9% of company-years were in alert, and the number of detections did not beat chance in a descriptive test done after the result: 7 detections in 13 detectable cases, against 7.37 expected by chance without assuming independent years (8.56 assuming independent years).
+  - In study 1, 49.9% of evaluated non-financial company-years (48.3% including financial companies) were in alert, and the number of detections did not beat chance in a descriptive test done after the result: 7 detections in 13 detectable cases, against 7.37 expected by chance without assuming independent years (8.56 assuming independent years).
   - Risk models use numbers that may be manipulated (Pereira and Martins 2015, p. 29). That is why the three families are not added up.
 - The catalog already has an `fscore_dechow` (Dechow and others, 2011), which measures something else (likelihood of a restatement) and is a catalog phase 2 signal. It does not come in at this stage, and the names are not confused.
 

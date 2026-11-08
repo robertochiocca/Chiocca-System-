@@ -61,7 +61,7 @@ Persistência: entre as empresa-anos em alerta cuja empresa também foi avaliada
 | Financeiras | 30 | 14 | 46,7% | 12,0% |
 | Total | 2.805 | 2.061 | 73,5% | 48,3% |
 
-**Resultado.** Nas não financeiras, 73,8% das empresa-anos em alerta também estavam em alerta no ano anterior, contra taxa geral de alerta de 49,9%. Os alertas se repetem na mesma empresa, e a premissa de independência entre os anos da seção 1 exagera o acaso.
+**Resultado.** Nas não financeiras, 73,8% das empresa-anos em alerta também estavam em alerta no ano anterior, contra taxa de alerta de 49,9% das empresa-anos não financeiras avaliadas. Os alertas se repetem na mesma empresa, e a premissa de independência entre os anos da seção 1 exagera o acaso.
 
 ## 3. Variante sem a premissa de independência entre os anos
 
@@ -131,5 +131,16 @@ Critério: um cálculo do estudo 1 usou zero como valor quando o sinal tem valor
 - Empresa-anos em alerta no estudo 1 só por sinais calculados com zero: 29. Empresa-anos avaliadas só por sinais calculados com zero: 50.
 - Salto do DPO: 2 valores calculados com zero entraram no limite do decil superior do ano. Sem eles, nenhum alerta de DPO de outra empresa-ano mudaria.
 - Gabarito: nenhuma dessas empresa-anos está no período afetado de um caso. Os 7 acertos do estudo 1 não mudam.
+
+**Sem as 57 empresa-anos afetadas** (mesmo rótulo: análise descritiva depois do resultado, não pré-registrada; o estudo 1 não muda). Taxa de alerta e alarmes por acerto recalculados pelas funções do estudo 1 (`chiocca.metricas`), sem essas empresa-anos:
+
+| Não financeiras | Estudo 1 | Sem as 57 empresa-anos afetadas |
+| --- | --- | --- |
+| Taxa de alerta das empresa-anos avaliadas | 49,9% (3.345 de 6.704) | 49,8% (3.316 de 6.654) |
+| Alarmes por acerto, período de teste (2017–2023) | 311,0 | 309,5 |
+| Alarmes por acerto, período inteiro (2010–2023) | 108,3 | 108,0 |
+| Casos acertados | 7 de 13 | 7 de 13 |
+
+Recalcular os alertas pelas regras do estudo 1, com os limites do decil sem essas empresa-anos, dá os mesmos números.
 
 No produto, a regra é outra: indicador que depende de balanço não preenchido fica "não calculável", nunca calculado com zero (`chiocca.v2.linhagem.aplicar_nao_preenchido`). A lista das empresa-anos fica em `resultados/nao_preenchidas_estudo_1.csv`, fora do git.

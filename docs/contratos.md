@@ -178,7 +178,7 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
   2. CFO > 0, com CFO = 6.01 (como apresentado) ÷ AT início;
   3. ΔROA > 0;
   4. ACCRUAL: CFO ÷ AT início > ROA;
-  5. ΔLEVER < 0, com alavancagem = 2.02.01 ÷ AT médio. A regra para dívida de longo prazo zero nos dois anos fica registrada na implementação, e o relatório conta os casos. Proposta, a confirmar por Roberto: a fórmula vale sem exceção (a variação é zero, não é menor que zero, e o sinal fica 0), com a marca "sem dívida de longo prazo nos dois anos" na linhagem;
+  5. ΔLEVER < 0, com alavancagem = 2.02.01 ÷ AT médio. Dívida de longo prazo zero nos dois anos: sinal 0, com a marca "sem dívida de longo prazo nos dois anos" na linhagem (decisão de Roberto, 08/11/2026). O artigo só define "caiu = 1, subiu = 0" (p. 8) e não define o empate; o 0 no empate é escolha do projeto. O relatório da implementação conta os casos;
   6. ΔLIQUID > 0, com liquidez = 1.01 ÷ 2.01;
   7. EQ_OFFER: 1 se não houve emissão de ações no ano, pela linha de emissão da DFC achada por texto (padrões congelados da parte 4.2 do reconhecimento), com os códigos de conta registrados; marcado como adaptação; sem a linha, "não calculável";
   8. ΔMARGIN > 0, com margem = 3.03 ÷ 3.01;
@@ -190,7 +190,7 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
   - entrada nova no catálogo, família qualidade financeira, fase `contexto_v2`.
 - **Seção "Limites" da página de investigação** (texto fixo, 08/11/2026). O texto sai de `chiocca.v2.limites`, com os números lidos da saída do estudo 1, e um teste confere que é igual ao daqui:
   - Não ter alerta não é atestado. Em Dechow, Sloan e Sweeney (1995), o modelo de accruals com mais poder rejeitou 'sem manipulação' em só 28,1% de 32 empresas punidas pela SEC (Tabela 7, p. 32).
-  - No estudo 1, 49,9% das empresas-ano ficaram em alerta, e o número de acertos não superou o acaso num teste descritivo feito depois do resultado: 7 acertos em 13 casos acertáveis, contra 7,37 esperados ao acaso sem supor anos independentes (8,56 supondo anos independentes).
+  - No estudo 1, 49,9% das empresa-anos não financeiras avaliadas (48,3% incluindo as financeiras) ficaram em alerta, e o número de acertos não superou o acaso num teste descritivo feito depois do resultado: 7 acertos em 13 casos acertáveis, contra 7,37 esperados ao acaso sem supor anos independentes (8,56 supondo anos independentes).
   - Os modelos de risco usam números que podem estar manipulados (Pereira e Martins 2015, p. 29). Por isso as três famílias não se somam.
 - O catálogo já tem um `fscore_dechow` (Dechow e outros, 2011), que mede outra coisa (probabilidade de reapresentação) e é sinal da fase 2 do catálogo. Ele não entra nesta etapa, e os nomes não se confundem.
 

@@ -88,3 +88,23 @@ def test_mesmos_numeros_e_rotulo_nos_dois_idiomas() -> None:
     pt, en = ap.DOCS["pt"].read_text(encoding="utf-8"), ap.DOCS["en"].read_text(encoding="utf-8")
     assert numeros(pt, "pt") == numeros(en, "en")
     assert "não pré-registrada" in pt and "not pre-registered" in en
+
+
+@pytest.mark.parametrize(
+    "lang,link", [("pt", "docs/analises-pos-estudo-1.md"), ("en", "docs/en/post-study-1-analyses.md")]
+)
+def test_readme_cita_os_balancos_nao_preenchidos(lang: str, link: str) -> None:
+    frase = ap.frase_readme_nao_preenchidas(_r(), lang, link)
+    assert frase is not None and frase in (ap.RAIZ / "README.md").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "caminho,taxa,definicao",
+    [("README.md", "49,9%", "não financeiras"), ("docs/resumo.md", "49,9%", "não financeiras"),
+     ("README.md", "49.9%", "non-financial"), ("docs/summary.md", "49.9%", "non-financial")],
+)  # fmt: skip
+def test_taxa_de_alerta_sempre_com_a_mesma_definicao(caminho: str, taxa: str, definicao: str) -> None:
+    """Pedido de 08/11/2026: a taxa de alerta citada é sempre a das empresa-anos não financeiras avaliadas."""
+    blocos = (ap.RAIZ / caminho).read_text(encoding="utf-8").split("\n\n")
+    citados = [b for b in blocos if taxa in b]
+    assert citados and all(definicao in b.lower() for b in citados)

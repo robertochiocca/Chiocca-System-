@@ -20,7 +20,7 @@ def test_texto_fixo_de_roberto() -> None:
     assert pt[0].startswith("Não ter alerta não é atestado. Em Dechow, Sloan e Sweeney (1995)")
     assert "28,1% de 32 empresas punidas pela SEC (Tabela 7, p. 32)" in pt[0]
     assert pt[1].startswith(
-        "No estudo 1, 49,9% das empresas-ano ficaram em alerta, e o número de acertos não superou o acaso"
+        "No estudo 1, 49,9% das empresa-anos não financeiras avaliadas (48,3% incluindo as financeiras) ficaram"
     )
     assert pt[2] == ("Os modelos de risco usam números que podem estar manipulados (Pereira e Martins 2015, p. 29). "
                      "Por isso as três famílias não se somam.")  # fmt: skip

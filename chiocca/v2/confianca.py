@@ -172,11 +172,11 @@ def _metodo(sinal: str, estudo: dict[str, Any]) -> Criterio:
         a, n = inteiro(estudo["acertados"], lang), inteiro(estudo["acertaveis"], lang)
         x, t = decimal(estudo["alarmes_inteiro"], lang, 1), pct(estudo["taxa_alerta"], lang)
         if lang == "pt":
-            s = f"no estudo 1, o motor v1 acertou {a} de {n} casos acertáveis, com {x} alarmes por acerto no período inteiro e taxa de alerta de {t}"
+            s = f"no estudo 1, o motor v1 acertou {a} de {n} casos acertáveis, com {x} alarmes por acerto no período inteiro e taxa de alerta de {t} nas empresa-anos não financeiras avaliadas"
             if sinal == "juro":
                 s += f"; o juro implícito disparou em {pct(estudo['juro_frequencia'], lang)} das empresa-anos em que era calculável"
             return s
-        s = f"in study 1, engine v1 detected {a} of {n} detectable cases, with {x} false alarms per detected case over the whole period and an alert rate of {t}"
+        s = f"in study 1, engine v1 detected {a} of {n} detectable cases, with {x} false alarms per detected case over the whole period and an alert rate of {t} among evaluated non-financial company-years"
         if sinal == "juro":
             s += f"; the implied interest rate fired in {pct(estudo['juro_frequencia'], lang)} of the company-years where it was computable"
         return s

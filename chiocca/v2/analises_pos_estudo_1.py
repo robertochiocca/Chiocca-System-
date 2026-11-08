@@ -135,7 +135,7 @@ T: dict[str, dict[str, Any]] = {
         "persistencia": "Persistência: entre as empresa-anos em alerta cuja empresa também foi avaliada no ano anterior, no mesmo grupo, a fração que também estava em alerta no ano anterior. A comparação é com a taxa geral de alerta (empresa-anos em alerta ÷ empresa-anos avaliadas, 2010 a 2023). Cada empresa conta uma vez por exercício, como nas taxas do estudo 1.",
         "col_persistencia": "| Grupo | Em alerta, com o ano anterior avaliado | Também em alerta no ano anterior | Persistência | Taxa geral de alerta |",
         "grupos": {"nf": "Não financeiras", "fin": "Financeiras", "total": "Total"},
-        "resultado_persistencia": "**Resultado.** Nas não financeiras, {p} das empresa-anos em alerta também estavam em alerta no ano anterior, contra taxa geral de alerta de {t}. Os alertas se repetem na mesma empresa, e a premissa de independência entre os anos da seção 1 exagera o acaso.",
+        "resultado_persistencia": "**Resultado.** Nas não financeiras, {p} das empresa-anos em alerta também estavam em alerta no ano anterior, contra taxa de alerta de {t} das empresa-anos não financeiras avaliadas. Os alertas se repetem na mesma empresa, e a premissa de independência entre os anos da seção 1 exagera o acaso.",
         "h3": "## 3. Variante sem a premissa de independência entre os anos",
         "modelo_variante": "Para cada caso, a chance ao acaso é a fração das empresas do mesmo grupo, com dados em todos os anos do período afetado, que tiveram pelo menos um alerta nesses anos. \"Com dados\" quer dizer avaliada no estudo 1 (pelo menos um sinal de alerta calculável) em cada um desses anos. A repetição dos alertas na mesma empresa entra na conta como aconteceu. O número de acertos ao acaso segue de novo a distribuição binomial de Poisson exata.",
         "resultado_variante": "**Resultado.** Acertos esperados ao acaso: {esperado} (desvio-padrão de {dp}), contra {esperado1} na seção 1. Acertos observados no estudo 1: {obs} de {n}. Probabilidade de {obs} ou mais acertos ao acaso: {p}, contra {p1} na seção 1.",
@@ -161,10 +161,20 @@ T: dict[str, dict[str, Any]] = {
         "nota_dpo_algum": "Salto do DPO: {d} valores calculados com zero entraram no limite do decil superior do ano. Sem eles, {f} alertas de DPO de outras empresa-anos mudariam, {gd} deles no período afetado de um caso do gabarito.",
         "nota_gabarito_nenhum": "Gabarito: nenhuma dessas empresa-anos está no período afetado de um caso. Os {obs} acertos do estudo 1 não mudam.",
         "nota_gabarito_algum": "Gabarito: {g} dessas empresa-anos estão no período afetado de um caso; a lista fora do git mostra quais.",
+        "h_sem": "**Sem as {z} empresa-anos afetadas** (mesmo rótulo: análise descritiva depois do resultado, não pré-registrada; o estudo 1 não muda). Taxa de alerta e alarmes por acerto recalculados pelas funções do estudo 1 (`chiocca.metricas`), sem essas empresa-anos:",
+        "col_sem": "| Não financeiras | Estudo 1 | Sem as {z} empresa-anos afetadas |",
+        "linha_taxa": "Taxa de alerta das empresa-anos avaliadas",
+        "linha_teste": "Alarmes por acerto, período de teste (2017–2023)",
+        "linha_inteiro": "Alarmes por acerto, período inteiro (2010–2023)",
+        "linha_acertos": "Casos acertados",
+        "de": "de",
+        "recalculo_igual": "Recalcular os alertas pelas regras do estudo 1, com os limites do decil sem essas empresa-anos, dá os mesmos números.",
+        "recalculo_diferente": "Recalcular os alertas pelas regras do estudo 1, com os limites do decil sem essas empresa-anos, muda os números; a tabela usa os alertas como no estudo.",
+        "readme_nota": "Depois do resultado, as conferências acharam {z} empresa-anos em que um balanço não preenchido entrou no cálculo como zero; {sa} alertas dependem disso. Nenhum caso do gabarito foi afetado. Detalhes na [nota posterior]({link}), seção 4.",
         "nota_produto": "No produto, a regra é outra: indicador que depende de balanço não preenchido fica \"não calculável\", nunca calculado com zero (`chiocca.v2.linhagem.aplicar_nao_preenchido`). A lista das empresa-anos fica em `resultados/nao_preenchidas_estudo_1.csv`, fora do git.",
         "sim": "sim",
         "nao": "não",
-        "resumo": "**Depois do resultado (análise descritiva, não pré-registrada).** Com anos independentes, o acaso daria {e1} acertos em média, e {obs} ou mais com chance de {p1}. Como os alertas se repetem na mesma empresa ({pers} das empresa-anos em alerta das não financeiras também estavam em alerta no ano anterior, contra taxa geral de {taxa}), esse número é um teto. Com a chance de cada caso medida nas empresas do mesmo grupo, sem supor anos independentes, o acaso daria {e2} acertos, e {obs} ou mais com chance de {p2}. Detalhes em [`docs/analises-pos-estudo-1.md`]({link}).",
+        "resumo": "**Depois do resultado (análise descritiva, não pré-registrada).** Com anos independentes, o acaso daria {e1} acertos em média, e {obs} ou mais com chance de {p1}. Como os alertas se repetem na mesma empresa ({pers} das empresa-anos em alerta das não financeiras também estavam em alerta no ano anterior, contra taxa de alerta de {taxa} das empresa-anos não financeiras avaliadas), esse número é um teto. Com a chance de cada caso medida nas empresas do mesmo grupo, sem supor anos independentes, o acaso daria {e2} acertos, e {obs} ou mais com chance de {p2}. Detalhes em [`docs/analises-pos-estudo-1.md`]({link}).",
         "link": "analises-pos-estudo-1.md",
     },
     "en": {
@@ -190,7 +200,7 @@ T: dict[str, dict[str, Any]] = {
         "persistencia": "Persistence: among company-years in alert whose company was also evaluated in the previous year, in the same group, the fraction that was also in alert in the previous year. The comparison is with the overall alert rate (company-years in alert ÷ evaluated company-years, 2010 to 2023). Each company counts once per fiscal year, as in study 1's rates.",
         "col_persistencia": "| Group | In alert, with the previous year evaluated | Also in alert in the previous year | Persistence | Overall alert rate |",
         "grupos": {"nf": "Non-financial companies", "fin": "Financial companies", "total": "Total"},
-        "resultado_persistencia": "**Result.** Among non-financial companies, {p} of company-years in alert were also in alert in the previous year, against an overall alert rate of {t}. Alerts repeat at the same company, and section 1's assumption of independence across years overstates chance.",
+        "resultado_persistencia": "**Result.** Among non-financial companies, {p} of company-years in alert were also in alert in the previous year, against an alert rate of {t} of evaluated non-financial company-years. Alerts repeat at the same company, and section 1's assumption of independence across years overstates chance.",
         "h3": "## 3. Variant without the assumption of independence across years",
         "modelo_variante": "For each case, the chance probability is the fraction of companies in the same group, with data in every year of the affected period, that had at least one alert in those years. \"With data\" means evaluated in study 1 (at least one computable alert signal) in each of those years. The repetition of alerts at the same company enters the calculation as it happened. The number of detections by chance again follows the exact Poisson binomial distribution.",
         "resultado_variante": "**Result.** Expected detections by chance: {esperado} (standard deviation of {dp}), against {esperado1} in section 1. Detections observed in study 1: {obs} of {n}. Probability of {obs} or more detections by chance: {p}, against {p1} in section 1.",
@@ -216,10 +226,20 @@ T: dict[str, dict[str, Any]] = {
         "nota_dpo_algum": "DPO jump: {d} values computed with zero entered the top-decile threshold of the year. Without them, {f} DPO alerts of other company-years would change, {gd} of them in the affected period of a ground-truth case.",
         "nota_gabarito_nenhum": "Ground truth: none of these company-years is in a case's affected period. Study 1's {obs} detections do not change.",
         "nota_gabarito_algum": "Ground truth: {g} of these company-years are in a case's affected period; the list outside git shows which.",
+        "h_sem": "**Without the {z} affected company-years** (same label: descriptive analysis after the result, not pre-registered; study 1 does not change). Alert rate and false alarms per detected case recomputed with study 1's functions (`chiocca.metricas`), without these company-years:",
+        "col_sem": "| Non-financial companies | Study 1 | Without the {z} affected company-years |",
+        "linha_taxa": "Alert rate of evaluated company-years",
+        "linha_teste": "False alarms per detected case, test period (2017–2023)",
+        "linha_inteiro": "False alarms per detected case, whole period (2010–2023)",
+        "linha_acertos": "Detected cases",
+        "de": "of",
+        "recalculo_igual": "Recomputing the alerts with study 1's rules, with the top-decile thresholds without these company-years, gives the same numbers.",
+        "recalculo_diferente": "Recomputing the alerts with study 1's rules, with the top-decile thresholds without these company-years, changes the numbers; the table uses the alerts as in the study.",
+        "readme_nota": "After the result, the data checks found {z} company-years in which an unfilled balance sheet entered the calculation as zero; {sa} alerts depend on it. No ground-truth case was affected. Details in the [later note]({link}), section 4.",
         "nota_produto": "In the product, the rule is different: an indicator that depends on an unfilled balance sheet is \"not computable\", never computed with zero (`chiocca.v2.linhagem.aplicar_nao_preenchido`). The list of company-years is in `resultados/nao_preenchidas_estudo_1.csv`, outside git.",
         "sim": "yes",
         "nao": "no",
-        "resumo": "**After the result (descriptive analysis, not pre-registered).** With independent years, chance would produce {e1} detections on average, and {obs} or more with a probability of {p1}. Since alerts repeat at the same company ({pers} of non-financial company-years in alert were also in alert in the previous year, against an overall rate of {taxa}), this number is a ceiling. With each case's chance measured on companies in the same group, without assuming independent years, chance would produce {e2} detections, and {obs} or more with a probability of {p2}. Details in [`docs/en/post-study-1-analyses.md`]({link}).",
+        "resumo": "**After the result (descriptive analysis, not pre-registered).** With independent years, chance would produce {e1} detections on average, and {obs} or more with a probability of {p1}. Since alerts repeat at the same company ({pers} of non-financial company-years in alert were also in alert in the previous year, against an alert rate of {taxa} of evaluated non-financial company-years), this number is a ceiling. With each case's chance measured on companies in the same group, without assuming independent years, chance would produce {e2} detections, and {obs} or more with a probability of {p2}. Details in [`docs/en/post-study-1-analyses.md`]({link}).",
         "link": "en/post-study-1-analyses.md",
     },
 }  # fmt: skip
@@ -321,7 +341,44 @@ def _nota(r: dict[str, Any], t: dict[str, Any], lang: str) -> list[str]:
         linhas.append("- " + t["nota_gabarito_algum"].format(g=i(np_["no_periodo_de_um_caso"])))
     elif not np_["alertas_dpo_que_mudariam_no_periodo_de_um_caso"]:
         linhas.append("- " + t["nota_gabarito_nenhum"].format(obs=i(r["observados"])))
+    if "sem_as_afetadas" in np_:
+        linhas += [""] + _sem_as_afetadas(np_["sem_as_afetadas"], t, lang)
     return linhas + ["", t["nota_produto"]]
+
+
+def _sem_as_afetadas(x: dict[str, Any], t: dict[str, Any], lang: str) -> list[str]:
+    i = lambda v: inteiro(v, lang)  # noqa: E731
+    z = i(x["empresa_anos_retiradas"])
+
+    def taxa(m: dict[str, Any]) -> str:
+        tx = m["taxa_nf"]
+        return f"{pct(tx['em_alerta'] / tx['avaliadas'], lang)} ({i(tx['em_alerta'])} {t['de']} {i(tx['avaliadas'])})"
+
+    def alarmes(m: dict[str, Any], k: str) -> str:
+        v = m["alarmes_nf"][k]["alarmes_por_acerto"]
+        return "—" if v is None else decimal(v, lang, 1)
+
+    e, s = x["estudo"], x["sem"]
+    return [
+        t["h_sem"].format(z=z), "", t["col_sem"].format(z=z), "| --- | --- | --- |",
+        f"| {t['linha_taxa']} | {taxa(e)} | {taxa(s)} |",
+        f"| {t['linha_teste']} | {alarmes(e, 'teste')} | {alarmes(s, 'teste')} |",
+        f"| {t['linha_inteiro']} | {alarmes(e, 'inteiro')} | {alarmes(s, 'inteiro')} |",
+        f"| {t['linha_acertos']} | {i(e['acertados'])} {t['de']} {i(e['acertaveis'])} | {i(s['acertados'])} {t['de']} {i(s['acertaveis'])} |",
+        "", t["recalculo_igual" if x["alertas_recalculados_iguais"] else "recalculo_diferente"],
+    ]  # fmt: skip
+
+
+def frase_readme_nao_preenchidas(r: dict[str, Any], lang: str, link: str) -> str | None:
+    """Frase do README sobre os balanços não preenchidos no estudo 1 (pedido de 08/11/2026)."""
+    np_ = r.get("nao_preenchidas")
+    if not np_ or not np_.get("com_zero_tratado_como_valor"):
+        return None
+    if np_["no_periodo_de_um_caso"] or np_["alertas_dpo_que_mudariam_no_periodo_de_um_caso"]:
+        raise ValueError("há caso do gabarito afetado: a frase fixa do README deixaria de valer")
+    return str(T[lang]["readme_nota"].format(
+        z=inteiro(np_["com_zero_tratado_como_valor"], lang), sa=inteiro(np_["em_alerta_so_por_sinal_com_zero"], lang),
+        link=link))  # fmt: skip
 
 
 def resumo(r: dict[str, Any], lang: str, link: str | None = None) -> str | None:

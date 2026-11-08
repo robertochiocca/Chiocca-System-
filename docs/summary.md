@@ -16,7 +16,7 @@ Using public data available at the time, would the catalog signals have flagged 
 **Result.**
 
 - Detection: 7 of 13 detectable cases (7 of 42 in the whole ground truth).
-- False alarms per detected case among non-financial companies (amendment 11): 311.0 in the test period, with 2 detections by an alert within it, and 108.3 over the whole period. Alert rate: 49.9% of evaluated company-years.
+- False alarms per detected case among non-financial companies (amendment 11): 311.0 in the test period, with 2 detections by an alert within it, and 108.3 over the whole period. Alert rate: 49.9% of evaluated non-financial company-years (48.3% including financial companies).
 - Financial companies: no detectable case. IRB had no alert in its 2018 DFP (0.053, against a threshold of 1.024).
 
 **Naive baseline rule side by side** (most leveraged decile of each year and group; no winner declared, amendment 11):
@@ -27,13 +27,13 @@ Using public data available at the time, would the catalog signals have flagged 
 | Detections by an alert in 2017–2023 | 2 | 1 |
 | False alarms per detected case, test period | 311.0 | 108.0 |
 | False alarms per detected case, whole period | 108.3 | 26.8 |
-| Alert rate, 2010–2023 | 49.9% | 10.1% |
+| Alert rate of evaluated company-years, 2010–2023 | 49.9% | 10.1% |
 
-**After the result (descriptive analysis, not pre-registered).** With independent years, chance would produce 8.56 detections on average, and 7 or more with a probability of 90.0%. Since alerts repeat at the same company (73.8% of non-financial company-years in alert were also in alert in the previous year, against an overall rate of 49.9%), this number is a ceiling. With each case's chance measured on companies in the same group, without assuming independent years, chance would produce 7.37 detections, and 7 or more with a probability of 69.3%. Details in [`docs/en/post-study-1-analyses.md`](en/post-study-1-analyses.md).
+**After the result (descriptive analysis, not pre-registered).** With independent years, chance would produce 8.56 detections on average, and 7 or more with a probability of 90.0%. Since alerts repeat at the same company (73.8% of non-financial company-years in alert were also in alert in the previous year, against an alert rate of 49.9% of evaluated non-financial company-years), this number is a ceiling. With each case's chance measured on companies in the same group, without assuming independent years, chance would produce 7.37 detections, and 7 or more with a probability of 69.3%. Details in [`docs/en/post-study-1-analyses.md`](en/post-study-1-analyses.md).
 
 **What went wrong and why.**
 
-- The implied interest rate alone accounts for 59.8% of company-years in alert (2,001 of 3,345). Finance costs (3.06.02) include, by definition, exchange differences, lease interest and other items that are not interest on borrowings (2.01.04 and 2.02.01); this breakdown was not measured. Without it, the alert rate would be 20.0% instead of 49.9%.
+- The implied interest rate alone accounts for 59.8% of company-years in alert (2,001 of 3,345). Finance costs (3.06.02) include, by definition, exchange differences, lease interest and other items that are not interest on borrowings (2.01.04 and 2.02.01); this breakdown was not measured. Without it, the alert rate of evaluated non-financial company-years would be 20.0% instead of 49.9%.
 - The M-score had no value in 1,548 of 6,938 company-years; in 1,306, DEPI was missing. In 7 of the 13 detectable cases M did not exist because the cash flow statement has no depreciation line (2 of them with a direct-method statement). With neutral values, detection would be 8 of 13.
 - Only 2 of the 7 detections have an alert in the test period: in 11 of the 13 detectable cases, the affected period ends before 2017.
 - Amendment 10 put the numerator and the detections in different windows (88.1 false alarms per detected case); amendment 11 fixed this after the results, and both versions are in the report.

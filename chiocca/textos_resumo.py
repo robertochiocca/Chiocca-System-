@@ -31,17 +31,17 @@ T: dict[str, dict[str, Any]] = {
         "h_resultado": "**Resultado.**",
         "resultado": [
             "Acerto: {a} de {n} casos acertáveis ({a} de {casos} no gabarito inteiro).",
-            "Alarmes por acerto nas não financeiras (emenda 11): {xt} no período de teste, com {at} acertos por alerta dentro dele, e {xi} no período inteiro. Taxa de alerta: {taxa} das empresa-anos avaliadas.",
+            "Alarmes por acerto nas não financeiras (emenda 11): {xt} no período de teste, com {at} acertos por alerta dentro dele, e {xi} no período inteiro. Taxa de alerta: {taxa} das empresa-anos não financeiras avaliadas ({taxa_total} incluindo as financeiras).",
             "Financeiras: nenhum caso acertável. O IRB não teve alerta na DFP de 2018 ({p}, contra limite de {lim}).",
         ],
         "h_boba": "**Regra boba lado a lado** (decil mais endividado de cada ano e grupo; sem vencedor declarado, emenda 11):",
         "col_boba": "| Não financeiras | Sinais | Regra boba |",
         "linhas_boba": {"acertados": "Casos acertados (de {n})", "acertados_teste": "Acertos por alerta em 2017–2023",
                         "teste": "Alarmes por acerto, período de teste", "inteiro": "Alarmes por acerto, período inteiro",
-                        "taxa": "Taxa de alerta, 2010–2023"},
+                        "taxa": "Taxa de alerta das empresa-anos avaliadas, 2010–2023"},
         "h_errado": "**O que deu errado e por quê.**",
         "errado": [
-            "O juro implícito sozinho responde por {pj} das empresa-anos em alerta ({jt} de {et}). A despesa financeira (3.06.02) inclui, por definição, variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos (2.01.04 e 2.02.01); essa decomposição não foi medida. Sem ele, a taxa de alerta seria {taxa_sem}, e não {taxa}.",
+            "O juro implícito sozinho responde por {pj} das empresa-anos em alerta ({jt} de {et}). A despesa financeira (3.06.02) inclui, por definição, variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos (2.01.04 e 2.02.01); essa decomposição não foi medida. Sem ele, a taxa de alerta das empresa-anos não financeiras avaliadas seria {taxa_sem}, e não {taxa}.",
             "O M-score ficou sem valor em {mnc} de {mtot} empresa-anos; em {cd}, faltou o DEPI. Em {k} dos {n} casos acertáveis o M não existiu porque a DFC não tem linha de depreciação ({kmd} deles com DFC pelo método direto). Com valores neutros, o acerto seria {an} de {n}.",
             "Só {at} dos {a} acertos têm alerta no período de teste: em {antes17} dos {n} casos acertáveis, o período afetado termina antes de 2017.",
             "A emenda 10 punha numerador e acertos em janelas diferentes ({x10} alarmes por acerto); a emenda 11 corrigiu isso depois dos resultados, e as duas versões estão no relatório.",
@@ -80,17 +80,17 @@ T: dict[str, dict[str, Any]] = {
         "h_resultado": "**Result.**",
         "resultado": [
             "Detection: {a} of {n} detectable cases ({a} of {casos} in the whole ground truth).",
-            "False alarms per detected case among non-financial companies (amendment 11): {xt} in the test period, with {at} detections by an alert within it, and {xi} over the whole period. Alert rate: {taxa} of evaluated company-years.",
+            "False alarms per detected case among non-financial companies (amendment 11): {xt} in the test period, with {at} detections by an alert within it, and {xi} over the whole period. Alert rate: {taxa} of evaluated non-financial company-years ({taxa_total} including financial companies).",
             "Financial companies: no detectable case. IRB had no alert in its 2018 DFP ({p}, against a threshold of {lim}).",
         ],
         "h_boba": "**Naive baseline rule side by side** (most leveraged decile of each year and group; no winner declared, amendment 11):",
         "col_boba": "| Non-financial | Signals | Naive baseline |",
         "linhas_boba": {"acertados": "Detected cases (of {n})", "acertados_teste": "Detections by an alert in 2017–2023",
                         "teste": "False alarms per detected case, test period",
-                        "inteiro": "False alarms per detected case, whole period", "taxa": "Alert rate, 2010–2023"},
+                        "inteiro": "False alarms per detected case, whole period", "taxa": "Alert rate of evaluated company-years, 2010–2023"},
         "h_errado": "**What went wrong and why.**",
         "errado": [
-            "The implied interest rate alone accounts for {pj} of company-years in alert ({jt} of {et}). Finance costs (3.06.02) include, by definition, exchange differences, lease interest and other items that are not interest on borrowings (2.01.04 and 2.02.01); this breakdown was not measured. Without it, the alert rate would be {taxa_sem} instead of {taxa}.",
+            "The implied interest rate alone accounts for {pj} of company-years in alert ({jt} of {et}). Finance costs (3.06.02) include, by definition, exchange differences, lease interest and other items that are not interest on borrowings (2.01.04 and 2.02.01); this breakdown was not measured. Without it, the alert rate of evaluated non-financial company-years would be {taxa_sem} instead of {taxa}.",
             "The M-score had no value in {mnc} of {mtot} company-years; in {cd}, DEPI was missing. In {k} of the {n} detectable cases M did not exist because the cash flow statement has no depreciation line ({kmd} of them with a direct-method statement). With neutral values, detection would be {an} of {n}.",
             "Only {at} of the {a} detections have an alert in the test period: in {antes17} of the {n} detectable cases, the affected period ends before 2017.",
             "Amendment 10 put the numerator and the detections in different windows ({x10} false alarms per detected case); amendment 11 fixed this after the results, and both versions are in the report.",
@@ -130,6 +130,9 @@ def render(n: dict[str, Any], lang: str) -> str:
     tx = {k: [sum(v["em_alerta"] for v in n["taxa"][k].values()), sum(v["avaliadas"] for v in n["taxa"][k].values())]
           for k in ("nf", "nf_boba")}  # fmt: skip
     taxa = pct(tx["nf"][0] / tx["nf"][1], lang)
+    em_fin = sum(v["em_alerta"] for v in n["taxa"]["fin"].values())
+    av_fin = sum(v["avaliadas"] for v in n["taxa"]["fin"].values())
+    taxa_total = pct((tx["nf"][0] + em_fin) / (tx["nf"][1] + av_fin), lang)
     jb = n["descritiva"]["juro"]
     so_juro = jb["antes"]["so_juro"] + jb["depois"]["so_juro"]
     em = jb["antes"]["em_alerta"] + jb["depois"]["em_alerta"]
@@ -162,7 +165,7 @@ def render(n: dict[str, Any], lang: str) -> str:
                                abertura=data(n["abertura_teste"]["data"], lang), **comuns)
                for x in t["desenho"]]  # fmt: skip
     linhas += ["", t["h_resultado"], ""]
-    linhas += ["- " + x.format(xt=x_(nf_["teste"]), xi=x_(nf_["inteiro"]),
+    linhas += ["- " + x.format(xt=x_(nf_["teste"]), xi=x_(nf_["inteiro"]), taxa_total=taxa_total,
                                p=d(irb18["peso_nao_recorrente"], 3), lim=d(lim, 3) if lim is not None else "—", **comuns)
                for x in t["resultado"]]  # fmt: skip
     lb = t["linhas_boba"]

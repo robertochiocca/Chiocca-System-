@@ -61,7 +61,7 @@ Persistence: among company-years in alert whose company was also evaluated in th
 | Financial companies | 30 | 14 | 46.7% | 12.0% |
 | Total | 2,805 | 2,061 | 73.5% | 48.3% |
 
-**Result.** Among non-financial companies, 73.8% of company-years in alert were also in alert in the previous year, against an overall alert rate of 49.9%. Alerts repeat at the same company, and section 1's assumption of independence across years overstates chance.
+**Result.** Among non-financial companies, 73.8% of company-years in alert were also in alert in the previous year, against an alert rate of 49.9% of evaluated non-financial company-years. Alerts repeat at the same company, and section 1's assumption of independence across years overstates chance.
 
 ## 3. Variant without the assumption of independence across years
 
@@ -131,5 +131,16 @@ Criterion: a study 1 calculation used zero as a value when the signal has a valu
 - Company-years in alert in study 1 only because of signals computed with zero: 29. Company-years evaluated only because of signals computed with zero: 50.
 - DPO jump: 2 values computed with zero entered the top-decile threshold of the year. Without them, no DPO alert of another company-year would change.
 - Ground truth: none of these company-years is in a case's affected period. Study 1's 7 detections do not change.
+
+**Without the 57 affected company-years** (same label: descriptive analysis after the result, not pre-registered; study 1 does not change). Alert rate and false alarms per detected case recomputed with study 1's functions (`chiocca.metricas`), without these company-years:
+
+| Non-financial companies | Study 1 | Without the 57 affected company-years |
+| --- | --- | --- |
+| Alert rate of evaluated company-years | 49.9% (3,345 of 6,704) | 49.8% (3,316 of 6,654) |
+| False alarms per detected case, test period (2017–2023) | 311.0 | 309.5 |
+| False alarms per detected case, whole period (2010–2023) | 108.3 | 108.0 |
+| Detected cases | 7 of 13 | 7 of 13 |
+
+Recomputing the alerts with study 1's rules, with the top-decile thresholds without these company-years, gives the same numbers.
 
 In the product, the rule is different: an indicator that depends on an unfilled balance sheet is "not computable", never computed with zero (`chiocca.v2.linhagem.aplicar_nao_preenchido`). The list of company-years is in `resultados/nao_preenchidas_estudo_1.csv`, outside git.

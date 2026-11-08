@@ -16,7 +16,10 @@ Definições:
 - variante: para cada caso acertável, a chance ao acaso é a fração das empresas do mesmo grupo avaliadas em todos
   os anos do período afetado que tiveram pelo menos um alerta nesses anos;
 - zero tratado como valor: o sinal tem valor no estudo 1 e pelo menos uma conta de balanço que ele usa, na coluna
-  com ativo total zero, vale zero.
+  com ativo total zero, vale zero;
+- sem as afetadas: taxa de alerta e alarmes por acerto das não financeiras recalculados pelas funções do estudo 1
+  (`chiocca.metricas`) sem essas empresa-anos, com os alertas como no estudo e também recalculados pelas regras
+  (`chiocca.sinais_amostra.alertas`), para ver se os limites do decil mudam algum alerta.
 
 Uso: python -m chiocca.v2.analises_pos_estudo_1_dados
 """
@@ -31,10 +34,11 @@ from typing import Any
 
 import pandas as pd
 
+from chiocca import metricas as mt
 from chiocca import variaveis
 from chiocca.base import RAIZ
 from chiocca.sinais.mscore import COEFICIENTES
-from chiocca.sinais_amostra import PERCENTIL
+from chiocca.sinais_amostra import PERCENTIL, alertas
 from chiocca.v2 import conferencias as cf
 from chiocca.v2.analises_pos_estudo_1 import NUMEROS_DADOS, NUMEROS_ESTUDO_1, grupo_do_caso
 from chiocca.v2.lacre import so_liberados
@@ -43,6 +47,8 @@ from chiocca.v2.linhagem import ENTRADAS
 SINAIS = RAIZ / "resultados" / "sinais_empresa_ano.csv"
 BASE = RAIZ / "data" / "base"
 CSV_NAO_PREENCHIDAS = RAIZ / "resultados" / "nao_preenchidas_estudo_1.csv"
+GABARITO = RAIZ / "data" / "gabarito_casos.csv"
+OBSERVACAO = RAIZ / "data" / "casos_em_observacao.csv"
 AMOSTRAS = {"nao_financeira": "nf", "financeira": "fin"}
 ALERTAS = {"mscore": "alerta_mscore", "dpo": "alerta_dpo", "juro": "alerta_juro"}
 SINAIS_V1 = (*COEFICIENTES, "mscore", "dpo", "juro", "lucro_sem_caixa")
@@ -219,12 +225,61 @@ def nao_preenchidas(
     return out, pd.DataFrame(linhas)
 
 
+def _metricas(s: pd.DataFrame, gab: pd.DataFrame, fora: set[str]) -> dict[str, Any]:
+    """Taxa de alerta, acertos e alarmes por acerto das não financeiras, pelas funções do estudo 1."""
+    a = mt.avaliacao(mt.prepara(s), gab, fora, mt.ALERTA_SINAIS, "avaliada")
+    nf = a["alarmes"]["nf"]
+    return {
+        "taxa_nf": a["taxa"]["nf"],
+        "acertados": a["acertados"],
+        "acertados_teste": a["acertados_teste"],
+        "acertaveis": a["acertaveis"],
+        "alarmes_nf": {k: {c: nf[k][c] for c in ("empresas_em_alerta", "casos_acertados", "alarmes_por_acerto")}
+                       for k in ("teste", "inteiro")},
+    }  # fmt: skip
+
+
+def sem_as_afetadas(
+    s: pd.DataFrame, lista: pd.DataFrame, gab: pd.DataFrame, obs: pd.DataFrame, n: dict[str, Any]
+) -> dict[str, Any]:
+    """Pedido de 08/11/2026: taxa de alerta e alarmes por acerto sem as empresa-anos em que um zero de balanço não
+    preenchido entrou num cálculo do estudo 1. Análise descritiva depois do resultado; o estudo não muda."""
+    fora = set(obs.cd_cvm.dropna().astype(str))
+    afetadas = lista[lista.sinais_com_zero.astype(str) != ""]
+    chaves = set(zip(afetadas.exercicio.astype(int), afetadas.cd_cvm, afetadas.dt_refer))
+    estudo = _metricas(s, gab, fora)
+    taxa = n["taxa"]["nf"]
+    no_json = {
+        "em_alerta": sum(v["em_alerta"] for v in taxa.values()),
+        "avaliadas": sum(v["avaliadas"] for v in taxa.values()),
+    }
+    if (
+        estudo["taxa_nf"] != no_json
+        or estudo["alarmes_nf"]["inteiro"]["alarmes_por_acerto"] != n["alarmes"]["nf"]["inteiro"]["alarmes_por_acerto"]
+    ):
+        raise ValueError("as funções do estudo 1 não reproduzem os números publicados")
+    fica = ~pd.Series([(int(e), c, d) in chaves for e, c, d in zip(s.exercicio, s.cd_cvm, s.dt_refer)], index=s.index)
+    resto = s[fica]
+    sem = _metricas(resto, gab, fora)
+    numerico = resto.copy()
+    for col in ("mscore", "dpo", "juro", "peso_nao_recorrente", "alavancagem"):
+        numerico[col] = pd.to_numeric(numerico[col])
+    recalculado, _ = alertas(numerico)
+    return {
+        "empresa_anos_retiradas": len(chaves),
+        "estudo": estudo,
+        "sem": sem,
+        "alertas_recalculados_iguais": _metricas(recalculado, gab, fora) == sem,
+    }
+
+
 def calcula(
-    meta: pd.DataFrame, s: pd.DataFrame, n: dict[str, Any], base: Path = BASE
+    meta: pd.DataFrame, s: pd.DataFrame, n: dict[str, Any], gab: pd.DataFrame, obs: pd.DataFrame, base: Path = BASE
 ) -> tuple[dict[str, Any], pd.DataFrame]:
     ea = empresa_ano(s)
     confere_taxas(ea, n)
     np_, lista = nao_preenchidas(colunas_nao_preenchidas(meta, base), s, n)
+    np_["sem_as_afetadas"] = sem_as_afetadas(s, lista, gab, obs, n)
     out = {
         "gerado_por": "python -m chiocca.v2.analises_pos_estudo_1_dados",
         "persistencia": persistencia(ea),
@@ -240,8 +295,10 @@ def main() -> None:
 
     n = json.loads(NUMEROS_ESTUDO_1.read_text(encoding="utf-8"))
     meta = pd.read_csv(BASE / "empresa_ano.csv", dtype={"cd_cvm": str, "num_doc": str})
-    s = pd.read_csv(SINAIS, dtype={"cd_cvm": str})
-    out, lista = calcula(meta, s, n)
+    s = pd.read_csv(SINAIS, dtype={"cd_cvm": str}, low_memory=False)
+    gab = pd.read_csv(GABARITO, dtype={"cd_cvm": str})
+    obs = pd.read_csv(OBSERVACAO, dtype={"cd_cvm": str})
+    out, lista = calcula(meta, s, n, gab, obs)
     CSV_NAO_PREENCHIDAS.parent.mkdir(exist_ok=True)
     lista.to_csv(CSV_NAO_PREENCHIDAS, index=False)
     NUMEROS_DADOS.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
