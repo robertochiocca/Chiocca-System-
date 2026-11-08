@@ -38,10 +38,50 @@ def test_chance_de_um_caso_com_varios_anos() -> None:
     assert r["observados"] == 1 and r["p_cauda"] == pytest.approx(0.625)
 
 
+def _r() -> dict:
+    return ap.calcula(json.loads(ap.NUMEROS_ESTUDO_1.read_text(encoding="utf-8")), ap.le_dados())
+
+
 @pytest.mark.parametrize("lang", ["pt", "en"])
 def test_documento_igual_a_saida_do_script(lang: str) -> None:
-    r = ap.calcula(json.loads(ap.NUMEROS_ESTUDO_1.read_text(encoding="utf-8")))
-    assert ap.DOCS[lang].read_text(encoding="utf-8") == ap.render(r, lang)
+    assert ap.DOCS[lang].read_text(encoding="utf-8") == ap.render(_r(), lang)
+
+
+@pytest.mark.parametrize(
+    "lang,link", [("pt", "docs/analises-pos-estudo-1.md"), ("en", "docs/en/post-study-1-analyses.md")]
+)
+def test_readme_traz_o_resultado_com_o_rotulo(lang: str, link: str) -> None:
+    paragrafo = ap.resumo(_r(), lang, link)
+    assert paragrafo is not None
+    assert paragrafo in (ap.RAIZ / "README.md").read_text(encoding="utf-8")
+    assert ("não pré-registrada" if lang == "pt" else "not pre-registered") in paragrafo
+
+
+def test_variante_e_teto() -> None:
+    r = _r()
+    assert "variante" in r and r["variante"]["esperado"] <= r["esperado"]
+    assert r["variante"]["p_cauda"] <= r["p_cauda"]
+
+
+def test_variante_com_numeros_sinteticos() -> None:
+    n = {
+        "taxa": {"nf": {"2014": {"em_alerta": 1, "avaliadas": 2}}},
+        "casos": [{"acertavel": True, "caso_id": "x", "empresa": "X", "grupos": ["nao_financeira"],
+                   "anos_periodo": [2014], "anos_avaliados": [2014], "acertado": False}],
+    }  # fmt: skip
+    dados = {
+        "variante": [{"caso_id": "x", "empresas": 4, "com_alerta": 1, "empresa_do_caso_incluida": True}],
+        "persistencia": {k: {"em_alerta_com_anterior_avaliado": 4, "anterior_tambem_em_alerta": 3, "avaliadas": 10,
+                             "em_alerta": 5} for k in ("nf", "fin", "total")},
+        "nao_preenchidas": {},
+    }  # fmt: skip
+    r = ap.calcula(n, dados)
+    assert r["variante"]["casos"][0]["p_acaso"] == pytest.approx(0.25)
+    assert r["variante"]["esperado"] == pytest.approx(0.25) and r["variante"]["p_cauda"] == pytest.approx(1.0)
+    texto = ap.resumo(r, "pt")
+    assert texto is not None and "75,0%" in texto and "50,0%" in texto
+    with pytest.raises(ValueError):
+        ap.calcula(n, dados | {"variante": []})
 
 
 def test_mesmos_numeros_e_rotulo_nos_dois_idiomas() -> None:

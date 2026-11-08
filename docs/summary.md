@@ -29,6 +29,8 @@ Using public data available at the time, would the catalog signals have flagged 
 | False alarms per detected case, whole period | 108.3 | 26.8 |
 | Alert rate, 2010–2023 | 49.9% | 10.1% |
 
+**After the result (descriptive analysis, not pre-registered).** With independent years, chance would produce 8.56 detections on average, and 7 or more with a probability of 90.0%. Since alerts repeat at the same company (73.8% of non-financial company-years in alert were also in alert in the previous year, against an overall rate of 49.9%), this number is a ceiling. With each case's chance measured on companies in the same group, without assuming independent years, chance would produce 7.37 detections, and 7 or more with a probability of 69.3%. Details in [`docs/en/post-study-1-analyses.md`](en/post-study-1-analyses.md).
+
 **What went wrong and why.**
 
 - The implied interest rate alone accounts for 59.8% of company-years in alert (2,001 of 3,345). Finance costs (3.06.02) include, by definition, exchange differences, lease interest and other items that are not interest on borrowings (2.01.04 and 2.02.01); this breakdown was not measured. Without it, the alert rate would be 20.0% instead of 49.9%.

@@ -1,7 +1,9 @@
 """Resumo de uma página (PROMPT.md, Fase 5): docs/resumo.md (PT) e docs/summary.md (EN).
 
 Montado de docs/resultados_numeros.json, como os resultados. Nenhum número é escrito à mão aqui, e nenhum adjetivo
-aparece sem número ao lado.
+aparece sem número ao lado. Pedido de 08/11/2026: o resumo traz também o teste contra o acaso, com o rótulo de análise
+descritiva depois do resultado, não pré-registrada, montado por `chiocca.v2.analises_pos_estudo_1` a partir de
+docs/analises_pos_estudo_1_numeros.json (sem esse arquivo, o parágrafo não aparece).
 """
 
 from __future__ import annotations
@@ -10,6 +12,7 @@ from typing import Any
 
 from chiocca.formato import data, decimal, inteiro, pct
 from chiocca.sinais.mscore import COEFICIENTES
+from chiocca.v2 import analises_pos_estudo_1 as pos_estudo
 
 T: dict[str, dict[str, Any]] = {
     "pt": {
@@ -171,6 +174,9 @@ def render(n: dict[str, Any], lang: str) -> str:
         f"| {lb['inteiro']} | {x_(nf_['inteiro'])} | {x_(nfb['inteiro'])} |",
         f"| {lb['taxa']} | {taxa} | {pct(tx['nf_boba'][0] / tx['nf_boba'][1], lang)} |",
     ]
+    depois = pos_estudo.resumo(pos_estudo.calcula(n, pos_estudo.le_dados()), lang)
+    if depois is not None:
+        linhas += ["", depois]
     rob = n["robustez"]["avaliacao"]
     linhas += ["", t["h_errado"], ""]
     linhas += ["- " + x.format(pj=pct(so_juro / em, lang), jt=i(so_juro), et=i(em), taxa_sem=pct(sem / aval, lang),

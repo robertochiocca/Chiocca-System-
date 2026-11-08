@@ -29,6 +29,8 @@ Com dados públicos disponíveis na época, os sinais do catálogo teriam alerta
 | Alarmes por acerto, período inteiro | 108,3 | 26,8 |
 | Taxa de alerta, 2010–2023 | 49,9% | 10,1% |
 
+**Depois do resultado (análise descritiva, não pré-registrada).** Com anos independentes, o acaso daria 8,56 acertos em média, e 7 ou mais com chance de 90,0%. Como os alertas se repetem na mesma empresa (73,8% das empresa-anos em alerta das não financeiras também estavam em alerta no ano anterior, contra taxa geral de 49,9%), esse número é um teto. Com a chance de cada caso medida nas empresas do mesmo grupo, sem supor anos independentes, o acaso daria 7,37 acertos, e 7 ou mais com chance de 69,3%. Detalhes em [`docs/analises-pos-estudo-1.md`](analises-pos-estudo-1.md).
+
 **O que deu errado e por quê.**
 
 - O juro implícito sozinho responde por 59,8% das empresa-anos em alerta (2.001 de 3.345). A despesa financeira (3.06.02) inclui, por definição, variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos (2.01.04 e 2.02.01); essa decomposição não foi medida. Sem ele, a taxa de alerta seria 20,0%, e não 49,9%.
