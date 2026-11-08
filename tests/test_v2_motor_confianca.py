@@ -214,3 +214,34 @@ def test_criterios_de_fonte_atualidade_e_completude() -> None:
 def test_confianca_nao_tem_nota_numerica() -> None:
     k = cn.avaliar("DSRI", vd.Resultado.de_valor(1.0), [], _doc(), "2021-04-30", estudo=ESTUDO)
     assert not hasattr(k, "pct") and k.nivel in ("alta", "media", "baixa")
+
+
+# --------------------------------------------------- caixa amplo, não preenchido e sinal incomum (08/11/2026)
+def test_caixa_amplo_nao_e_falha() -> None:
+    d = _empresa(**{"6.05.02@ÚLTIMO": 130.0 * MI})
+    d = pd.concat([d, pd.DataFrame([("BPA", U, "1.01.02", "Aplicações Financeiras", 30.0 * MI)], columns=d.columns)])
+    c = _por_id(cf.conferir(d, "nao_financeiro"))["dfc_saldo_final_no_balanco"]
+    assert c.resultado == cf.FECHA_CAIXA_AMPLO and c.motivo is not None and "1.01.02" in c.motivo.pt
+    assert not [x for x in cf.falhas(cf.conferir(d, "nao_financeiro")) if x.id == "dfc_saldo_final_no_balanco"]
+
+
+def test_balanco_nao_preenchido_e_sinal_incomum() -> None:
+    confs = cf.conferir(_empresa(**{"1@PENÚLTIMO": 0.0, "3.04.02@ÚLTIMO": 5.0 * MI}), "nao_financeiro")
+    p = _por_id(confs, P)["ativo_total_preenchido"]
+    assert (p.tipo, p.resultado) == (cf.NAO_PREENCHIDO, "falhou")
+    assert cf.colunas_nao_preenchidas(confs) == {P}
+    incomum = _por_id(confs)["sinal_dre:3.04.02"]
+    assert (incomum.tipo, incomum.resultado) == (cf.SINAL_INCOMUM, "falhou")
+    k = cn.avaliar("SGAI", vd.Resultado.de_valor(1.0), [x for x in confs if x.id.startswith("sinal_dre")], _doc(),
+                   "2021-04-30", estudo=ESTUDO)  # fmt: skip
+    assert {c.nome: c.resultado for c in k.criterios}["consistencia"] == "atencao"  # incomum não é problema
+
+
+def test_produto_nao_calcula_com_balanco_nao_preenchido() -> None:
+    ok = vd.Resultado.de_valor(1.2)
+    r = lh.aplicar_nao_preenchido("DSRI", ok, {P})
+    assert r.status == "indefinido" and r.codigo == "balanco_nao_preenchido" and "PENÚLTIMO" in r.texto("pt")
+    assert lh.aplicar_nao_preenchido("SGI", ok, {P}) is ok  # só a DRE: não depende do balanço
+    assert lh.aplicar_nao_preenchido("mscore", ok, {P}).status == "indefinido"
+    assert lh.aplicar_nao_preenchido("TATA", ok, {P}) is ok  # usa só o ativo total de t
+    assert lh.aplicar_nao_preenchido("DSRI", ok, set()) is ok

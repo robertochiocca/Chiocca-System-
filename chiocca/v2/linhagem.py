@@ -33,7 +33,7 @@ from chiocca import variaveis
 from chiocca.cvm import cd_texto
 from chiocca.sinais import dpo, juro_implicito, lucro_sem_caixa, mscore, peso_nao_recorrente
 from chiocca.sinais.resultado import Resultado as ResultadoV1
-from chiocca.v2.validade import Motivo
+from chiocca.v2.validade import Motivo, Resultado
 
 MOTOR_V1 = "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823"
 ENET_DOC = (
@@ -375,3 +375,32 @@ def documento_da_base(meta: Any, localizador: Localizador | None = None) -> Docu
     return Documento("DFP", str(meta.cd_cvm), int(meta.exercicio), str(meta.dt_refer), num,
                      None if pd.isna(meta.versao) else int(meta.versao), None if pd.isna(meta.dt_receb) else str(meta.dt_receb),
                      origem, str(meta.tipo), url, sha)  # fmt: skip
+
+
+def usa_balanco(sinal: str, coluna: str) -> bool:
+    """O sinal do motor v1 usa alguma conta do balanço (BPA ou BPP) nessa coluna (ÚLTIMO = t, PENÚLTIMO = t−1)?"""
+    if sinal == "mscore":
+        return any(usa_balanco(c, coluna) for c in mscore.COEFICIENTES)
+    for var, col in ENTRADAS.get(sinal, []):
+        if col == coluna and var in variaveis.CONTAS and variaveis.CONTAS[var][0] in ("BPA", "BPP"):
+            return True
+    return False
+
+
+def aplicar_nao_preenchido(sinal: str, resultado: Resultado, colunas_nao_preenchidas: set[str]) -> Resultado:
+    """Regra do produto (08/11/2026): indicador que depende de balanço não preenchido (ativo total zero) fica "não
+    calculável", nunca calculado com zero. O valor do motor v1 não muda; só a forma como o produto o mostra."""
+    afetadas = sorted(c for c in colunas_nao_preenchidas if usa_balanco(sinal, c))
+    if not afetadas or resultado.status == "indefinido":
+        return resultado
+    rotulo = {
+        T: ("exercício (ÚLTIMO)", "fiscal year (ÚLTIMO)"),
+        T1: ("comparativo (PENÚLTIMO)", "prior year (PENÚLTIMO)"),
+    }
+    pt = ", ".join(rotulo[c][0] for c in afetadas)
+    en = ", ".join(rotulo[c][1] for c in afetadas)
+    return Resultado.indefinido(
+        Motivo(f"balanço não preenchido (ativo total zero) no {pt}: o indicador não é calculado com zero",
+               f"balance sheet not filled in (zero total assets) in the {en}: the indicator is not computed with zero"),
+        codigo="balanco_nao_preenchido",
+    )  # fmt: skip

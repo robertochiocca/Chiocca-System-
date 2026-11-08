@@ -9,7 +9,9 @@ Critérios:
 - **fonte**: dados abertos ou ENET, consolidado ou individual;
 - **completude**: as contas de que o sinal precisa estão na DFP? (não calculável, depreciação combinada, juros
   pagos não achados);
-- **consistencia**: conferências de qualidade (`chiocca.v2.conferencias`) nas demonstrações que o sinal usa;
+- **consistencia**: conferências de qualidade (`chiocca.v2.conferencias`) nas demonstrações que o sinal usa: falha de
+  identidade ou balanço não preenchido é problema; reconciliação que não fecha e sinal contábil incomum são atenção;
+  "fecha com caixa amplo" não é falha;
 - **atualidade**: entregue até a data de corte do exercício? reapresentada até a data de referência?
 - **metodo**: o que o estudo 1 mostrou sobre o motor (números lidos de `docs/resultados_numeros.json`).
 
@@ -28,7 +30,7 @@ from typing import Any
 from chiocca.base import RAIZ
 from chiocca.formato import decimal, inteiro, pct
 from chiocca.sinais.mscore import COEFICIENTES
-from chiocca.v2.conferencias import IDENTIDADE, PLAUSIBILIDADE, RECONCILIACAO, Conferencia
+from chiocca.v2.conferencias import IDENTIDADE, NAO_PREENCHIDO, RECONCILIACAO, SINAL_INCOMUM, Conferencia
 from chiocca.v2.linhagem import Documento
 from chiocca.v2.validade import Motivo, Resultado
 
@@ -117,8 +119,9 @@ def _completude(sinal: str, validade: Resultado, depreciacao_combinada: bool, ju
 def _consistencia(sinal: str, conferencias: list[Conferencia]) -> Criterio:
     usadas = DEMONSTRACOES.get(sinal, set())
     relevantes = [c for c in conferencias if c.resultado != "nao_aplicavel" and (c.demonstracoes & usadas)]
-    graves = [c for c in relevantes if c.resultado == "falhou" and c.tipo in (IDENTIDADE, PLAUSIBILIDADE)]
+    graves = [c for c in relevantes if c.resultado == "falhou" and c.tipo in (IDENTIDADE, NAO_PREENCHIDO)]
     avisos = [c for c in relevantes if c.resultado == "falhou" and c.tipo == RECONCILIACAO]
+    incomuns = [c for c in relevantes if c.resultado == "falhou" and c.tipo == SINAL_INCOMUM]
 
     def lista(cs: list[Conferencia], lang: str) -> str:
         nomes = dict.fromkeys(f"{c.nome.pt if lang == 'pt' else c.nome.en} ({c.coluna})" for c in cs)
@@ -132,6 +135,11 @@ def _consistencia(sinal: str, conferencias: list[Conferencia]) -> Criterio:
             "reconciliação não fechou (pode ter explicação legítima, como caixa restrito): " + lista(avisos, "pt"),
             "reconciliation did not close (it may have a legitimate explanation, such as restricted cash): "
             + lista(avisos, "en")))  # fmt: skip
+    if incomuns:
+        return Criterio("consistencia", ATENCAO, Motivo(
+            "sinal contábil incomum (pode ter explicação legítima, como reversão de provisão): " + lista(incomuns, "pt"),
+            "unusual accounting sign (it may have a legitimate explanation, such as a provision reversal): "
+            + lista(incomuns, "en")))  # fmt: skip
     if not relevantes:
         return Criterio("consistencia", ATENCAO, Motivo("nenhuma conferência se aplica às demonstrações usadas",
                                                         "no check applies to the statements used"))  # fmt: skip

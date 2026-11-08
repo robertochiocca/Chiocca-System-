@@ -11,8 +11,15 @@ Três tipos, que dizem coisas diferentes:
 - **reconciliação**: o mesmo número chegando por outro caminho, entre demonstrações (saldo de caixa da DFC contra o
   caixa e equivalentes do balanço). Pode falhar por motivo legítimo (caixa restrito, saldo bancário negativo,
   ativo mantido para venda): o resultado é um aviso, não uma acusação de erro;
-- **plausibilidade**: valores fora do que o sinal contábil permite (ativo total não positivo, conta de saldo que
-  não pode ser negativa, receita negativa, custo ou despesa com sinal de receita).
+- **não preenchido**: ativo total igual a zero numa coluna (balanço não preenchido). No produto, os indicadores que
+  dependem desse balanço ficam "não calculável", nunca calculados com zero (`colunas_nao_preenchidas`);
+- **sinal incomum**: sinal contábil incomum (ativo total negativo, conta de saldo negativa, receita negativa, custo
+  ou despesa com sinal de receita). Incomum não quer dizer impossível: uma reversão de provisão maior que a despesa
+  do ano, por exemplo, pode deixar a despesa positiva.
+
+Na reconciliação do caixa, quando o saldo da DFC fecha com caixa e equivalentes mais aplicações financeiras
+(1.01.01 + 1.01.02), o resultado é "fecha com caixa amplo": a empresa usa na DFC um conceito de caixa mais amplo,
+o que é escolha de apresentação. Não conta como falha.
 
 Regras:
 - os códigos de conta usados são contas fixas da CVM, conferidas no plano não financeiro (reconhecimento, parte 1.4,
@@ -34,7 +41,9 @@ from chiocca.v2.validade import Motivo
 ULTIMO, PENULTIMO = "ÚLTIMO", "PENÚLTIMO"
 TOLERANCIA_POR_PARCELA = 1000.0
 NAO_FINANCEIRO = "nao_financeiro"
-IDENTIDADE, RECONCILIACAO, PLAUSIBILIDADE = "identidade", "reconciliacao", "plausibilidade"
+IDENTIDADE, RECONCILIACAO = "identidade", "reconciliacao"
+NAO_PREENCHIDO, SINAL_INCOMUM = "nao_preenchido", "sinal_incomum"
+FECHA_CAIXA_AMPLO = "fecha_caixa_amplo"
 
 
 @dataclass(frozen=True)
@@ -54,6 +63,7 @@ class Definicao:
     direita: tuple[Termo, ...]
     so_nao_financeiro: bool = True
     colunas: tuple[str, ...] = (ULTIMO, PENULTIMO)
+    alternativa: tuple[Termo, ...] = ()  # lado direito alternativo (caixa amplo), que não conta como falha
 
 
 @dataclass(frozen=True)
@@ -62,7 +72,7 @@ class Conferencia:
     tipo: str
     nome: Motivo
     coluna: str
-    resultado: str  # ok, falhou ou nao_aplicavel
+    resultado: str  # ok, falhou, nao_aplicavel ou fecha_caixa_amplo
     esquerda: float | None = None
     direita: float | None = None
     tolerancia: float | None = None
@@ -125,11 +135,12 @@ DEFINICOES: tuple[Definicao, ...] = (
     Definicao("dfc_saldo_final_no_balanco", RECONCILIACAO,
               Motivo("saldo final da DFC = caixa e equivalentes do balanço",
                      "cash flow closing balance = cash and cash equivalents on the balance sheet"),
-              _t("DFC", "6.05.02"), _t("BPA", "1.01.01")),
+              _t("DFC", "6.05.02"), _t("BPA", "1.01.01"), alternativa=_t("BPA", "1.01.01", "1.01.02")),
     Definicao("dfc_saldo_inicial_no_balanco", RECONCILIACAO,
               Motivo("saldo inicial da DFC = caixa e equivalentes do balanço anterior",
                      "cash flow opening balance = cash and cash equivalents on the prior balance sheet"),
-              _t("DFC", "6.05.01", ordem=ULTIMO), _t("BPA", "1.01.01", ordem=PENULTIMO), colunas=(ULTIMO,)),
+              _t("DFC", "6.05.01", ordem=ULTIMO), _t("BPA", "1.01.01", ordem=PENULTIMO), colunas=(ULTIMO,),
+              alternativa=_t("BPA", "1.01.01", "1.01.02", ordem=PENULTIMO)),
 )  # fmt: skip
 
 # Contas de saldo que não podem ser negativas (plano não financeiro) e sinais esperados da DRE.
@@ -162,27 +173,37 @@ def _nao_aplicavel(d: Definicao, coluna: str, pt: str, en: str) -> Conferencia:
     return Conferencia(d.id, d.tipo, d.nome, coluna, "nao_aplicavel", motivo=Motivo(pt, en))
 
 
+def _soma(termos: tuple[Termo, ...], coluna: str, v: dict[tuple[str, str, str], float]) -> tuple[float, list[str]]:
+    soma, faltando = 0.0, []
+    for t in termos:
+        chave = (t.demonstracao, t.ordem or coluna, t.cd_conta)
+        if chave not in v:
+            faltando.append(f"{t.demonstracao} {t.cd_conta}")
+        else:
+            soma += t.sinal * v[chave]
+    return soma, faltando
+
+
 def _igualdade(d: Definicao, coluna: str, v: dict[tuple[str, str, str], float]) -> Conferencia:
-    lados: list[float] = []
-    usadas: list[tuple[str, str, str]] = []
-    faltando: list[str] = []
-    for termos in (d.esquerda, d.direita):
-        soma = 0.0
-        for t in termos:
-            ordem = t.ordem or coluna
-            chave = (t.demonstracao, ordem, t.cd_conta)
-            usadas.append((t.demonstracao, t.cd_conta, ordem))
-            if chave not in v:
-                faltando.append(f"{t.demonstracao} {t.cd_conta}")
-            else:
-                soma += t.sinal * v[chave]
-        lados.append(soma)
+    usadas = [(t.demonstracao, t.cd_conta, t.ordem or coluna) for t in d.esquerda + d.direita]
+    esq, f1 = _soma(d.esquerda, coluna, v)
+    dir_, f2 = _soma(d.direita, coluna, v)
+    lados, faltando = [esq, dir_], f1 + f2
     if faltando:
         return _nao_aplicavel(
             d, coluna, "conta ausente: " + ", ".join(faltando), "missing account: " + ", ".join(faltando)
         )
     tol = TOLERANCIA_POR_PARCELA * (len(d.esquerda) + len(d.direita))
     ok = abs(lados[0] - lados[1]) <= tol
+    if not ok and d.alternativa:
+        amplo, falta_amplo = _soma(d.alternativa, coluna, v)
+        tol_amplo = TOLERANCIA_POR_PARCELA * (len(d.esquerda) + len(d.alternativa))
+        if not falta_amplo and abs(lados[0] - amplo) <= tol_amplo:
+            usadas_amplo = usadas + [(t.demonstracao, t.cd_conta, t.ordem or coluna) for t in d.alternativa]
+            nota = Motivo("fecha com caixa amplo (1.01.01 + 1.01.02): a DFC usa caixa e equivalentes mais aplicações financeiras",
+                          "closes with broad cash (1.01.01 + 1.01.02): the cash flow statement uses cash and cash equivalents plus short-term investments")  # fmt: skip
+            return Conferencia(d.id, d.tipo, d.nome, coluna, FECHA_CAIXA_AMPLO, lados[0], amplo, tol_amplo, nota,
+                               tuple(dict.fromkeys(usadas_amplo)))  # fmt: skip
     motivo = None if ok else Motivo(f"diferença acima da tolerância de R$ {tol:,.0f}".replace(",", "."),
                                     f"difference above the tolerance of R${tol:,.0f}")  # fmt: skip
     return Conferencia(d.id, d.tipo, d.nome, coluna, "ok" if ok else "falhou", lados[0], lados[1], tol, motivo,
@@ -211,15 +232,26 @@ def conferir(contas: pd.DataFrame, plano: str | None) -> list[Conferencia]:
         if not _tem_coluna(v, coluna):
             continue
         at = v.get(("BPA", coluna, "1"))
-        nome_at = Motivo("ativo total positivo", "positive total assets")
+        nome_zero = Motivo("ativo total preenchido (diferente de zero)", "total assets filled in (not zero)")
+        nome_neg = Motivo("ativo total não negativo", "total assets not negative")
         if at is None:
-            out.append(Conferencia("ativo_total_positivo", PLAUSIBILIDADE, nome_at, coluna, "nao_aplicavel",
-                                   motivo=Motivo("conta ausente: BPA 1", "missing account: BPA 1")))  # fmt: skip
+            falta = Motivo("conta ausente: BPA 1", "missing account: BPA 1")
+            out.append(
+                Conferencia("ativo_total_preenchido", NAO_PREENCHIDO, nome_zero, coluna, "nao_aplicavel", motivo=falta)
+            )
+            out.append(
+                Conferencia("ativo_total_negativo", SINAL_INCOMUM, nome_neg, coluna, "nao_aplicavel", motivo=falta)
+            )
         else:
-            ok = at > 0
-            out.append(Conferencia("ativo_total_positivo", PLAUSIBILIDADE, nome_at, coluna, "ok" if ok else "falhou", at,
-                                   None, None, None if ok else Motivo("ativo total não positivo", "total assets not positive"),
-                                   (("BPA", "1", coluna),)))  # fmt: skip
+            conta = (("BPA", "1", coluna),)
+            zero = at == 0
+            out.append(Conferencia("ativo_total_preenchido", NAO_PREENCHIDO, nome_zero, coluna, "falhou" if zero else "ok",
+                                   at, None, None, Motivo("ativo total igual a zero: balanço não preenchido",
+                                                          "total assets equal to zero: balance sheet not filled in") if zero else None,
+                                   conta))  # fmt: skip
+            out.append(Conferencia("ativo_total_negativo", SINAL_INCOMUM, nome_neg, coluna, "falhou" if at < 0 else "ok",
+                                   at, None, None, Motivo("ativo total negativo", "negative total assets") if at < 0 else None,
+                                   conta))  # fmt: skip
         if not nao_fin:
             continue
         for dem, cod in SALDO_NAO_NEGATIVO:
@@ -239,12 +271,20 @@ def _sinal(id_: str, dem: str, cod: str, coluna: str, v: dict[tuple[str, str, st
         erro = Motivo(f"{pt} ({cod}) com sinal de receita", f"{en} ({cod}) with the sign of income")
     x = v.get((dem, coluna, cod))
     if x is None:
-        return Conferencia(id_, PLAUSIBILIDADE, nome, coluna, "nao_aplicavel",
+        return Conferencia(id_, SINAL_INCOMUM, nome, coluna, "nao_aplicavel",
                            motivo=Motivo(f"conta ausente: {dem} {cod}", f"missing account: {dem} {cod}"))  # fmt: skip
     ok = x >= 0 if sinal > 0 else x <= 0
-    return Conferencia(id_, PLAUSIBILIDADE, nome, coluna, "ok" if ok else "falhou", x, None, None,
+    return Conferencia(id_, SINAL_INCOMUM, nome, coluna, "ok" if ok else "falhou", x, None, None,
                        None if ok else erro, ((dem, cod, coluna),))  # fmt: skip
 
 
 def falhas(conferencias: list[Conferencia], tipo: str | None = None) -> list[Conferencia]:
     return [c for c in conferencias if c.resultado == "falhou" and (tipo is None or c.tipo == tipo)]
+
+
+def colunas_nao_preenchidas(conferencias: list[Conferencia]) -> set[str]:
+    """Colunas (ÚLTIMO, PENÚLTIMO) cujo balanço não foi preenchido (ativo total igual a zero).
+
+    No produto, todo indicador que usa o balanço dessas colunas fica "não calculável", nunca calculado com zero.
+    """
+    return {c.coluna for c in conferencias if c.id == "ativo_total_preenchido" and c.resultado == "falhou"}
