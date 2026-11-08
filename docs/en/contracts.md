@@ -158,22 +158,40 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
 | Family | Signals | Role | Source | Alerts? |
 | --- | --- | --- | --- | --- |
 | Possible manipulation | Engine v1 (study 1): the eight M-score components and M, the DPO jump, the implied interest rate, accruals (context only, as in the study) and, for financial companies, the non-recurring weight | Engine v1 alert, always with context and with the study 1 result alongside | Pre-registration, section 4, and amendments 1 to 11 | Yes, by the study 1 rule, unchanged |
-| Financial risk | Pure Altman Z'', for non-manufacturing firms and emerging markets, without the Emerging Market Score constant | Descriptive context | Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", in `referencias/`, checked with the page before implementation | No |
-| Financial quality | Piotroski F (2000), nine binary tests | Descriptive context | Piotroski (2000), Journal of Accounting Research, to be checked against the primary source before implementation | No |
+| Financial risk | Pure Altman Z'', for non-manufacturing firms and emerging markets, without the Emerging Market Score constant and without zones | Descriptive context | Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", p. 27, in `referencias/` ([`docs/en/references.md`](references.md)) | No |
+| Financial quality | Piotroski F (2000), nine binary tests | Descriptive context | Piotroski (2000), Journal of Accounting Research, pp. 7-10, in `referencias/` ([`docs/en/references.md`](references.md)) | No |
 
 - The DPO jump and the implied interest rate stay in the possible-manipulation family, as in engine v1 (decision of 2026-11-07). Mandatory alternative explanations in the finding, with a source when available: for the implied interest rate, expensive debt, exchange differences and lease interest inside finance costs; for DPO, bargaining power with suppliers and a change in purchase mix.
-- **Altman Z''** (decision of 2026-11-07):
-  - the pure Z'' version, without the 3.25 constant of the Emerging Market Score, which was built for emerging-market debt and depends on qualitative adjustments (currency, industry, competitive position) and a rating table we will not apply;
-  - coefficients and zones (safe, grey and distress) copied from Altman (2000) for the pure Z'' version, with the PDF page, and recorded in `docs/en/sources.md`. Nothing from memory;
-  - X1 = (current assets 1.01 − current liabilities 2.01) ÷ total assets (account 1);
-  - X2 = (profit reserves + retained earnings or accumulated losses) ÷ total assets, as a **Brazilian adaptation**: since Law 11,638/2007, a Brazilian corporation does not close the year with a positive balance in retained earnings, because retained profit goes to profit reserves. In the non-financial chart of accounts, 2.03.04 and 2.03.05 (fixed accounts, to be confirmed and located by text if they vary). Capital reserves and equity valuation adjustments are excluded. The adaptation flag goes in the lineage and in the catalog;
-  - X3 = EBIT (3.05, operating profit before finance result and taxes) ÷ total assets;
-  - X4 = consolidated book equity, including non-controlling interests (2.03) ÷ (current liabilities 2.01 + non-current liabilities 2.02);
-  - it does not apply to financial companies: "not computable", with the reason;
+- **Altman Z''** (decision of 2026-11-07; specification of 2026-11-08, with the pages provided by Roberto and the PDF in `referencias/`). Financial risk family, context only:
+  - formula (Altman 2000, p. 27): Z'' = 6.56·X1 + 3.26·X2 + 6.72·X3 + 1.05·X4, with X1 = (1.01 − 2.01) ÷ 1; X2 = (2.03.04 + 2.03.05) ÷ 1; X3 = 3.05 ÷ 1; X4 = 2.03 ÷ (2.01 + 2.02). The codes are from the non-financial chart of accounts (1 = total assets; 3.05 = operating profit before finance result and taxes; 2.03 = consolidated equity, including non-controlling interests);
+  - X2 is a **Brazilian adaptation**: since Law 11,638/2007, a Brazilian corporation does not close the year with a positive balance in retained earnings, because retained profit goes to profit reserves (2.03.04) and the remaining balance stays in retained earnings or accumulated losses (2.03.05). Fixed accounts, to be confirmed and located by text if they vary. Capital reserves and equity valuation adjustments are excluded. The adaptation flag goes in the lineage and in the catalog;
+  - no +3.25 constant and no rating table (pp. 27-29). A test fails if 3.25 appears in the Z'' calculation;
+  - no zones for Z''. The 1.23 and 2.90 zones (p. 26) belong to Z' and are not used. The page shows the value, the sector and year percentile and the phrase "no cut-off zone: the available source does not define zones for Z''". **This changes the decision of 2026-11-07**, which planned to show the original article's zones;
+  - the percentile is point-in-time: only DFPs public on the reference date enter. If the sector has fewer than 10 companies, the percentile uses the non-financial universe, flagged;
+  - financial companies: "does not apply";
+  - validity note, always next to the value: "coefficients estimated outside Brazil; bankruptcy models lose validity over time (Pereira and Martins 2015, p. 25)";
   - a new catalog entry, financial risk family, phase `contexto_v2`, name and description in PT and EN; no engine v1 entry changes;
   - a v2 worked example of its own (not study 1's `data/exemplo_resolvido.json`), with the case of zero retained earnings and positive reserves, and a test that fails if X2 uses retained earnings alone;
-  - the source's zones appear as "zones from the original article", never as a verdict.
-- **Piotroski F** (decision of 2026-11-07): each of the nine tests checked against Piotroski (2000), with the page, and each Brazilian adaptation flagged in the lineage and the catalog. Since the number of shares only exists in recent years, the "did not issue shares" test uses the cash flow statement's share-issuance line, by the frozen patterns in part 4.2 of the reconnaissance, flagged as an adaptation; without the line, "not computable". A new catalog entry, financial quality family, phase `contexto_v2`.
+  - do not: use the Z' zones for Z'' or the Altman, Baidya and Dias (1979) coefficients as a yardstick.
+- **Piotroski F** (decision of 2026-11-07; specification of 2026-11-08, with the pages provided by Roberto and the PDF in `referencias/`). Financial quality family, context only. Nine binary signals (Piotroski 2000, pp. 7-10), with opening TA = total assets of t−1 and average TA = mean of total assets of t and t−1:
+  1. ROA > 0, with ROA = 3.09 ÷ opening TA;
+  2. CFO > 0, with CFO = 6.01 (as reported) ÷ opening TA;
+  3. ΔROA > 0;
+  4. ACCRUAL: CFO ÷ opening TA > ROA;
+  5. ΔLEVER < 0, with leverage = 2.02.01 ÷ average TA. The rule for zero long-term debt in both years is recorded in the implementation, and the report counts the cases. Proposal, to be confirmed by Roberto: the formula applies without exception (the change is zero, not below zero, and the signal is 0), with the flag "no long-term debt in either year" in the lineage;
+  6. ΔLIQUID > 0, with liquidity = 1.01 ÷ 2.01;
+  7. EQ_OFFER: 1 if no shares were issued in the year, from the cash flow statement's issuance line found by text (frozen patterns in part 4.2 of the reconnaissance), with the account codes recorded; flagged as an adaptation; without the line, "not computable";
+  8. ΔMARGIN > 0, with margin = 3.03 ÷ 3.01;
+  9. ΔTURN > 0, with turnover = 3.01 ÷ opening TA.
+  - t−1 values come from the prior-year column of the DFP of t; t−2 values, from the DFP of t−1 in the version public on the reference date. Both origins go in the lineage;
+  - the page shows "F = x/9 (y computable)"; a missing component is not imputed;
+  - financial companies: "does not apply";
+  - the family name is "financial quality", not "earnings quality";
+  - a new catalog entry, financial quality family, phase `contexto_v2`.
+- **"Limits" section of the investigation page** (fixed text, 2026-11-08). The text comes from `chiocca.v2.limites`, with the numbers read from the study 1 output, and a test checks it matches this one:
+  - No alert is not a clean bill of health. In Dechow, Sloan and Sweeney (1995), the most powerful accruals model rejected 'no manipulation' for only 28.1% of 32 companies sanctioned by the SEC (Table 7, p. 32).
+  - In study 1, 49.9% of company-years were in alert, and the number of detections did not beat chance in a descriptive test done after the result: 7 detections in 13 detectable cases, against 7.37 expected by chance without assuming independent years (8.56 assuming independent years).
+  - Risk models use numbers that may be manipulated (Pereira and Martins 2015, p. 29). That is why the three families are not added up.
 - The catalog already has an `fscore_dechow` (Dechow and others, 2011), which measures something else (likelihood of a restatement) and is a catalog phase 2 signal. It does not come in at this stage, and the names are not confused.
 
 ## 4. Reference date, versions and cross-section

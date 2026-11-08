@@ -27,7 +27,7 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 - `ExercicioNaData` em qualquer data de referência e o corte transversal na mesma data (decis do motor v1 e percentis).
 - Teste do invariante: na data de corte de cada exercício, os sinais e alertas coincidem com os do estudo 1.
 - Contexto: percentil no setor e no grupo, histórico com a cerca de IQR (detecção da Carchuna).
-- Famílias de risco financeiro (Altman Z'') e qualidade financeira (Piotroski F), depois de transcrever as fórmulas da fonte primária para `docs/fontes.md`. Só contexto descritivo.
+- Famílias de risco financeiro (Altman Z'') e qualidade financeira (Piotroski F), com as fórmulas e as páginas em `docs/contratos.md` (seção 3) e as obras em `docs/referencias.md`. Só contexto descritivo.
 - "O que mudou", "o que se sabia na data", explicações alternativas e limitações, com um catálogo de textos PT e EN que cita fontes.
 - Saídas em JSON e PDF, nas duas línguas.
 - Testes de ponta a ponta: Americanas em 31/03/2022 e uma empresa sem nenhum caso no gabarito.
@@ -77,11 +77,14 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
    - **Aceita por padrão em 07/11/2026.**
 10. **Altman Z'' e Piotroski F:** a fonte primária (artigo ou livro) precisa estar acessível para transcrever as fórmulas. Se você tiver os PDFs, eles entram em `referencias/` (fora do git); senão, busco as fontes publicadas e registro em `docs/fontes.md`.
     - **Decisão de Roberto, 07/11/2026:** os PDFs de Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", e de Piotroski (2000), Journal of Accounting Research, vão para `referencias/`. Nenhum coeficiente ou teste entra antes de conferido neles, com a página.
+    - **08/11/2026:** fórmulas e páginas informadas por Roberto e registradas em `docs/contratos.md`, seção 3; obras em `docs/referencias.md`.
 
 ## Fase C dividida (decisão de Roberto, 07/11/2026)
 
 - **C1:** armazenamento temporal, motor v1 em qualquer data e o invariante do estudo 1. Para.
 - **C2:** contexto, Altman Z'', Piotroski F, JSON e PDF. Acréscimos:
   - **Parecer e auditor:** seção factual na Investigacao, com o tipo do parecer, trecho do texto da DFP conferido literalmente, auditor e trocas de auditor pelo FCA. Não é família de sinais e não gera nota nem alerta.
-  - **Altman Z'':** versão Z'' pura, para empresas não industriais e mercados emergentes, sem a constante de 3,25 do Emerging Market Score (que foi feito para dívida de emergentes e depende de ajustes qualitativos e de uma tabela de rating que não vamos aplicar). Coeficientes e zonas copiados do Altman (2000), com a página. X1 = (ativo circulante − passivo circulante) ÷ ativo total; X2 = (reservas de lucros + lucros ou prejuízos acumulados) ÷ ativo total, como adaptação brasileira (desde a Lei 11.638/2007 o lucro retido vai para as reservas), sem reservas de capital nem ajustes de avaliação patrimonial; X3 = EBIT ÷ ativo total; X4 = patrimônio líquido consolidado com não controladores ÷ (passivo circulante + passivo não circulante). Não calculável em financeiras. Entrada nova no catálogo, família risco financeiro, fase `contexto_v2`, sem alterar o motor v1. Exemplo resolvido próprio da v2, com o caso de lucros acumulados zerados e reservas positivas, e um teste que falha se o X2 usar só lucros acumulados.
-  - **Piotroski F:** cada teste conferido no Piotroski (2000), com a página; adaptações brasileiras marcadas na linhagem e no catálogo. O teste de emissão de ações usa a linha de emissão da DFC (padrões congelados), marcado como adaptação; sem a linha, não calculável.
+  - **Altman Z'':** especificação de 08/11/2026 em `docs/contratos.md`, seção 3: fórmula da p. 27 do Altman (2000), X2 como adaptação brasileira, sem a constante +3,25 e sem tabela de rating (teste falha se 3,25 aparecer), sem zonas (as de 1,23 e 2,90 são do Z'), percentil no setor e no ano pelo "como era" (universo das não financeiras se o setor tiver menos de 10 empresas), "não se aplica" em financeiras e nota de validade. Exemplo resolvido próprio da v2, com teste que falha se o X2 usar só lucros acumulados.
+  - **Piotroski F:** especificação de 08/11/2026 em `docs/contratos.md`, seção 3: os nove sinais das pp. 7-10, com AT início = ativo total de t−1, t−2 da DFP de t−1 na versão pública na data, "F = x/9 (y calculáveis)" sem imputar componente, "não se aplica" em financeiras, regra e contagem dos casos de dívida de longo prazo zero nos dois anos, e EQ_OFFER pela linha de emissão da DFC, com os códigos registrados.
+  - **Seção "Limites":** texto fixo de `chiocca.v2.limites` na página de investigação, em PT e EN (`docs/contratos.md`, seção 3).
+  - **Não fazer:** usar as zonas do Z' no Z'' ou os coeficientes de 1979 como régua.

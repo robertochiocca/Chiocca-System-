@@ -11,8 +11,36 @@ Anotadas para depois, sem compromisso. Nada aqui entra no produto v2 sem autoriz
 - Teste de retorno das ações, com `data.py`, `metrics.py` e `ratios.py` da Calahonda.
 - F-score de Dechow e outros (2011), que já está no catálogo como sinal da fase 2.
 - Validar no Brasil os indicadores de contexto (Altman Z'' e Piotroski F) antes de qualquer uso como alerta.
-- Machine learning (Isolation Forest, XGBoost) só com base rotulada confiável, validação fora da amostra e comparação contra o motor v1 e a regra boba.
+- Aprendizado supervisionado só exploratório: 13 casos acertáveis não bastam para treinar e validar um modelo, e nenhum texto do projeto afirma que machine learning ganha do logit. Qualquer modelo (Isolation Forest, XGBoost) só com base rotulada confiável, validação fora da amostra e comparação contra o motor v1 e a regra boba.
 - Cortes por setor ou recalibrados para o Brasil, sempre com pré-registro.
+
+Registrado em 08/11/2026, para o pré-registro novo do estudo 2, antes de abrir os exercícios de 2024 em diante:
+
+- Accruals discricionários por setor e ano, pelo Jones modificado e pelo modelo de margem, com pelo menos 10 empresas por setor-ano (Peasnell, Pope e Young 2000, pp. 11 e 15). O Quadro 03 de Paulo (2007, p. 168) serve de lista de conferência.
+- Dechow e Dichev (2002) só com defasagem, porque o modelo usa o caixa de t+1.
+- Lucro logo acima de zero ou do lucro do ano anterior (Martinez 2001, pp. 72-80).
+- Métricas de ranking: precisão no topo de 1%, 5% e 10% e NDCG@k, levadas do `evaluate.m` do JarFraud/FraudDetection para Python, com testes que reproduzem um exemplo pequeno calculado à mão.
+- Intervalo de 24 meses entre o período de calibração e o de teste.
+- Regra no pré-registro para casos que se estendem por vários anos, com teste automático para ano de dados faltando e para identificador de caso trocado: foi o erro que Walker apontou em 2021 em Bao et al. (2020) e que o erratum de 2022 reconheceu.
+
+## Produto: indicadores de contexto (registrado em 08/11/2026)
+
+Só contexto, sem alerta, e só depois de especificados no plano:
+
+- Accruals ÷ ativo médio, com percentil (Sloan 1996, p. 6).
+- SMTH1 = −σ(lucro ÷ AT) ÷ σ(CFO ÷ AT) em 5 anos, exigindo 5 DFPs públicas na data de referência (Gonçalves et al. 2024, pp. 10-11).
+
+## Fase F: leitor de partes relacionadas (registrado em 08/11/2026)
+
+- Campos do item 18 do CPC 05 (R1), organizados pelas categorias do item 19.
+- Ler também a nota da controladora, porque a consolidação elimina as transações dentro do grupo (Gonçalves et al. 2024, p. 9).
+- A frase "em condições de mercado" é registrada como fato, sem prova (item 23).
+- Antes de começar a Fase F: verificar se os dados abertos do Formulário de Referência têm uma tabela estruturada de transações com partes relacionadas. Só verificar e relatar.
+
+## Não fazer
+
+- Não copiar o CSV do JarFraud/FraudDetection para o repositório: é derivado da Compustat.
+- Não usar as zonas do Z' no Z'' nem os coeficientes de 1979 como régua.
 
 ## Produto, depois da Fase F
 

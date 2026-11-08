@@ -158,22 +158,40 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 | Família | Sinais | Papel | Fonte | Gera alerta? |
 | --- | --- | --- | --- | --- |
 | Possível manipulação | Motor v1 (estudo 1): os oito componentes do M-score e o M, o salto do DPO, o juro implícito, o lucro sem caixa (só contexto, como no estudo) e, nas financeiras, o peso não recorrente | Alerta do motor v1, sempre com o contexto e com o resultado do estudo 1 ao lado | Pré-registro, seção 4, e emendas 1 a 11 | Sim, pela regra do estudo 1, sem mudança |
-| Risco financeiro | Altman Z'' puro, para empresas não industriais e mercados emergentes, sem a constante do Emerging Market Score | Contexto descritivo | Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", em `referencias/`, conferido com a página antes de implementar | Não |
-| Qualidade financeira | Piotroski F (2000), nove testes binários | Contexto descritivo | Piotroski (2000), Journal of Accounting Research, a conferir na fonte primária antes de implementar | Não |
+| Risco financeiro | Altman Z'' puro, para empresas não industriais e mercados emergentes, sem a constante do Emerging Market Score e sem zonas | Contexto descritivo | Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", p. 27, em `referencias/` ([`docs/referencias.md`](referencias.md)) | Não |
+| Qualidade financeira | Piotroski F (2000), nove testes binários | Contexto descritivo | Piotroski (2000), Journal of Accounting Research, pp. 7-10, em `referencias/` ([`docs/referencias.md`](referencias.md)) | Não |
 
 - O salto do DPO e o juro implícito ficam na família de possível manipulação, como no motor v1 (decisão de 07/11/2026). Explicações alternativas obrigatórias no Achado, com fonte quando houver: no juro implícito, dívida cara, variação cambial e juros de arrendamento dentro da despesa financeira; no DPO, poder de negociação com fornecedores e mudança de mix de compras.
-- **Altman Z''** (decisão de 07/11/2026):
-  - versão Z'' pura, sem a constante de 3,25 do Emerging Market Score, que foi feito para dívida de emergentes e depende de ajustes qualitativos (câmbio, setor, posição competitiva) e de uma tabela de rating que não vamos aplicar;
-  - coeficientes e zonas (segura, cinzenta e de dificuldade) copiados do Altman (2000) para a versão Z'' pura, com a página do PDF, e registrados em `docs/fontes.md`. Nada de memória;
-  - X1 = (ativo circulante 1.01 − passivo circulante 2.01) ÷ ativo total (conta 1);
-  - X2 = (reservas de lucros + lucros ou prejuízos acumulados) ÷ ativo total, como **adaptação brasileira**: desde a Lei 11.638/2007, a S.A. não fecha o ano com saldo positivo em lucros acumulados, porque o lucro retido vai para as reservas de lucros. No plano das não financeiras, 2.03.04 e 2.03.05 (contas fixas, a confirmar e localizar por texto se variarem). Reservas de capital e ajustes de avaliação patrimonial não entram. A marca de adaptação vai na linhagem e no catálogo;
-  - X3 = EBIT (3.05, resultado antes do resultado financeiro e dos tributos) ÷ ativo total;
-  - X4 = patrimônio líquido consolidado, com não controladores (2.03) ÷ (passivo circulante 2.01 + passivo não circulante 2.02);
-  - não se aplica a financeiras: "não calculável", com o motivo;
+- **Altman Z''** (decisão de 07/11/2026; especificação de 08/11/2026, com as páginas informadas por Roberto e o PDF em `referencias/`). Família risco financeiro, só contexto:
+  - fórmula (Altman 2000, p. 27): Z'' = 6,56·X1 + 3,26·X2 + 6,72·X3 + 1,05·X4, com X1 = (1.01 − 2.01) ÷ 1; X2 = (2.03.04 + 2.03.05) ÷ 1; X3 = 3.05 ÷ 1; X4 = 2.03 ÷ (2.01 + 2.02). Os códigos são do plano das não financeiras (1 = ativo total; 3.05 = resultado antes do resultado financeiro e dos tributos; 2.03 = patrimônio líquido consolidado, com não controladores);
+  - X2 é **adaptação brasileira**: desde a Lei 11.638/2007, a S.A. não fecha o ano com saldo positivo em lucros acumulados, porque o lucro retido vai para as reservas de lucros (2.03.04) e o saldo restante fica em lucros ou prejuízos acumulados (2.03.05). Contas fixas, a confirmar e localizar por texto se variarem. Reservas de capital e ajustes de avaliação patrimonial não entram. A marca de adaptação vai na linhagem e no catálogo;
+  - sem a constante +3,25 e sem a tabela de rating (pp. 27-29). Um teste falha se 3,25 aparecer no cálculo do Z'';
+  - sem zonas para o Z''. As zonas 1,23 e 2,90 (p. 26) são do Z' e não se usam. A página mostra o valor, o percentil no setor e no ano e a frase "sem zona de corte: a fonte disponível não define zonas para o Z''". **Isto muda a decisão de 07/11/2026**, que previa mostrar as zonas do artigo original;
+  - o percentil segue o "como era": só entram as DFPs públicas na data de referência. Se o setor tiver menos de 10 empresas, o percentil usa o universo das não financeiras, com marca;
+  - financeiras: "não se aplica";
+  - nota de validade, sempre ao lado do valor: "coeficientes estimados fora do Brasil; modelos de falência perdem validade com o tempo (Pereira e Martins 2015, p. 25)";
   - entrada nova no catálogo, família risco financeiro, fase `contexto_v2`, nome e descrição em PT e EN; nenhuma entrada do motor v1 muda;
   - exemplo resolvido próprio da v2 (não o `data/exemplo_resolvido.json` do estudo 1), com o caso de lucros acumulados zerados e reservas positivas, e um teste que falha se o X2 usar só lucros acumulados;
-  - as zonas da fonte aparecem como "zonas do artigo original", nunca como veredito.
-- **Piotroski F** (decisão de 07/11/2026): cada um dos nove testes conferido no Piotroski (2000), com a página, e cada adaptação brasileira marcada na linhagem e no catálogo. Como a quantidade de ações só existe nos anos recentes, o teste de "não emitiu ações" usa a linha de emissão de ações da DFC, pelos padrões congelados da parte 4.2 do reconhecimento, marcado como adaptação; sem a linha, "não calculável". Entrada nova no catálogo, família qualidade financeira, fase `contexto_v2`.
+  - não fazer: usar as zonas do Z' no Z'' ou os coeficientes de Altman, Baidya e Dias (1979) como régua.
+- **Piotroski F** (decisão de 07/11/2026; especificação de 08/11/2026, com as páginas informadas por Roberto e o PDF em `referencias/`). Família qualidade financeira, só contexto. Nove sinais binários (Piotroski 2000, pp. 7-10), com AT início = ativo total de t−1 e AT médio = média do ativo total de t e t−1:
+  1. ROA > 0, com ROA = 3.09 ÷ AT início;
+  2. CFO > 0, com CFO = 6.01 (como apresentado) ÷ AT início;
+  3. ΔROA > 0;
+  4. ACCRUAL: CFO ÷ AT início > ROA;
+  5. ΔLEVER < 0, com alavancagem = 2.02.01 ÷ AT médio. A regra para dívida de longo prazo zero nos dois anos fica registrada na implementação, e o relatório conta os casos. Proposta, a confirmar por Roberto: a fórmula vale sem exceção (a variação é zero, não é menor que zero, e o sinal fica 0), com a marca "sem dívida de longo prazo nos dois anos" na linhagem;
+  6. ΔLIQUID > 0, com liquidez = 1.01 ÷ 2.01;
+  7. EQ_OFFER: 1 se não houve emissão de ações no ano, pela linha de emissão da DFC achada por texto (padrões congelados da parte 4.2 do reconhecimento), com os códigos de conta registrados; marcado como adaptação; sem a linha, "não calculável";
+  8. ΔMARGIN > 0, com margem = 3.03 ÷ 3.01;
+  9. ΔTURN > 0, com giro = 3.01 ÷ AT início.
+  - os valores de t−1 vêm do comparativo da DFP de t; os de t−2, da DFP de t−1 na versão pública na data de referência. As duas origens ficam na Linhagem;
+  - a página mostra "F = x/9 (y calculáveis)"; componente que falta não é imputado;
+  - financeiras: "não se aplica";
+  - o nome da família é "qualidade financeira", não "qualidade do lucro";
+  - entrada nova no catálogo, família qualidade financeira, fase `contexto_v2`.
+- **Seção "Limites" da página de investigação** (texto fixo, 08/11/2026). O texto sai de `chiocca.v2.limites`, com os números lidos da saída do estudo 1, e um teste confere que é igual ao daqui:
+  - Não ter alerta não é atestado. Em Dechow, Sloan e Sweeney (1995), o modelo de accruals com mais poder rejeitou 'sem manipulação' em só 28,1% de 32 empresas punidas pela SEC (Tabela 7, p. 32).
+  - No estudo 1, 49,9% das empresas-ano ficaram em alerta, e o número de acertos não superou o acaso num teste descritivo feito depois do resultado: 7 acertos em 13 casos acertáveis, contra 7,37 esperados ao acaso sem supor anos independentes (8,56 supondo anos independentes).
+  - Os modelos de risco usam números que podem estar manipulados (Pereira e Martins 2015, p. 29). Por isso as três famílias não se somam.
 - O catálogo já tem um `fscore_dechow` (Dechow e outros, 2011), que mede outra coisa (probabilidade de reapresentação) e é sinal da fase 2 do catálogo. Ele não entra nesta etapa, e os nomes não se confundem.
 
 ## 4. Data de referência, versões e corte transversal

@@ -64,3 +64,18 @@ def test_referencias_sem_pdf_no_git_e_com_licenca() -> None:
 
     versionados = subprocess.run(["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True, check=True).stdout
     assert not [f for f in versionados.splitlines() if f.lower().endswith(".pdf")]
+
+
+@pytest.mark.parametrize("lang,caminho", [("pt", "docs/contratos.md"), ("en", "docs/en/contracts.md")])
+def test_limites_nos_contratos_iguais_ao_texto_do_produto(lang: str, caminho: str) -> None:
+    from chiocca.v2 import limites
+
+    texto = (RAIZ / caminho).read_text(encoding="utf-8")
+    for paragrafo in limites.textos(lang):
+        assert f"  - {paragrafo}" in texto
+
+
+def test_nao_fazer_no_roadmap() -> None:
+    texto = (RAIZ / "docs/roadmap.md").read_text(encoding="utf-8")
+    assert "Não copiar o CSV do JarFraud/FraudDetection para o repositório: é derivado da Compustat." in texto
+    assert "Não usar as zonas do Z' no Z'' nem os coeficientes de 1979 como régua." in texto

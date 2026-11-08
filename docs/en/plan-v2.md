@@ -27,7 +27,7 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
 - `ExercicioNaData` on any reference date and the cross-section on the same date (engine v1 deciles and percentiles).
 - Invariant test: on each fiscal year's cut-off date, signals and alerts match those of study 1.
 - Context: percentile within the sector and the group, history with the IQR fence (Carchuna's detection).
-- Financial risk (Altman Z'') and financial quality (Piotroski F) families, after transcribing the formulas from the primary source into `docs/en/sources.md`. Descriptive context only.
+- Financial risk (Altman Z'') and financial quality (Piotroski F) families, with the formulas and pages in `docs/en/contracts.md` (section 3) and the works in `docs/en/references.md`. Descriptive context only.
 - "What changed", "what was known on the date", alternative explanations and limitations, with a PT and EN text catalog that cites sources.
 - JSON and PDF outputs, in both languages.
 - End-to-end tests: Americanas on 2022-03-31 and a company with no ground-truth case.
@@ -77,11 +77,14 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
    - **Accepted by default on 2026-11-07.**
 10. **Altman Z'' and Piotroski F:** the primary source (article or book) must be accessible to transcribe the formulas. If you have the PDFs, they go into `referencias/` (not in git); otherwise I will look up the published sources and record them in `docs/en/sources.md`.
     - **Roberto's decision, 2026-11-07:** the PDFs of Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", and of Piotroski (2000), Journal of Accounting Research, go into `referencias/`. No coefficient or test comes in before it is checked against them, with the page.
+    - **2026-11-08:** formulas and pages provided by Roberto and recorded in `docs/en/contracts.md`, section 3; works in `docs/en/references.md`.
 
 ## Phase C split (Roberto's decision, 2026-11-07)
 
 - **C1:** temporal storage, engine v1 on any date and the study 1 invariant. Stop.
 - **C2:** context, Altman Z'', Piotroski F, JSON and PDF. Additions:
   - **Auditor's report and auditor:** a factual section in the investigation, with the type of report, an excerpt of the DFP text checked literally, the auditor and auditor changes from the FCA. It is not a signal family and produces no score or alert.
-  - **Altman Z'':** the pure Z'' version, for non-manufacturing firms and emerging markets, without the 3.25 constant of the Emerging Market Score (which was built for emerging-market debt and depends on qualitative adjustments and a rating table we will not apply). Coefficients and zones copied from Altman (2000), with the page. X1 = (current assets − current liabilities) ÷ total assets; X2 = (profit reserves + retained earnings or accumulated losses) ÷ total assets, as a Brazilian adaptation (since Law 11,638/2007 retained profit goes to reserves), excluding capital reserves and equity valuation adjustments; X3 = EBIT ÷ total assets; X4 = consolidated book equity including non-controlling interests ÷ (current liabilities + non-current liabilities). Not computable for financial companies. A new catalog entry, financial risk family, phase `contexto_v2`, with engine v1 unchanged. A v2 worked example of its own, with the case of zero retained earnings and positive reserves, and a test that fails if X2 uses retained earnings alone.
-  - **Piotroski F:** each test checked against Piotroski (2000), with the page; Brazilian adaptations flagged in the lineage and the catalog. The equity-issuance test uses the cash flow statement issuance line (frozen patterns), flagged as an adaptation; without the line, not computable.
+  - **Altman Z'':** specification of 2026-11-08 in `docs/en/contracts.md`, section 3: formula from p. 27 of Altman (2000), X2 as a Brazilian adaptation, no +3.25 constant and no rating table (a test fails if 3.25 appears), no zones (the 1.23 and 2.90 zones belong to Z'), point-in-time sector and year percentile (non-financial universe if the sector has fewer than 10 companies), "does not apply" for financial companies and a validity note. A v2 worked example of its own, with a test that fails if X2 uses retained earnings alone.
+  - **Piotroski F:** specification of 2026-11-08 in `docs/en/contracts.md`, section 3: the nine signals from pp. 7-10, with opening TA = total assets of t−1, t−2 from the DFP of t−1 in the version public on the date, "F = x/9 (y computable)" without imputing a component, "does not apply" for financial companies, a rule and a count for zero long-term debt in both years, and EQ_OFFER from the cash flow statement's issuance line, with the codes recorded.
+  - **"Limits" section:** fixed text from `chiocca.v2.limites` on the investigation page, in PT and EN (`docs/en/contracts.md`, section 3).
+  - **Do not:** use the Z' zones for Z'' or the 1979 coefficients as a yardstick.
