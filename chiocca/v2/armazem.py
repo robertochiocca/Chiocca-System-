@@ -21,7 +21,8 @@ git). Tabelas (contratos, seção 4):
 - `pareceres`: os textos da seção de pareceres e declarações da DFP (relatório do auditor, com o tipo: sem ressalva,
   com ressalva, adverso ou negativa de opinião), da versão dos dados abertos, com a linha do arquivo de origem;
 - `auditores`: a firma de auditoria de cada versão do FCA, com o código na CVM e as datas de atuação. Não entram
-  CPF nem nome de pessoa física (responsável técnico);
+  CPF nem nome de pessoa física: nem o responsável técnico nem o auditor pessoa física (identificado pelo CPF no
+  campo do auditor), que fica só com `pessoa_fisica = true`, sem nome;
 - `nomes`: o nome empresarial de cada versão do FCA, com a data de entrega. A investigação mostra o nome da época
   (o índice dos dados abertos traz o nome atual, que pode ser posterior à data);
 - `valores_mobiliarios`: os códigos de negociação de cada versão do FCA entregue até a data máxima, com o valor
@@ -60,6 +61,8 @@ PASTA = RAIZ / "data" / "armazem"
 PRIMEIRO_EXERCICIO = 2010
 COLUNAS_INDICE = ["cd_cvm", "CNPJ_CIA", "DENOM_CIA", "DT_REFER", "versao", "dt_receb", "num_doc", "ID_DOC", "LINK_DOC"]
 TABELAS = ("versoes", "contas", "fca", "cadastro", "escalas", "pareceres", "auditores", "nomes", "valores_mobiliarios")
+COLUNAS_AUDITORES = ["ano", "cd_cvm", "versao", "dt_receb", "auditor", "codigo_cvm_auditor", "inicio", "fim",
+                     "pessoa_fisica"]  # fmt: skip
 COLUNAS_VM = ["ano", "cd_cvm", "versao", "dt_receb", "valor_mobiliario", "codigo_negociacao", "mercado",
               "inicio_negociacao", "fim_negociacao"]  # fmt: skip
 SO_METADADOS = "so_metadados"
@@ -141,7 +144,7 @@ def _nomes(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
 
 def _auditores(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
     """Firma de auditoria de cada versão do FCA entregue até a data máxima (sem CPF nem pessoa física)."""
-    colunas = ["ano", "cd_cvm", "versao", "dt_receb", "auditor", "codigo_cvm_auditor", "inicio", "fim"]
+    colunas = COLUNAS_AUDITORES
     with zipfile.ZipFile(zfca) as z:
         arq = f"fca_cia_aberta_auditor_{ano}.csv"
         if arq not in z.namelist():
@@ -152,9 +155,12 @@ def _auditores(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
     d = au.merge(idx[["ID_DOC", "CD_CVM", "DT_RECEB"]], left_on="ID_Documento", right_on="ID_DOC", how="inner")
     d["dt_receb"] = pd.to_datetime(d.DT_RECEB).dt.date
     d = d[d.dt_receb <= maxima]
+    doc = d["CPF_CNPJ_Auditor"] if "CPF_CNPJ_Auditor" in d.columns else pd.Series("", index=d.index)
+    pf = doc.fillna("").astype(str).str.replace(r"\D", "", regex=True).str.len() == 11  # CPF: pessoa física
     return pd.DataFrame({"ano": ano, "cd_cvm": cd_texto(d.CD_CVM), "versao": d.Versao.astype(int), "dt_receb": d.dt_receb,
-                         "auditor": d.Auditor, "codigo_cvm_auditor": d.Codigo_CVM_Auditor,
-                         "inicio": d.Data_Inicio_Atuacao_Auditor, "fim": d.Data_Fim_Atuacao_Auditor})[colunas]  # fmt: skip
+                         "auditor": d.Auditor.where(~pf, None), "codigo_cvm_auditor": d.Codigo_CVM_Auditor,
+                         "inicio": d.Data_Inicio_Atuacao_Auditor, "fim": d.Data_Fim_Atuacao_Auditor,
+                         "pessoa_fisica": pf})[colunas]  # fmt: skip
 
 
 def _valores_mobiliarios(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
@@ -293,9 +299,7 @@ def _pareceres_vazios() -> pd.DataFrame:
 
 
 def _auditores_vazios() -> pd.DataFrame:
-    return pd.DataFrame(
-        columns=["ano", "cd_cvm", "versao", "dt_receb", "auditor", "codigo_cvm_auditor", "inicio", "fim"]
-    )
+    return pd.DataFrame(columns=COLUNAS_AUDITORES)
 
 
 def _escalas_vazias() -> pd.DataFrame:
@@ -360,6 +364,20 @@ class Armazem:
                  "inicio_negociacao": x.inicio_negociacao, "fim_negociacao": x.fim_negociacao,
                  "fca": {"ano": int(x.ano), "versao": int(x.versao), "dt_receb": str(x.dt_receb)[:10]}}
                 for x in d.drop_duplicates(["codigo_negociacao", "mercado"]).itertuples(index=False)]  # fmt: skip
+
+    def nomes_canonicos_auditores(self, ate: date) -> dict[str, str]:
+        """Um nome por código de firma na CVM: a grafia mais frequente nos FCA entregues até a data (todas as
+        companhias); no empate, a mais recente. Pessoa física não tem nome guardado e não entra."""
+        d = self.consulta(
+            """
+            SELECT codigo_cvm_auditor AS codigo, trim(auditor) AS nome, count(*) AS n, max(CAST(dt_receb AS DATE)) AS u
+            FROM auditores WHERE CAST(dt_receb AS DATE) <= ? AND codigo_cvm_auditor IS NOT NULL AND auditor IS NOT NULL
+            GROUP BY 1, 2 ORDER BY codigo, n DESC, u DESC, nome
+            """,
+            [ate],
+        )
+        d = d.drop_duplicates("codigo")  # já ordenado: a mais frequente, depois a mais recente
+        return {str(c): str(n) for c, n in zip(d.codigo, d.nome)}
 
     def auditores(self, cd_cvm: str, ate: date) -> pd.DataFrame:
         """Firmas de auditoria nas versões do FCA entregues até a data, por ano e versão."""

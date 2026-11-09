@@ -57,6 +57,10 @@ ALERTA = {
     "peso_nao_recorrente": "alerta_peso_nao_recorrente",
 }
 ANOS_HISTORICO = 5
+# Unidade de cada valor mostrado (pedido de 09/11/2026): dias no DPO, pontos percentuais no juro menos CDI e "índice"
+# nos componentes e nas demais razões; o Piotroski F conta sinais de 9.
+UNIDADES = {"dpo": ("dias", "days"), "juro": ("p.p.", "p.p."), "piotroski_f": ("sinais de 9", "signals out of 9")}
+UNIDADE_INDICE = ("índice", "index")
 # Rodízio de auditor (pedido de 09/11/2026), conferido no texto publicado pela CVM em 09/11/2026: Resolução CVM nº 23,
 # de 25/02/2021, arts. 31 e 31-A, em vigor desde 01/04/2021 (art. 41); revogou a Instrução CVM nº 308/1999 (art. 40, I),
 # que tinha a regra equivalente nos seus arts. 31 e 31-A. Troca de auditor é fato, não alerta.
@@ -91,6 +95,7 @@ NOTAS_DE_CASO = {
 TEXTOS = {
     "pt": {
         "regra_mscore": "M > {corte} (pré-registro, seção 4)",
+        "regra_componente": "Componente do M-score; não tem regra própria",
         "regra_dpo": "variação do DPO no decil superior do ano entre as não financeiras (≥ percentil 90 dos calculáveis na data: {lim} dias)",
         "regra_juro": "juro implícito acima do CDI médio do ano + {spread} p.p. (pré-registro, seção 4)",
         "regra_pnr": "peso não recorrente no decil superior do ano entre as financeiras (≥ percentil 90 dos calculáveis na data: {lim})",
@@ -103,12 +108,16 @@ TEXTOS = {
         "rodizio_prazo": "A firma que saiu auditou {n} exercícios sociais consecutivos ({a} a {b}), pelas datas de início e fim no FCA.",
         "rodizio_compativel": "A troca coincide com o fim do prazo de {n} exercícios e é compatível com o rodízio ({art} da {norma}, vigente quando a firma nova começou).",
         "rodizio_sem_prazo": "O FCA não traz as datas necessárias para contar os exercícios da firma que saiu.",
+        "auditor_pf": "auditor pessoa física (nome omitido)",
+        "hoje_titulo": "Informação de hoje (fora da data de referência)",
+        "hoje_fonte": "cadastro de companhias abertas da CVM (cad_cia_aberta.csv), na versão baixada para o projeto, não na data de referência",
         "materialidade": "Destacadas: diferenças em totais e linhas-chave (ativo total, passivo circulante, passivo não circulante, patrimônio líquido, receita líquida, lucro líquido e caixa operacional) acima de 1% do ativo total da versão usada. As demais diferenças (reclassificações entre linhas e diferenças menores) ficam na lista completa.",
         "contexto_nao_validado": "indicadores de contexto (Altman Z'' e Piotroski F) não foram validados no Brasil por este projeto e não geram alerta",
         "produto": "no produto, este sinal fica não calculável: usa um balanço não preenchido (ativo total zero)",
     },
     "en": {
         "regra_mscore": "M > {corte} (pre-registration, section 4)",
+        "regra_componente": "M-score component; it has no rule of its own",
         "regra_dpo": "DPO change in the year's top decile among non-financial companies (≥ 90th percentile of computable values on the date: {lim} days)",
         "regra_juro": "implied interest rate above the year's average CDI rate + {spread} p.p. (pre-registration, section 4)",
         "regra_pnr": "non-recurring weight in the year's top decile among financial companies (≥ 90th percentile of computable values on the date: {lim})",
@@ -121,11 +130,23 @@ TEXTOS = {
         "rodizio_prazo": "The outgoing firm audited {n} consecutive fiscal years ({a} to {b}), by the start and end dates in the FCA.",
         "rodizio_compativel": "The change coincides with the end of the {n}-fiscal-year term and is compatible with the rotation rule ({art} of {norma}, in force when the new firm started).",
         "rodizio_sem_prazo": "The FCA does not have the dates needed to count the outgoing firm's fiscal years.",
+        "auditor_pf": "individual auditor (name omitted)",
+        "hoje_titulo": "Today's information (outside the reference date)",
+        "hoje_fonte": "CVM registry of listed companies (cad_cia_aberta.csv), in the version downloaded for the project, not on the reference date",
         "materialidade": "Highlighted: differences in totals and key lines (total assets, current liabilities, non-current liabilities, equity, net revenue, net income and operating cash flow) above 1% of total assets of the version used. The other differences (reclassifications between lines and smaller differences) stay in the full list.",
         "contexto_nao_validado": "context indicators (Altman Z'' and Piotroski F) were not validated in Brazil by this project and do not trigger alerts",
         "produto": "in the product, this signal is not computable: it uses an unfilled balance sheet (zero total assets)",
     },
 }  # fmt: skip
+
+
+def _cap(s: str | None) -> str | None:
+    """Inicial maiúscula em títulos e itens de lista (pedido de 09/11/2026)."""
+    return s[:1].upper() + s[1:] if s else s
+
+
+def _unidade(sinal: str, lang: str) -> str:
+    return UNIDADES.get(sinal, UNIDADE_INDICE)[0 if lang == "pt" else 1]
 
 
 def _m(m: Motivo | None, lang: str) -> str | None:
@@ -193,6 +214,7 @@ def gerar(
         raise ValueError(f"empresa {cd_cvm} sem DFP do exercício {exercicio}")
     r, mt = linha_s.iloc[0], linha_m.iloc[0]
     grupo, setor, amostra = mt.grupo, mt.setor if isinstance(mt.setor, str) else None, r.amostra
+    hoje = informacao_de_hoje(mt.situacao_cadastro, lang)
     out: dict[str, Any] = {
         "empresa": _empresa(fontes, cd_cvm, d, mt, setor, grupo, lang),
         "data_referencia": d.isoformat(), "idioma": lang,
@@ -200,12 +222,12 @@ def gerar(
                         "dt_receb": None if e.dt_receb is None else str(e.dt_receb),
                         "versoes_conhecidas": [{"versao": v, "dt_receb": str(x)} for v, x in e.versoes_conhecidas],
                         "tipo": e.tipo, "origem": e.origem, "num_doc": e.num_doc, "link": e.link,
-                        "escala_original": e.escala_original, "notas": [_m(n, lang) for n in e.notas],
+                        "escala_original": e.escala_original, "notas": [_cap(_m(n, lang)) for n in e.notas],
                         "amostra_estudo_1": amostra}],
     }  # fmt: skip
     if e.situacao != "ok" or e.documento is None:
         out["achados"] = {}
-        return _fecha(out, e, lang, gerado_em, d, fontes, exercicio, cd_cvm, {}, [])
+        return _fecha(out, e, lang, gerado_em, d, fontes, exercicio, cd_cvm, {}, [], hoje)
     evid: dict[str, Evidencia] = {}
     por_chave = {(x.demonstracao[:3] if x.demonstracao.startswith("DFC") else x.demonstracao, x.coluna, x.cd_conta): x
                  for x in e.evidencias}  # fmt: skip
@@ -235,16 +257,17 @@ def gerar(
         serie = {a: _num(h.get(sinal)) for a, h in historico_s.items()}
         achados["possivel_manipulacao"].append({
             "id": _id(cd_cvm, exercicio, d, sinal), "familia": "possivel_manipulacao", "sinal": sinal, "exercicio": exercicio,
-            "rotulo": _m(Motivo(*ROTULOS[sinal]), lang), "valor": _res(res, lang),
+            "rotulo": _cap(_m(Motivo(*ROTULOS[sinal]), lang)), "valor": _res(res, lang), "unidade": _unidade(sinal, lang),
             "valor_no_produto": _res(produto, lang) if produto != res else None,
             "regra": _regra(sinal, t, limiares, exercicio, lang), "alerta_v1": _alerta(r, sinal),
+            "componente_de": "mscore" if sinal in COEFICIENTES else None,
             "contexto": _jm(_percentis(valor, ref, sinal, setor) | {"historico": contexto.historico(serie, valor)}, lang),
             "confianca": {"nivel": conf.nivel, "criterios": [{"nome": c.nome, "resultado": c.resultado, "motivo": _m(c.motivo, lang)}
                                                              for c in conf.criterios]},
             "explicacao": _m(Motivo(*FORMULAS[sinal]), lang) if sinal in FORMULAS else None,
-            "explicacoes_alternativas": [_m(x, lang) for x in [ALTERNATIVAS.get(sinal), NOTAS_DE_CASO.get((cd_cvm, exercicio))
-                                                               if sinal in ("mscore", "SGI") else None] if x],
-            "limitacoes": [_m(x, lang) for x in LIMITACOES.get(sinal, ())] + ([t["produto"]] if produto != res else []),
+            "explicacoes_alternativas": [_cap(_m(x, lang)) for x in [ALTERNATIVAS.get(sinal), NOTAS_DE_CASO.get((cd_cvm, exercicio))
+                                                                     if sinal in ("mscore", "SGI") else None] if x],
+            "limitacoes": [_cap(_m(x, lang)) for x in LIMITACOES.get(sinal, ())] + ([_cap(t["produto"])] if produto != res else []),
             "linhagem": _linhagem(lin, lang) if lin else None,
             "natureza": {"valor": "calculado", "regra": "calculado", "explicacao": "resumo", "explicacoes_alternativas": "hipotese"},
         })  # fmt: skip
@@ -270,7 +293,7 @@ def gerar(
         _achado_contexto("piotroski_f", f, cd_cvm, exercicio, d, lang, por_chave, evid, None)
     )
     out["achados"] = achados
-    return _fecha(out, e, lang, gerado_em, d, fontes, exercicio, cd_cvm, evid, conferencias)
+    return _fecha(out, e, lang, gerado_em, d, fontes, exercicio, cd_cvm, evid, conferencias, hoje)
 
 
 def _empresa(fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grupo: str, lang: str) -> dict[str, Any]:
@@ -281,9 +304,15 @@ def _empresa(fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grup
     origem = "fca" if nome else "indice_dfp"
     cods, motivo = codigos(fontes, cd_cvm, d)
     return {"cd_cvm": cd_cvm, "cnpj": mt.cnpj, "denominacao": nome or mt.denominacao, "origem_denominacao": origem,
-            "setor": setor, "origem_setor": mt.origem_setor, "grupo": grupo,
-            "situacao_cadastro_atual": mt.situacao_cadastro, "codigos_negociacao": cods,
+            "setor": setor, "origem_setor": mt.origem_setor, "grupo": grupo, "codigos_negociacao": cods,
             "motivo_codigos_negociacao": motivo}  # fmt: skip
+
+
+def informacao_de_hoje(situacao_cadastro: Any, lang: str) -> dict[str, Any]:
+    """O que vem do cadastro de hoje fica fora da visão "como era" (regra de 09/11/2026, docs/contratos.md)."""
+    t = TEXTOS[lang]
+    return {"titulo": t["hoje_titulo"], "situacao_cadastro": None if pd.isna(situacao_cadastro) else str(situacao_cadastro),
+            "fonte": t["hoje_fonte"]}  # fmt: skip
 
 
 def _alerta(r: pd.Series, sinal: str) -> bool | None:
@@ -313,6 +342,8 @@ def _regra(sinal: str, t: dict[str, str], limiares: pd.DataFrame, exercicio: int
         return t["regra_juro"].format(spread=decimal(SPREAD_PP, lang, 0))
     if sinal == "peso_nao_recorrente":
         return t["regra_pnr"].format(lim=lim("peso_nao_recorrente", "financeira"))
+    if sinal in COEFICIENTES:
+        return t["regra_componente"]
     return None
 
 
@@ -371,9 +402,10 @@ def _achado_contexto(sinal: str, ind: contexto.Indicador, cd_cvm: str, exercicio
         texto = texto.replace("calculáveis", "computable")
     return {
         "id": _id(cd_cvm, exercicio, d, sinal), "familia": familia, "sinal": sinal, "exercicio": exercicio,
-        "rotulo": rotulo[0 if lang == "pt" else 1], "valor": _res(ind.resultado, lang), "texto": texto,
+        "rotulo": rotulo[0 if lang == "pt" else 1], "valor": _res(ind.resultado, lang), "unidade": _unidade(sinal, lang),
+        "texto": texto,
         "componentes": componentes, "regra": None, "alerta_v1": None,
-        "contexto": _jm(ctx, lang) if ctx else None, "marcas": [_m(x, lang) for x in ind.marcas],
+        "contexto": _jm(ctx, lang) if ctx else None, "marcas": [_cap(_m(x, lang)) for x in ind.marcas],
         "linhagem": {"entradas": ids, "motor": MOTOR_V2, "codigo": f"chiocca.v2.contexto.{sinal}",
                      "origens": ["DFP de t, coluna ÚLTIMO", "DFP de t, coluna PENÚLTIMO (t−1)"]
                      + (["DFP de t−1 na data, coluna PENÚLTIMO (t−2)"] if sinal == "piotroski_f" else [])},
@@ -403,67 +435,113 @@ def _parecer_e_auditor(fontes: Any, e: Any, exercicio: int, cd_cvm: str, d: date
             }  # fmt: skip
     if hasattr(fontes, "auditores"):
         au = fontes.auditores(cd_cvm, d)
-        ultimas = au.sort_values(["ano", "versao"]).groupby("ano").tail(10)
+        canonicos = fontes.nomes_canonicos_auditores(d) if hasattr(fontes, "nomes_canonicos_auditores") else {}
         firmas: list[dict[str, Any]] = []
-        for ano, g in ultimas.groupby("ano"):
-            g = g[g.versao == g.versao.max()]
+        for ano, g in au.sort_values(["ano", "versao"]).groupby("ano"):
+            g = g[g.versao == g.versao.max()]  # a última versão do FCA de cada ano entregue até a data
             firmas.append({"ano_fca": int(ano), "dt_receb": str(g.dt_receb.iloc[0])[:10],
-                           "auditores": [{"auditor": str(x.auditor), "codigo_cvm": str(x.codigo_cvm_auditor),
-                                          "inicio": None if pd.isna(x.inicio) else str(x.inicio),
-                                          "fim": None if pd.isna(x.fim) else str(x.fim)} for x in g.itertuples(index=False)]})  # fmt: skip
-        trocas = []
-        for a, b in zip(firmas, firmas[1:]):  # troca pelo código da firma na CVM, não pela grafia do nome
-            de = {x["codigo_cvm"]: x["auditor"] for x in a["auditores"]}
-            para = {x["codigo_cvm"]: x["auditor"] for x in b["auditores"]}
-            if set(de) != set(para):
-                trocas.append({"ano_fca": b["ano_fca"], "de": sorted(de.values()), "para": sorted(para.values()),
-                               "saidas": _saidas(a, b, set(de) - set(para), set(para) - set(de), lang)})  # fmt: skip
+                           "auditores": [_auditor(x, canonicos, t) for x in g.itertuples(index=False)]})  # fmt: skip
         out["auditores_no_fca"] = firmas
-        out["trocas_de_auditor"] = trocas
+        out["trocas_de_auditor"] = _trocas(firmas, lang)
         out["rodizio"] = {"nota": _m(RODIZIO, lang), "norma": "Resolução CVM nº 23/2021, arts. 31 e 31-A",
                           "fonte": RODIZIO_FONTE, "conferida_em": "2026-11-09"}  # fmt: skip
     return out
 
 
-def _saidas(
-    a: dict[str, Any], b: dict[str, Any], sairam: set[str], entraram: set[str], lang: str
-) -> list[dict[str, Any]]:
+def _auditor(x: Any, canonicos: dict[str, str], t: dict[str, Any]) -> dict[str, Any]:
+    """Nome canônico pelo código da firma na CVM (sem variantes de grafia); pessoa física sem nome."""
+    codigo = None if pd.isna(x.codigo_cvm_auditor) else str(x.codigo_cvm_auditor)
+    pf = bool(getattr(x, "pessoa_fisica", False))
+    if pf:
+        nome = t["auditor_pf"]
+    else:
+        nome = canonicos.get(codigo or "") or (None if pd.isna(x.auditor) else str(x.auditor).strip()) or "—"
+    return {"auditor": nome, "codigo_cvm": codigo, "pessoa_fisica": pf,
+            "inicio": None if pd.isna(x.inicio) else str(x.inicio), "fim": None if pd.isna(x.fim) else str(x.fim)}  # fmt: skip
+
+
+def _chave_firma(x: dict[str, Any]) -> str:
+    return x["codigo_cvm"] or "nome:" + str(x["auditor"]).casefold()
+
+
+def _trocas(firmas: list[dict[str, Any]], lang: str) -> list[dict[str, Any]]:
+    """Uma linha por troca real, comparando as firmas pelo código na CVM entre FCA de anos seguidos.
+
+    Troca simples: a firma que sai some no mesmo FCA em que a nova aparece. Transição: a nova aparece num FCA ao lado
+    da que sai, e a que sai some no FCA seguinte; vira uma troca só, com `transicao_fca` (o ano com as duas firmas).
+    Entrada ou saída sem par (firma acrescentada ou retirada) também é uma linha, com o outro lado vazio."""
+    eventos_entrada: list[tuple[int, dict[str, Any]]] = []  # (primeiro ano no FCA, firma)
+    usadas: set[int] = set()
+    out: list[dict[str, Any]] = []
+    for a, b in zip(firmas, firmas[1:]):
+        de = {_chave_firma(x): x for x in a["auditores"]}
+        para = {_chave_firma(x): x for x in b["auditores"]}
+        eventos_entrada += [(b["ano_fca"], para[k]) for k in para if k not in de]
+        for k in [k for k in de if k not in para]:
+            saiu = de[k]
+            # par: outra firma, que entrou neste FCA (troca simples) ou no anterior, ao lado da que sai (transição), e
+            # que continua no FCA seguinte
+            candidatos = [
+                j
+                for j, (ano_j, x) in enumerate(eventos_entrada)
+                if j not in usadas
+                and ano_j in (b["ano_fca"], a["ano_fca"])
+                and _chave_firma(x) != k
+                and _chave_firma(x) in para
+            ]
+            simples = [j for j in candidatos if eventos_entrada[j][0] == b["ano_fca"]]
+            escolhidos = simples or candidatos
+            entrou = None
+            ano = b["ano_fca"]
+            transicao = None
+            if escolhidos:
+                i = escolhidos[0]
+                usadas.add(i)
+                ano, entrou = eventos_entrada[i]
+                transicao = a["ano_fca"] if ano == a["ano_fca"] else None
+            out.append(_troca(ano, saiu, entrou, transicao, lang))
+    out += [_troca(ano, None, x, None, lang) for i, (ano, x) in enumerate(eventos_entrada) if i not in usadas]
+    return sorted(out, key=lambda x: (x["ano_fca"], x["de"] or "", x["para"] or ""))
+
+
+def _troca(ano: int, saiu: dict[str, Any] | None, entrou: dict[str, Any] | None, transicao: int | None,
+           lang: str) -> dict[str, Any]:  # fmt: skip
+    return {"ano_fca": ano, "de": saiu["auditor"] if saiu else None, "para": entrou["auditor"] if entrou else None,
+            "codigo_de": saiu["codigo_cvm"] if saiu else None, "codigo_para": entrou["codigo_cvm"] if entrou else None,
+            "transicao_fca": transicao, "saida": _saida(saiu, entrou, lang) if saiu else None}  # fmt: skip
+
+
+def _saida(x: dict[str, Any], entrou: dict[str, Any] | None, lang: str) -> dict[str, Any]:
     """Exercícios sociais consecutivos da firma que saiu, pelas datas do FCA: do ano do início dela ao último exercício
     que terminou com ela contratada (pela data de fim, quando o FCA traz; senão, o ano anterior ao início da firma que
     entrou). Quando a troca coincide com o fim do prazo (cinco exercícios, art. 31; dez, art. 31-A), a nota diz que é
     compatível com o rodízio, citando a norma vigente quando a firma nova começou."""
     t = TEXTOS[lang]
-    out = []
-    for x in a["auditores"]:
-        if x["codigo_cvm"] not in sairam:
-            continue
-        primeiro = int(x["inicio"][:4]) if x["inicio"] else None
-        # Quem entrou: a firma nova nesta troca ou, se ela já constava no FCA anterior, a que começou depois da que saiu.
-        inicios_novos = [y["inicio"] for y in b["auditores"] if y["inicio"] and (y["codigo_cvm"] in entraram or
-                         (x["inicio"] is not None and y["inicio"] > x["inicio"]))]  # fmt: skip
-        if x["fim"]:  # a data de fim no FCA, quando existe: o último exercício é o que termina até ela
-            ultimo: int | None = int(x["fim"][:4]) - (0 if x["fim"][5:10] == "12-31" else 1)
-        else:
-            ultimo = int(min(inicios_novos)[:4]) - 1 if inicios_novos else None
-        n = ultimo - primeiro + 1 if primeiro is not None and ultimo is not None and ultimo >= primeiro else None
-        artigo = RODIZIO_PRAZOS.get(n) if n is not None else None
-        # A norma vigente na data em que a firma nova começou: a Resolução desde 01/04/2021; antes, a Instrução 308.
-        norma = None if not inicios_novos else RODIZIO_NORMAS[min(inicios_novos) >= RODIZIO_VIGENCIA]
-        if n is None:
-            nota = t["rodizio_sem_prazo"]
-        else:
-            nota = t["rodizio_prazo"].format(n=n, a=primeiro, b=ultimo)
-            if artigo:
-                nome_norma = RODIZIO_NORMAS_EN.get(str(norma), str(norma)) if lang == "en" else norma
-                nota += " " + t["rodizio_compativel"].format(n=n, art=artigo, norma=nome_norma)
-        out.append({"auditor": x["auditor"], "codigo_cvm": x["codigo_cvm"], "primeiro_exercicio": primeiro,
-                    "ultimo_exercicio": ultimo, "exercicios_consecutivos": n, "compativel_com_rodizio": artigo is not None,
-                    "artigo": artigo, "norma": norma if artigo else None, "nota": nota})  # fmt: skip
-    return out
+    inicio_nova = entrou["inicio"] if entrou and entrou["inicio"] else None
+    primeiro = int(x["inicio"][:4]) if x["inicio"] else None
+    if x["fim"]:  # a data de fim no FCA, quando existe: o último exercício é o que termina até ela
+        ultimo: int | None = int(x["fim"][:4]) - (0 if x["fim"][5:10] == "12-31" else 1)
+    else:
+        ultimo = int(inicio_nova[:4]) - 1 if inicio_nova else None
+    n = ultimo - primeiro + 1 if primeiro is not None and ultimo is not None and ultimo >= primeiro else None
+    artigo = RODIZIO_PRAZOS.get(n) if n is not None else None
+    # A norma vigente na data em que a firma nova começou: a Resolução desde 01/04/2021; antes, a Instrução 308.
+    norma = RODIZIO_NORMAS[inicio_nova >= RODIZIO_VIGENCIA] if inicio_nova else None
+    artigo = artigo if norma else None
+    if n is None:
+        nota = t["rodizio_sem_prazo"]
+    else:
+        nota = t["rodizio_prazo"].format(n=n, a=primeiro, b=ultimo)
+        if artigo:
+            nome_norma = RODIZIO_NORMAS_EN.get(str(norma), str(norma)) if lang == "en" else norma
+            nota += " " + t["rodizio_compativel"].format(n=n, art=artigo, norma=nome_norma)
+    return {"primeiro_exercicio": primeiro, "ultimo_exercicio": ultimo, "exercicios_consecutivos": n,
+            "compativel_com_rodizio": artigo is not None, "artigo": artigo, "norma": norma if artigo else None,
+            "nota": nota}  # fmt: skip
 
 
 def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, fontes: Any, exercicio: int, cd_cvm: str,
-           evid: dict[str, Evidencia], conferencias: list[Any]) -> dict[str, Any]:  # fmt: skip
+           evid: dict[str, Evidencia], conferencias: list[Any], hoje: dict[str, Any]) -> dict[str, Any]:  # fmt: skip
     t = TEXTOS[lang]
 
     def dif(x: comparativo.DiferencaComparativo) -> dict[str, Any]:
@@ -517,9 +595,10 @@ def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, font
                                        "alarmes_por_acerto_periodo_inteiro": est["alarmes_inteiro"],
                                        "taxa_de_alerta_nao_financeiras": est["taxa_alerta"]}  # fmt: skip
     out["limites"] = limites.textos(lang)
-    out["limitacoes"] = [_m(n, lang) for n in e.notas] + [t["contexto_nao_validado"]]
+    out["limitacoes"] = [_cap(_m(n, lang)) for n in e.notas] + [_cap(t["contexto_nao_validado"])]
     out["evidencias"] = {k: _ev(v) for k, v in sorted(evid.items())}
     out["motor"] = {"v1": MOTOR_V1, "v2": MOTOR_V2}
+    out["informacao_de_hoje"] = hoje
     out["gerado_em"] = gerado_em
     out["aviso"] = AVISO[lang]
     return out

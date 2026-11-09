@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
+import pandas as pd
 import pytest
 
 from chiocca.cvm import Fontes
@@ -14,7 +16,7 @@ from tests.test_v2_armazem import mundo_c1  # noqa: F401  (fixture)
 
 CAMPOS = {"empresa", "data_referencia", "idioma", "exercicios", "achados", "mudancas", "o_que_se_sabia",
           "qualidade_dos_dados", "parecer_e_auditor", "como_o_motor_foi_testado", "limites", "limitacoes", "evidencias",
-          "motor", "gerado_em", "aviso"}  # fmt: skip
+          "motor", "informacao_de_hoje", "gerado_em", "aviso"}  # fmt: skip
 
 
 @pytest.mark.parametrize("lang", ["pt", "en"])
@@ -78,33 +80,95 @@ def test_segundo_exemplo_mostra_o_comparativo_de_2022_como_evidencia_destacada(l
 
 
 @pytest.mark.parametrize("lang", ["pt", "en"])
-def test_rodizio_de_auditor_no_exemplo(lang: str) -> None:
-    inv = json.loads((exemplos.PASTA / f"{exemplos.nome(lang, '2022-04-30')}.json").read_text(encoding="utf-8"))
+def test_rodizio_e_trocas_de_auditor_no_exemplo(lang: str) -> None:
+    inv = json.loads((exemplos.PASTA / f"{exemplos.nome(lang, '2024-12-31')}.json").read_text(encoding="utf-8"))
     pa = inv["parecer_e_auditor"]
     assert pa["rodizio"]["nota"] == investigacao._m(investigacao.RODIZIO, lang)
     assert pa["rodizio"]["norma"] == "Resolução CVM nº 23/2021, arts. 31 e 31-A"
-    saidas = {x["ano_fca"]: x["saidas"][0] for x in pa["trocas_de_auditor"] if x["saidas"]}  # 2011: só entrou
-    assert saidas[2016]["exercicios_consecutivos"] == 5 and saidas[2016]["compativel_com_rodizio"]  # PwC 2011 a 2015
-    assert saidas[2016]["norma"] == "Instrução CVM nº 308/1999"  # vigente em 2016
-    assert saidas[2019]["exercicios_consecutivos"] == 3 and not saidas[2019]["compativel_com_rodizio"]
+    trocas = [(x["ano_fca"], x["codigo_de"], x["codigo_para"], x["transicao_fca"]) for x in pa["trocas_de_auditor"]]
+    assert trocas == [
+        (2011, "004715", "002879", 2011),
+        (2016, "002879", "004189", None),
+        (2019, "004189", "002879", None),
+        (2023, "002879", "010324", None),
+    ]  # uma linha por troca real
+    nomes: dict[str, set[str]] = {}
+    for f in pa["auditores_no_fca"]:
+        for a in f["auditores"]:
+            nomes.setdefault(a["codigo_cvm"], set()).add(a["auditor"])
+    assert all(len(v) == 1 for v in nomes.values())  # um nome canônico por código, sem variantes de grafia
+    s = {x["ano_fca"]: x["saida"] for x in pa["trocas_de_auditor"]}
+    assert s[2016]["exercicios_consecutivos"] == 5 and s[2016]["compativel_com_rodizio"]  # PwC 2011 a 2015
+    assert s[2016]["norma"] == "Instrução CVM nº 308/1999"  # vigente em 2016
+    assert s[2019]["exercicios_consecutivos"] == 3 and not s[2019]["compativel_com_rodizio"]
     texto = json.dumps(pa, ensure_ascii=False).lower()
     assert "alerta" not in texto.replace("não alerta", "").replace("gera_alerta", "")
     assert "alert" not in texto.replace("not an alert", "").replace("gera_alerta", "").replace("não alerta", "")
+    pdf = pdf_investigacao.linhas(inv)
+    transicao = {"pt": "(transição: duas firmas no FCA de 2011)", "en": "(transition: two firms in the 2011 FCA)"}[lang]
+    assert sum(transicao in x for x in pdf) == 1
 
 
-def test_saidas_do_rodizio() -> None:
-    def fca(cod: str, inicio: str | None) -> dict[str, object]:
-        return {"auditores": [{"auditor": f"firma {cod}", "codigo_cvm": cod, "inicio": inicio, "fim": None}]}
+def _fca(ano: int, *firmas: tuple[str, str | None, str | None]) -> dict[str, Any]:
+    return {"ano_fca": ano, "dt_receb": f"{ano}-05-01",
+            "auditores": [{"auditor": f"firma {c}", "codigo_cvm": c, "pessoa_fisica": False, "inicio": i, "fim": f}
+                          for c, i, f in firmas]}  # fmt: skip
 
-    dez = investigacao._saidas(fca("1", "2012-01-01"), fca("2", "2022-01-01"), {"1"}, {"2"}, "pt")[0]
-    assert (dez["exercicios_consecutivos"], dez["artigo"]) == (10, "art. 31-A")
-    assert dez["norma"] == "Resolução CVM nº 23/2021"  # a firma nova começou depois de 01/04/2021
-    seis = investigacao._saidas(fca("1", "2012-01-01"), fca("2", "2018-06-01"), {"1"}, {"2"}, "en")[0]
-    assert (seis["exercicios_consecutivos"], seis["compativel_com_rodizio"], seis["norma"]) == (6, False, None)
-    sem = investigacao._saidas(fca("1", None), fca("2", "2018-06-01"), {"1"}, {"2"}, "pt")[0]
-    assert sem["exercicios_consecutivos"] is None and "não traz" in sem["nota"]
-    # A firma nova já constava no FCA anterior: conta pela data de fim da que saiu (fim em 26/08/2011: último é 2010).
-    a = {"auditores": [{"auditor": "A", "codigo_cvm": "1", "inicio": "2009-04-02", "fim": "2011-08-26"},
-                       {"auditor": "B", "codigo_cvm": "2", "inicio": "2011-08-27", "fim": None}]}  # fmt: skip
-    ey = investigacao._saidas(a, fca("2", "2011-08-27"), {"1"}, set(), "pt")[0]
-    assert (ey["primeiro_exercicio"], ey["ultimo_exercicio"], ey["exercicios_consecutivos"]) == (2009, 2010, 2)
+
+def test_trocas_e_prazo_do_rodizio() -> None:
+    dez = investigacao._trocas([_fca(2021, ("1", "2012-01-01", None)), _fca(2022, ("2", "2022-01-01", None))], "pt")
+    assert [(x["de"], x["para"], x["transicao_fca"]) for x in dez] == [("firma 1", "firma 2", None)]
+    assert (dez[0]["saida"]["exercicios_consecutivos"], dez[0]["saida"]["artigo"]) == (10, "art. 31-A")
+    assert dez[0]["saida"]["norma"] == "Resolução CVM nº 23/2021"  # a firma nova começou depois de 01/04/2021
+    seis = investigacao._trocas([_fca(2017, ("1", "2012-01-01", None)), _fca(2018, ("2", "2018-06-01", None))], "en")
+    assert (seis[0]["saida"]["exercicios_consecutivos"], seis[0]["saida"]["compativel_com_rodizio"]) == (6, False)
+    sem = investigacao._trocas([_fca(2017, ("1", None, None)), _fca(2018, ("2", "2018-06-01", None))], "pt")
+    assert sem[0]["saida"]["exercicios_consecutivos"] is None and "não traz" in sem[0]["saida"]["nota"]
+    # Transição: a nova aparece ao lado da que sai (fim em 26/08/2011: o último exercício da que sai é 2010).
+    tr = investigacao._trocas([_fca(2010, ("1", "2009-04-02", None)), _fca(2011, ("1", "2009-04-02", "2011-08-26"),
+                               ("2", "2011-08-27", None)), _fca(2012, ("2", "2011-08-27", None))], "pt")  # fmt: skip
+    assert [(x["ano_fca"], x["codigo_de"], x["codigo_para"], x["transicao_fca"]) for x in tr] == [
+        (2011, "1", "2", 2011)
+    ]
+    assert (tr[0]["saida"]["primeiro_exercicio"], tr[0]["saida"]["ultimo_exercicio"]) == (2009, 2010)
+    # Firma acrescentada e depois retirada (auditoria conjunta): entrada e saída sem par, cada uma numa linha.
+    conj = investigacao._trocas([_fca(2015, ("1", "2015-01-01", None)), _fca(2016, ("1", "2015-01-01", None),
+                                 ("2", "2016-01-01", None)), _fca(2017, ("1", "2015-01-01", None)),
+                                 _fca(2018, ("1", "2015-01-01", None))], "pt")  # fmt: skip
+    assert [(x["ano_fca"], x["de"], x["para"]) for x in conj] == [(2016, None, "firma 2"), (2017, "firma 2", None)]
+
+
+def test_auditor_pessoa_fisica_sem_nome() -> None:
+    linha = pd.Series(
+        {"auditor": None, "codigo_cvm_auditor": "999", "pessoa_fisica": True, "inicio": None, "fim": None}
+    )
+    x = investigacao._auditor(type("L", (), linha.to_dict())(), {"999": "nome de alguém"}, investigacao.TEXTOS["pt"])
+    assert x["auditor"] == "auditor pessoa física (nome omitido)" and x["pessoa_fisica"]
+
+
+@pytest.mark.parametrize("nome", exemplos.NOMES)
+def test_acabamento_da_investigacao(nome: str) -> None:
+    """Pedidos de 09/11/2026: faixa de Tukey, informação de hoje fora da empresa, unidades, maiúsculas e componentes."""
+    inv = json.loads((exemplos.PASTA / f"{nome}.json").read_text(encoding="utf-8"))
+    lang = inv["idioma"]
+    assert "situacao_cadastro_atual" not in inv["empresa"]
+    assert inv["informacao_de_hoje"]["titulo"] == investigacao.TEXTOS[lang]["hoje_titulo"]
+    unidades = {a["sinal"]: a["unidade"] for lista in inv["achados"].values() for a in lista}
+    assert unidades["dpo"] == ("dias" if lang == "pt" else "days") and unidades["juro"] == "p.p."
+    assert unidades["DSRI"] == unidades["altman_z2"] == ("índice" if lang == "pt" else "index")
+    for a in inv["achados"]["possivel_manipulacao"]:
+        assert a["rotulo"][:1].isupper()
+        if a["sinal"] in investigacao.COEFICIENTES:
+            assert a["componente_de"] == "mscore" and a["regra"] == investigacao.TEXTOS[lang]["regra_componente"]
+        itens = a["limitacoes"] + a["explicacoes_alternativas"]
+        assert all(x[:1] == x[:1].upper() for x in itens)
+    assert all(x[:1] == x[:1].upper() for x in inv["limitacoes"] + inv["exercicios"][0]["notas"])
+    linhas = pdf_investigacao.linhas(inv)
+    texto = "\n".join(linhas)
+    assert "cerca" not in texto.lower() and "fence" not in texto.lower()
+    assert ("faixa de Tukey (1,5 × IQR): de " if lang == "pt" else "Tukey range (1.5 × IQR): from ") in texto
+    assert texto.count(investigacao.TEXTOS[lang]["regra_componente"]) == len(investigacao.COEFICIENTES)
+    assert all(x.lstrip()[2:3] == x.lstrip()[2:3].upper() for x in linhas if x.lstrip().startswith("- "))
+    titulo = f"# {inv['informacao_de_hoje']['titulo']}"
+    assert titulo in linhas and linhas.index(titulo) > linhas.index(pdf_investigacao.T[lang]["motor"])
+    assert (" dias" if lang == "pt" else " days") in texto and " p.p." in texto

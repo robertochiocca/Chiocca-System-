@@ -59,7 +59,14 @@ class Empresa(EmpresaResumo):
     setor: str | None
     origem_setor: str | None
     grupo: Literal["financeira", "nao_financeira"] | None
-    situacao_cadastro_atual: str | None
+
+
+class InformacaoDeHoje(Modelo):
+    """Informação de hoje, fora da visão "como era" (regra de 09/11/2026): fica numa seção separada no fim."""
+
+    titulo: str
+    situacao_cadastro: str | None
+    fonte: str
 
 
 class VersaoConhecida(Modelo):
@@ -105,9 +112,11 @@ class Achado(Modelo):
     exercicio: int
     rotulo: str | None
     valor: Valor
+    unidade: str
     valor_no_produto: Valor | None = None
     regra: str | None
     alerta_v1: bool | None
+    componente_de: Literal["mscore"] | None = None
     contexto: dict[str, Any] | None
     confianca: dict[str, Any] | None = None
     explicacao: str | None = None
@@ -200,8 +209,9 @@ class QualidadeDosDados(Modelo):
 
 
 class AuditorNoFca(Modelo):
-    auditor: str
-    codigo_cvm: str
+    auditor: str  # nome canônico pelo código da firma; pessoa física sem nome
+    codigo_cvm: str | None
+    pessoa_fisica: bool
     inicio: str | None
     fim: str | None
 
@@ -213,8 +223,6 @@ class FcaAuditores(Modelo):
 
 
 class Saida(Modelo):
-    auditor: str
-    codigo_cvm: str
     primeiro_exercicio: int | None
     ultimo_exercicio: int | None
     exercicios_consecutivos: int | None
@@ -225,10 +233,15 @@ class Saida(Modelo):
 
 
 class Troca(Modelo):
+    """Uma troca real: `transicao_fca` é o ano em que as duas firmas aparecem no mesmo FCA."""
+
     ano_fca: int
-    de: list[str]
-    para: list[str]
-    saidas: list[Saida]
+    de: str | None
+    para: str | None
+    codigo_de: str | None
+    codigo_para: str | None
+    transicao_fca: int | None
+    saida: Saida | None
 
 
 class Rodizio(Modelo):
@@ -285,6 +298,7 @@ class Investigacao(ComData):
     limitacoes: list[str | None]
     evidencias: dict[str, Evidencia]
     motor: Motor
+    informacao_de_hoje: InformacaoDeHoje
     gerado_em: str
     aviso: str
 
@@ -318,6 +332,7 @@ class BuscaEmpresas(ComData):
 class EmpresaNaData(ComData):
     empresa: Empresa
     exercicios: list[int]
+    informacao_de_hoje: InformacaoDeHoje
     aviso: dict[Idioma, str]
 
 

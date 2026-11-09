@@ -14,7 +14,7 @@ from chiocca.v2.pdf_simples import gerar_pdf, paginar
 T: dict[str, dict[str, Any]] = {
     "pt": {
         "titulo": "# Investigação: {nome} (código CVM {cd}), exercício {ex}, como era em {data}",
-        "empresa": "# Empresa", "setor": "Setor: {s} (origem: {o}); grupo: {g}; situação no cadastro atual: {c}.",
+        "empresa": "# Empresa", "setor": "Setor: {s} (origem: {o}); grupo: {g}.",
         "negociacao": "Códigos de negociação (FCA de {a}, versão {v}, entregue em {r}): {c}.", "negociacao_item": "{c} ({vm}, {m}, desde {i})",
         "documento": "# Documento usado",
         "doc": "DFP de {ex}, versão {v}, entregue em {r}; origem: {o}; tipo: {t}; escala original: {e}.",
@@ -26,9 +26,9 @@ T: dict[str, dict[str, Any]] = {
         "pct_setor": "Percentil no setor e ano", "pct_grupo": "Percentil no grupo e ano",
         "historico": "Histórico da própria empresa", "confianca": "Confiança nos dados",
         "alternativas": "Explicações alternativas", "no_produto": "No produto",
-        "hist_txt": "mediana {m}; cerca de IQR de {a} a {b}; valor {p} da cerca ({n} exercícios)",
+        "hist_txt": "mediana {m}; faixa de Tukey (1,5 × IQR): de {a} a {b}; valor {p} da faixa ({u}{n} exercícios)",
         "posicoes": {"dentro": "dentro", "acima": "acima", "abaixo": "abaixo"},
-        "componentes": "Componentes", "sinais_f": "Sinais",
+        "componentes": "Componentes", "sinais_f": "Sinais", "indices": "índices",
         "mudancas": "# Mudanças",
         "destacadas": "Destacadas no comparativo do ano seguinte: {n} (limite de R$ {lim} milhões, 1% do ativo total da versão usada). Valores em R$ milhões:",
         "destacada_linha": "{dem} {cod} {ds}: {v} na versão usada (v{ver}, entregue em {dt}); {c} no comparativo da DFP seguinte (v{vers}, entregue em {dts}); diferença de {dif}. {txt}.",
@@ -41,7 +41,11 @@ T: dict[str, dict[str, Any]] = {
         "conferencias": "{n} conferências aplicáveis; {f} com falha.",
         "parecer": "# Parecer e auditor (seção factual; não gera alerta)",
         "tipo_parecer": "Relatório do auditor: {t}.", "trecho": "Trecho conferido literalmente: \"{t}\"",
-        "auditores": "Auditor no FCA de {a}: {f}.", "trocas": "Trocas de auditor: {t}.", "sem_trocas": "Trocas de auditor: nenhuma nos FCA entregues até a data.",
+        "auditores": "Auditor no FCA de {a}: {f}.", "trocas": "Trocas de auditor (uma linha por troca, nome canônico pelo código da firma na CVM):",
+        "sem_trocas": "Trocas de auditor: nenhuma nos FCA entregues até a data.",
+        "troca": "{a}: {de} → {para}{tr}.", "transicao": " (transição: duas firmas no FCA de {x})",
+        "so_entrada": "{a}: entrada de {para}, sem saída de outra firma.", "so_saida": "{a}: saída de {de}, sem entrada de outra firma.",
+        "hoje": "Situação no cadastro: {s}. Fonte: {f}.",
         "testado": "# Como o motor foi testado",
         "testado_txt": "No estudo 1, o motor v1 acertou {a} de {n} casos acertáveis, com {x} alarmes por acerto no período inteiro e taxa de alerta de {t} nas empresa-anos não financeiras avaliadas ({doc}).",
         "limites": "# Limites", "limitacoes": "# Limitações", "motor": "# Motor",
@@ -54,7 +58,7 @@ T: dict[str, dict[str, Any]] = {
     },
     "en": {
         "titulo": "# Investigation: {nome} (CVM code {cd}), fiscal year {ex}, as it was on {data}",
-        "empresa": "# Company", "setor": "Sector: {s} (origin: {o}); group: {g}; current registry status: {c}.",
+        "empresa": "# Company", "setor": "Sector: {s} (origin: {o}); group: {g}.",
         "negociacao": "Trading codes ({a} FCA, version {v}, filed on {r}): {c}.", "negociacao_item": "{c} ({vm}, {m}, since {i})",
         "documento": "# Document used",
         "doc": "{ex} DFP, version {v}, filed on {r}; origin: {o}; type: {t}; original scale: {e}.",
@@ -66,9 +70,9 @@ T: dict[str, dict[str, Any]] = {
         "pct_setor": "Percentile in sector and year", "pct_grupo": "Percentile in group and year",
         "historico": "The company's own history", "confianca": "Confidence in the data",
         "alternativas": "Alternative explanations", "no_produto": "In the product",
-        "hist_txt": "median {m}; IQR fence from {a} to {b}; value {p} the fence ({n} fiscal years)",
+        "hist_txt": "median {m}; Tukey range (1.5 × IQR): from {a} to {b}; value {p} the range ({u}{n} fiscal years)",
         "posicoes": {"dentro": "inside", "acima": "above", "abaixo": "below"},
-        "componentes": "Components", "sinais_f": "Signals",
+        "componentes": "Components", "sinais_f": "Signals", "indices": "indices",
         "mudancas": "# Changes",
         "destacadas": "Highlighted in the following year's comparative: {n} (threshold of R${lim} million, 1% of total assets of the version used). Values in R$ million:",
         "destacada_linha": "{dem} {cod} {ds}: {v} in the version used (v{ver}, filed on {dt}); {c} in the next DFP's comparative (v{vers}, filed on {dts}); difference of {dif}. {txt}.",
@@ -81,7 +85,11 @@ T: dict[str, dict[str, Any]] = {
         "conferencias": "{n} applicable checks; {f} failed.",
         "parecer": "# Auditor's report and auditor (factual section; no alert)",
         "tipo_parecer": "Auditor's report: {t}.", "trecho": "Excerpt checked literally: \"{t}\"",
-        "auditores": "Auditor in the {a} FCA: {f}.", "trocas": "Auditor changes: {t}.", "sem_trocas": "Auditor changes: none in the FCAs filed by the date.",
+        "auditores": "Auditor in the {a} FCA: {f}.", "trocas": "Auditor changes (one line per change, canonical name by the firm's CVM code):",
+        "sem_trocas": "Auditor changes: none in the FCAs filed by the date.",
+        "troca": "{a}: {de} → {para}{tr}.", "transicao": " (transition: two firms in the {x} FCA)",
+        "so_entrada": "{a}: entry of {para}, with no other firm leaving.", "so_saida": "{a}: exit of {de}, with no other firm entering.",
+        "hoje": "Registry status: {s}. Source: {f}.",
         "testado": "# How the engine was tested",
         "testado_txt": "In study 1, engine v1 detected {a} of {n} detectable cases, with {x} false alarms per detected case over the whole period and an alert rate of {t} among evaluated non-financial company-years ({doc}).",
         "limites": "# Limits", "limitacoes": "# Limitations", "motor": "# Engine",
@@ -105,8 +113,24 @@ def _f(v: Any, lang: str, casas: int = 3) -> str:
     return "—" if v is None else decimal(float(v), lang, casas)
 
 
-def _valor(r: dict[str, Any], lang: str) -> str:
-    return _f(r["valor"], lang) if r["status"] == "ok" else str(r["motivo"])
+INDICE = ("índice", "index")
+
+
+def _n(v: Any, unidade: str, lang: str) -> str:
+    """Número com a unidade: dias (1 casa), p.p. (2 casas); índice (3 casas) leva a unidade no fim da linha."""
+    if v is None:
+        return "—"
+    if unidade in INDICE:
+        return decimal(float(v), lang, 3)
+    return f"{decimal(float(v), lang, 1 if unidade in ('dias', 'days') else 2)} {unidade}"
+
+
+def _sufixo(unidade: str) -> str:
+    return f" ({unidade})" if unidade in INDICE else ""
+
+
+def _valor(r: dict[str, Any], lang: str, unidade: str = "índice") -> str:
+    return _n(r["valor"], unidade, lang) + _sufixo(unidade) if r["status"] == "ok" else str(r["motivo"])
 
 
 def _pct(p: dict[str, Any] | None, lang: str) -> str:
@@ -118,14 +142,27 @@ def _pct(p: dict[str, Any] | None, lang: str) -> str:
     return f"{txt}; {p['marca']}" if p.get("marca") else txt
 
 
-def _hist(h: dict[str, Any] | None, t: dict[str, Any], lang: str) -> str:
+def _hist(h: dict[str, Any] | None, t: dict[str, Any], lang: str, unidade: str) -> str:
     if not h:
         return "—"
     if h.get("motivo"):
         return str(h["motivo"])
-    a, b = h["cerca"]
-    return t["hist_txt"].format(m=_f(h["mediana"], lang), a=_f(a, lang), b=_f(b, lang), p=t["posicoes"][h["posicao"]],
-                                n=inteiro(len(h["exercicios"]), lang))  # fmt: skip
+    a, b = h["faixa_tukey"]
+    u = f"{unidade}; " if unidade in INDICE else ""
+    return t["hist_txt"].format(m=_n(h["mediana"], unidade, lang), a=_n(a, unidade, lang), b=_n(b, unidade, lang),
+                                p=t["posicoes"][h["posicao"]], u=u, n=inteiro(len(h["exercicios"]), lang))  # fmt: skip
+
+
+def _maiusculas(linhas: list[str]) -> list[str]:
+    """Itens de lista com inicial maiúscula (pedido de 09/11/2026)."""
+    out = []
+    for x in linhas:
+        corpo = x.lstrip()
+        if corpo.startswith("- ") and len(corpo) > 2:
+            recuo = x[: len(x) - len(corpo)]
+            x = f"{recuo}- {corpo[2:3].upper()}{corpo[3:]}"
+        out.append(x)
+    return out
 
 
 def linhas(inv: dict[str, Any]) -> list[str]:
@@ -134,7 +171,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     emp, ex = inv["empresa"], inv["exercicios"][0]
     out = [t["titulo"].format(nome=emp["denominacao"], cd=emp["cd_cvm"], ex=ex["exercicio"], data=data(inv["data_referencia"], lang)),
            inv["aviso"], "", t["empresa"],
-           t["setor"].format(s=emp["setor"] or "—", o=_c(emp["origem_setor"], t), g=_c(emp["grupo"], t), c=emp["situacao_cadastro_atual"]),
+           t["setor"].format(s=emp["setor"] or "—", o=_c(emp["origem_setor"], t), g=_c(emp["grupo"], t)),
            *_codigos(emp, t, lang), "", t["documento"],
            t["doc"].format(ex=ex["exercicio"], v=ex["versao_usada"], r=data(ex["dt_receb"], lang) if ex["dt_receb"] else "—",
                            o=_c(ex["origem"], t), t=_c(ex["tipo"], t), e=ex["escala_original"] or "—"),
@@ -146,27 +183,31 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     out += ["", t["manipulacao"]]
     for a in ach.get("possivel_manipulacao", []):
         alerta = t["nao_dispara"] if a["alerta_v1"] is None else t["sim"] if a["alerta_v1"] else t["nao"]
-        out += [
-            "",
-            f"{a['rotulo']} ({a['sinal']})",
-            f"  {t['valor']}: {_valor(a['valor'], lang)}",
-            f"  {t['alerta']}: {alerta}",
-        ]
-        if a.get("regra"):
-            out.append(f"  {t['regra']}: {a['regra']}")
+        u = a["unidade"]
+        out += ["", f"{a['rotulo']} ({a['sinal']})", f"  {t['valor']}: {_valor(a['valor'], lang, u)}"]
+        if a.get("componente_de"):  # componente do M-score: não tem regra nem alerta próprios
+            out.append(f"  {a['regra']}")
+        else:
+            out.append(f"  {t['alerta']}: {alerta}")
+            if a.get("regra"):
+                out.append(f"  {t['regra']}: {a['regra']}")
         if a.get("valor_no_produto"):
-            out.append(f"  {t['no_produto']}: {_valor(a['valor_no_produto'], lang)}")
+            out.append(f"  {t['no_produto']}: {_valor(a['valor_no_produto'], lang, u)}")
         c = a.get("contexto") or {}
         out += [f"  {t['pct_setor']}: {_pct(c.get('percentil_setor_ano'), lang)}", f"  {t['pct_grupo']}: {_pct(c.get('percentil_grupo_ano'), lang)}",
-                f"  {t['historico']}: {_hist(c.get('historico'), t, lang)}", f"  {t['confianca']}: {_c(a['confianca']['nivel'], t)}"]  # fmt: skip
+                f"  {t['historico']}: {_hist(c.get('historico'), t, lang, u)}", f"  {t['confianca']}: {_c(a['confianca']['nivel'], t)}"]  # fmt: skip
         out += [f"  {t['alternativas']}: {x}" for x in a.get("explicacoes_alternativas", [])]
     for chave, titulo in (("risco_financeiro", "risco"), ("qualidade_financeira", "qualidade")):
         out += ["", t[titulo]]
         for a in ach.get(chave, []):
-            out += ["", f"{a['rotulo']}", f"  {t['valor']}: {a['texto'] or _valor(a['valor'], lang)}"]
+            out += ["", f"{a['rotulo']}", f"  {t['valor']}: {a['texto'] or _valor(a['valor'], lang, a['unidade'])}"]
             comp = a.get("componentes") or {}
             if a["sinal"] == "altman_z2" and comp:
-                out.append(f"  {t['componentes']}: " + "; ".join(f"{k} = {_f(v, lang)}" for k, v in comp.items()))
+                out.append(
+                    f"  {t['componentes']}: "
+                    + "; ".join(f"{k} = {_f(v, lang)}" for k, v in comp.items())
+                    + f" ({t['indices']})"
+                )
             if a["sinal"] == "piotroski_f" and comp.get("sinais"):
                 out.append(
                     f"  {t['sinais_f']}: "
@@ -175,7 +216,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
             c = a.get("contexto") or {}
             if c:
                 out += [f"  {t['pct_setor']}: {_pct(c.get('percentil_setor_ano'), lang)}",
-                        f"  {t['historico']}: {_hist(c.get('historico'), t, lang)}"]  # fmt: skip
+                        f"  {t['historico']}: {_hist(c.get('historico'), t, lang, a['unidade'])}"]  # fmt: skip
             out += [f"  - {m}" for m in a.get("marcas", [])]
     mud = inv.get("mudancas", {})
     out += ["", t["mudancas"]]
@@ -226,9 +267,8 @@ def linhas(inv: dict[str, Any]) -> list[str]:
         out.append(t["auditores"].format(a=f["ano_fca"], f=", ".join(x["auditor"] for x in f["auditores"])))
     trocas = pa.get("trocas_de_auditor")
     if trocas is not None:
-        out.append(t["trocas"].format(t="; ".join(f"{x['ano_fca']}: {', '.join(x['de'])} -> {', '.join(x['para'])}" for x in trocas))
-                   if trocas else t["sem_trocas"])  # fmt: skip
-        out += [f"  {x['ano_fca']}: {s['nota']}" for x in trocas for s in x.get("saidas", [])]
+        out.append(t["trocas"] if trocas else t["sem_trocas"])
+        out += [f"- {_troca(x, t)}" for x in trocas]
     if pa.get("rodizio"):
         out.append(pa["rodizio"]["nota"])
     mt = inv.get("como_o_motor_foi_testado", {})
@@ -240,12 +280,26 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     out += ["", t["limitacoes"]] + [f"- {x}" for x in inv.get("limitacoes", [])]
     out += ["", t["evidencias"].format(n=inteiro(len(inv.get("evidencias", {})), lang))]
     out += ["", t["motor"], t["motor_txt"].format(v1=inv["motor"]["v1"], v2=inv["motor"]["v2"], g=inv["gerado_em"])]
+    hoje = inv.get("informacao_de_hoje")
+    if hoje:  # fora da visão "como era": seção separada no fim
+        out += ["", f"# {hoje['titulo']}", t["hoje"].format(s=hoje["situacao_cadastro"] or "—", f=hoje["fonte"])]
     if difs:
         out += ["", t["anexo"]]
         out += [t["comparativo_linha"].format(g=x["grupo"], dem=x["demonstracao"], cod=x["cd_conta"], ds=x["ds_conta"],
                                               v=_f(x["valor"] / 1e6, lang, 1), c=_f(x["valor_comparativo"] / 1e6, lang, 1),
                                               dif=_f(x["diferenca"] / 1e6, lang, 1)) for x in difs]  # fmt: skip
-    return out
+    return _maiusculas(out)
+
+
+def _troca(x: dict[str, Any], t: dict[str, Any]) -> str:
+    if x["de"] is None:
+        linha = t["so_entrada"].format(a=x["ano_fca"], para=x["para"])
+    elif x["para"] is None:
+        linha = t["so_saida"].format(a=x["ano_fca"], de=x["de"])
+    else:
+        tr = t["transicao"].format(x=x["transicao_fca"]) if x["transicao_fca"] else ""
+        linha = t["troca"].format(a=x["ano_fca"], de=x["de"], para=x["para"], tr=tr)
+    return f"{linha} {x['saida']['nota']}" if x.get("saida") else linha
 
 
 def _codigos(emp: dict[str, Any], t: dict[str, Any], lang: str) -> list[str]:
