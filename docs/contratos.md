@@ -141,17 +141,17 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 
 ### Investigacao
 
-Implementado na C2, segunda parte (`chiocca/v2/investigacao.py`, JSON; `chiocca/v2/pdf_investigacao.py`, PDF gerado só do JSON). Exemplo de referência: Americanas, exercício 2021, em 30/04/2022, em `docs/exemplos/` (PT e EN). O relatório do auditor vem da seção de pareceres dos dados abertos, que só existe para a última versão da DFP; as trocas de auditor saem do FCA, pelo código da firma na CVM, sem CPF nem pessoa física. `gerado_em` e `calculado_em` são o único campo que muda entre execuções.
+Implementado na C2, segunda parte (`chiocca/v2/investigacao.py`, JSON; `chiocca/v2/pdf_investigacao.py`, PDF gerado só do JSON). Exemplos de referência: Americanas, exercício 2021, em 30/04/2022 e em 31/12/2024 (este com as diferenças do comparativo da DFP de 2022 como evidência destacada), em `docs/exemplos/` (PT e EN, JSON e PDF), gerados por `python -m chiocca.v2.exemplos` e conferidos pelo mesmo teste. O relatório do auditor vem da seção de pareceres dos dados abertos, que só existe para a última versão da DFP; as trocas de auditor saem do FCA, pelo código da firma na CVM, sem CPF nem pessoa física. `gerado_em` e `calculado_em` são o único campo que muda entre execuções.
 
 | Campo | Descrição |
 | --- | --- |
 | `empresa`, `data_referencia`, `idioma` | — |
 | `exercicios` | Lista de `ExercicioNaData`, todos liberados |
 | `achados` | Agrupados por família e **nunca somados** entre famílias |
-| `mudancas` | O que mudou em relação aos exercícios anteriores e às versões anteriores conhecidas na data (reapresentações), com evidências |
+| `mudancas` | O que mudou em relação aos exercícios anteriores e às versões anteriores conhecidas na data (reapresentações), com evidências. Na C2: `comparativo_destacadas` (só as diferenças destacadas pela regra de materialidade da seção 4), `reapresentacao_pelo_comparativo` (lista completa, com o grupo de cada diferença) e `materialidade_comparativo` (linhas-chave, limite relativo, ativo total e limite) |
 | `o_que_se_sabia` | Documentos públicos na data de referência (DFP, ITR e, na Fase F, fatos relevantes), com data de entrega |
 | `qualidade_dos_dados` | Conferências e confiança |
-| `parecer_e_auditor` | Seção factual (Fase C2): tipo do parecer, trecho do texto da DFP conferido literalmente, auditor e trocas de auditor pelo FCA. Não é família de sinais e não gera nota nem alerta |
+| `parecer_e_auditor` | Seção factual (Fase C2): tipo do parecer, trecho do texto da DFP conferido literalmente, auditor e trocas de auditor pelo FCA. Não é família de sinais e não gera nota nem alerta. Rodízio (regra de 09/11/2026): nota fixa `rodizio` sobre a Resolução CVM nº 23/2021, arts. 31 (cinco exercícios sociais consecutivos, com intervalo mínimo de três para a recontratação) e 31-A (até dez, com Comitê de Auditoria Estatutário e auditor pessoa jurídica), em vigor desde 01/04/2021 (art. 41), que revogou a Instrução CVM nº 308/1999 (art. 40, I), de regra equivalente nos seus arts. 31 e 31-A; texto conferido na CVM em 09/11/2026. Em cada troca, `saidas` traz os exercícios consecutivos da firma que saiu, pelas datas de início e fim no FCA (audita o exercício quem está contratado no fim dele); quando a troca coincide com o fim do prazo (cinco ou dez exercícios), a nota diz que a troca é compatível com o rodízio, citando a norma vigente quando a firma nova começou. Troca de auditor é fato, não alerta |
 | `como_o_motor_foi_testado` | Ligação para o resultado do estudo 1, como saiu ([`docs/resumo.md`](resumo.md)) |
 | `limitacoes` | Gerais e do caso |
 | `motor`, `gerado_em`, `aviso` | Versão do motor, data e hora, aviso fixo |

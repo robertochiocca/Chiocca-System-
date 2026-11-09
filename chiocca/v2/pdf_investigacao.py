@@ -28,8 +28,13 @@ T: dict[str, dict[str, Any]] = {
         "hist_txt": "mediana {m}; cerca de IQR de {a} a {b}; valor {p} da cerca ({n} exercícios)",
         "posicoes": {"dentro": "dentro", "acima": "acima", "abaixo": "abaixo"},
         "componentes": "Componentes", "sinais_f": "Sinais",
-        "mudancas": "# Mudanças", "comparativo": "Reapresentação pelo comparativo do ano seguinte: {n} contas acima da tolerância de R$ {tol}.",
-        "comparativo_linha": "{dem} {cod} {ds}: {v} na versão usada, {c} no comparativo (diferença de {dif})",
+        "mudancas": "# Mudanças",
+        "destacadas": "Destacadas no comparativo do ano seguinte: {n} (limite de R$ {lim} milhões, 1% do ativo total da versão usada). Valores em R$ milhões:",
+        "destacada_linha": "{dem} {cod} {ds}: {v} na versão usada (v{ver}, entregue em {dt}); {c} no comparativo da DFP seguinte (v{vers}, entregue em {dts}); diferença de {dif}. {txt}.",
+        "sem_destacadas": "Destacadas no comparativo do ano seguinte: nenhuma.",
+        "comparativo": "Lista completa: {n} contas acima da tolerância de R$ {tol} (grupo a, totais e linhas-chave: {a}; grupo b, reclassificações: {b}), no anexo ao final.",
+        "anexo": "# Anexo: lista completa das diferenças do comparativo do ano seguinte (R$ milhões)",
+        "comparativo_linha": "({g}) {dem} {cod} {ds}: {v} na versão usada, {c} no comparativo (diferença de {dif})",
         "sem_comparativo": "Reapresentação pelo comparativo do ano seguinte: nenhuma diferença acima da tolerância, ou a DFP do ano seguinte ainda não existia na data.",
         "sabia": "# O que se sabia na data", "qualidade_dados": "# Qualidade dos dados",
         "conferencias": "{n} conferências aplicáveis; {f} com falha.",
@@ -62,8 +67,13 @@ T: dict[str, dict[str, Any]] = {
         "hist_txt": "median {m}; IQR fence from {a} to {b}; value {p} the fence ({n} fiscal years)",
         "posicoes": {"dentro": "inside", "acima": "above", "abaixo": "below"},
         "componentes": "Components", "sinais_f": "Signals",
-        "mudancas": "# Changes", "comparativo": "Restatement through the following year's comparative: {n} accounts above the R${tol} tolerance.",
-        "comparativo_linha": "{dem} {cod} {ds}: {v} in the version used, {c} in the comparative (difference of {dif})",
+        "mudancas": "# Changes",
+        "destacadas": "Highlighted in the following year's comparative: {n} (threshold of R${lim} million, 1% of total assets of the version used). Values in R$ million:",
+        "destacada_linha": "{dem} {cod} {ds}: {v} in the version used (v{ver}, filed on {dt}); {c} in the next DFP's comparative (v{vers}, filed on {dts}); difference of {dif}. {txt}.",
+        "sem_destacadas": "Highlighted in the following year's comparative: none.",
+        "comparativo": "Full list: {n} accounts above the R${tol} tolerance (group a, totals and key lines: {a}; group b, reclassifications: {b}), in the annex at the end.",
+        "anexo": "# Annex: full list of differences in the following year's comparative (R$ million)",
+        "comparativo_linha": "({g}) {dem} {cod} {ds}: {v} in the version used, {c} in the comparative (difference of {dif})",
         "sem_comparativo": "Restatement through the following year's comparative: no difference above the tolerance, or the next year's DFP did not exist yet on the date.",
         "sabia": "# What was known on the date", "qualidade_dados": "# Data quality",
         "conferencias": "{n} applicable checks; {f} failed.",
@@ -168,13 +178,23 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     mud = inv.get("mudancas", {})
     out += ["", t["mudancas"]]
     difs = mud.get("reapresentacao_pelo_comparativo", [])
+    mat = mud.get("materialidade_comparativo") or {}
     if difs:
-        out.append(
-            t["comparativo"].format(n=inteiro(len(difs), lang), tol=inteiro(int(mud["tolerancia_comparativo"]), lang))
-        )
-        out += ["  " + t["comparativo_linha"].format(dem=x["demonstracao"], cod=x["cd_conta"], ds=x["ds_conta"], v=_f(x["valor"] / 1e6, lang, 1),
-                                                     c=_f(x["valor_comparativo"] / 1e6, lang, 1), dif=_f(x["diferenca"] / 1e6, lang, 1))
-                for x in difs[:15]]  # fmt: skip
+        dest = mud.get("comparativo_destacadas", [])
+        if dest:
+            out.append(t["destacadas"].format(n=inteiro(len(dest), lang), lim=_f(mat["limite"] / 1e6, lang, 1)))
+            out += ["  " + t["destacada_linha"].format(dem=x["demonstracao"], cod=x["cd_conta"], ds=x["ds_conta"],
+                                                       v=_f(x["valor"] / 1e6, lang, 1), ver=x["versao"], dt=data(x["dt_receb"], lang),
+                                                       c=_f(x["valor_comparativo"] / 1e6, lang, 1), vers=x["versao_seguinte"],
+                                                       dts=data(x["dt_receb_seguinte"], lang), dif=_f(x["diferenca"] / 1e6, lang, 1),
+                                                       txt=x["texto"][:1].upper() + x["texto"][1:])
+                    for x in dest]  # fmt: skip
+        else:
+            out.append(t["sem_destacadas"])
+        out.append(mat.get("texto", ""))
+        out.append(t["comparativo"].format(n=inteiro(len(difs), lang), tol=inteiro(int(mud["tolerancia_comparativo"]), lang),
+                                           a=inteiro(sum(x["grupo"] == "a" for x in difs), lang),
+                                           b=inteiro(sum(x["grupo"] == "b" for x in difs), lang)))  # fmt: skip
     else:
         out.append(t["sem_comparativo"])
     sabia = inv.get("o_que_se_sabia", {})
@@ -206,6 +226,9 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     if trocas is not None:
         out.append(t["trocas"].format(t="; ".join(f"{x['ano_fca']}: {', '.join(x['de'])} -> {', '.join(x['para'])}" for x in trocas))
                    if trocas else t["sem_trocas"])  # fmt: skip
+        out += [f"  {x['ano_fca']}: {s['nota']}" for x in trocas for s in x.get("saidas", [])]
+    if pa.get("rodizio"):
+        out.append(pa["rodizio"]["nota"])
     mt = inv.get("como_o_motor_foi_testado", {})
     if mt:
         out += ["", t["testado"], t["testado_txt"].format(a=inteiro(mt["acertados"], lang), n=inteiro(mt["acertaveis"], lang),
@@ -215,6 +238,11 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     out += ["", t["limitacoes"]] + [f"- {x}" for x in inv.get("limitacoes", [])]
     out += ["", t["evidencias"].format(n=inteiro(len(inv.get("evidencias", {})), lang))]
     out += ["", t["motor"], t["motor_txt"].format(v1=inv["motor"]["v1"], v2=inv["motor"]["v2"], g=inv["gerado_em"])]
+    if difs:
+        out += ["", t["anexo"]]
+        out += [t["comparativo_linha"].format(g=x["grupo"], dem=x["demonstracao"], cod=x["cd_conta"], ds=x["ds_conta"],
+                                              v=_f(x["valor"] / 1e6, lang, 1), c=_f(x["valor_comparativo"] / 1e6, lang, 1),
+                                              dif=_f(x["diferenca"] / 1e6, lang, 1)) for x in difs]  # fmt: skip
     return out
 
 

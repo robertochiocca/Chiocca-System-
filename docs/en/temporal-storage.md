@@ -92,23 +92,25 @@ With the reference date on 2024-12-31, each fiscal year uses the latest version 
 
 On 2024-12-31, 5,747 of 8,084 comparable company-years (from 2010 to 2022) have at least one account with a difference above the tolerance.
 
-| Fiscal year | Comparable company-years | With some difference |
-| --- | --- | --- |
-| 2010 | 606 | 470 |
-| 2011 | 627 | 464 |
-| 2012 | 606 | 444 |
-| 2013 | 603 | 366 |
-| 2014 | 605 | 391 |
-| 2015 | 588 | 392 |
-| 2016 | 592 | 361 |
-| 2017 | 585 | 541 |
-| 2018 | 581 | 423 |
-| 2019 | 629 | 506 |
-| 2020 | 687 | 446 |
-| 2021 | 694 | 473 |
-| 2022 | 681 | 470 |
+Materiality (rule of 2026-11-09, `docs/en/contracts.md`, section 4): a highlighted difference is one in a total or key line (total assets, current liabilities, non-current liabilities, equity, net revenue, net income and operating cash flow) above 1% of total assets of the version used; the others (reclassifications between lines and smaller differences) stay only in the full list of evidence. On 2024-12-31, 1,407 of 8,084 comparable company-years have at least one highlighted difference. Descriptive: none of this is an alert signal.
 
-**Americanas S.A. (`americanas`), fiscal year 2021.** The 2021 DFP has a single version, filed on 2022-02-24; the restatement came in the comparative of the 2022 DFP, filed on 2023-11-16, not in a new version of the 2021 DFP. That is why Americanas is not among the company-years with another version on 2024-12-31. Of the 280 comparable accounts, 126 have a difference above the tolerance; the 10 largest, in R$ million:
+| Fiscal year | Comparable company-years | With some difference | With a highlighted difference |
+| --- | --- | --- | --- |
+| 2010 | 606 | 470 | 169 |
+| 2011 | 627 | 464 | 164 |
+| 2012 | 606 | 444 | 190 |
+| 2013 | 603 | 366 | 89 |
+| 2014 | 605 | 391 | 96 |
+| 2015 | 588 | 392 | 94 |
+| 2016 | 592 | 361 | 82 |
+| 2017 | 585 | 541 | 85 |
+| 2018 | 581 | 423 | 80 |
+| 2019 | 629 | 506 | 98 |
+| 2020 | 687 | 446 | 75 |
+| 2021 | 694 | 473 | 94 |
+| 2022 | 681 | 470 | 91 |
+
+**Americanas S.A. (`americanas`), fiscal year 2021.** The 2021 DFP has a single version, filed on 2022-02-24; the restatement came in the comparative of the 2022 DFP, filed on 2023-11-16, not in a new version of the 2021 DFP. That is why Americanas is not among the company-years with another version on 2024-12-31. Of the 280 comparable accounts, 126 have a difference above the tolerance, 6 of them highlighted (threshold of R$445.2 million); the 10 largest, in R$ million:
 
 | Statement | Account | Description | 2021 DFP (filed on 2022-02-24) | Comparative in the 2022 DFP (filed on 2023-11-16) | Difference |
 | --- | --- | --- | --- | --- | --- |
@@ -129,4 +131,5 @@ On 2024-12-31, 5,747 of 8,084 comparable company-years (from 2010 to 2022) have 
 python -m chiocca.v2.armazem      # builds data/armazem from data/brutos/cvm and data/cache/enet
 python -m chiocca.v2.buscar_enet 2024-12-31 --listar   # versions the date needs that are not in the store
 python -m chiocca.v2.invariante   # invariant and cross-section on the maximum date; writes this document
+python -m chiocca.v2.invariante --so-comparativo   # redoes only the following year's comparative
 ```

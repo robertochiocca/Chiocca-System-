@@ -18,19 +18,21 @@ Grava docs/invariante_numeros.json (versionado) e monta docs/armazenamento-tempo
 docs/en/temporal-storage.md a partir dele.
 
 Uso: python -m chiocca.v2.invariante   (precisa de data/armazem, montado por python -m chiocca.v2.armazem)
+     python -m chiocca.v2.invariante --so-comparativo   (refaz só a parte do comparativo do ano seguinte e os docs)
 """
 
 from __future__ import annotations
 
 import io
 import json
+import sys
 from typing import Any
 
 import pandas as pd
 
 from chiocca import base
 from chiocca.base import PENDENTE_ENET, RAIZ, SEM_VERSAO_ATE_CORTE
-from chiocca.formato import data, decimal, inteiro
+from chiocca.formato import data, decimal, inteiro, pct
 from chiocca.sinais.mscore import COEFICIENTES
 from chiocca.v2 import comparativo
 from chiocca.v2.armazem import PRIMEIRO_EXERCICIO, SO_METADADOS, FontesArmazem
@@ -148,6 +150,7 @@ def caso_comparativo(fontes: FontesArmazem, cd_cvm: str, exercicio: int, maiores
         "cd_cvm": cd_cvm, "exercicio": exercicio, "versao": lt.versao, "dt_receb": str(lt.dt_receb),
         "versao_seguinte": seg.versao, "dt_receb_seguinte": str(seg.dt_receb),
         "contas_comparadas": comparativo.contas_comparadas(lt, seg), "com_diferenca": len(difs),
+        "destacadas": sum(d.destacada for d in difs), "limite_destaque": comparativo.limite_destaque(lt.contas),
         "maiores": [{"demonstracao": d.demonstracao, "cd_conta": d.cd_conta, "ds_conta": d.ds_conta, "valor": d.valor,
                      "valor_comparativo": d.valor_comparativo, "diferenca": d.diferenca} for d in difs[:maiores]],
     }  # fmt: skip
@@ -183,13 +186,17 @@ def calcula(fontes: FontesArmazem, estudo: pd.DataFrame, anos: range) -> dict[st
         "versoes_por_escala": {str(e): int(n) for e, n in zip(escalas.escala, escalas.n)},
         "exercicios": fontes.manifesto["exercicios"],
     }
-    out["comparativo"] = {"tolerancia": comparativo.TOLERANCIA,
-                          "por_exercicio": comparativo.contagem(fontes, DATA_REFERENCIA_MAXIMA, anos),
-                          "americanas_2021": caso_comparativo(fontes, "20990", 2021)}  # fmt: skip
+    out["comparativo"] = calcula_comparativo(fontes, anos)
     out["empresa_anos_conferencias"] = json.loads(NUMEROS_CONFERENCIAS.read_text(encoding="utf-8"))["empresa_anos"]
     out["ultimo_exercicio_liberado"] = ULTIMO_EXERCICIO_LIBERADO
     out["data_referencia_maxima"] = str(DATA_REFERENCIA_MAXIMA)
     return out
+
+
+def calcula_comparativo(fontes: FontesArmazem, anos: range) -> dict[str, Any]:
+    return {"tolerancia": comparativo.TOLERANCIA, "materialidade": comparativo.MATERIALIDADE,
+            "por_exercicio": comparativo.contagem(fontes, DATA_REFERENCIA_MAXIMA, anos),
+            "americanas_2021": caso_comparativo(fontes, "20990", 2021)}  # fmt: skip
 
 
 def situacao_total(n: dict[str, Any]) -> dict[str, int]:
@@ -258,13 +265,15 @@ T: dict[str, dict[str, Any]] = {
         "h_comparativo": "## Reapresentação pelo comparativo do ano seguinte em {maxima}",
         "rotulo_comparativo": "**Análise descritiva.** O estudo 1 e o motor v1 não mudam. Regra de 09/11/2026 (`docs/contratos.md`, seção 4): quando a DFP de t+1 já é pública na data, cada conta de t na versão usada é comparada com a coluna PENÚLTIMO de t+1 (mesma demonstração, mesmo código, mesmo tipo); diferença acima de R$ {tol} por conta vai para a investigação como evidência, com o texto \"valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)\". Pelo lacre, o exercício de 2023 não tem comparação.",
         "resultado_comparativo": "Em {maxima}, {com} de {comp} empresa-anos comparáveis (de {ini} a {fim}) têm pelo menos uma conta com diferença acima da tolerância.",
-        "col_comparativo": "| Exercício | Empresa-anos comparáveis | Com alguma diferença |",
-        "h_americanas": "**Americanas S.A. (`americanas`), exercício {ex}.** A DFP de {ex} tem uma única versão, entregue em {receb}; a reapresentação veio no comparativo da DFP de {ex1}, entregue em {receb1}, e não numa versão nova da DFP de {ex}. Por isso a Americanas não está entre as empresa-anos com outra versão em {maxima}. Das {comp} contas comparáveis, {com} têm diferença acima da tolerância; as {n} maiores, em R$ milhões:",
+        "col_comparativo": "| Exercício | Empresa-anos comparáveis | Com alguma diferença | Com diferença destacada |",
+        "materialidade": "Materialidade (regra de 09/11/2026, `docs/contratos.md`, seção 4): diferença destacada é a de um total ou linha-chave (ativo total, passivo circulante, passivo não circulante, patrimônio líquido, receita líquida, lucro líquido e caixa operacional) acima de {lim} do ativo total da versão usada; as demais (reclassificações entre linhas e diferenças menores) ficam só na lista completa de evidências. Em {maxima}, {dest} de {comp} empresa-anos comparáveis têm pelo menos uma diferença destacada. Descritivo: nada disso é sinal de alerta.",
+        "h_americanas": "**Americanas S.A. (`americanas`), exercício {ex}.** A DFP de {ex} tem uma única versão, entregue em {receb}; a reapresentação veio no comparativo da DFP de {ex1}, entregue em {receb1}, e não numa versão nova da DFP de {ex}. Por isso a Americanas não está entre as empresa-anos com outra versão em {maxima}. Das {comp} contas comparáveis, {com} têm diferença acima da tolerância, {dest} delas destacadas (limite de R$ {lim} milhões); as {n} maiores, em R$ milhões:",
         "col_americanas": "| Demonstração | Conta | Descrição | DFP de {ex} (entregue em {receb}) | Comparativo da DFP de {ex1} (entregue em {receb1}) | Diferença |",
         "h_uso": "## Como reproduzir",
         "uso": ["python -m chiocca.v2.armazem      # monta data/armazem a partir de data/brutos/cvm e data/cache/enet",
                 "python -m chiocca.v2.buscar_enet 2024-12-31 --listar   # versões que a data precisa e não estão no armazém",
-                "python -m chiocca.v2.invariante   # invariante e corte na data máxima; grava este documento"],
+                "python -m chiocca.v2.invariante   # invariante e corte na data máxima; grava este documento",
+                "python -m chiocca.v2.invariante --so-comparativo   # refaz só o comparativo do ano seguinte"],
     },
     "en": {
         "titulo": "# Temporal storage and engine v1 on any date (Phases C1 and C2)",
@@ -313,13 +322,15 @@ T: dict[str, dict[str, Any]] = {
         "h_comparativo": "## Restatement through the following year's comparative on {maxima}",
         "rotulo_comparativo": "**Descriptive analysis.** Study 1 and engine v1 do not change. Rule of 2026-11-09 (`docs/en/contracts.md`, section 4): when the DFP of t+1 is already public on the date, each account of t in the version used is compared with the PENÚLTIMO column of t+1 (same statement, same code, same type); a difference above R${tol} per account goes into the investigation as evidence, with the text \"different value in the following year's comparative (restatement or reclassification)\". Because of the seal, fiscal year 2023 has no comparison.",
         "resultado_comparativo": "On {maxima}, {com} of {comp} comparable company-years (from {ini} to {fim}) have at least one account with a difference above the tolerance.",
-        "col_comparativo": "| Fiscal year | Comparable company-years | With some difference |",
-        "h_americanas": "**Americanas S.A. (`americanas`), fiscal year {ex}.** The {ex} DFP has a single version, filed on {receb}; the restatement came in the comparative of the {ex1} DFP, filed on {receb1}, not in a new version of the {ex} DFP. That is why Americanas is not among the company-years with another version on {maxima}. Of the {comp} comparable accounts, {com} have a difference above the tolerance; the {n} largest, in R$ million:",
+        "col_comparativo": "| Fiscal year | Comparable company-years | With some difference | With a highlighted difference |",
+        "materialidade": "Materiality (rule of 2026-11-09, `docs/en/contracts.md`, section 4): a highlighted difference is one in a total or key line (total assets, current liabilities, non-current liabilities, equity, net revenue, net income and operating cash flow) above {lim} of total assets of the version used; the others (reclassifications between lines and smaller differences) stay only in the full list of evidence. On {maxima}, {dest} of {comp} comparable company-years have at least one highlighted difference. Descriptive: none of this is an alert signal.",
+        "h_americanas": "**Americanas S.A. (`americanas`), fiscal year {ex}.** The {ex} DFP has a single version, filed on {receb}; the restatement came in the comparative of the {ex1} DFP, filed on {receb1}, not in a new version of the {ex} DFP. That is why Americanas is not among the company-years with another version on {maxima}. Of the {comp} comparable accounts, {com} have a difference above the tolerance, {dest} of them highlighted (threshold of R${lim} million); the {n} largest, in R$ million:",
         "col_americanas": "| Statement | Account | Description | {ex} DFP (filed on {receb}) | Comparative in the {ex1} DFP (filed on {receb1}) | Difference |",
         "h_uso": "## How to reproduce",
         "uso": ["python -m chiocca.v2.armazem      # builds data/armazem from data/brutos/cvm and data/cache/enet",
                 "python -m chiocca.v2.buscar_enet 2024-12-31 --listar   # versions the date needs that are not in the store",
-                "python -m chiocca.v2.invariante   # invariant and cross-section on the maximum date; writes this document"],
+                "python -m chiocca.v2.invariante   # invariant and cross-section on the maximum date; writes this document",
+                "python -m chiocca.v2.invariante --so-comparativo   # redoes only the following year's comparative"],
     },
 }  # fmt: skip
 
@@ -414,8 +425,14 @@ def _comparativo(n: dict[str, Any], t: dict[str, Any], lang: str, maxima: str) -
     ]
     linhas += [t["resultado_comparativo"].format(maxima=maxima, com=i(sum(v["com_diferenca"] for v in por.values())),
                                                  comp=i(sum(v["comparadas"] for v in por.values())), ini=min(por), fim=max(por)), ""]  # fmt: skip
-    linhas += [t["col_comparativo"], "| --- | --- | --- |"]
-    linhas += [f"| {ano} | {i(v['comparadas'])} | {i(v['com_diferenca'])} |" for ano, v in por.items()]
+    linhas += [t["materialidade"].format(lim=pct(c["materialidade"], lang, 0), maxima=maxima,
+                                         dest=i(sum(v["com_destacada"] for v in por.values())),
+                                         comp=i(sum(v["comparadas"] for v in por.values()))), ""]  # fmt: skip
+    linhas += [t["col_comparativo"], "| --- | --- | --- | --- |"]
+    linhas += [
+        f"| {ano} | {i(v['comparadas'])} | {i(v['com_diferenca'])} | {i(v['com_destacada'])} |"
+        for ano, v in por.items()
+    ]
     a = c.get("americanas_2021")
     if a:
         fmt = dict(
@@ -425,6 +442,7 @@ def _comparativo(n: dict[str, Any], t: dict[str, Any], lang: str, maxima: str) -
             receb1=data(a["dt_receb_seguinte"], lang),
         )
         linhas += ["", t["h_americanas"].format(maxima=maxima, comp=i(a["contas_comparadas"]), com=i(a["com_diferenca"]),
+                                                dest=i(a["destacadas"]), lim=decimal(a["limite_destaque"] / 1e6, lang, 1),
                                                 n=i(len(a["maiores"])), **fmt), ""]  # fmt: skip
         linhas += [t["col_americanas"].format(**fmt), "| --- | --- | --- | --- | --- | --- |"]
         m = lambda v: decimal(v / 1e6, lang, 1)  # noqa: E731
@@ -438,12 +456,17 @@ def escreve_docs(n: dict[str, Any]) -> None:
         caminho.write_text(render(n, lang), encoding="utf-8")
 
 
-def main() -> None:
-    estudo = pd.read_csv(SINAIS_ESTUDO_1, dtype={"cd_cvm": str}, low_memory=False)
-    n = calcula(FontesArmazem(), estudo, range(PRIMEIRO_EXERCICIO, ULTIMO_EXERCICIO_LIBERADO + 1))
+def main(argv: list[str] | None = None) -> None:
+    anos = range(PRIMEIRO_EXERCICIO, ULTIMO_EXERCICIO_LIBERADO + 1)
+    if "--so-comparativo" in (argv or []):
+        n = json.loads(NUMEROS.read_text(encoding="utf-8"))
+        n["comparativo"] = calcula_comparativo(FontesArmazem(), anos)
+    else:
+        estudo = pd.read_csv(SINAIS_ESTUDO_1, dtype={"cd_cvm": str}, low_memory=False)
+        n = calcula(FontesArmazem(), estudo, anos)
     NUMEROS.write_text(json.dumps(n, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     escreve_docs(json.loads(NUMEROS.read_text(encoding="utf-8")))
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

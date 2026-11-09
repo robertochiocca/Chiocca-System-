@@ -92,23 +92,25 @@ Com a data de referência em 31/12/2024, cada exercício usa a versão mais rece
 
 Em 31/12/2024, 5.747 de 8.084 empresa-anos comparáveis (de 2010 a 2022) têm pelo menos uma conta com diferença acima da tolerância.
 
-| Exercício | Empresa-anos comparáveis | Com alguma diferença |
-| --- | --- | --- |
-| 2010 | 606 | 470 |
-| 2011 | 627 | 464 |
-| 2012 | 606 | 444 |
-| 2013 | 603 | 366 |
-| 2014 | 605 | 391 |
-| 2015 | 588 | 392 |
-| 2016 | 592 | 361 |
-| 2017 | 585 | 541 |
-| 2018 | 581 | 423 |
-| 2019 | 629 | 506 |
-| 2020 | 687 | 446 |
-| 2021 | 694 | 473 |
-| 2022 | 681 | 470 |
+Materialidade (regra de 09/11/2026, `docs/contratos.md`, seção 4): diferença destacada é a de um total ou linha-chave (ativo total, passivo circulante, passivo não circulante, patrimônio líquido, receita líquida, lucro líquido e caixa operacional) acima de 1% do ativo total da versão usada; as demais (reclassificações entre linhas e diferenças menores) ficam só na lista completa de evidências. Em 31/12/2024, 1.407 de 8.084 empresa-anos comparáveis têm pelo menos uma diferença destacada. Descritivo: nada disso é sinal de alerta.
 
-**Americanas S.A. (`americanas`), exercício 2021.** A DFP de 2021 tem uma única versão, entregue em 24/02/2022; a reapresentação veio no comparativo da DFP de 2022, entregue em 16/11/2023, e não numa versão nova da DFP de 2021. Por isso a Americanas não está entre as empresa-anos com outra versão em 31/12/2024. Das 280 contas comparáveis, 126 têm diferença acima da tolerância; as 10 maiores, em R$ milhões:
+| Exercício | Empresa-anos comparáveis | Com alguma diferença | Com diferença destacada |
+| --- | --- | --- | --- |
+| 2010 | 606 | 470 | 169 |
+| 2011 | 627 | 464 | 164 |
+| 2012 | 606 | 444 | 190 |
+| 2013 | 603 | 366 | 89 |
+| 2014 | 605 | 391 | 96 |
+| 2015 | 588 | 392 | 94 |
+| 2016 | 592 | 361 | 82 |
+| 2017 | 585 | 541 | 85 |
+| 2018 | 581 | 423 | 80 |
+| 2019 | 629 | 506 | 98 |
+| 2020 | 687 | 446 | 75 |
+| 2021 | 694 | 473 | 94 |
+| 2022 | 681 | 470 | 91 |
+
+**Americanas S.A. (`americanas`), exercício 2021.** A DFP de 2021 tem uma única versão, entregue em 24/02/2022; a reapresentação veio no comparativo da DFP de 2022, entregue em 16/11/2023, e não numa versão nova da DFP de 2021. Por isso a Americanas não está entre as empresa-anos com outra versão em 31/12/2024. Das 280 contas comparáveis, 126 têm diferença acima da tolerância, 6 delas destacadas (limite de R$ 445,2 milhões); as 10 maiores, em R$ milhões:
 
 | Demonstração | Conta | Descrição | DFP de 2021 (entregue em 24/02/2022) | Comparativo da DFP de 2022 (entregue em 16/11/2023) | Diferença |
 | --- | --- | --- | --- | --- | --- |
@@ -129,4 +131,5 @@ Em 31/12/2024, 5.747 de 8.084 empresa-anos comparáveis (de 2010 a 2022) têm pe
 python -m chiocca.v2.armazem      # monta data/armazem a partir de data/brutos/cvm e data/cache/enet
 python -m chiocca.v2.buscar_enet 2024-12-31 --listar   # versões que a data precisa e não estão no armazém
 python -m chiocca.v2.invariante   # invariante e corte na data máxima; grava este documento
+python -m chiocca.v2.invariante --so-comparativo   # refaz só o comparativo do ano seguinte
 ```

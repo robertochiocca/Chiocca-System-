@@ -302,10 +302,13 @@ def test_diferenca_no_comparativo_do_ano_seguinte(mundo_c1: tuple[Fontes, armaze
     assert (d.valor, d.valor_comparativo, d.diferenca) == (5_000_000.0, 5_500_000.0, 500_000.0)
     assert (d.versao, d.dt_receb, d.versao_seguinte, d.dt_receb_seguinte) == (2, "2021-07-20", 1, "2022-03-10")
     assert d.texto.pt == "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)"
+    assert (d.grupo, d.destacada) == ("a", True)  # ativo total; R$ 500 mil > 1% de R$ 5 milhões
     assert (
         na_data.exercicio_na_data(arm, "100", 2020, "2021-12-31").diferencas_comparativo == ()
     )  # 2021 ainda não existia
-    assert comparativo.contagem(arm, date(2022, 4, 30), [2020]) == {"2020": {"comparadas": 1, "com_diferenca": 1}}
+    assert comparativo.contagem(arm, date(2022, 4, 30), [2020]) == {
+        "2020": {"comparadas": 1, "com_diferenca": 1, "com_destacada": 1}
+    }
     assert comparativo.leitura_seguinte(arm, "100", 2023, date(2024, 12, 31)) is None  # 2024 é lacrado
 
 
@@ -319,6 +322,43 @@ def test_tolerancia_do_comparativo() -> None:
     outra = leitura(11_000.5, "PENÚLTIMO")
     outra.tipo = "ind"
     assert comparativo.comparar(leitura(10_000.0, "ÚLTIMO"), outra) == []  # tipos diferentes
+
+
+def test_materialidade_do_comparativo() -> None:
+    """Grupo (a): totais e linhas-chave; grupo (b): demais linhas. Destacada: grupo (a) acima de 1% do ativo total."""
+
+    def leitura(ordem: str, linhas: list[tuple[str, str, float]]) -> base.Leitura:
+        contas = pd.DataFrame([(dem, ordem, cod, f"conta {cod}", v) for dem, cod, v in linhas], columns=base.COLUNAS)
+        return base.Leitura("1", "2020-12-31", None, base.OK, versao=1, tipo="con", contas=contas)
+
+    t = leitura(
+        "ÚLTIMO",
+        [
+            ("BPA", "1", 1e6),
+            ("BPP", "2.01", 1e5),
+            ("BPP", "2.02", 1e5),
+            ("BPA", "1.01.01", 1e5),
+            ("DFC_MI", "6.01", 5e4),
+            ("DRE", "3.11", 1e4),
+        ],
+    )
+    s = leitura("PENÚLTIMO", [("BPA", "1", 1e6), ("BPP", "2.01", 1.05e5), ("BPP", "2.02", 1.2e5),
+                              ("BPA", "1.01.01", 2e5), ("DFC_MD", "6.01", 7e4), ("DRE", "3.11", 1.05e4)])  # fmt: skip
+    difs = {(d.demonstracao[:3], d.cd_conta): (d.grupo, d.destacada) for d in comparativo.comparar(t, s)}
+    assert difs == {
+        ("BPP", "2.01"): ("a", False),  # 0,5% do ativo total: na lista, sem destaque
+        ("BPP", "2.02"): ("a", True),  # 2%
+        ("BPA", "1.01.01"): ("b", False),  # reclassificação: nunca destacada, mesmo grande
+        ("DFC", "6.01"): ("a", True),  # a DFC pelo prefixo (o método pode mudar)
+    }  # 3.11: R$ 500, dentro da tolerância
+    assert comparativo.limite_destaque(t.contas) == 10_000.0
+    sem_at = leitura("ÚLTIMO", [("BPA", "1", 0.0), ("BPP", "2.02", 100_000.0)])
+    assert not any(d.destacada for d in comparativo.comparar(sem_at, s))  # sem ativo total positivo, nada é destacado
+    assert [k for k in comparativo.CHAVES] == ["ativo_total", "passivo_circulante", "passivo_nao_circulante",
+                                               "patrimonio_liquido", "receita_liquida", "lucro_liquido",
+                                               "caixa_operacional_apresentado"]  # fmt: skip
+    assert comparativo.LINHAS_CHAVE == (("BPA", "1"), ("BPP", "2.01"), ("BPP", "2.02"), ("BPP", "2.03"),
+                                        ("DRE", "3.01"), ("DRE", "3.11"), ("DFC", "6.01"))  # fmt: skip
 
 
 def test_escala_da_pagina_do_enet() -> None:

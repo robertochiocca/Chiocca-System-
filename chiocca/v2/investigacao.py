@@ -57,6 +57,24 @@ ALERTA = {
     "peso_nao_recorrente": "alerta_peso_nao_recorrente",
 }
 ANOS_HISTORICO = 5
+# Rodízio de auditor (pedido de 09/11/2026), conferido no texto publicado pela CVM em 09/11/2026: Resolução CVM nº 23,
+# de 25/02/2021, arts. 31 e 31-A, em vigor desde 01/04/2021 (art. 41); revogou a Instrução CVM nº 308/1999 (art. 40, I),
+# que tinha a regra equivalente nos seus arts. 31 e 31-A. Troca de auditor é fato, não alerta.
+RODIZIO_FONTE = "https://conteudo.cvm.gov.br/export/sites/cvm/legislacao/resolucoes/anexos/001/resol023.pdf"
+RODIZIO_PRAZOS = {
+    5: "art. 31",
+    10: "art. 31-A",
+}  # fim do prazo: cinco exercícios; até dez com CAE e auditor pessoa jurídica
+RODIZIO_VIGENCIA = "2021-04-01"
+RODIZIO_NORMAS = {True: "Resolução CVM nº 23/2021", False: "Instrução CVM nº 308/1999"}
+RODIZIO_NORMAS_EN = {
+    "Resolução CVM nº 23/2021": "CVM Resolution No. 23/2021",
+    "Instrução CVM nº 308/1999": "CVM Instruction No. 308/1999",
+}
+RODIZIO = Motivo(
+    "Rodízio de auditor: pela Resolução CVM nº 23/2021, art. 31, o mesmo auditor independente não pode prestar serviços a um mesmo cliente por mais de cinco exercícios sociais consecutivos, com intervalo mínimo de três exercícios sociais para a recontratação; pelo art. 31-A, o prazo é de até dez exercícios sociais consecutivos quando a companhia tem Comitê de Auditoria Estatutário em funcionamento permanente e o auditor é pessoa jurídica. A Resolução está em vigor desde 01/04/2021 (art. 41); antes, a regra equivalente estava nos arts. 31 e 31-A da Instrução CVM nº 308/1999, revogada pela Resolução (art. 40, I). Troca de auditor é fato, não alerta.",
+    "Auditor rotation: under CVM Resolution No. 23/2021, art. 31, the same independent auditor may not serve the same client for more than five consecutive fiscal years, with a minimum interval of three fiscal years before being hired again; under art. 31-A, the term is up to ten consecutive fiscal years when the company has a statutory audit committee in permanent operation and the auditor is a firm. The Resolution has been in force since 2021-04-01 (art. 41); before that, the equivalent rule was in arts. 31 and 31-A of CVM Instruction No. 308/1999, revoked by the Resolution (art. 40, I). A change of auditor is a fact, not an alert.",
+)
 ALTERNATIVAS = {
     "juro": Motivo("dívida cara, variação cambial e juros de arrendamento dentro da despesa financeira (decisão de 07/11/2026)",
                    "expensive debt, exchange differences and lease interest inside finance costs (decision of 2026-11-07)"),
@@ -82,6 +100,10 @@ TEXTOS = {
         "parecer_ausente": "a versão usada não tem a seção de pareceres nos dados abertos",
         "sem_trecho": "não foi achado trecho de opinião no texto",
         "o_que_se_sabia_nota": "DFP e FCA entregues à CVM até a data de referência; ITR e fatos relevantes entram em fases seguintes.",
+        "rodizio_prazo": "A firma que saiu auditou {n} exercícios sociais consecutivos ({a} a {b}), pelas datas de início e fim no FCA.",
+        "rodizio_compativel": "A troca coincide com o fim do prazo de {n} exercícios e é compatível com o rodízio ({art} da {norma}, vigente quando a firma nova começou).",
+        "rodizio_sem_prazo": "O FCA não traz as datas necessárias para contar os exercícios da firma que saiu.",
+        "materialidade": "Destacadas: diferenças em totais e linhas-chave (ativo total, passivo circulante, passivo não circulante, patrimônio líquido, receita líquida, lucro líquido e caixa operacional) acima de 1% do ativo total da versão usada. As demais diferenças (reclassificações entre linhas e diferenças menores) ficam na lista completa.",
         "contexto_nao_validado": "indicadores de contexto (Altman Z'' e Piotroski F) não foram validados no Brasil por este projeto e não geram alerta",
         "produto": "no produto, este sinal fica não calculável: usa um balanço não preenchido (ativo total zero)",
     },
@@ -96,6 +118,10 @@ TEXTOS = {
         "parecer_ausente": "the version used has no opinions section in open data",
         "sem_trecho": "no opinion excerpt was found in the text",
         "o_que_se_sabia_nota": "DFP and FCA filed with the CVM by the reference date; ITR and material facts come in later phases.",
+        "rodizio_prazo": "The outgoing firm audited {n} consecutive fiscal years ({a} to {b}), by the start and end dates in the FCA.",
+        "rodizio_compativel": "The change coincides with the end of the {n}-fiscal-year term and is compatible with the rotation rule ({art} of {norma}, in force when the new firm started).",
+        "rodizio_sem_prazo": "The FCA does not have the dates needed to count the outgoing firm's fiscal years.",
+        "materialidade": "Highlighted: differences in totals and key lines (total assets, current liabilities, non-current liabilities, equity, net revenue, net income and operating cash flow) above 1% of total assets of the version used. The other differences (reclassifications between lines and smaller differences) stay in the full list.",
         "contexto_nao_validado": "context indicators (Altman Z'' and Piotroski F) were not validated in Brazil by this project and do not trigger alerts",
         "produto": "in the product, this signal is not computable: it uses an unfilled balance sheet (zero total assets)",
     },
@@ -386,23 +412,78 @@ def _parecer_e_auditor(fontes: Any, e: Any, exercicio: int, cd_cvm: str, d: date
             de = {x["codigo_cvm"]: x["auditor"] for x in a["auditores"]}
             para = {x["codigo_cvm"]: x["auditor"] for x in b["auditores"]}
             if set(de) != set(para):
-                trocas.append({"ano_fca": b["ano_fca"], "de": sorted(de.values()), "para": sorted(para.values())})
+                trocas.append({"ano_fca": b["ano_fca"], "de": sorted(de.values()), "para": sorted(para.values()),
+                               "saidas": _saidas(a, b, set(de) - set(para), set(para) - set(de), lang)})  # fmt: skip
         out["auditores_no_fca"] = firmas
         out["trocas_de_auditor"] = trocas
+        out["rodizio"] = {"nota": _m(RODIZIO, lang), "norma": "Resolução CVM nº 23/2021, arts. 31 e 31-A",
+                          "fonte": RODIZIO_FONTE, "conferida_em": "2026-11-09"}  # fmt: skip
+    return out
+
+
+def _saidas(
+    a: dict[str, Any], b: dict[str, Any], sairam: set[str], entraram: set[str], lang: str
+) -> list[dict[str, Any]]:
+    """Exercícios sociais consecutivos da firma que saiu, pelas datas do FCA: do ano do início dela ao último exercício
+    que terminou com ela contratada (pela data de fim, quando o FCA traz; senão, o ano anterior ao início da firma que
+    entrou). Quando a troca coincide com o fim do prazo (cinco exercícios, art. 31; dez, art. 31-A), a nota diz que é
+    compatível com o rodízio, citando a norma vigente quando a firma nova começou."""
+    t = TEXTOS[lang]
+    out = []
+    for x in a["auditores"]:
+        if x["codigo_cvm"] not in sairam:
+            continue
+        primeiro = int(x["inicio"][:4]) if x["inicio"] else None
+        # Quem entrou: a firma nova nesta troca ou, se ela já constava no FCA anterior, a que começou depois da que saiu.
+        inicios_novos = [y["inicio"] for y in b["auditores"] if y["inicio"] and (y["codigo_cvm"] in entraram or
+                         (x["inicio"] is not None and y["inicio"] > x["inicio"]))]  # fmt: skip
+        if x["fim"]:  # a data de fim no FCA, quando existe: o último exercício é o que termina até ela
+            ultimo: int | None = int(x["fim"][:4]) - (0 if x["fim"][5:10] == "12-31" else 1)
+        else:
+            ultimo = int(min(inicios_novos)[:4]) - 1 if inicios_novos else None
+        n = ultimo - primeiro + 1 if primeiro is not None and ultimo is not None and ultimo >= primeiro else None
+        artigo = RODIZIO_PRAZOS.get(n) if n is not None else None
+        # A norma vigente na data em que a firma nova começou: a Resolução desde 01/04/2021; antes, a Instrução 308.
+        norma = None if not inicios_novos else RODIZIO_NORMAS[min(inicios_novos) >= RODIZIO_VIGENCIA]
+        if n is None:
+            nota = t["rodizio_sem_prazo"]
+        else:
+            nota = t["rodizio_prazo"].format(n=n, a=primeiro, b=ultimo)
+            if artigo:
+                nome_norma = RODIZIO_NORMAS_EN.get(str(norma), str(norma)) if lang == "en" else norma
+                nota += " " + t["rodizio_compativel"].format(n=n, art=artigo, norma=nome_norma)
+        out.append({"auditor": x["auditor"], "codigo_cvm": x["codigo_cvm"], "primeiro_exercicio": primeiro,
+                    "ultimo_exercicio": ultimo, "exercicios_consecutivos": n, "compativel_com_rodizio": artigo is not None,
+                    "artigo": artigo, "norma": norma if artigo else None, "nota": nota})  # fmt: skip
     return out
 
 
 def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, fontes: Any, exercicio: int, cd_cvm: str,
            evid: dict[str, Evidencia], conferencias: list[Any]) -> dict[str, Any]:  # fmt: skip
     t = TEXTOS[lang]
+
+    def dif(x: comparativo.DiferencaComparativo) -> dict[str, Any]:
+        return {"texto": _m(x.texto, lang), "demonstracao": x.demonstracao, "cd_conta": x.cd_conta, "ds_conta": x.ds_conta,
+                "valor": x.valor, "valor_comparativo": x.valor_comparativo, "diferenca": x.diferenca, "grupo": x.grupo,
+                "destacada": x.destacada, "versao": x.versao, "dt_receb": x.dt_receb, "versao_seguinte": x.versao_seguinte,
+                "dt_receb_seguinte": x.dt_receb_seguinte}  # fmt: skip
+
+    # Destaque só do grupo (a) acima de 1% do ativo total; a lista completa (grupos a e b) fica logo abaixo.
+    ordenadas = sorted(e.diferencas_comparativo, key=lambda x: (x.grupo, -abs(x.diferenca), x.demonstracao, x.cd_conta))
+    contas_e = (
+        e.contas
+        if isinstance(e.contas, pd.DataFrame) and "cd_conta" in e.contas
+        else pd.DataFrame(columns=base.COLUNAS)
+    )
     out["mudancas"] = {
         "versoes_conhecidas": [{"versao": v, "dt_receb": str(x), "usada": v == e.versao_usada} for v, x in e.versoes_conhecidas],
-        "reapresentacao_pelo_comparativo": [
-            {"texto": _m(x.texto, lang), "demonstracao": x.demonstracao, "cd_conta": x.cd_conta, "ds_conta": x.ds_conta,
-             "valor": x.valor, "valor_comparativo": x.valor_comparativo, "diferenca": x.diferenca, "versao": x.versao,
-             "dt_receb": x.dt_receb, "versao_seguinte": x.versao_seguinte, "dt_receb_seguinte": x.dt_receb_seguinte}
-            for x in e.diferencas_comparativo],
+        "comparativo_destacadas": [dif(x) for x in ordenadas if x.destacada],
+        "reapresentacao_pelo_comparativo": [dif(x) for x in ordenadas],
         "tolerancia_comparativo": comparativo.TOLERANCIA,
+        "materialidade_comparativo": {
+            "linhas_chave": [{"demonstracao": dem, "cd_conta": cod} for dem, cod in comparativo.LINHAS_CHAVE],
+            "limite_relativo": comparativo.MATERIALIDADE, "ativo_total": comparativo.ativo_total(contas_e),
+            "limite": comparativo.limite_destaque(contas_e), "texto": t["materialidade"]},
     }  # fmt: skip
     docs = []
     for ano in range(max(2010, exercicio - ANOS_HISTORICO), min(exercicio + 1, ULTIMO_EXERCICIO_LIBERADO) + 1):
