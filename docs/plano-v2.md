@@ -48,6 +48,8 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 - Modo escuro, celular, PT e EN; aviso fixo em todas as telas.
 - CI com build e checagem de tipos do web. O deploy (Vercel, Render ou outro) é decisão sua nesta fase.
 - Tamanho: cerca de 2.000 linhas de TypeScript e testes de build e de contrato com a API.
+- **Decisão de Roberto, 09/11/2026:** Fase E autorizada, com as regras da API, comparação com o setor só agregada, data até 31/12/2024 e exercício até 2023, "Informação de hoje" separada, aviso fixo, PT e EN, modo escuro e celular, página "Como o motor foi testado" do mesmo JSON do resumo, CI com build, tipos, testes de contrato e npm audit, e nenhum deploy: só um modo demonstração ligado por configuração.
+- **Concluída em 09/11/2026:** `web/` (Next.js 16.4.3, React 19.2.9, TypeScript 5.9.3; o Next 15 trazia um postcss com vulnerabilidade alta no `npm audit`), regras em [`docs/contratos.md`](contratos.md), seção 7; modo demonstração na API (`CHIOCCA_MODO_DEMONSTRACAO`). O deploy espera a escolha de Roberto.
 
 ## Fase F: inteligência documental v0
 

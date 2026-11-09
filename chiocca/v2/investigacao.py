@@ -18,6 +18,8 @@ import hashlib
 import json
 import re
 import sys
+import weakref
+from collections import OrderedDict
 from datetime import date, datetime, timezone
 from typing import Any
 
@@ -209,7 +211,7 @@ def gerar(
     gerado_em = gerado_em or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     t = TEXTOS[lang]
     e = exercicio_na_data(fontes, cd_cvm, exercicio, d, localizador=localizador)
-    s, limiares, contas_todas, meta = corte_transversal_completo(fontes, exercicio, d)
+    s, limiares, contas_todas, meta = _corte(fontes, exercicio, d)
     s = s.merge(meta[["cd_cvm", "dt_refer", "setor"]], on=["cd_cvm", "dt_refer"], how="left")
     linha_s = s[(s.cd_cvm == cd_cvm) & (s.dt_refer == e.dt_refer)]
     linha_m = meta[(meta.cd_cvm == cd_cvm) & (meta.dt_refer == e.dt_refer)]
@@ -298,6 +300,29 @@ def gerar(
     )
     out["achados"] = achados
     return _fecha(out, e, lang, gerado_em, d, fontes, exercicio, cd_cvm, evid, conferencias, hoje)
+
+
+CORTES_EM_MEMORIA = 2
+_CORTES: "weakref.WeakKeyDictionary[Any, OrderedDict[tuple[int, date], Any]]" = weakref.WeakKeyDictionary()
+
+
+def _corte(fontes: Any, exercicio: int, d: date) -> Any:
+    """O corte transversal da data (a parte cara da investigação), guardado em memória por fontes, exercício e data:
+    a mesma investigação nas duas línguas, o PDF e outras empresas do mesmo exercício e data o reaproveitam. Os
+    valores não mudam: é o mesmo `corte_transversal_completo`, só não é recalculado."""
+    try:
+        cache = _CORTES.setdefault(fontes, OrderedDict())
+    except TypeError:  # fontes que não aceitam referência fraca: sem cache
+        return corte_transversal_completo(fontes, exercicio, d)
+    chave = (exercicio, d)
+    if chave in cache:
+        cache.move_to_end(chave)
+        return cache[chave]
+    valor = corte_transversal_completo(fontes, exercicio, d)
+    cache[chave] = valor
+    while len(cache) > CORTES_EM_MEMORIA:
+        cache.popitem(last=False)
+    return valor
 
 
 def _empresa(fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grupo: str, lang: str) -> dict[str, Any]:

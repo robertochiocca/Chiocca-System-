@@ -1,0 +1,40 @@
+// Números e datas no formato de cada língua, como nos documentos do projeto (chiocca/formato.py):
+// PT "1.234,5" e "31/12/2024"; EN "1,234.5" e "2024-12-31".
+import type { Idioma } from "./tipos";
+
+export function decimal(v: number | null | undefined, idioma: Idioma, casas = 3): string {
+  if (v === null || v === undefined || Number.isNaN(v)) return "—";
+  return new Intl.NumberFormat(idioma === "pt" ? "pt-BR" : "en-US", {
+    minimumFractionDigits: casas,
+    maximumFractionDigits: casas,
+  })
+    .format(v)
+    .replace(/−/g, "-");
+}
+
+export function inteiro(v: number | null | undefined, idioma: Idioma): string {
+  return decimal(v, idioma, 0);
+}
+
+export function pct(v: number | null | undefined, idioma: Idioma, casas = 1): string {
+  if (v === null || v === undefined) return "—";
+  return `${decimal(v * 100, idioma, casas)}%`;
+}
+
+export function data(iso: string | null | undefined, idioma: Idioma): string {
+  if (!iso) return "—";
+  const [a, m, d] = iso.slice(0, 10).split("-");
+  return idioma === "pt" ? `${d}/${m}/${a}` : `${a}-${m}-${d}`;
+}
+
+/** Valor com a unidade do contrato: dias (1 casa), p.p. (2 casas), índice (3 casas, unidade no fim). */
+export function comUnidade(v: number | null | undefined, unidade: string, idioma: Idioma): string {
+  if (v === null || v === undefined) return "—";
+  if (unidade === "dias" || unidade === "days") return `${decimal(v, idioma, 1)} ${unidade}`;
+  if (unidade === "p.p.") return `${decimal(v, idioma, 2)} p.p.`;
+  return `${decimal(v, idioma, 3)} (${unidade})`;
+}
+
+export function milhoes(v: number | null | undefined, idioma: Idioma): string {
+  return v === null || v === undefined ? "—" : decimal(v / 1e6, idioma, 1);
+}

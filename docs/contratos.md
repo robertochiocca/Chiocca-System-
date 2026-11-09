@@ -243,3 +243,16 @@ Implementada em `chiocca/v2/api.py` (FastAPI), com os contratos em Pydantic em `
 - **Sem rede:** a API lê só o armazém; versão que falta sai como `versao_pendente_enet` (a busca no ENET é o comando separado da C2). Os testes de contrato rodam com o armazém da fixture e com a rede bloqueada.
 - **Modo demonstração** (Fase E, ligado por `CHIOCCA_MODO_DEMONSTRACAO=1`): a busca e as rotas por empresa só aceitam as companhias dos casos do gabarito (`data/gabarito_casos.csv`, que pela regra do pré-registro só tem condenação da CVM ou fraude admitida), sem os casos em observação; as outras são recusadas (403, `fora_do_modo_demonstracao`) com o motivo. `/saude` diz se o modo está ligado. Padrão inspirado no FraudShield (MIT), sem código copiado.
 - **Uso:** `python -m chiocca.v2.api [porta]` (uvicorn em 127.0.0.1; documentação interativa em `/api/v1/docs`).
+
+## 7. Interface (Fase E)
+
+Implementada em `web/` (Next.js, React e TypeScript, sem biblioteca de componentes), com as regras de 09/11/2026:
+
+- **As mesmas regras da API.** Nenhuma lista de empresas ordenada por alerta, percentil ou escore; a busca é só por nome, código CVM ou CNPJ, e os resultados aparecem na ordem da API (alfabética). Um teste do web confere que nenhuma tela reordena listas e que não há rota de ranking.
+- **Comparação com pares do setor só agregada:** percentis e o histograma de `distribuicao_setor_ano`. Nunca nomes de outras empresas ao lado de valores ou alertas; os gráficos não recebem nome, código nem CNPJ.
+- **Seletor de data** limitado a 30/04/2011–31/12/2024 e exercício até 2023 (os mesmos limites de `chiocca/v2/lacre.py`, conferidos por teste). "Informação de hoje" fica separada, no fim, como no PDF.
+- **Aviso fixo em todas as telas** (na barra fixa do topo), PT e EN, modo escuro e celular.
+- **"Como o motor foi testado"**: os números vêm da rota `/como-o-motor-foi-testado`, que os lê do mesmo JSON do resumo; link para a ficha do motor e a antecedência dos acertos.
+- **Contrato:** cada resposta da API passa por `web/lib/contrato.mjs` antes de ir para a tela. Os testes do web (`npm test`, sem rede) rodam essas funções sobre os exemplos de `docs/exemplos/` e sobre as respostas da API guardadas em `web/tests/contrato/`, que um teste do Python (`tests/test_v2_contrato_web.py`) confere contra a API de agora.
+- **Modo demonstração:** o da API (seção 6); a interface mostra um aviso quando ele está ligado.
+- **CI:** checagem de tipos, testes de contrato e regras, build e `npm audit --audit-level=high`. Nada é publicado nesta fase.

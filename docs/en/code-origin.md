@@ -20,3 +20,10 @@ Commits inspected in Phase A (details in [`docs/en/inventory.md`](inventory.md))
 **Not from other projects.** `tests/referencia/gerar_exemplo_resolvido.py` came from the planning conversation (claude.ai, with Claude), written before the engine, and was handed over by Roberto on 2026-11-08. Its origin is in the file's own docstring. Changes: black formatting, a type annotation required by mypy and, on 2026-11-09, by Roberto's decision, the rounding of three values (`DPO_t_dias`, `variacao_dias` and `spread_pp`) from 2 to 4 decimals, to follow commit 70d71a5; no calculation changed.
 
 **Phase D.** No file came from another project: `chiocca/v2/api.py`, `chiocca/v2/modelos.py`, `chiocca/v2/busca.py` and `tests/test_v2_api.py` were written for Chiocca System. FastAPI, Pydantic, uvicorn and httpx are installed dependencies, pinned in `pyproject.toml` and `requirements-lock.txt`, not copied code.
+
+**Phase E.** From DireitoAberto (`web/`, commit `102e3e2d9d70e87249d8df9215737e2d98b6358d`, MIT license), with an origin header in each file. The four files below; `web/tsconfig.json` follows DireitoAberto's configuration, which is Next's default. The rest of `web/` was written for Chiocca System.
+
+- `web/next.config.mjs`, from `web/next.config.mjs`: the same security policy and the same `/api` rewrite to FastAPI; no `blob:` (there is no user PDF) and a longer proxy timeout for the investigation.
+- `web/app/globals.css`, from `web/app/globals.css`: only the color tokens, the dark theme and the sticky bar; Chiocca's palette and components.
+- `web/app/layout.tsx`, from `web/app/layout.tsx`: only the theme script before hydration; no external fonts, with the language provider.
+- `web/components/Topo.tsx`, from `web/components/Nav.tsx`: only the theme and compact menu pattern; no account or login, with the PT/EN language switch and the fixed notice in the bar.

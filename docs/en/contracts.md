@@ -243,3 +243,16 @@ Implemented in `chiocca/v2/api.py` (FastAPI), with the Pydantic contracts in `ch
 - **No network:** the API reads only the store; a missing version comes out as `versao_pendente_enet` (ENET fetching is the separate C2 command). The contract tests run with the fixture store and the network blocked.
 - **Demo mode** (Phase E, turned on by `CHIOCCA_MODO_DEMONSTRACAO=1`): the search and the per-company routes only accept the companies of the ground-truth cases (`data/gabarito_casos.csv`, which under the pre-registration rule only has CVM convictions or admitted fraud), without the cases under observation; the others are refused (403, `fora_do_modo_demonstracao`) with the reason. `/saude` says whether the mode is on. Pattern inspired by FraudShield (MIT), with no copied code.
 - **Usage:** `python -m chiocca.v2.api [port]` (uvicorn on 127.0.0.1; interactive documentation at `/api/v1/docs`).
+
+## 7. Interface (Phase E)
+
+Implemented in `web/` (Next.js, React and TypeScript, with no component library), with the rules of 2026-11-09:
+
+- **The same rules as the API.** No list of companies ranked by alert, percentile or score; search is only by name, CVM code or CNPJ, and results appear in the API's order (alphabetical). A web test checks that no screen reorders lists and that there is no ranking route.
+- **Sector peer comparison is aggregate only:** percentiles and the `distribuicao_setor_ano` histogram. Never names of other companies next to values or alerts; the charts receive no name, code or CNPJ.
+- **Date selector** limited to 2011-04-30–2024-12-31 and fiscal years up to 2023 (the same limits as `chiocca/v2/lacre.py`, checked by a test). "Today's information" stays separate, at the end, as in the PDF.
+- **Fixed notice on every screen** (in the sticky top bar), PT and EN, dark mode and mobile.
+- **"How the engine was tested"**: the figures come from the `/como-o-motor-foi-testado` route, which reads them from the same JSON as the summary; link to the engine card and the lead time of the detections.
+- **Contract:** every API response goes through `web/lib/contrato.mjs` before reaching the screen. The web tests (`npm test`, no network) run these functions over the examples in `docs/exemplos/` and over the API responses stored in `web/tests/contrato/`, which a Python test (`tests/test_v2_contrato_web.py`) checks against the current API.
+- **Demo mode:** the API's (section 6); the interface shows a notice when it is on.
+- **CI:** type checking, contract and rule tests, build and `npm audit --audit-level=high`. Nothing is published in this phase.
