@@ -18,8 +18,10 @@ Nada aqui é regra de alerta nem muda o motor v1: percentis, histórico, Altman 
   do comparativo da DFP de t−1 na versão pública na data. Mostra "F = x/9 (y calculáveis)"; componente que falta não
   é imputado. Dívida de longo prazo zero nos dois anos: ΔLEVER = 0, com marca (o artigo só define "caiu = 1,
   subiu = 0", p. 8; o 0 no empate é escolha do projeto). EQ_OFFER: linhas de 6.03 achadas pelo padrão congelado de
-  "emissões" (reconhecimento, parte 4.2) e, entre elas, só as de ações ou capital (adaptação); soma positiva é
-  emissão (0), soma zero é não emissão (1); sem linha ou com soma negativa, não calculável.
+  "emissões" (reconhecimento, parte 4.2) e, entre elas, só as de ações ou capital, que é a definição do próprio
+  artigo ("did not issue common equity", p. 9), não uma adaptação. A adaptação é só esta: ações preferenciais também
+  contam, porque no Brasil são capital próprio, e a linha é identificada por texto na DFC. Soma positiva é emissão
+  (0), soma zero é não emissão (1); sem linha ou com soma negativa, não calculável.
 """
 
 from __future__ import annotations
@@ -50,8 +52,8 @@ DIVIDA_ZERO = Motivo(
     "no long-term debt in either year: ΔLEVER = 0 and the signal is 0 (project choice; the article only defines fell = 1, rose = 0, p. 8)",
 )
 ADAPTACAO_EQ = Motivo(
-    'EQ_OFFER pela DFC: linhas de 6.03 do padrão congelado de "emissões" (reconhecimento, parte 4.2), só as de ações ou capital (adaptação)',
-    'EQ_OFFER from the cash flow statement: 6.03 lines of the frozen "emissões" pattern (reconnaissance, part 4.2), only those about shares or capital (adaptation)',
+    'EQ_OFFER pela DFC: linhas de 6.03 do padrão congelado de "emissões" (reconhecimento, parte 4.2), só as de ações ou capital, como define o artigo ("did not issue common equity", p. 9); adaptação: ações preferenciais também contam, porque no Brasil são capital próprio, e a linha é identificada por texto na DFC',
+    'EQ_OFFER from the cash flow statement: 6.03 lines of the frozen "emissões" pattern (reconnaissance, part 4.2), only those about shares or capital, as the article defines it ("did not issue common equity", p. 9); adaptation: preferred shares also count, because in Brazil they are equity, and the line is identified by text in the cash flow statement',
 )
 
 

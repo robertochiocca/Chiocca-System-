@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.13"]  # a versão mínima declarada e a usada no desenvolvimento
+        python: ["3.12", "3.13"]  # a versão mínima declarada (o numpy 2.5.3 exige 3.12) e a usada no desenvolvimento
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
