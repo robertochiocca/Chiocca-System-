@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -83,3 +84,35 @@ def test_nao_fazer_no_roadmap() -> None:
     texto = (RAIZ / "docs/roadmap.md").read_text(encoding="utf-8")
     assert "Não copiar o CSV do JarFraud/FraudDetection para o repositório: é derivado da Compustat." in texto
     assert "Não usar as zonas do Z' no Z'' nem os coeficientes de 1979 como régua." in texto
+
+
+def test_readme_invariante_e_testes_pulados_no_ci() -> None:
+    """Os números da frase do README saem do invariante e da contagem dos testes que o CI pula (09/11/2026)."""
+    from chiocca.formato import inteiro
+    from chiocca.v2 import exemplos
+    from tests.test_referencia import FASE_2
+
+    n = json.loads((RAIZ / "docs" / "invariante_numeros.json").read_text(encoding="utf-8"))
+    iguais = sum(v["empresa_anos_iguais"] for v in n["exercicios"].values())
+    estudo = sum(v["empresa_anos_estudo"] for v in n["exercicios"].values())
+    armazem = len(exemplos.PARES) + 1  # a regeneração dos exemplos e o invariante de 2021
+    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+    for lang, frase in (
+        ("pt", "O invariante do estudo 1 ({i} de {e} empresa-anos iguais ao estudo) roda localmente"),
+        ("en", "The study 1 invariant ({i} of {e} company-years equal to the study) runs locally"),
+    ):
+        assert frase.format(i=inteiro(iguais, lang), e=inteiro(estudo, lang)) in readme
+    total = armazem + len(FASE_2)
+    assert (
+        f"pula {total} testes: {armazem} dependem do armazém" in readme
+        and f"e {len(FASE_2)} são valores da fase 2" in readme
+    )
+    assert (
+        f"skips {total} tests: {armazem} depend on the store" in readme
+        and f"and {len(FASE_2)} are phase 2 values" in readme
+    )
+    assert (
+        len(exemplos.PARES) == 4
+        and "regeneração dos 4 exemplos" in readme
+        and "regeneration of the 4 examples" in readme
+    )

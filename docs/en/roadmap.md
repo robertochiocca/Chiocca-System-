@@ -42,6 +42,10 @@ Context only, with no alert, and only after they are specified in the plan:
 - Do not copy the JarFraud/FraudDetection CSV into the repository: it is derived from Compustat.
 - Do not use the Z' zones for Z'' or the 1979 coefficients as a yardstick.
 
+## Review when Starlette changes (recorded on 2026-11-09)
+
+- The API tests use `TestClient` with httpx, and Starlette warns that this combination is deprecated and suggests `httpx2`. The warning stays as it is; review it when Starlette changes (a new version pinned in the lock or the end of httpx support).
+
 ## Product, after Phase F
 
 - Docker and deployment with observability.

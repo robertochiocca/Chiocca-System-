@@ -165,7 +165,9 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
         return modelos.BuscaEmpresas.model_validate(r | {"aviso": investigacao.AVISO}).model_dump(mode="json")
 
     @app.get(f"{PREFIXO}/empresas/{{cd_cvm}}", response_model=modelos.EmpresaNaData)
-    def empresa(cd_cvm: str = Path(..., pattern=r"^\d{1,6}$"), data_referencia: str | None = DATA) -> dict[str, Any]:
+    def empresa(
+        cd_cvm: str = Path(..., pattern=r"^\d{1,6}$"), data_referencia: str | None = DATA, idioma: str = IDIOMA
+    ) -> dict[str, Any]:
         d, cd = _data(data_referencia), _cd(cd_cvm)
         f = fontes()
         anos = busca.exercicios_na_data(f, cd, d)
@@ -174,8 +176,10 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
         meta, _ = _meta(f, anos[-1], d, so={cd})
         mt = meta.sort_values("dt_refer").iloc[-1]
         setor = mt.setor if isinstance(mt.setor, str) else None
-        e = investigacao._empresa(f, cd, d, mt, setor, mt.grupo, "pt")
-        out = {"data_referencia": d.isoformat(), "empresa": e, "exercicios": anos, "aviso": investigacao.AVISO}
+        e = investigacao._empresa(f, cd, d, mt, setor, mt.grupo, idioma)
+        out = {"data_referencia": d.isoformat(), "empresa": e, "exercicios": anos,
+               "informacao_de_hoje": investigacao.informacao_de_hoje(mt.situacao_cadastro, idioma),
+               "aviso": investigacao.AVISO}  # fmt: skip
         return modelos.EmpresaNaData.model_validate(out).model_dump(mode="json")
 
     @app.get(f"{PREFIXO}/empresas/{{cd_cvm}}/exercicios/{{exercicio}}", response_model=modelos.ExercicioComEvidencias)

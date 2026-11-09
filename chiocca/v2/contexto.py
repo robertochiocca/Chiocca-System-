@@ -6,9 +6,9 @@ Nada aqui é regra de alerta nem muda o motor v1: percentis, histórico, Altman 
 - **Percentil** (`percentil`): posição do valor entre os valores de referência, em percentual, pelo posto médio:
   100 × (quantos são menores + metade dos iguais) ÷ n. Com menos de `N_MINIMO` (10) valores, fica nulo com o motivo.
 - **Histórico** (`historico`): a série da própria empresa nos exercícios anteriores, como era na data de referência;
-  mediana, quartis (interpolação linear) e a cerca de IQR (quartis ± 1,5 × IQR), com a posição do valor atual
+  mediana, quartis (interpolação linear) e a faixa de Tukey (quartis ± 1,5 × IQR), com a posição do valor atual
   (dentro, acima ou abaixo). Com menos de `EXERCICIOS_MINIMOS` (5) exercícios anteriores, fica nulo com o motivo.
-  Método descrito no contrato (detecção do `insights.py` da Carchuna, só a cerca; o código não foi trazido).
+  Método descrito no contrato (detecção do `insights.py` da Carchuna, só a faixa; o código não foi trazido).
 - **Altman Z''** (`altman_z2`), Altman (2000), p. 27: Z'' = 6,56·X1 + 3,26·X2 + 6,72·X3 + 1,05·X4, com
   X1 = (1.01 − 2.01) ÷ 1; X2 = (2.03.04 + 2.03.05) ÷ 1 (adaptação brasileira); X3 = 3.05 ÷ 1; X4 = 2.03 ÷ (2.01 + 2.02).
   Sem a constante do Emerging Market Score, sem tabela de rating e sem zonas: a fonte disponível não define zonas
@@ -82,7 +82,7 @@ def historico(serie: dict[int, float | None], atual: float | None, minimo: int =
     iqr = q3 - q1
     baixo, alto = q1 - 1.5 * iqr, q3 + 1.5 * iqr
     posicao = "acima" if atual > alto else "abaixo" if atual < baixo else "dentro"
-    return {"exercicios": anos, "mediana": med, "q1": q1, "q3": q3, "cerca": [baixo, alto], "posicao": posicao,
+    return {"exercicios": anos, "mediana": med, "q1": q1, "q3": q3, "faixa_tukey": [baixo, alto], "posicao": posicao,
             "motivo": None}  # fmt: skip
 
 

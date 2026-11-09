@@ -96,7 +96,7 @@ def test_percentil_e_historico() -> None:
     assert contexto.percentil(5.0, [float(x) for x in range(1, 11)])["valor"] == pytest.approx(45.0)
     assert contexto.percentil(5.0, [float(x) for x in range(1, 10)])["valor"] is None  # menos de 10
     h = contexto.historico({2015: 1.0, 2016: 2.0, 2017: 3.0, 2018: 4.0, 2019: 5.0}, 20.0)
-    assert (h["mediana"], h["q1"], h["q3"], h["cerca"], h["posicao"]) == (3.0, 2.0, 4.0, [-1.0, 7.0], "acima")
+    assert (h["mediana"], h["q1"], h["q3"], h["faixa_tukey"], h["posicao"]) == (3.0, 2.0, 4.0, [-1.0, 7.0], "acima")
     assert contexto.historico({2018: 4.0, 2019: 5.0, 2017: None}, 4.5)["motivo"] is not None
 
 

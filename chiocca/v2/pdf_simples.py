@@ -17,6 +17,7 @@ import textwrap
 LARGURA, ALTURA = 595, 842  # A4 em pontos
 MARGEM_X, TOPO, BASE = 50, 800, 70
 COLUNAS = 96
+COLUNAS_TITULO = 74  # Helvetica-Bold 11 pt na mesma largura
 LINHAS_POR_PAGINA = (TOPO - BASE) // 13
 TRANSLITERA = {"−": "-", "≥": ">=", "≤": "<=", "÷": "/", "→": "->", "Δ": "Delta ", "σ": "sigma", "≈": "~", "′": "'",
                "″": "''", "✓": "v"}  # fmt: skip
@@ -39,14 +40,18 @@ def _escapar(texto: str) -> bytes:
 
 
 def quebrar(linhas: list[str]) -> list[str]:
-    """Quebra as linhas longas em pedaços que cabem na largura (títulos ficam inteiros)."""
+    """Quebra as linhas longas em pedaços que cabem na largura. Título longo vira mais de uma linha de título (a fonte
+    é maior e em negrito, então cabem menos caracteres); item de lista ("- ") continua com recuo."""
     saida: list[str] = []
     for linha in linhas:
         if linha.startswith("#"):
-            saida.append(linha)
+            saida += ["# " + p for p in textwrap.wrap(linha.lstrip("# "), COLUNAS_TITULO) or [""]]
             continue
         recuo = " " * (len(linha) - len(linha.lstrip(" ")))
-        pedacos = textwrap.wrap(linha.strip(), COLUNAS - len(recuo)) or [""]
+        continuacao = recuo + ("  " if linha.lstrip(" ").startswith("- ") else "")
+        pedacos = textwrap.wrap(linha.strip(), COLUNAS - len(recuo), subsequent_indent=continuacao[len(recuo) :]) or [
+            ""
+        ]
         saida += [recuo + p for p in pedacos]
     return saida
 
