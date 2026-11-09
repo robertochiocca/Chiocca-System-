@@ -108,3 +108,15 @@ def test_taxa_de_alerta_sempre_com_a_mesma_definicao(caminho: str, taxa: str, de
     blocos = (ap.RAIZ / caminho).read_text(encoding="utf-8").split("\n\n")
     citados = [b for b in blocos if taxa in b]
     assert citados and all(definicao in b.lower() for b in citados)
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_readme_limitacoes_geradas_dos_json(lang: str) -> None:
+    """Pedido de 09/11/2026: a seção de limitações do README sai dos JSONs, com um link por limitação."""
+    from chiocca.v2 import textos_readme
+
+    secao = textos_readme.secao_limitacoes(lang)
+    assert secao in (ap.RAIZ / "README.md").read_text(encoding="utf-8")
+    itens = textos_readme.limitacoes(lang)
+    assert len(itens) == 8 and all("](docs/" in x for x in itens)
+    assert "59,8%" in itens[0] if lang == "pt" else "59.8%" in itens[0]
