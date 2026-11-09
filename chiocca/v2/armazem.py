@@ -15,7 +15,15 @@ git). Tabelas (contratos, seção 4):
   máxima fica vazio);
 - `cadastro`: o cadastro de companhias abertas, usado pela regra congelada do setor e pela situação no cadastro;
 - `escalas`: a escala original (`MIL` ou `UNIDADE`) de cada demonstração dos dados abertos, por versão. O cache do
-  ENET guarda os valores já em reais e não registra a escala da página, então versões do ENET ficam sem escala;
+  ENET guarda os valores já em reais; desde 09/11/2026, a busca registra a escala da página em
+  `<documento>_escala.json`, que entra aqui. Documentos buscados antes disso ficam sem escala (não foram baixados de
+  novo só por isso, decisão de 09/11/2026);
+- `pareceres`: os textos da seção de pareceres e declarações da DFP (relatório do auditor, com o tipo: sem ressalva,
+  com ressalva, adverso ou negativa de opinião), da versão dos dados abertos, com a linha do arquivo de origem;
+- `auditores`: a firma de auditoria de cada versão do FCA, com o código na CVM e as datas de atuação. Não entram
+  CPF nem nome de pessoa física (responsável técnico);
+- `nomes`: o nome empresarial de cada versão do FCA, com a data de entrega. A investigação mostra o nome da época
+  (o índice dos dados abertos traz o nome atual, que pode ser posterior à data);
 - `enet/`: cópia byte a byte dos arquivos do cache do ENET que entram no armazém, para o `como_era` do motor v1
   ler do armazém sem mudança;
 - `manifesto.json`: hash SHA-256 de cada arquivo de origem, contagens, lacre e data máxima.
@@ -49,7 +57,7 @@ from chiocca.v2.lacre import DATA_REFERENCIA_MAXIMA, ULTIMO_EXERCICIO_LIBERADO, 
 PASTA = RAIZ / "data" / "armazem"
 PRIMEIRO_EXERCICIO = 2010
 COLUNAS_INDICE = ["cd_cvm", "CNPJ_CIA", "DENOM_CIA", "DT_REFER", "versao", "dt_receb", "num_doc", "ID_DOC", "LINK_DOC"]
-TABELAS = ("versoes", "contas", "fca", "cadastro", "escalas")
+TABELAS = ("versoes", "contas", "fca", "cadastro", "escalas", "pareceres", "auditores", "nomes")
 SO_METADADOS = "so_metadados"
 
 
@@ -85,6 +93,66 @@ def _escalas(zdfp: Path, ano: int) -> pd.DataFrame:
     return pd.concat(partes, ignore_index=True) if partes else pd.DataFrame(columns=colunas)
 
 
+def _pareceres(zdfp: Path, ano: int, idx: pd.DataFrame, maxima: date) -> pd.DataFrame:
+    """Seção de pareceres e declarações da DFP (dados abertos: só a última versão), entregue até a data máxima."""
+    colunas = ["exercicio", "cd_cvm", "dt_refer", "versao", "tp_relat_aud", "tp_parecer_decl", "num_item", "texto",
+               "arquivo", "linha_arquivo"]  # fmt: skip
+    arq = f"dfp_cia_aberta_parecer_{ano}.csv"
+    with zipfile.ZipFile(zdfp) as z:
+        if arq not in z.namelist():
+            return pd.DataFrame(columns=colunas)
+        d = pd.read_csv(io.BytesIO(z.read(arq)), sep=";", encoding="latin1", dtype=str, keep_default_na=False)
+    d["linha_arquivo"] = range(2, len(d) + 2)
+    chave = idx.groupby(["CNPJ_CIA", "DT_REFER", "versao"]).agg(
+        cd_cvm=("cd_cvm", "first"), dt_receb=("dt_receb", "max")
+    )
+    d["versao_int"] = d.VERSAO.astype(int)
+    d = d.merge(chave, left_on=["CNPJ_CIA", "DT_REFER", "versao_int"], right_index=True, how="inner")
+    d = d[d.dt_receb <= maxima]
+    return pd.DataFrame({"exercicio": ano, "cd_cvm": d.cd_cvm, "dt_refer": d.DT_REFER, "versao": d.versao_int,
+                         "tp_relat_aud": d.TP_RELAT_AUD.replace("", None), "tp_parecer_decl": d.TP_PARECER_DECL,
+                         "num_item": d.NUM_ITEM_PARECER_DECL, "texto": d.TXT_PARECER_DECL,
+                         "arquivo": f"{zdfp.name}/{arq}", "linha_arquivo": d.linha_arquivo})[colunas]  # fmt: skip
+
+
+def _nomes(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
+    """Nome empresarial de cada versão do FCA entregue até a data máxima."""
+    colunas = ["ano", "cd_cvm", "versao", "dt_receb", "nome"]
+    with zipfile.ZipFile(zfca) as z:
+        arq = f"fca_cia_aberta_geral_{ano}.csv"
+        if arq not in z.namelist():
+            return pd.DataFrame(columns=colunas)
+        idx = pd.read_csv(io.BytesIO(z.read(f"fca_cia_aberta_{ano}.csv")), sep=";", encoding="latin1", dtype=str)
+        geral = pd.read_csv(io.BytesIO(z.read(arq)), sep=";", encoding="latin1", dtype=str)
+    if "Nome_Empresarial" not in geral.columns:
+        return pd.DataFrame(columns=colunas)
+    idx = idx.drop_duplicates("ID_DOC")
+    d = geral.drop_duplicates("ID_Documento").merge(idx[["ID_DOC", "CD_CVM", "DT_RECEB", "VERSAO"]], left_on="ID_Documento",
+                                                    right_on="ID_DOC", how="inner")  # fmt: skip
+    d["dt_receb"] = pd.to_datetime(d.DT_RECEB).dt.date
+    d = d[d.dt_receb <= maxima]
+    return pd.DataFrame({"ano": ano, "cd_cvm": cd_texto(d.CD_CVM), "versao": d.VERSAO.astype(int), "dt_receb": d.dt_receb,
+                         "nome": d.Nome_Empresarial})[colunas]  # fmt: skip
+
+
+def _auditores(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
+    """Firma de auditoria de cada versão do FCA entregue até a data máxima (sem CPF nem pessoa física)."""
+    colunas = ["ano", "cd_cvm", "versao", "dt_receb", "auditor", "codigo_cvm_auditor", "inicio", "fim"]
+    with zipfile.ZipFile(zfca) as z:
+        arq = f"fca_cia_aberta_auditor_{ano}.csv"
+        if arq not in z.namelist():
+            return pd.DataFrame(columns=colunas)
+        idx = pd.read_csv(io.BytesIO(z.read(f"fca_cia_aberta_{ano}.csv")), sep=";", encoding="latin1", dtype=str)
+        au = pd.read_csv(io.BytesIO(z.read(arq)), sep=";", encoding="latin1", dtype=str)
+    idx = idx.drop_duplicates("ID_DOC")
+    d = au.merge(idx[["ID_DOC", "CD_CVM", "DT_RECEB"]], left_on="ID_Documento", right_on="ID_DOC", how="inner")
+    d["dt_receb"] = pd.to_datetime(d.DT_RECEB).dt.date
+    d = d[d.dt_receb <= maxima]
+    return pd.DataFrame({"ano": ano, "cd_cvm": cd_texto(d.CD_CVM), "versao": d.Versao.astype(int), "dt_receb": d.dt_receb,
+                         "auditor": d.Auditor, "codigo_cvm_auditor": d.Codigo_CVM_Auditor,
+                         "inicio": d.Data_Inicio_Atuacao_Auditor, "fim": d.Data_Fim_Atuacao_Auditor})[colunas]  # fmt: skip
+
+
 def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> dict[str, Any]:
     """Monta o armazém a partir de uma fonte de arquivos brutos (pasta da CVM ou fixture de teste)."""
     anos = anos if anos is not None else range(PRIMEIRO_EXERCICIO, ULTIMO_EXERCICIO_LIBERADO + 1)
@@ -93,7 +161,7 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
     destino.mkdir(parents=True, exist_ok=True)
     maxima = DATA_REFERENCIA_MAXIMA
     arquivos: dict[str, str] = {}
-    versoes, contas, fca, escalas = [], [], [], []
+    versoes, contas, fca, escalas, pareceres, auditores, nomes = [], [], [], [], [], [], []
     for ano in anos:
         zdfp = fontes.pasta / f"dfp_cia_aberta_{ano}.zip"
         if not zdfp.exists():
@@ -101,6 +169,7 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
         arquivos[zdfp.name] = _sha256(zdfp)
         escalas.append(_escalas(zdfp, ano))
         idx = fontes.indice_dfp(ano).reset_index(drop=True)
+        pareceres.append(_pareceres(zdfp, ano, idx, maxima))
         versoes.append(idx[COLUNAS_INDICE].assign(exercicio=ano, linha=range(len(idx))))
         # Data de recebimento da última versão de cada documento (a dos dados abertos).
         receb = idx.groupby(["cd_cvm", "DT_REFER", "versao"]).dt_receb.max()
@@ -122,6 +191,8 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
             arquivos[zfca.name] = _sha256(zfca)
             f = fontes.fca(ano).reset_index(drop=True)
             f["setor"] = f.setor.where(f.dt_receb <= maxima)
+            auditores.append(_auditores(zfca, ano, maxima))
+            nomes.append(_nomes(zfca, ano, maxima))
             fca.append(f.assign(ano=ano, linha=range(len(f))))
     tab_versoes = (
         pd.concat(versoes, ignore_index=True)
@@ -130,7 +201,7 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
     )
     # ENET: só versões de exercícios liberados, entregues até a data máxima.
     (destino / "enet").mkdir(exist_ok=True)
-    for velho in (destino / "enet").glob("*_con.csv"):
+    for velho in [*(destino / "enet").glob("*_con.csv"), *(destino / "enet").glob("*_escala.json")]:
         velho.unlink()
     validos = tab_versoes[tab_versoes.dt_receb <= maxima]
     por_doc = {str(r.num_doc): r for r in validos.drop_duplicates("num_doc", keep="last").itertuples(index=False)}
@@ -142,6 +213,14 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
             continue
         shutil.copyfile(arq, destino / "enet" / arq.name)
         arquivos[f"enet/{arq.name}"] = _sha256(arq)
+        lateral = Path(fontes.cache_enet) / f"{num}_escala.json"
+        if lateral.exists():  # escala da página, registrada pela busca desde 09/11/2026
+            shutil.copyfile(lateral, destino / "enet" / lateral.name)
+            arquivos[f"enet/{lateral.name}"] = _sha256(lateral)
+            por_dem = json.loads(lateral.read_text(encoding="utf-8"))
+            escalas.append(pd.DataFrame([{"exercicio": int(r.exercicio), "cd_cvm": r.cd_cvm, "dt_refer": r.DT_REFER,
+                                          "versao": int(r.versao), "tipo": "con", "demonstracao": dem, "escala": esc}
+                                         for dem, esc in sorted(por_dem.items())]))  # fmt: skip
         d = enet.le_cache(Path(fontes.cache_enet), num)
         if d is None or d.empty:
             continue
@@ -157,6 +236,9 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
         "fca": pd.concat(fca, ignore_index=True) if fca else pd.DataFrame(columns=["cd_cvm", "versao", "dt_receb", "setor", "ano", "linha"]),
         "cadastro": cad.drop(columns=["cd_cvm"]),  # derivado de CD_CVM na leitura (o DuckDB não diferencia maiúsculas)
         "escalas": pd.concat(escalas, ignore_index=True) if escalas else _escalas_vazias(),
+        "pareceres": pd.concat(pareceres, ignore_index=True) if pareceres else _pareceres_vazios(),
+        "auditores": pd.concat(auditores, ignore_index=True) if auditores else _auditores_vazios(),
+        "nomes": pd.concat(nomes, ignore_index=True) if nomes else pd.DataFrame(columns=["ano", "cd_cvm", "versao", "dt_receb", "nome"]),
     }  # fmt: skip
     tabelas["contas"]["num_doc"] = tabelas["contas"]["num_doc"].astype("string")
     for nome, t in tabelas.items():
@@ -173,6 +255,17 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
         json.dumps(manifesto, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
     )
     return manifesto
+
+
+def _pareceres_vazios() -> pd.DataFrame:
+    return pd.DataFrame(columns=["exercicio", "cd_cvm", "dt_refer", "versao", "tp_relat_aud", "tp_parecer_decl",
+                                 "num_item", "texto", "arquivo", "linha_arquivo"])  # fmt: skip
+
+
+def _auditores_vazios() -> pd.DataFrame:
+    return pd.DataFrame(
+        columns=["ano", "cd_cvm", "versao", "dt_receb", "auditor", "codigo_cvm_auditor", "inicio", "fim"]
+    )
 
 
 def _escalas_vazias() -> pd.DataFrame:
@@ -205,6 +298,28 @@ class Armazem:
             GROUP BY cd_cvm, DT_REFER ORDER BY cd_cvm, DT_REFER
             """,
             [exercicio, data_referencia],
+        )
+
+    def parecer(self, exercicio: int, cd_cvm: str, dt_refer: str, versao: int) -> pd.DataFrame:
+        """Seção de pareceres e declarações da DFP, se a versão for a dos dados abertos (só a última é publicada)."""
+        return self.consulta(
+            "SELECT * FROM pareceres WHERE exercicio = ? AND cd_cvm = ? AND dt_refer = ? AND versao = ? ORDER BY linha_arquivo",
+            [exercicio, cd_cvm, dt_refer, versao],
+        )
+
+    def nome_na_data(self, cd_cvm: str, ate: date) -> str | None:
+        """Nome empresarial na última versão do FCA entregue até a data."""
+        d = self.consulta(
+            "SELECT nome FROM nomes WHERE cd_cvm = ? AND CAST(dt_receb AS DATE) <= ? ORDER BY dt_receb DESC, versao DESC LIMIT 1",
+            [cd_cvm, ate],
+        )
+        return None if d.empty else str(d.nome.iloc[0])
+
+    def auditores(self, cd_cvm: str, ate: date) -> pd.DataFrame:
+        """Firmas de auditoria nas versões do FCA entregues até a data, por ano e versão."""
+        return self.consulta(
+            "SELECT * FROM auditores WHERE cd_cvm = ? AND CAST(dt_receb AS DATE) <= ? ORDER BY ano, versao, auditor",
+            [cd_cvm, ate],
         )
 
     def escala(self, exercicio: int, cd_cvm: str, dt_refer: str, versao: int, tipo: str) -> str | None:

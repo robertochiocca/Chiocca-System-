@@ -26,11 +26,11 @@ Proposta da Fase A, para sua aprovação. Só o lacre (seção 1) já está no c
 | --- | --- | --- |
 | `cd_cvm` | texto | Código CVM, sem zeros à esquerda (convenção do estudo 1) |
 | `cnpj` | texto | Do índice da DFP |
-| `denominacao` | texto | Da DFP do exercício (o nome muda com o tempo; a investigação mostra o da época) |
-| `codigos_negociacao` | lista de texto | Do FCA `valor_mobiliario`, com o período de negociação de cada código, na versão entregue até a data de referência |
+| `denominacao` | texto | Da DFP do exercício (o nome muda com o tempo; a investigação mostra o da época) Implementado na C2: nome empresarial da última versão do FCA entregue até a data; o índice dos dados abertos traz o nome atual, que pode ser posterior à data (o da Americanas já trazia "em recuperação judicial") |
+| `codigos_negociacao` | lista de texto | Do FCA `valor_mobiliario`, com o período de negociação de cada código, na versão entregue até a data de referência Ainda não implementado (fica para a Fase D) |
 | `setor` | texto | Setor do FCA entregue até a data de referência; sem FCA, o do cadastro (regra congelada, reconhecimento 4.1) |
 | `grupo` | `financeira` ou `nao_financeira` | Regra congelada do estudo 1 (setor candidato e plano de contas) |
-| `situacao_cadastro` | texto | Do cadastro atual, só como informação |
+| `situacao_cadastro` | texto | Do cadastro atual, só como informação No JSON, `situacao_cadastro_atual`, para deixar claro que é do cadastro atual |
 
 ### DataReferencia
 
@@ -141,6 +141,8 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 
 ### Investigacao
 
+Implementado na C2, segunda parte (`chiocca/v2/investigacao.py`, JSON; `chiocca/v2/pdf_investigacao.py`, PDF gerado só do JSON). Exemplo de referência: Americanas, exercício 2021, em 30/04/2022, em `docs/exemplos/` (PT e EN). O relatório do auditor vem da seção de pareceres dos dados abertos, que só existe para a última versão da DFP; as trocas de auditor saem do FCA, pelo código da firma na CVM, sem CPF nem pessoa física. `gerado_em` e `calculado_em` são o único campo que muda entre execuções.
+
 | Campo | Descrição |
 | --- | --- |
 | `empresa`, `data_referencia`, `idioma` | — |
@@ -181,7 +183,7 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
   4. ACCRUAL: CFO ÷ AT início > ROA;
   5. ΔLEVER < 0, com alavancagem = 2.02.01 ÷ AT médio. Dívida de longo prazo zero nos dois anos: sinal 0, com a marca "sem dívida de longo prazo nos dois anos" na linhagem (decisão de Roberto, 08/11/2026). O artigo só define "caiu = 1, subiu = 0" (p. 8) e não define o empate; o 0 no empate é escolha do projeto. O relatório da implementação conta os casos;
   6. ΔLIQUID > 0, com liquidez = 1.01 ÷ 2.01;
-  7. EQ_OFFER: 1 se não houve emissão de ações no ano, pela linha de emissão da DFC achada por texto (padrões congelados da parte 4.2 do reconhecimento), com os códigos de conta registrados; marcado como adaptação; sem a linha, "não calculável";
+  7. EQ_OFFER: 1 se não houve emissão de ações no ano, pela linha de emissão da DFC achada por texto (padrões congelados da parte 4.2 do reconhecimento), com os códigos de conta registrados; marcado como adaptação; sem a linha, "não calculável"; Implementado na C2: entre as linhas do padrão congelado, só as de ações ou capital (palavra inteira), porque o padrão também pega captação de empréstimos; soma positiva é emissão (0), soma zero é não emissão (1); sem linha ou com soma negativa, não calculável;
   8. ΔMARGIN > 0, com margem = 3.03 ÷ 3.01;
   9. ΔTURN > 0, com giro = 3.01 ÷ AT início.
   - os valores de t−1 vêm do comparativo da DFP de t; os de t−2, da DFP de t−1 na versão pública na data de referência. As duas origens ficam na Linhagem;

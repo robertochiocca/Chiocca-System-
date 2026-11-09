@@ -37,6 +37,7 @@ import pandas as pd
 
 from chiocca import base, grupos, montar_base, sinais_amostra
 from chiocca.sinais.mscore import COEFICIENTES
+from chiocca.v2 import comparativo
 from chiocca.v2 import conferencias as cf
 from chiocca.v2.lacre import garantir_data_referencia, garantir_liberado
 from chiocca.v2.linhagem import ENET_DOC, Documento, Evidencia, Localizador, id_evidencia, usa_balanco
@@ -58,8 +59,8 @@ NOTA_ESTRUTURA_POSTERIOR = Motivo(
     "structure read from a document filed after the date (study 1 behaviour, amendment 8)",
 )
 SEM_ESCALA_ENET = Motivo(
-    "versão do ENET: o cache guarda os valores já em reais e não registra a escala da página",
-    "ENET version: the cache keeps values already in reais and does not record the page's scale",
+    "versão do ENET: o cache guarda os valores já em reais e não registrou a escala da página (buscas anteriores a 09/11/2026)",
+    "ENET version: the cache keeps values already in reais and did not record the page's scale (fetches before 2026-11-09)",
 )
 
 
@@ -95,6 +96,7 @@ class ExercicioNaData:
     escala_original: str | None = None
     documento: Documento | None = None
     evidencias: tuple[Evidencia, ...] = field(default=(), repr=False)
+    diferencas_comparativo: tuple[comparativo.DiferencaComparativo, ...] = field(default=(), repr=False)
     notas: tuple[Motivo, ...] = ()
 
 
@@ -153,9 +155,9 @@ def exercicio_na_data(
     notas: tuple[Motivo, ...] = (NOTA_ESTRUTURA_POSTERIOR,) if estrutura_posterior(leitura, docs) else ()
     escala = None
     ler_escala = getattr(fontes, "escala", None)  # só o armazém tem a escala original
-    if leitura.fonte == "dados_abertos" and leitura.versao is not None and ler_escala is not None:
+    if leitura.fonte is not None and leitura.versao is not None and ler_escala is not None:
         escala = ler_escala(exercicio, leitura.cd_cvm, str(leitura.dt_refer), leitura.versao, str(leitura.tipo))
-    elif leitura.fonte == "enet":
+    if leitura.fonte == "enet" and escala is None:
         notas += (SEM_ESCALA_ENET,)
     e = ExercicioNaData(
         cd_cvm=leitura.cd_cvm, exercicio=exercicio, dt_refer=leitura.dt_refer, data_referencia=d,
@@ -167,6 +169,7 @@ def exercicio_na_data(
     if leitura.fonte is not None:
         e.documento = _documento(e, localizador)
         e.evidencias = evidencias(leitura.contas, e.documento, localizador)
+        e.diferencas_comparativo = comparativo.diferencas(fontes, leitura, exercicio, d)
     return e
 
 
@@ -176,11 +179,15 @@ def nao_calculaveis_no_produto(contas: pd.DataFrame, plano: str | None) -> list[
     return [s for s in SINAIS_PRODUTO if any(usa_balanco(s, c) for c in colunas)]
 
 
-def _meta(fontes: FontesV1, exercicio: int, corte: date | None) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """As empresa-anos do exercício na data, com os mesmos campos de `chiocca.montar_base.monta`."""
+def _meta(
+    fontes: FontesV1, exercicio: int, corte: date | None, so: set[str] | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """As empresa-anos do exercício na data, com os mesmos campos de `chiocca.montar_base.monta` (`so`: só essas)."""
     sit = montar_base.situacao_cadastro(fontes)  # type: ignore[arg-type]
     idx = fontes.indice_dfp(exercicio)
     pares = idx[["cd_cvm", "DT_REFER", "CNPJ_CIA", "DENOM_CIA"]].drop_duplicates(["cd_cvm", "DT_REFER"])
+    if so is not None:
+        pares = pares[pares.cd_cvm.isin(so)]
     linhas: list[dict[str, Any]] = []
     partes = []
     for p in pares.itertuples():
@@ -225,9 +232,11 @@ def corte_transversal(
     Devolve (sinais, limiares): `sinais` tem as colunas de `resultados/sinais_empresa_ano.csv` mais
     `produto_nao_calculaveis`; `limiares` tem o limite do decil superior de cada sinal e grupo na data.
     """
-    garantir_liberado(exercicio)
-    corte = garantir_data_referencia(data_referencia) if data_referencia is not None else None
-    meta, contas = _meta(fontes, exercicio, corte)
+    s, limiares, _, _ = corte_transversal_completo(fontes, exercicio, data_referencia)
+    return s, limiares
+
+
+def _sinais(meta: pd.DataFrame, contas: pd.DataFrame, exercicio: int) -> pd.DataFrame:
     # Mesmo caminho do estudo 1: as contas passam por um CSV como em data/base, e o motor v1 lê de lá.
     with tempfile.TemporaryDirectory() as pasta:
         contas.to_csv(Path(pasta) / f"contas_{exercicio}.csv.gz", index=False)
@@ -236,8 +245,32 @@ def corte_transversal(
     for col in ("mscore", "dpo", "juro", "peso_nao_recorrente", "alavancagem"):
         if col not in s.columns:
             s[col] = float("nan")
+    return s
+
+
+def corte_transversal_completo(
+    fontes: FontesV1, exercicio: int, data_referencia: date | str | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """O corte transversal com as contas e o meta de cada empresa-ano (para a investigação): (sinais, limiares,
+    contas, meta). Os sinais e alertas são os mesmos de `corte_transversal`."""
+    garantir_liberado(exercicio)
+    corte = garantir_data_referencia(data_referencia) if data_referencia is not None else None
+    meta, contas = _meta(fontes, exercicio, corte)
+    s = _sinais(meta, contas, exercicio)
     s, limiares = sinais_amostra.alertas(s)
     s["produto_nao_calculaveis"] = meta.produto_nao_calculaveis.values
     s["estrutura_de_documento_posterior"] = meta.estrutura_de_documento_posterior.values
     s.insert(1, "data_referencia", corte)
-    return s, limiares
+    return s, limiares, contas, meta
+
+
+def sinais_da_empresa(
+    fontes: FontesV1, cd_cvm: str, exercicio: int, data_referencia: date
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Valores dos sinais do motor v1 de uma empresa num exercício, na data (sem alertas: os decis precisam do
+    corte inteiro). Para o histórico da investigação. Devolve (sinais, contas, meta)."""
+    garantir_liberado(exercicio)
+    meta, contas = _meta(fontes, exercicio, data_referencia, so={str(cd_cvm)})
+    if meta.empty:
+        return pd.DataFrame(), contas, meta
+    return _sinais(meta, contas, exercicio), contas, meta

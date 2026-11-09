@@ -12,7 +12,7 @@ import pytest
 
 from chiocca import base, montar_base, sinais_amostra
 from chiocca.cvm import Fontes
-from chiocca.v2 import armazem, buscar_enet, invariante, na_data
+from chiocca.v2 import armazem, buscar_enet, comparativo, invariante, na_data
 from chiocca.v2.lacre import DataForaDoIntervalo, ExercicioLacrado
 from chiocca.v2.linhagem import Localizador, id_evidencia
 from tests import fixtures_cvm as fx
@@ -288,3 +288,60 @@ def test_contratos_contam_os_documentos_so_com_estrutura(lang: str, caminho: str
     assert invariante.frase_so_metadados(n, lang) in texto
     nota = na_data.NOTA_ESTRUTURA_POSTERIOR
     assert (nota.pt if lang == "pt" else nota.en) in texto
+
+
+# ---- Reapresentação pelo comparativo do ano seguinte e escala do ENET (09/11/2026) ----
+
+
+def test_diferenca_no_comparativo_do_ano_seguinte(mundo_c1: tuple[Fontes, armazem.FontesArmazem]) -> None:
+    _, arm = mundo_c1
+    e = na_data.exercicio_na_data(arm, "100", 2020, "2022-04-30")  # a DFP de 2021 já foi entregue (10/03/2022)
+    difs = e.diferencas_comparativo
+    assert [(d.demonstracao, d.cd_conta) for d in difs] == [("BPA", "1")]  # 3.01 igual; 3.11 só existe em t
+    d = difs[0]
+    assert (d.valor, d.valor_comparativo, d.diferenca) == (5_000_000.0, 5_500_000.0, 500_000.0)
+    assert (d.versao, d.dt_receb, d.versao_seguinte, d.dt_receb_seguinte) == (2, "2021-07-20", 1, "2022-03-10")
+    assert d.texto.pt == "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)"
+    assert (
+        na_data.exercicio_na_data(arm, "100", 2020, "2021-12-31").diferencas_comparativo == ()
+    )  # 2021 ainda não existia
+    assert comparativo.contagem(arm, date(2022, 4, 30), [2020]) == {"2020": {"comparadas": 1, "com_diferenca": 1}}
+    assert comparativo.leitura_seguinte(arm, "100", 2023, date(2024, 12, 31)) is None  # 2024 é lacrado
+
+
+def test_tolerancia_do_comparativo() -> None:
+    def leitura(valor: float, ordem: str) -> base.Leitura:
+        contas = pd.DataFrame([("BPA", ordem, "1", "Ativo Total", valor)], columns=base.COLUNAS)
+        return base.Leitura("1", "2020-12-31", None, base.OK, versao=1, tipo="con", contas=contas)
+
+    assert comparativo.comparar(leitura(10_000.0, "ÚLTIMO"), leitura(11_000.0, "PENÚLTIMO")) == []  # igual à tolerância
+    assert len(comparativo.comparar(leitura(10_000.0, "ÚLTIMO"), leitura(11_000.5, "PENÚLTIMO"))) == 1
+    outra = leitura(11_000.5, "PENÚLTIMO")
+    outra.tipo = "ind"
+    assert comparativo.comparar(leitura(10_000.0, "ÚLTIMO"), outra) == []  # tipos diferentes
+
+
+def test_escala_da_pagina_do_enet() -> None:
+    assert buscar_enet.escala_da_pagina("<b>Valores (Reais Mil)</b>") == "MIL"
+    assert buscar_enet.escala_da_pagina("<b>Valores (Reais)</b>") == "UNIDADE"
+    assert buscar_enet.escala_da_pagina("<b>sem escala</b>") is None
+
+
+def test_busca_registra_a_escala_do_enet(
+    mundo_c1: tuple[Fontes, armazem.FontesArmazem], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from chiocca import enet
+
+    brutos, arm = mundo_c1
+    pagina = ("<p>Valores (Reais Mil)</p><table><tr><td>Conta</td></tr>"
+              "<tr><td>1</td><td>Ativo Total</td><td>90</td><td>80</td></tr></table>")  # fmt: skip
+    monkeypatch.setattr(enet, "baixa_consolidado", lambda num, versao: enet.parse_tabela(pagina, "BPA"))
+    lista = buscar_enet.pendentes(arm, "2023-04-30", [2022])
+    assert list(buscar_enet.buscar(lista, cache=brutos.cache_enet).resultado) == ["baixado"]
+    assert json.loads((brutos.cache_enet / "16001_escala.json").read_text()) == {"BPA": "MIL"}
+    assert enet.parse_tabela.__name__ == "parse_tabela"  # a rota do estudo 1 volta como era
+    armazem.montar(brutos, tmp_path / "armazem3", anos=range(2020, 2024))
+    novo = armazem.FontesArmazem(tmp_path / "armazem3")
+    e = na_data.exercicio_na_data(novo, "160", 2022, "2023-04-30")
+    assert (e.origem, e.escala_original) == ("enet", "MIL") and na_data.SEM_ESCALA_ENET not in e.notas
+    assert e.contas[e.contas.cd_conta == "1"].valor.iloc[0] == 90_000.0

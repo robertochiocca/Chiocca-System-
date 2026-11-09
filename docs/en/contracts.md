@@ -26,11 +26,11 @@ Phase A proposal, for your approval. Only the seal (section 1) is already in the
 | --- | --- | --- |
 | `cd_cvm` | text | CVM code, without leading zeros (study 1 convention) |
 | `cnpj` | text | From the DFP index |
-| `denominacao` | text | From the fiscal year's DFP (names change over time; the investigation shows the one at the time) |
-| `codigos_negociacao` | list of text | From the FCA `valor_mobiliario`, with each code's trading period, in the version filed by the reference date |
+| `denominacao` | text | From the fiscal year's DFP (names change over time; the investigation shows the one at the time) Implemented in C2: company name from the latest FCA version filed by the date; the open-data index carries the current name, which may be later than the date (Americanas' already said "em recuperação judicial") |
+| `codigos_negociacao` | list of text | From the FCA `valor_mobiliario`, with each code's trading period, in the version filed by the reference date Not implemented yet (left for Phase D) |
 | `setor` | text | Sector from the FCA filed by the reference date; with no FCA, the one in the registry (frozen rule, reconnaissance 4.1) |
 | `grupo` | `financeira` or `nao_financeira` | Study 1 frozen rule (candidate sector and chart of accounts) |
-| `situacao_cadastro` | text | From the current registry, for information only |
+| `situacao_cadastro` | text | From the current registry, for information only In the JSON, `situacao_cadastro_atual`, to make clear it comes from the current registry |
 
 ### DataReferencia (reference date)
 
@@ -141,6 +141,8 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
 
 ### Investigacao (investigation)
 
+Implemented in C2, second part (`chiocca/v2/investigacao.py`, JSON; `chiocca/v2/pdf_investigacao.py`, PDF generated only from the JSON). Reference example: Americanas, fiscal year 2021, on 2022-04-30, in `docs/exemplos/` (PT and EN). The auditor's report comes from the open-data opinions section, which exists only for the latest DFP version; auditor changes come from the FCA, by the firm's CVM code, with no CPF and no natural person. `gerado_em` and `calculado_em` are the only fields that change between runs.
+
 | Field | Description |
 | --- | --- |
 | `empresa`, `data_referencia`, `idioma` | — |
@@ -181,7 +183,7 @@ The "how I got to this number" sheet, adapted from `linhagem.py` (Carchuna). It 
   4. ACCRUAL: CFO ÷ opening TA > ROA;
   5. ΔLEVER < 0, with leverage = 2.02.01 ÷ average TA. Zero long-term debt in both years: signal 0, with the flag "no long-term debt in either year" in the lineage (Roberto's decision, 2026-11-08). The article only defines "fell = 1, rose = 0" (p. 8) and does not define a tie; the 0 for a tie is the project's choice. The implementation report counts the cases;
   6. ΔLIQUID > 0, with liquidity = 1.01 ÷ 2.01;
-  7. EQ_OFFER: 1 if no shares were issued in the year, from the cash flow statement's issuance line found by text (frozen patterns in part 4.2 of the reconnaissance), with the account codes recorded; flagged as an adaptation; without the line, "not computable";
+  7. EQ_OFFER: 1 if no shares were issued in the year, from the cash flow statement's issuance line found by text (frozen patterns in part 4.2 of the reconnaissance), with the account codes recorded; flagged as an adaptation; without the line, "not computable"; Implemented in C2: among the frozen-pattern lines, only those about shares or capital (whole word), because the pattern also catches borrowing; a positive sum is an issuance (0), a zero sum is no issuance (1); with no line or a negative sum, not computable;
   8. ΔMARGIN > 0, with margin = 3.03 ÷ 3.01;
   9. ΔTURN > 0, with turnover = 3.01 ÷ opening TA.
   - t−1 values come from the prior-year column of the DFP of t; t−2 values, from the DFP of t−1 in the version public on the reference date. Both origins go in the lineage;

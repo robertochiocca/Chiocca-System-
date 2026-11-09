@@ -15,8 +15,11 @@ Uso: python -m chiocca.v2.buscar_enet AAAA-MM-DD [exercicio ...] [--listar]
 
 from __future__ import annotations
 
+import json
+import re
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -54,10 +57,46 @@ def pendentes(
     return pd.DataFrame(linhas, columns=COLUNAS)
 
 
+def escala_da_pagina(pagina: str) -> str | None:
+    """Escala informada na página do ENET: "Reais Mil" é MIL; "Reais" sem "Mil" é UNIDADE; sem nenhum dos dois, nada."""
+    texto = enet._limpa(pagina)
+    if "Reais Mil" in texto:
+        return "MIL"
+    return "UNIDADE" if re.search(r"\bReais\b", texto) else None
+
+
+@contextmanager
+def _registrando_escala() -> Iterator[dict[str, str]]:
+    """Durante a busca, anota a escala de cada página lida pela rota do estudo 1, sem mudar o que ela grava."""
+    original = enet.parse_tabela
+    escalas: dict[str, str] = {}
+
+    def com_escala(pagina: str, demonstracao: str) -> pd.DataFrame:
+        esc = escala_da_pagina(pagina)
+        if esc is not None:
+            escalas[demonstracao] = esc
+        return original(pagina, demonstracao)
+
+    enet.parse_tabela = com_escala  # type: ignore[assignment]
+    try:
+        yield escalas
+    finally:
+        enet.parse_tabela = original  # type: ignore[assignment]
+
+
+def baixar_com_escala(cache: Path, num_doc: str, versao: int) -> pd.DataFrame:
+    """`chiocca.enet.baixa_para_cache` e, se a página informar, a escala em `<documento>_escala.json` (09/11/2026)."""
+    with _registrando_escala() as escalas:
+        d = enet.baixa_para_cache(cache, num_doc, versao)
+    if escalas:
+        (cache / f"{num_doc}_escala.json").write_text(json.dumps(escalas, sort_keys=True) + "\n", encoding="utf-8")
+    return d
+
+
 def buscar(
     lista: pd.DataFrame,
     cache: Path = base.CACHE_ENET,
-    baixar: Callable[[Path, str, int], pd.DataFrame] = enet.baixa_para_cache,
+    baixar: Callable[[Path, str, int], pd.DataFrame] = baixar_com_escala,
 ) -> pd.DataFrame:
     """Baixa cada versão pendente para o cache do ENET. Devolve a lista com o resultado de cada uma."""
     resultados = []

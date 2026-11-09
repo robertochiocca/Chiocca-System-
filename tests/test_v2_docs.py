@@ -64,7 +64,10 @@ def test_referencias_sem_pdf_no_git_e_com_licenca() -> None:
     import subprocess
 
     versionados = subprocess.run(["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True, check=True).stdout
-    assert not [f for f in versionados.splitlines() if f.lower().endswith(".pdf")]
+    # Nenhum PDF de referência entra no Git. A exceção são os exemplos gerados por script em docs/exemplos/ (pedido de
+    # 09/11/2026), que um teste regenera, byte a byte, a partir do JSON guardado.
+    pdfs = [f for f in versionados.splitlines() if f.lower().endswith(".pdf")]
+    assert all(f.startswith("docs/exemplos/") for f in pdfs), pdfs
 
 
 @pytest.mark.parametrize("lang,caminho", [("pt", "docs/contratos.md"), ("en", "docs/en/contracts.md")])

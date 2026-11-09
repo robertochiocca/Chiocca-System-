@@ -86,6 +86,43 @@ Com a data de referência em 31/12/2024, cada exercício usa a versão mais rece
 | Comercial Quintella Comércio e Exportação S.A. (`comercial_quintella`) | 2013 | 13/07/2015 | 31/03/2014 | 02/09/2016 | não | não | AQI, SGAI, TATA, LVGI, mscore, lucro_sem_caixa, alavancagem | nenhum |
 | IRB-Brasil Resseguros S.A. (`irb`) | 2019 | 10/02/2020 | 18/02/2020 | 18/02/2021 | não | não | peso_nao_recorrente, alavancagem | nenhum |
 
+## Reapresentação pelo comparativo do ano seguinte em 31/12/2024
+
+**Análise descritiva.** O estudo 1 e o motor v1 não mudam. Regra de 09/11/2026 (`docs/contratos.md`, seção 4): quando a DFP de t+1 já é pública na data, cada conta de t na versão usada é comparada com a coluna PENÚLTIMO de t+1 (mesma demonstração, mesmo código, mesmo tipo); diferença acima de R$ 1.000 por conta vai para a investigação como evidência, com o texto "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)". Pelo lacre, o exercício de 2023 não tem comparação.
+
+Em 31/12/2024, 5.747 de 8.084 empresa-anos comparáveis (de 2010 a 2022) têm pelo menos uma conta com diferença acima da tolerância.
+
+| Exercício | Empresa-anos comparáveis | Com alguma diferença |
+| --- | --- | --- |
+| 2010 | 606 | 470 |
+| 2011 | 627 | 464 |
+| 2012 | 606 | 444 |
+| 2013 | 603 | 366 |
+| 2014 | 605 | 391 |
+| 2015 | 588 | 392 |
+| 2016 | 592 | 361 |
+| 2017 | 585 | 541 |
+| 2018 | 581 | 423 |
+| 2019 | 629 | 506 |
+| 2020 | 687 | 446 |
+| 2021 | 694 | 473 |
+| 2022 | 681 | 470 |
+
+**Americanas S.A. (`americanas`), exercício 2021.** A DFP de 2021 tem uma única versão, entregue em 24/02/2022; a reapresentação veio no comparativo da DFP de 2022, entregue em 16/11/2023, e não numa versão nova da DFP de 2021. Por isso a Americanas não está entre as empresa-anos com outra versão em 31/12/2024. Das 280 contas comparáveis, 126 têm diferença acima da tolerância; as 10 maiores, em R$ milhões:
+
+| Demonstração | Conta | Descrição | DFP de 2021 (entregue em 24/02/2022) | Comparativo da DFP de 2022 (entregue em 16/11/2023) | Diferença |
+| --- | --- | --- | --- | --- | --- |
+| BPP | 2.01 | Passivo Circulante | 13.336,9 | 43.013,1 | 29.676,3 |
+| BPP | 2.03 | Patrimônio Líquido Consolidado | 15.911,0 | -12.621,9 | -28.532,9 |
+| BPP | 2.03.05 | Lucros/Prejuízos Acumulados | 0,0 | -28.405,0 | -28.405,0 |
+| BPP | 2.01.05 | Outras Obrigações | 2.973,3 | 17.246,2 | 14.272,9 |
+| BPP | 2.01.05.02 | Outros | 2.961,6 | 17.234,5 | 14.272,9 |
+| BPP | 2.01.04 | Empréstimos e Financiamentos | 1.052,9 | 13.719,7 | 12.666,8 |
+| BPP | 2.02.01 | Empréstimos e Financiamentos | 11.287,8 | 0,0 | -11.287,8 |
+| BPP | 2.01.04.01 | Empréstimos e Financiamentos | 946,2 | 11.571,0 | 10.624,8 |
+| BPP | 2.02.01.01 | Empréstimos e Financiamentos | 9.245,9 | 0,0 | -9.245,9 |
+| BPP | 2.02 | Passivo Não Circulante | 15.271,0 | 7.127,0 | -8.144,0 |
+
 ## Como reproduzir
 
 ```
