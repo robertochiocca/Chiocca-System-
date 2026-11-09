@@ -248,14 +248,20 @@ res = {
     },
     "dpo_salto": {
         "DPO_t-1_dias": round(dpo(a), 2),
-        "DPO_t_dias": round(dpo(b), 2),
-        "variacao_dias": round(dpo(b) - dpo(a), 2),
+        "DPO_t_dias": round(
+            dpo(b), 4
+        ),  # arredondamento ajustado para seguir o commit 70d71a5 (tolerância de 0,0001 do próprio JSON); a versão usada na Fase 0 está em eca771b; nenhuma conta mudou
+        "variacao_dias": round(
+            dpo(b) - dpo(a), 4
+        ),  # arredondamento ajustado para seguir o commit 70d71a5 (tolerância de 0,0001 do próprio JSON); a versão usada na Fase 0 está em eca771b; nenhuma conta mudou
     },
     "juro_implicito": {
         "divida_media": (divida(a) + divida(b)) / 2,
         "juro_implicito": round(juro, 4),
         "cdi_medio_ilustrativo": CDI_MEDIO_T,
-        "spread_pp": round((juro - CDI_MEDIO_T) * 100, 2),
+        "spread_pp": round(
+            (juro - CDI_MEDIO_T) * 100, 4
+        ),  # arredondamento ajustado para seguir o commit 70d71a5 (tolerância de 0,0001 do próprio JSON); a versão usada na Fase 0 está em eca771b; nenhuma conta mudou
     },
     "lucro_sem_caixa": {
         "accruals_sobre_ativo_medio": round(
