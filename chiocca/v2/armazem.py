@@ -163,6 +163,29 @@ def _auditores(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
                          "pessoa_fisica": pf})[colunas]  # fmt: skip
 
 
+SIGLAS_MAPA = {s: s for s in ("KPMG", "BDO", "RCS", "EY", "S.S.", "S/S", "SS", "S.A.", "S/A", "SA", "EPP", "ME",
+                               "CRC", "UHY", "BKR", "PKF", "HLB", "RSM", "GT")} | {"PWC": "PwC", "LTDA": "Ltda.",
+                                                                                  "LTDA.": "Ltda."}  # fmt: skip
+CONECTIVOS = {"DE", "DA", "DO", "DAS", "DOS", "E", "EM"}
+
+
+def capitalizacao(nome: str) -> str:
+    """Capitalização normal de um nome em maiúsculas, mantendo as siglas (KPMG, BDO, S.S.) e os conectivos em
+    minúsculas. Só para exibição."""
+    palavras = []
+    for i, w in enumerate(nome.split()):
+        chave = w.upper()
+        if chave in SIGLAS_MAPA:
+            palavras.append(SIGLAS_MAPA[chave])
+        elif i > 0 and chave in CONECTIVOS:
+            palavras.append(w.lower())
+        elif "-" in w and len(w) > 1:
+            palavras.append("-".join(p[:1].upper() + p[1:].lower() for p in w.split("-")))
+        else:
+            palavras.append(w[:1].upper() + w[1:].lower())
+    return " ".join(palavras)
+
+
 def _valores_mobiliarios(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
     """Códigos de negociação de cada versão do FCA entregue até a data máxima, com o período de negociação."""
     with zipfile.ZipFile(zfca) as z:
@@ -366,18 +389,24 @@ class Armazem:
                 for x in d.drop_duplicates(["codigo_negociacao", "mercado"]).itertuples(index=False)]  # fmt: skip
 
     def nomes_canonicos_auditores(self, ate: date) -> dict[str, str]:
-        """Um nome por código de firma na CVM: a grafia mais frequente nos FCA entregues até a data (todas as
-        companhias); no empate, a mais recente. Pessoa física não tem nome guardado e não entra."""
+        """Um nome de exibição por código de firma na CVM, a partir dos FCA entregues até a data (todas as companhias):
+        a grafia mais frequente entre as que já vêm em capitalização normal (com minúsculas); no empate, a mais recente.
+        Se só houver grafias em maiúsculas, a mais frequente passa por `capitalizacao`, que mantém as siglas. É só
+        exibição: a comparação entre firmas é pelo código. Pessoa física não tem nome guardado e não entra."""
         d = self.consulta(
             """
-            SELECT codigo_cvm_auditor AS codigo, trim(auditor) AS nome, count(*) AS n, max(CAST(dt_receb AS DATE)) AS u
+            SELECT codigo_cvm_auditor AS codigo, trim(auditor) AS nome, count(*) AS n,
+                   max(CAST(dt_receb AS DATE)) AS u, trim(auditor) <> upper(trim(auditor)) AS normal
             FROM auditores WHERE CAST(dt_receb AS DATE) <= ? AND codigo_cvm_auditor IS NOT NULL AND auditor IS NOT NULL
-            GROUP BY 1, 2 ORDER BY codigo, n DESC, u DESC, nome
+            GROUP BY 1, 2 ORDER BY codigo, normal DESC, n DESC, u DESC, nome
             """,
             [ate],
         )
-        d = d.drop_duplicates("codigo")  # já ordenado: a mais frequente, depois a mais recente
-        return {str(c): str(n) for c, n in zip(d.codigo, d.nome)}
+        d = d.drop_duplicates("codigo")  # já ordenado: capitalização normal, a mais frequente, a mais recente
+        return {
+            str(c): (str(n) if bool(normal) else capitalizacao(str(n)))
+            for c, n, normal in zip(d.codigo, d.nome, d.normal)
+        }
 
     def auditores(self, cd_cvm: str, ate: date) -> pd.DataFrame:
         """Firmas de auditoria nas versões do FCA entregues até a data, por ano e versão."""

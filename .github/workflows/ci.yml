@@ -37,3 +37,17 @@ jobs:
         run: mypy chiocca tests
       - name: Testes
         run: python -m pytest -q
+
+  # Auditoria de dependências (pedido de 09/11/2026; padrão do FraudShield, MIT, sem código copiado): pip-audit sobre
+  # o requirements-lock.txt, num job separado para não esconder o resultado dos outros. Se apontar vulnerabilidade, o
+  # job falha e a troca de versão espera a decisão de Roberto: nenhuma versão é trocada automaticamente.
+  auditoria-python:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install pip-audit==2.10.1
+      - name: pip-audit
+        run: pip-audit -r requirements-lock.txt --no-deps --disable-pip --progress-spinner off

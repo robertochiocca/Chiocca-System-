@@ -177,3 +177,41 @@ def test_modelo_recusa_o_que_o_contrato_recusa() -> None:
         mexe(copia)
         with pytest.raises(ValueError):
             modelos.Investigacao.model_validate(copia)
+
+
+def test_como_o_motor_foi_testado_vem_do_json_do_resumo(cliente: TestClient) -> None:
+    from chiocca.v2 import ficha_do_motor
+
+    r = cliente.get(f"{V1}/como-o-motor-foi-testado").json()
+    x = ficha_do_motor.numeros()
+    assert r["acerto"] == x["acerto"] and r["alarmes_por_acerto_nf"] == x["alarmes_por_acerto_nf"]
+    assert r["antecedencia"]["mediana_meses"] == x["antecedencia"]["mediana_meses"]
+    assert r["documentos"]["pt"]["ficha_do_motor"] == "docs/ficha-do-motor.md" and r["aviso"] == investigacao.AVISO
+
+
+def test_modo_demonstracao(
+    mundo_c1: tuple[Fontes, armazem.FontesArmazem], sem_rede: None, monkeypatch: pytest.MonkeyPatch  # noqa: F811
+) -> None:
+    _, arm = mundo_c1
+    assert "100" not in api.empresas_da_demonstracao()  # a empresa da fixture não está no gabarito
+    gabarito = api.empresas_da_demonstracao()
+    assert "20990" in gabarito and "22837" not in gabarito  # Americanas entra; caso em observação não entra
+    with TestClient(api.criar_app(lambda: arm, modo_demonstracao=True)) as c:
+        assert c.get(f"{V1}/saude").json()["modo_demonstracao"] is True
+        assert c.get(f"{V1}/empresas", params={"busca": "empresa", "data_referencia": D}).json()["resultados"] == []
+        for rota in ("empresas/100", "empresas/100/exercicios/2020", "investigacoes/100/2020",
+                     "investigacoes/100/2020/pdf", "investigacoes/100/2020/linhagem/mscore"):  # fmt: skip
+            r = c.get(f"{V1}/{rota}", params={"data_referencia": D})
+            assert r.status_code == 403 and r.json()["erro"] == "fora_do_modo_demonstracao", rota
+    monkeypatch.setattr(api, "empresas_da_demonstracao", lambda: {"100"})
+    with TestClient(api.criar_app(lambda: arm, modo_demonstracao=True)) as c:
+        nomes = [
+            x["cd_cvm"]
+            for x in c.get(f"{V1}/empresas", params={"busca": "empresa", "data_referencia": D}).json()["resultados"]
+        ]
+        assert nomes == ["100"]
+        assert c.get(f"{V1}/investigacoes/100/2020", params={"data_referencia": D}).status_code == 200
+    monkeypatch.setenv("CHIOCCA_MODO_DEMONSTRACAO", "1")
+    assert api.modo_demonstracao_do_ambiente()
+    monkeypatch.setenv("CHIOCCA_MODO_DEMONSTRACAO", "0")
+    assert not api.modo_demonstracao_do_ambiente()

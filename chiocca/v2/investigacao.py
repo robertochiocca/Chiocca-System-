@@ -30,6 +30,7 @@ from chiocca.sinais.resultado import Resultado as ResultadoV1
 from chiocca.sinais_amostra import CORTE_M, SPREAD_PP
 from chiocca.v2 import comparativo, confianca, contexto, limites
 from chiocca.v2 import conferencias as cf
+from chiocca.v2.armazem import capitalizacao
 from chiocca.v2.lacre import ULTIMO_EXERCICIO_LIBERADO, garantir_data_referencia, garantir_liberado
 from chiocca.v2.linhagem import (
     FORMULAS,
@@ -48,7 +49,7 @@ AVISO = {
     "pt": "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento.",
     "en": "Statistical signal based on public financial statements. Not an accusation, not investment advice.",
 }
-MOTOR_V2 = "chiocca.v2 (Fase C2)"
+MOTOR_V2 = "chiocca.v2 (produto, fases B a E)"
 SINAIS_NF = ["mscore", *COEFICIENTES, "dpo", "juro", "lucro_sem_caixa"]
 ALERTA = {
     "mscore": "alerta_mscore",
@@ -181,7 +182,9 @@ def _percentis(valor: float | None, ref: pd.DataFrame, coluna: str, setor: str |
     no_setor = (
         contexto.percentil(valor, list(ref.loc[ref.setor == setor, coluna])) if setor else grupo | {"valor": None}
     )
-    return {"percentil_setor_ano": no_setor, "percentil_grupo_ano": grupo}
+    # distribuição agregada do setor e ano (Fase E): quantis e histograma, sem nome nem valor de outra empresa
+    dist = contexto.distribuicao(list(ref.loc[ref.setor == setor, coluna])) if setor else None
+    return {"percentil_setor_ano": no_setor, "percentil_grupo_ano": grupo, "distribuicao_setor_ano": dist}
 
 
 def _jm(d: dict[str, Any], lang: str) -> dict[str, Any]:
@@ -282,7 +285,8 @@ def gerar(
         )
         universo = contexto.percentil(z.resultado.valor, list(z_ref.z2))
         z_ctx = {"percentil_setor_ano": no_setor if no_setor["valor"] is not None else universo | {"marca": t["fallback_setor"]},
-                 "percentil_grupo_ano": universo}  # fmt: skip
+                 "percentil_grupo_ano": universo,
+                 "distribuicao_setor_ano": contexto.distribuicao(list(z_ref.loc[z_ref.setor == setor, "z2"])) if setor else None}  # fmt: skip
     z_hist = {a: contexto.altman_z2(c, grupo).resultado.valor for a, c in historico_contas.items()}
     achados["risco_financeiro"].append(_achado_contexto("altman_z2", z, cd_cvm, exercicio, d, lang, por_chave, evid,
                                                         z_ctx | {"historico": contexto.historico(z_hist, z.resultado.valor)}))  # fmt: skip
@@ -455,7 +459,10 @@ def _auditor(x: Any, canonicos: dict[str, str], t: dict[str, Any]) -> dict[str, 
     if pf:
         nome = t["auditor_pf"]
     else:
-        nome = canonicos.get(codigo or "") or (None if pd.isna(x.auditor) else str(x.auditor).strip()) or "—"
+        bruto = None if pd.isna(x.auditor) else str(x.auditor).strip()
+        if bruto and bruto.isupper():
+            bruto = capitalizacao(bruto)  # só exibição; a comparação é pelo código
+        nome = canonicos.get(codigo or "") or bruto or "—"
     return {"auditor": nome, "codigo_cvm": codigo, "pessoa_fisica": pf,
             "inicio": None if pd.isna(x.inicio) else str(x.inicio), "fim": None if pd.isna(x.fim) else str(x.fim)}  # fmt: skip
 

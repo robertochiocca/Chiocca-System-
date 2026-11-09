@@ -19,7 +19,10 @@ Registrado em 08/11/2026, para o pré-registro novo do estudo 2, antes de abrir 
 - Accruals discricionários por setor e ano, pelo Jones modificado e pelo modelo de margem, com pelo menos 10 empresas por setor-ano (Peasnell, Pope e Young 2000, pp. 11 e 15). O Quadro 03 de Paulo (2007, p. 168) serve de lista de conferência.
 - Dechow e Dichev (2002) só com defasagem, porque o modelo usa o caixa de t+1.
 - Lucro logo acima de zero ou do lucro do ano anterior (Martinez 2001, pp. 72-80).
-- Métricas de ranking: precisão no topo de 1%, 5% e 10% e NDCG@k, levadas do `evaluate.m` do JarFraud/FraudDetection para Python, com testes que reproduzem um exemplo pequeno calculado à mão.
+- Métricas de ranking: precisão no topo de 1%, 5% e 10% e NDCG@k, reimplementadas em Python a partir das definições de Bao et al. (2020, Tabela 3, p. 21) e conferidas contra o `evaluate.m` do JarFraud/FraudDetection, sem copiar código (o repositório não tem arquivo de licença), com testes que reproduzem um exemplo pequeno calculado à mão (correção de 09/11/2026).
+- Lift no topo da lista, junto com a precisão no topo e o NDCG@k (09/11/2026).
+- Intervalos de confiança por bootstrap pareado: motor e regra boba comparados nas mesmas reamostragens, com reamostragem por empresa, porque os alertas se repetem (73,8% das empresa-anos não financeiras em alerta também estavam em alerta no ano anterior; [análises](analises-pos-estudo-1.md), seção 2). Adaptado do `evaluate.py` do FraudShield (ARMAND-cod-eng/fraud-detection-ensemble, MIT), com cabeçalho de origem e registro em [`docs/origem-do-codigo.md`](origem-do-codigo.md); o arquivo e o commit exatos são conferidos na hora de adaptar (09/11/2026).
+- Antecedência do alerta como métrica pré-registrada: no estudo 1 ela só existe como análise descritiva depois do resultado ([análises](analises-pos-estudo-1.md), seção 5) (09/11/2026).
 - Intervalo de 24 meses entre o período de calibração e o de teste.
 - Regra no pré-registro para casos que se estendem por vários anos, com teste automático para ano de dados faltando e para identificador de caso trocado: foi o erro que Walker apontou em 2021 em Bao et al. (2020) e que o erratum de 2022 reconheceu.
 

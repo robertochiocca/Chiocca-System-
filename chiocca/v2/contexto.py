@@ -72,18 +72,43 @@ def percentil(valor: float, referencia: list[float], n_minimo: int = N_MINIMO) -
     return {"valor": 100.0 * (menores + 0.5 * iguais) / n, "n": n, "motivo": None}
 
 
+def distribuicao(referencia: list[float], n_minimo: int = N_MINIMO, faixas: int = 10) -> dict[str, Any]:
+    """Distribuição agregada do setor e ano (Fase E): quantis e histograma de faixas iguais entre os percentis 5 e 95,
+    com as contagens abaixo e acima. Sem nome nem valor de nenhuma empresa; com menos de `n_minimo`, só o motivo."""
+    vals = sorted(float(v) for v in referencia if v is not None and not pd.isna(v))
+    n = len(vals)
+    if n < n_minimo:
+        return {"n": n, "motivo": _motivo(f"menos de {n_minimo} empresas com o valor calculável",
+                                          f"fewer than {n_minimo} companies with a computable value")}  # fmt: skip
+    s = pd.Series(vals)
+    quantis = {f"p{q}": float(s.quantile(q / 100)) for q in (10, 25, 50, 75, 90)}
+    baixo, alto = float(s.quantile(0.05)), float(s.quantile(0.95))
+    if alto <= baixo:
+        alto = baixo + 1e-9
+    passo = (alto - baixo) / faixas
+    limites = [baixo + i * passo for i in range(faixas + 1)]
+    contagens = [0] * faixas
+    for v in vals:
+        if baixo <= v <= alto:
+            contagens[min(int((v - baixo) / passo), faixas - 1)] += 1
+    return {"n": n, "quantis": quantis, "limites": limites, "contagens": contagens,
+            "abaixo": sum(1 for v in vals if v < baixo), "acima": sum(1 for v in vals if v > alto), "motivo": None}  # fmt: skip
+
+
 def historico(serie: dict[int, float | None], atual: float | None, minimo: int = EXERCICIOS_MINIMOS) -> dict[str, Any]:
     anos = sorted(a for a, v in serie.items() if v is not None and not pd.isna(v))
+    pontos = [[a, float(v)] for a, v in sorted(serie.items()) if a in anos and v is not None]  # para a linha do tempo
     if len(anos) < minimo or atual is None:
-        return {"exercicios": anos, "motivo": _motivo(f"menos de {minimo} exercícios anteriores com valor",
-                                                      f"fewer than {minimo} previous fiscal years with a value")}  # fmt: skip
+        return {"exercicios": anos, "serie": pontos,
+                "motivo": _motivo(f"menos de {minimo} exercícios anteriores com valor",
+                                  f"fewer than {minimo} previous fiscal years with a value")}  # fmt: skip
     s = pd.Series([float(v) for a, v in sorted(serie.items()) if a in anos and v is not None])
     q1, q3, med = float(s.quantile(0.25)), float(s.quantile(0.75)), float(s.median())
     iqr = q3 - q1
     baixo, alto = q1 - 1.5 * iqr, q3 + 1.5 * iqr
     posicao = "acima" if atual > alto else "abaixo" if atual < baixo else "dentro"
-    return {"exercicios": anos, "mediana": med, "q1": q1, "q3": q3, "faixa_tukey": [baixo, alto], "posicao": posicao,
-            "motivo": None}  # fmt: skip
+    return {"exercicios": anos, "serie": pontos, "mediana": med, "q1": q1, "q3": q3, "faixa_tukey": [baixo, alto],
+            "posicao": posicao, "motivo": None}  # fmt: skip
 
 
 def _v(contas: pd.DataFrame, dem: str, cod: str, ordem: str) -> float | None:

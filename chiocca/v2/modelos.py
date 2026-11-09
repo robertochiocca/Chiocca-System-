@@ -316,7 +316,24 @@ class Saude(Modelo):
     data_referencia_minima: str
     data_referencia_maxima: str
     armazem: dict[str, Any]
+    modo_demonstracao: bool
+    empresas_na_demonstracao: int | None
     motor: Motor
+    aviso: dict[Idioma, str]
+
+
+class ComoOMotorFoiTestadoApi(Modelo):
+    """Os números do estudo 1 para a página "Como o motor foi testado" (do mesmo JSON do resumo)."""
+
+    motor: Motor
+    pre_registro: dict[str, Any]
+    dados: dict[str, int]
+    acerto: dict[str, int]
+    alarmes_por_acerto_nf: dict[str, float | None]
+    taxa_de_alerta: dict[str, float]
+    acaso: dict[str, float | int]
+    antecedencia: dict[str, Any]
+    documentos: dict[Idioma, dict[str, str]]
     aviso: dict[Idioma, str]
 
 
