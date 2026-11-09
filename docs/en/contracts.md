@@ -27,7 +27,7 @@ Phase A proposal, for your approval. Only the seal (section 1) is already in the
 | `cd_cvm` | text | CVM code, without leading zeros (study 1 convention) |
 | `cnpj` | text | From the DFP index |
 | `denominacao` | text | From the fiscal year's DFP (names change over time; the investigation shows the one at the time) Implemented in C2: company name from the latest FCA version filed by the date; the open-data index carries the current name, which may be later than the date (Americanas' already said "em recuperação judicial") |
-| `codigos_negociacao` | list of text | From the FCA `valor_mobiliario`, with each code's trading period, in the version filed by the reference date Not implemented yet (left for Phase D) |
+| `codigos_negociacao` | list of text | From the FCA `valor_mobiliario`, with each code's trading period, in the version filed by the reference date. Implemented in Phase D: the store's `valores_mobiliarios` table (only FCA versions filed by 2024-12-31); each code comes with the security, the market, the trading start and end dates and the source FCA (year, version and filing date), from the latest FCA version filed by the date. An empty list comes with `motivo_codigos_negociacao`: in the open data, the field is filled only in the more recent FCAs, and the year from which it is filled is computed from the store and goes in the reason |
 | `setor` | text | Sector from the FCA filed by the reference date; with no FCA, the one in the registry (frozen rule, reconnaissance 4.1) |
 | `grupo` | `financeira` or `nao_financeira` | Study 1 frozen rule (candidate sector and chart of accounts) |
 | `situacao_cadastro` | text | From the current registry, for information only In the JSON, `situacao_cadastro_atual`, to make clear it comes from the current registry |
@@ -220,3 +220,23 @@ Implemented in C2, second part (`chiocca/v2/investigacao.py`, JSON; `chiocca/v2/
 - **JSON:** the contract above, with Pydantic in Phase D and the same numbers as the engine.
 - **PDF:** text and tables, in both languages, generated without dependencies (adapted from `pdf_simples.py`, DireitoAberto), with the fixed notice on every page.
 - No list of companies ranked by risk, in any output.
+
+## 6. API (Phase D)
+
+Implemented in `chiocca/v2/api.py` (FastAPI), with the Pydantic contracts in `chiocca/v2/modelos.py`, from the same model as the Phase C JSON: the API recomputes nothing, validates the JSON of `chiocca.v2.investigacao.gerar` against the model (unknown fields are rejected) and returns the same numbers as the engine. Every route is GET, under `/api/v1`, and every response carries the reference date and the fixed notice.
+
+| Route | Response |
+| --- | --- |
+| `/saude` | Seal, date range, the store's fiscal years and rows, engine versions |
+| `/empresas?busca=&data_referencia=&limite=` | Company search (`BuscaEmpresas`): only by name (3 characters or more, accent- and case-insensitive), CVM code (up to 6 digits) or CNPJ (14 digits, with or without punctuation); up to 50 results |
+| `/empresas/{cd_cvm}?data_referencia=` | The company on the date (`Empresa`, with the name of the time, sector, group and trading codes) and the fiscal years with a DFP filed by the date |
+| `/empresas/{cd_cvm}/exercicios/{exercicio}?data_referencia=` | `ExercicioNaData` with the evidence (the DFP lines in the version used) |
+| `/investigacoes/{cd_cvm}/{exercicio}?data_referencia=&idioma=` | `Investigacao`, the same JSON as in section 2 |
+| `/investigacoes/{cd_cvm}/{exercicio}/pdf?…` | The PDF generated only from that JSON |
+| `/investigacoes/{cd_cvm}/{exercicio}/linhagem/{sinal}?…` | The lineage of one number, with the evidence it cites |
+
+- **Validations:** the same as in the contract. Reference date from 2011-04-30 to 2024-12-31 (with no date, the maximum) and fiscal year up to 2023 (seal); otherwise the refusal (422) carries the reason (`data_fora_do_intervalo`, `exercicio_lacrado`). Company or fiscal year with no DFP filed by the date: 404 with the reason. A request with a query string above 2,048 characters (414) or a body above 16,384 bytes (413) is refused.
+- **Rule of 2026-11-09:** no endpoint lists companies ranked by alert, percentile or score. Search is only by name, CVM code or CNPJ (not by trading code, which appears only as company information), the list of companies comes only from the search, always in alphabetical order of the name, and the search result carries no signal. No route accepts a sorting parameter. A test (`tests/test_v2_api.py`) checks the routes, the parameters, the OpenAPI schema and the search order.
+- **Name of the time in the search:** the name shown and the names searched are those of the FCA filed by the date; with no FCA, the DFP index name, flagged in `origem_denominacao`. So a company is not found by a name it only had after the date.
+- **No network:** the API reads only the store; a missing version comes out as `versao_pendente_enet` (ENET fetching is the separate C2 command). The contract tests run with the fixture store and the network blocked.
+- **Usage:** `python -m chiocca.v2.api [port]` (uvicorn on 127.0.0.1; interactive documentation at `/api/v1/docs`).

@@ -39,6 +39,8 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 - Contratos em Pydantic, gerados do mesmo modelo da Fase C; testes da API com os mesmos números do motor.
 - Recusa de exercício acima do lacre e de data fora do intervalo, com o motivo; limite de tamanho de requisição.
 - Tamanho: cerca de 600 linhas e 30 testes.
+- **Decisão de Roberto, 09/11/2026:** Fase D autorizada. Os endpoints espelham o JSON do contrato, com as mesmas validações (data de 30/04/2011 a 31/12/2024; exercício até 2023). Nenhum endpoint lista empresas ordenadas por alerta, percentil ou escore; a busca é só por nome, código CVM ou CNPJ (o código de negociação sai da busca e fica só como informação da empresa). Testes de contrato sem rede.
+- **Concluída em 09/11/2026:** `chiocca/v2/api.py`, `chiocca/v2/modelos.py` e `chiocca/v2/busca.py`, com o campo `codigos_negociacao` (tabela `valores_mobiliarios` do armazém); rotas e regras em [`docs/contratos.md`](contratos.md), seção 6; testes em `tests/test_v2_api.py`.
 
 ## Fase E: interface
 

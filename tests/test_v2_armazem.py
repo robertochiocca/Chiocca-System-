@@ -39,6 +39,7 @@ def _acrescenta_c1(fontes: Fontes) -> None:
     ])  # fmt: skip
     fx.escreve_dfp(fontes.pasta, 2024, [fx.doc("100", "2024-12-31", 1, "2025-03-10", 1201)],
                    {"DRE_con": fx.dre("100", "2024-12-31", 1, 1500, 1200)})  # fmt: skip
+    fx.escreve_fca(fontes.pasta, 2021, [("100", 1, "2021-05-01", "Comércio")])  # FCA com os códigos de negociação
 
 
 @pytest.fixture
@@ -359,6 +360,19 @@ def test_materialidade_do_comparativo() -> None:
                                                "caixa_operacional_apresentado"]  # fmt: skip
     assert comparativo.LINHAS_CHAVE == (("BPA", "1"), ("BPP", "2.01"), ("BPP", "2.02"), ("BPP", "2.03"),
                                         ("DRE", "3.01"), ("DRE", "3.11"), ("DFC", "6.01"))  # fmt: skip
+
+
+def test_codigos_de_negociacao_do_fca(mundo_c1: tuple[Fontes, armazem.FontesArmazem]) -> None:
+    brutos, arm = mundo_c1
+    vm = arm.consulta("SELECT * FROM valores_mobiliarios WHERE cd_cvm = '100'")
+    assert list(vm.versao) == [1]
+    zfca = brutos.pasta / "fca_cia_aberta_2021.zip"
+    assert armazem._valores_mobiliarios(zfca, 2021, date(2021, 4, 30)).empty  # entregue depois da data máxima: fora
+    cods = arm.codigos_negociacao("100", date(2022, 4, 30))
+    assert [(c["codigo"], c["valor_mobiliario"], c["inicio_negociacao"], c["fca"]["dt_receb"]) for c in cods] == [
+        ("EMP1003", "Ações Ordinárias", "2016-01-02", "2021-05-01")
+    ]  # a debênture sem código não aparece
+    assert arm.codigos_negociacao("100", date(2021, 4, 30)) == []  # o FCA ainda não tinha sido entregue
 
 
 def test_escala_da_pagina_do_enet() -> None:

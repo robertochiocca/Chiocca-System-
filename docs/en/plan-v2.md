@@ -39,6 +39,8 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
 - Pydantic contracts, generated from the same model as Phase C; API tests with the same numbers as the engine.
 - Refusal of fiscal years above the seal and of dates outside the range, with the reason; request size limit.
 - Size: about 600 lines and 30 tests.
+- **Roberto's decision, 2026-11-09:** Phase D authorized. Endpoints mirror the contract JSON, with the same validations (date from 2011-04-30 to 2024-12-31; fiscal year up to 2023). No endpoint lists companies ranked by alert, percentile or score; search is only by name, CVM code or CNPJ (the trading code is not searchable and stays only as company information). Contract tests without network.
+- **Completed on 2026-11-09:** `chiocca/v2/api.py`, `chiocca/v2/modelos.py` and `chiocca/v2/busca.py`, with the `codigos_negociacao` field (the store's `valores_mobiliarios` table); routes and rules in [`docs/en/contracts.md`](contracts.md), section 6; tests in `tests/test_v2_api.py`.
 
 ## Phase E: interface
 

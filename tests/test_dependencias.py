@@ -23,10 +23,11 @@ def test_pyproject_fixa_as_versoes_do_estudo_1_e_o_lock_concorda() -> None:
     for d in deps:
         if m := re.fullmatch(r"([A-Za-z0-9_.-]+)==([0-9][^\s;]*)", d):
             fixadas[canonicalize_name(m.group(1))] = m.group(2)
-    assert fixadas == {"pandas": "3.0.5", "numpy": "2.5.3", "duckdb": "2.0.0", "pyarrow": "26.0.1"}
+    assert fixadas == {"pandas": "3.0.5", "numpy": "2.5.3", "duckdb": "2.0.0", "pyarrow": "26.0.1",
+                       "fastapi": "0.162.2", "pydantic": "2.13.5", "uvicorn": "0.54.0"}  # fmt: skip
     lock = _lock()
     assert all(lock[n] == v for n, v in fixadas.items())
-    assert {"pytest", "ruff", "black", "mypy"} <= set(lock)
+    assert {"pytest", "ruff", "black", "mypy", "httpx"} <= set(lock)  # httpx: o TestClient da API (Fase D)
 
 
 def test_pacotes_instalados_nas_versoes_do_lock() -> None:

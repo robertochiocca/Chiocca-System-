@@ -3,10 +3,11 @@ name = "chiocca"
 version = "0.1.0"
 description = "Alertas contábeis com dados abertos da CVM, calculados como eram na época · Accounting alerts from CVM open data, as they were at the time"
 requires-python = ">=3.12"  # o numpy 2.5.3 do estudo 1 exige Python 3.12 ou mais (decisão de 09/11/2026)
-dependencies = ["pandas==3.0.5", "numpy==2.5.3", "duckdb==2.0.0", "pyarrow==26.0.1"]
+dependencies = ["pandas==3.0.5", "numpy==2.5.3", "duckdb==2.0.0", "pyarrow==26.0.1",
+                "fastapi==0.162.2", "pydantic==2.13.5", "uvicorn==0.54.0"]  # API (Fase D)
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "black", "mypy"]
+dev = ["pytest", "ruff", "black", "mypy", "httpx==0.28.1"]  # httpx: o TestClient dos testes da API
 
 [tool.setuptools]
 packages = ["chiocca", "chiocca.sinais", "chiocca.v2"]

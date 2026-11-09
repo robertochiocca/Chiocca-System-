@@ -24,6 +24,8 @@ git). Tabelas (contratos, seção 4):
   CPF nem nome de pessoa física (responsável técnico);
 - `nomes`: o nome empresarial de cada versão do FCA, com a data de entrega. A investigação mostra o nome da época
   (o índice dos dados abertos traz o nome atual, que pode ser posterior à data);
+- `valores_mobiliarios`: os códigos de negociação de cada versão do FCA entregue até a data máxima, com o valor
+  mobiliário, o mercado e o período de negociação (Fase D, campo `codigos_negociacao` da Empresa);
 - `enet/`: cópia byte a byte dos arquivos do cache do ENET que entram no armazém, para o `como_era` do motor v1
   ler do armazém sem mudança;
 - `manifesto.json`: hash SHA-256 de cada arquivo de origem, contagens, lacre e data máxima.
@@ -57,7 +59,9 @@ from chiocca.v2.lacre import DATA_REFERENCIA_MAXIMA, ULTIMO_EXERCICIO_LIBERADO, 
 PASTA = RAIZ / "data" / "armazem"
 PRIMEIRO_EXERCICIO = 2010
 COLUNAS_INDICE = ["cd_cvm", "CNPJ_CIA", "DENOM_CIA", "DT_REFER", "versao", "dt_receb", "num_doc", "ID_DOC", "LINK_DOC"]
-TABELAS = ("versoes", "contas", "fca", "cadastro", "escalas", "pareceres", "auditores", "nomes")
+TABELAS = ("versoes", "contas", "fca", "cadastro", "escalas", "pareceres", "auditores", "nomes", "valores_mobiliarios")
+COLUNAS_VM = ["ano", "cd_cvm", "versao", "dt_receb", "valor_mobiliario", "codigo_negociacao", "mercado",
+              "inicio_negociacao", "fim_negociacao"]  # fmt: skip
 SO_METADADOS = "so_metadados"
 
 
@@ -153,6 +157,30 @@ def _auditores(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
                          "inicio": d.Data_Inicio_Atuacao_Auditor, "fim": d.Data_Fim_Atuacao_Auditor})[colunas]  # fmt: skip
 
 
+def _valores_mobiliarios(zfca: Path, ano: int, maxima: date) -> pd.DataFrame:
+    """Códigos de negociação de cada versão do FCA entregue até a data máxima, com o período de negociação."""
+    with zipfile.ZipFile(zfca) as z:
+        arq = f"fca_cia_aberta_valor_mobiliario_{ano}.csv"
+        if arq not in z.namelist():
+            return pd.DataFrame(columns=COLUNAS_VM)
+        idx = pd.read_csv(io.BytesIO(z.read(f"fca_cia_aberta_{ano}.csv")), sep=";", encoding="latin1", dtype=str)
+        vm = pd.read_csv(io.BytesIO(z.read(arq)), sep=";", encoding="latin1", dtype=str)
+    if "Codigo_Negociacao" not in vm.columns:
+        return pd.DataFrame(columns=COLUNAS_VM)
+    vm = vm[vm.Codigo_Negociacao.notna() & (vm.Codigo_Negociacao.str.strip() != "")]
+    idx = idx.drop_duplicates("ID_DOC")
+    d = vm.merge(
+        idx[["ID_DOC", "CD_CVM", "DT_RECEB", "VERSAO"]], left_on="ID_Documento", right_on="ID_DOC", how="inner"
+    )
+    d["dt_receb"] = pd.to_datetime(d.DT_RECEB).dt.date
+    d = d[d.dt_receb <= maxima]
+    col = lambda nome: d[nome] if nome in d.columns else None  # noqa: E731
+    return pd.DataFrame({"ano": ano, "cd_cvm": cd_texto(d.CD_CVM), "versao": d.VERSAO.astype(int), "dt_receb": d.dt_receb,
+                         "valor_mobiliario": col("Valor_Mobiliario"), "codigo_negociacao": d.Codigo_Negociacao.str.strip(),
+                         "mercado": col("Mercado"), "inicio_negociacao": col("Data_Inicio_Negociacao"),
+                         "fim_negociacao": col("Data_Fim_Negociacao")})[COLUNAS_VM]  # fmt: skip
+
+
 def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> dict[str, Any]:
     """Monta o armazém a partir de uma fonte de arquivos brutos (pasta da CVM ou fixture de teste)."""
     anos = anos if anos is not None else range(PRIMEIRO_EXERCICIO, ULTIMO_EXERCICIO_LIBERADO + 1)
@@ -161,7 +189,7 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
     destino.mkdir(parents=True, exist_ok=True)
     maxima = DATA_REFERENCIA_MAXIMA
     arquivos: dict[str, str] = {}
-    versoes, contas, fca, escalas, pareceres, auditores, nomes = [], [], [], [], [], [], []
+    versoes, contas, fca, escalas, pareceres, auditores, nomes, vms = [], [], [], [], [], [], [], []
     for ano in anos:
         zdfp = fontes.pasta / f"dfp_cia_aberta_{ano}.zip"
         if not zdfp.exists():
@@ -193,6 +221,7 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
             f["setor"] = f.setor.where(f.dt_receb <= maxima)
             auditores.append(_auditores(zfca, ano, maxima))
             nomes.append(_nomes(zfca, ano, maxima))
+            vms.append(_valores_mobiliarios(zfca, ano, maxima))
             fca.append(f.assign(ano=ano, linha=range(len(f))))
     tab_versoes = (
         pd.concat(versoes, ignore_index=True)
@@ -239,6 +268,7 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
         "pareceres": pd.concat(pareceres, ignore_index=True) if pareceres else _pareceres_vazios(),
         "auditores": pd.concat(auditores, ignore_index=True) if auditores else _auditores_vazios(),
         "nomes": pd.concat(nomes, ignore_index=True) if nomes else pd.DataFrame(columns=["ano", "cd_cvm", "versao", "dt_receb", "nome"]),
+        "valores_mobiliarios": pd.concat(vms, ignore_index=True) if vms else pd.DataFrame(columns=COLUNAS_VM),
     }  # fmt: skip
     tabelas["contas"]["num_doc"] = tabelas["contas"]["num_doc"].astype("string")
     for nome, t in tabelas.items():
@@ -314,6 +344,22 @@ class Armazem:
             [cd_cvm, ate],
         )
         return None if d.empty else str(d.nome.iloc[0])
+
+    def codigos_negociacao(self, cd_cvm: str, ate: date) -> list[dict[str, Any]]:
+        """Códigos de negociação na última versão do FCA entregue até a data, com o período de negociação."""
+        d = self.consulta(
+            """
+            WITH ultima AS (SELECT ano, versao FROM valores_mobiliarios WHERE cd_cvm = ? AND CAST(dt_receb AS DATE) <= ?
+                            ORDER BY CAST(dt_receb AS DATE) DESC, ano DESC, versao DESC LIMIT 1)
+            SELECT v.* FROM valores_mobiliarios v JOIN ultima u ON v.ano = u.ano AND v.versao = u.versao
+            WHERE v.cd_cvm = ? ORDER BY v.codigo_negociacao, v.mercado
+            """,
+            [cd_cvm, ate, cd_cvm],
+        )
+        return [{"codigo": str(x.codigo_negociacao), "valor_mobiliario": x.valor_mobiliario, "mercado": x.mercado,
+                 "inicio_negociacao": x.inicio_negociacao, "fim_negociacao": x.fim_negociacao,
+                 "fca": {"ano": int(x.ano), "versao": int(x.versao), "dt_receb": str(x.dt_receb)[:10]}}
+                for x in d.drop_duplicates(["codigo_negociacao", "mercado"]).itertuples(index=False)]  # fmt: skip
 
     def auditores(self, cd_cvm: str, ate: date) -> pd.DataFrame:
         """Firmas de auditoria nas versões do FCA entregues até a data, por ano e versão."""

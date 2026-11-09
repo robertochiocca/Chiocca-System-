@@ -27,7 +27,7 @@ Proposta da Fase A, para sua aprovação. Só o lacre (seção 1) já está no c
 | `cd_cvm` | texto | Código CVM, sem zeros à esquerda (convenção do estudo 1) |
 | `cnpj` | texto | Do índice da DFP |
 | `denominacao` | texto | Da DFP do exercício (o nome muda com o tempo; a investigação mostra o da época) Implementado na C2: nome empresarial da última versão do FCA entregue até a data; o índice dos dados abertos traz o nome atual, que pode ser posterior à data (o da Americanas já trazia "em recuperação judicial") |
-| `codigos_negociacao` | lista de texto | Do FCA `valor_mobiliario`, com o período de negociação de cada código, na versão entregue até a data de referência Ainda não implementado (fica para a Fase D) |
+| `codigos_negociacao` | lista de texto | Do FCA `valor_mobiliario`, com o período de negociação de cada código, na versão entregue até a data de referência. Implementado na Fase D: tabela `valores_mobiliarios` do armazém (só versões do FCA entregues até 31/12/2024); cada código vem com o valor mobiliário, o mercado, o início e o fim da negociação e o FCA de origem (ano, versão e data de entrega), da última versão do FCA entregue até a data. Lista vazia vem com `motivo_codigos_negociacao`: nos dados abertos, o campo só vem preenchido nos FCA mais recentes, e o ano a partir do qual vem preenchido é calculado do armazém e vai no motivo |
 | `setor` | texto | Setor do FCA entregue até a data de referência; sem FCA, o do cadastro (regra congelada, reconhecimento 4.1) |
 | `grupo` | `financeira` ou `nao_financeira` | Regra congelada do estudo 1 (setor candidato e plano de contas) |
 | `situacao_cadastro` | texto | Do cadastro atual, só como informação No JSON, `situacao_cadastro_atual`, para deixar claro que é do cadastro atual |
@@ -220,3 +220,23 @@ Implementado na C2, segunda parte (`chiocca/v2/investigacao.py`, JSON; `chiocca/
 - **JSON:** o contrato acima, com Pydantic na Fase D e os mesmos números do motor.
 - **PDF:** texto e tabelas, nas duas línguas, gerado sem dependência (adaptado de `pdf_simples.py`, DireitoAberto), com o aviso fixo em todas as páginas.
 - Nenhuma lista de empresas ordenada por risco, em nenhuma saída.
+
+## 6. API (Fase D)
+
+Implementada em `chiocca/v2/api.py` (FastAPI), com os contratos em Pydantic em `chiocca/v2/modelos.py`, do mesmo modelo do JSON da Fase C: a API não recalcula nada, valida o JSON de `chiocca.v2.investigacao.gerar` contra o modelo (campos desconhecidos são recusados) e devolve os mesmos números do motor. Todas as rotas são GET, sob `/api/v1`, e toda resposta traz a data de referência e o aviso fixo.
+
+| Rota | Resposta |
+| --- | --- |
+| `/saude` | Lacre, intervalo de datas, exercícios e linhas do armazém, versões do motor |
+| `/empresas?busca=&data_referencia=&limite=` | Busca de empresas (`BuscaEmpresas`): só por nome (3 caracteres ou mais, sem acento e sem diferença de maiúsculas), código CVM (até 6 dígitos) ou CNPJ (14 dígitos, com ou sem pontuação); até 50 resultados |
+| `/empresas/{cd_cvm}?data_referencia=` | A empresa na data (`Empresa`, com o nome da época, setor, grupo e códigos de negociação) e os exercícios com DFP entregue até a data |
+| `/empresas/{cd_cvm}/exercicios/{exercicio}?data_referencia=` | `ExercicioNaData` com as evidências (as linhas da DFP na versão usada) |
+| `/investigacoes/{cd_cvm}/{exercicio}?data_referencia=&idioma=` | `Investigacao`, o mesmo JSON da seção 2 |
+| `/investigacoes/{cd_cvm}/{exercicio}/pdf?…` | O PDF gerado só desse JSON |
+| `/investigacoes/{cd_cvm}/{exercicio}/linhagem/{sinal}?…` | A linhagem de um número, com as evidências que ela cita |
+
+- **Validações:** as mesmas do contrato. Data de referência de 30/04/2011 a 31/12/2024 (sem data, a máxima) e exercício até 2023 (lacre); fora disso, a recusa (422) traz o motivo (`data_fora_do_intervalo`, `exercicio_lacrado`). Empresa ou exercício sem DFP entregue até a data: 404 com o motivo. Requisição com query string acima de 2.048 caracteres (414) ou com corpo acima de 16.384 bytes (413) é recusada.
+- **Regra de 09/11/2026:** nenhum endpoint lista empresas ordenadas por alerta, percentil ou escore. A busca é só por nome, código CVM ou CNPJ (não por código de negociação, que só aparece como informação da empresa), a lista de empresas só sai da busca, sempre em ordem alfabética da denominação, e o resultado da busca não traz nenhum sinal. Nenhuma rota aceita parâmetro de ordenação. Um teste (`tests/test_v2_api.py`) confere as rotas, os parâmetros, o esquema OpenAPI e a ordem da busca.
+- **Nome da época na busca:** o nome mostrado e os nomes pesquisados são os do FCA entregue até a data; sem FCA, o do índice da DFP, marcado em `origem_denominacao`. Assim, uma empresa não é achada por um nome que só teve depois da data.
+- **Sem rede:** a API lê só o armazém; versão que falta sai como `versao_pendente_enet` (a busca no ENET é o comando separado da C2). Os testes de contrato rodam com o armazém da fixture e com a rede bloqueada.
+- **Uso:** `python -m chiocca.v2.api [porta]` (uvicorn em 127.0.0.1; documentação interativa em `/api/v1/docs`).

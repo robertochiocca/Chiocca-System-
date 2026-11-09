@@ -15,6 +15,7 @@ T: dict[str, dict[str, Any]] = {
     "pt": {
         "titulo": "# Investigação: {nome} (código CVM {cd}), exercício {ex}, como era em {data}",
         "empresa": "# Empresa", "setor": "Setor: {s} (origem: {o}); grupo: {g}; situação no cadastro atual: {c}.",
+        "negociacao": "Códigos de negociação (FCA de {a}, versão {v}, entregue em {r}): {c}.", "negociacao_item": "{c} ({vm}, {m}, desde {i})",
         "documento": "# Documento usado",
         "doc": "DFP de {ex}, versão {v}, entregue em {r}; origem: {o}; tipo: {t}; escala original: {e}.",
         "versoes": "Versões conhecidas na data: {v}.", "link": "Documento na CVM: {l}",
@@ -54,6 +55,7 @@ T: dict[str, dict[str, Any]] = {
     "en": {
         "titulo": "# Investigation: {nome} (CVM code {cd}), fiscal year {ex}, as it was on {data}",
         "empresa": "# Company", "setor": "Sector: {s} (origin: {o}); group: {g}; current registry status: {c}.",
+        "negociacao": "Trading codes ({a} FCA, version {v}, filed on {r}): {c}.", "negociacao_item": "{c} ({vm}, {m}, since {i})",
         "documento": "# Document used",
         "doc": "{ex} DFP, version {v}, filed on {r}; origin: {o}; type: {t}; original scale: {e}.",
         "versoes": "Versions known on the date: {v}.", "link": "Document at the CVM: {l}",
@@ -133,7 +135,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     out = [t["titulo"].format(nome=emp["denominacao"], cd=emp["cd_cvm"], ex=ex["exercicio"], data=data(inv["data_referencia"], lang)),
            inv["aviso"], "", t["empresa"],
            t["setor"].format(s=emp["setor"] or "—", o=_c(emp["origem_setor"], t), g=_c(emp["grupo"], t), c=emp["situacao_cadastro_atual"]),
-           "", t["documento"],
+           *_codigos(emp, t, lang), "", t["documento"],
            t["doc"].format(ex=ex["exercicio"], v=ex["versao_usada"], r=data(ex["dt_receb"], lang) if ex["dt_receb"] else "—",
                            o=_c(ex["origem"], t), t=_c(ex["tipo"], t), e=ex["escala_original"] or "—"),
            t["versoes"].format(v="; ".join(f"{x['versao']} ({data(x['dt_receb'], lang)})" for x in ex["versoes_conhecidas"]) or "—")]  # fmt: skip
@@ -244,6 +246,17 @@ def linhas(inv: dict[str, Any]) -> list[str]:
                                               v=_f(x["valor"] / 1e6, lang, 1), c=_f(x["valor_comparativo"] / 1e6, lang, 1),
                                               dif=_f(x["diferenca"] / 1e6, lang, 1)) for x in difs]  # fmt: skip
     return out
+
+
+def _codigos(emp: dict[str, Any], t: dict[str, Any], lang: str) -> list[str]:
+    cods = emp.get("codigos_negociacao") or []
+    if not cods:
+        return [emp["motivo_codigos_negociacao"]] if emp.get("motivo_codigos_negociacao") else []
+    f = cods[0]["fca"]
+    lista = "; ".join(t["negociacao_item"].format(c=x["codigo"], vm=x["valor_mobiliario"] or "—", m=x["mercado"] or "—",
+                                         i=data(x["inicio_negociacao"], lang) if x["inicio_negociacao"] else "—")
+                      for x in cods)  # fmt: skip
+    return [t["negociacao"].format(a=f["ano"], v=f["versao"], r=data(f["dt_receb"], lang), c=lista)]
 
 
 def gerar(inv: dict[str, Any]) -> bytes:

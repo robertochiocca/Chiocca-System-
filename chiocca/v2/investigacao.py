@@ -275,11 +275,15 @@ def gerar(
 
 def _empresa(fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grupo: str, lang: str) -> dict[str, Any]:
     """O nome da época vem do FCA entregue até a data; o índice dos dados abertos traz o nome atual."""
+    from chiocca.v2.busca import codigos
+
     nome = fontes.nome_na_data(cd_cvm, d) if hasattr(fontes, "nome_na_data") else None
     origem = "fca" if nome else "indice_dfp"
+    cods, motivo = codigos(fontes, cd_cvm, d)
     return {"cd_cvm": cd_cvm, "cnpj": mt.cnpj, "denominacao": nome or mt.denominacao, "origem_denominacao": origem,
             "setor": setor, "origem_setor": mt.origem_setor, "grupo": grupo,
-            "situacao_cadastro_atual": mt.situacao_cadastro}  # fmt: skip
+            "situacao_cadastro_atual": mt.situacao_cadastro, "codigos_negociacao": cods,
+            "motivo_codigos_negociacao": motivo}  # fmt: skip
 
 
 def _alerta(r: pd.Series, sinal: str) -> bool | None:
