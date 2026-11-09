@@ -14,6 +14,8 @@ git). Tabelas (contratos, seção 4):
 - `fca`: setor de atividade de cada versão do FCA, com a data de recebimento (o setor de FCA entregue depois da data
   máxima fica vazio);
 - `cadastro`: o cadastro de companhias abertas, usado pela regra congelada do setor e pela situação no cadastro;
+- `escalas`: a escala original (`MIL` ou `UNIDADE`) de cada demonstração dos dados abertos, por versão. O cache do
+  ENET guarda os valores já em reais e não registra a escala da página, então versões do ENET ficam sem escala;
 - `enet/`: cópia byte a byte dos arquivos do cache do ENET que entram no armazém, para o `como_era` do motor v1
   ler do armazém sem mudança;
 - `manifesto.json`: hash SHA-256 de cada arquivo de origem, contagens, lacre e data máxima.
@@ -27,8 +29,10 @@ Uso: python -m chiocca.v2.armazem   (monta data/armazem a partir de data/brutos/
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import shutil
+import zipfile
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -39,13 +43,13 @@ import pandas as pd
 
 from chiocca import enet
 from chiocca.base import BRUTOS, CACHE_ENET, RAIZ
-from chiocca.cvm import COLUNAS_CONTAS, Fontes, cd_texto
+from chiocca.cvm import COLUNAS_CONTAS, DEMONSTRACOES, TIPOS, Fontes, cd_texto
 from chiocca.v2.lacre import DATA_REFERENCIA_MAXIMA, ULTIMO_EXERCICIO_LIBERADO, garantir_liberado
 
 PASTA = RAIZ / "data" / "armazem"
 PRIMEIRO_EXERCICIO = 2010
 COLUNAS_INDICE = ["cd_cvm", "CNPJ_CIA", "DENOM_CIA", "DT_REFER", "versao", "dt_receb", "num_doc", "ID_DOC", "LINK_DOC"]
-TABELAS = ("versoes", "contas", "fca", "cadastro")
+TABELAS = ("versoes", "contas", "fca", "cadastro", "escalas")
 SO_METADADOS = "so_metadados"
 
 
@@ -62,6 +66,25 @@ def _como_data(serie: pd.Series) -> pd.Series:
     return pd.to_datetime(serie).dt.date
 
 
+def _escalas(zdfp: Path, ano: int) -> pd.DataFrame:
+    """Escala original de cada demonstração dos dados abertos (metadado do documento)."""
+    partes = []
+    with zipfile.ZipFile(zdfp) as z:
+        nomes = set(z.namelist())
+        for dem in DEMONSTRACOES:
+            for tipo in TIPOS:
+                arq = f"dfp_cia_aberta_{dem}_{tipo}_{ano}.csv"
+                if arq not in nomes:
+                    continue
+                d = pd.read_csv(io.BytesIO(z.read(arq)), sep=";", encoding="latin1", dtype=str,
+                                usecols=["CD_CVM", "DT_REFER", "VERSAO", "ESCALA_MOEDA"]).drop_duplicates()  # fmt: skip
+                partes.append(pd.DataFrame({"exercicio": ano, "cd_cvm": cd_texto(d.CD_CVM), "dt_refer": d.DT_REFER,
+                                            "versao": d.VERSAO.astype(int), "tipo": tipo, "demonstracao": dem,
+                                            "escala": d.ESCALA_MOEDA}))  # fmt: skip
+    colunas = ["exercicio", "cd_cvm", "dt_refer", "versao", "tipo", "demonstracao", "escala"]
+    return pd.concat(partes, ignore_index=True) if partes else pd.DataFrame(columns=colunas)
+
+
 def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> dict[str, Any]:
     """Monta o armazém a partir de uma fonte de arquivos brutos (pasta da CVM ou fixture de teste)."""
     anos = anos if anos is not None else range(PRIMEIRO_EXERCICIO, ULTIMO_EXERCICIO_LIBERADO + 1)
@@ -70,12 +93,13 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
     destino.mkdir(parents=True, exist_ok=True)
     maxima = DATA_REFERENCIA_MAXIMA
     arquivos: dict[str, str] = {}
-    versoes, contas, fca = [], [], []
+    versoes, contas, fca, escalas = [], [], [], []
     for ano in anos:
         zdfp = fontes.pasta / f"dfp_cia_aberta_{ano}.zip"
         if not zdfp.exists():
             continue
         arquivos[zdfp.name] = _sha256(zdfp)
+        escalas.append(_escalas(zdfp, ano))
         idx = fontes.indice_dfp(ano).reset_index(drop=True)
         versoes.append(idx[COLUNAS_INDICE].assign(exercicio=ano, linha=range(len(idx))))
         # Data de recebimento da última versão de cada documento (a dos dados abertos).
@@ -132,6 +156,7 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
         "contas": pd.concat(contas, ignore_index=True) if contas else pd.DataFrame(columns=[*COLUNAS_CONTAS, "exercicio", "origem", "num_doc", "linha"]),
         "fca": pd.concat(fca, ignore_index=True) if fca else pd.DataFrame(columns=["cd_cvm", "versao", "dt_receb", "setor", "ano", "linha"]),
         "cadastro": cad.drop(columns=["cd_cvm"]),  # derivado de CD_CVM na leitura (o DuckDB não diferencia maiúsculas)
+        "escalas": pd.concat(escalas, ignore_index=True) if escalas else _escalas_vazias(),
     }  # fmt: skip
     tabelas["contas"]["num_doc"] = tabelas["contas"]["num_doc"].astype("string")
     for nome, t in tabelas.items():
@@ -148,6 +173,10 @@ def montar(fontes: Fontes, destino: Path = PASTA, anos: range | None = None) -> 
         json.dumps(manifesto, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
     )
     return manifesto
+
+
+def _escalas_vazias() -> pd.DataFrame:
+    return pd.DataFrame(columns=["exercicio", "cd_cvm", "dt_refer", "versao", "tipo", "demonstracao", "escala"])
 
 
 class Armazem:
@@ -177,6 +206,15 @@ class Armazem:
             """,
             [exercicio, data_referencia],
         )
+
+    def escala(self, exercicio: int, cd_cvm: str, dt_refer: str, versao: int, tipo: str) -> str | None:
+        """Escala original da versão nos dados abertos; com escalas diferentes entre demonstrações, todas, com "+"."""
+        d = self.consulta(
+            "SELECT DISTINCT escala FROM escalas WHERE exercicio = ? AND cd_cvm = ? AND dt_refer = ? AND versao = ? AND tipo = ?",
+            [exercicio, cd_cvm, dt_refer, versao, tipo],
+        )
+        valores = sorted(str(x) for x in d.escala.dropna())
+        return "+".join(valores) if valores else None
 
 
 class FontesArmazem(Armazem):

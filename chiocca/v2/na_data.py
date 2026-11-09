@@ -14,6 +14,15 @@ Sem data de referência, cada empresa usa a data de corte do seu exercício, com
 A camada do produto vem ao lado, sem mudar nenhum valor do motor: a coluna `produto_nao_calculaveis` lista os sinais
 que o produto mostra como "não calculável" porque usam um balanço não preenchido (ativo total zero; conferência
 `ativo_total_preenchido` e `chiocca.v2.linhagem.usa_balanco`).
+
+Fase C2:
+- `escala_original` da versão usada (dados abertos); o cache do ENET guarda os valores já em reais e não registra a
+  escala da página, então versões do ENET ficam sem escala, com o motivo;
+- `evidencias`: cada linha da DFP lida, como `Evidencia` do contrato (id estável, documento com versão, data de
+  entrega, origem, endereço e hash, demonstração, coluna, conta, valor em reais e, com um `Localizador`, o arquivo e
+  a linha de origem);
+- nota de linhagem `NOTA_ESTRUTURA_POSTERIOR` quando a versão usada não é a última: o `como_era` lê a estrutura da
+  última versão (se há consolidado e o método da DFC), entregue depois da data (comportamento do estudo 1, emenda 8).
 """
 
 from __future__ import annotations
@@ -30,7 +39,8 @@ from chiocca import base, grupos, montar_base, sinais_amostra
 from chiocca.sinais.mscore import COEFICIENTES
 from chiocca.v2 import conferencias as cf
 from chiocca.v2.lacre import garantir_data_referencia, garantir_liberado
-from chiocca.v2.linhagem import usa_balanco
+from chiocca.v2.linhagem import ENET_DOC, Documento, Evidencia, Localizador, id_evidencia, usa_balanco
+from chiocca.v2.validade import Motivo
 
 # Estados de `como_era` com o nome do contrato (ExercicioNaData.situacao).
 SITUACAO = {
@@ -43,6 +53,14 @@ SITUACAO = {
     base.CONTA_REPETIDA: "conta_repetida",
 }
 SINAIS_PRODUTO = (*COEFICIENTES, "mscore", "dpo", "juro", "lucro_sem_caixa")
+NOTA_ESTRUTURA_POSTERIOR = Motivo(
+    "estrutura lida de documento posterior à data (comportamento do estudo 1, emenda 8)",
+    "structure read from a document filed after the date (study 1 behaviour, amendment 8)",
+)
+SEM_ESCALA_ENET = Motivo(
+    "versão do ENET: o cache guarda os valores já em reais e não registra a escala da página",
+    "ENET version: the cache keeps values already in reais and does not record the page's scale",
+)
 
 
 class FontesV1(Protocol):
@@ -74,10 +92,52 @@ class ExercicioNaData:
     link: str | None
     contas: pd.DataFrame = field(repr=False)
     status_motor: str = ""
+    escala_original: str | None = None
+    documento: Documento | None = None
+    evidencias: tuple[Evidencia, ...] = field(default=(), repr=False)
+    notas: tuple[Motivo, ...] = ()
+
+
+def estrutura_posterior(leitura: base.Leitura, docs: pd.DataFrame) -> bool:
+    """O `como_era` leu a estrutura da última versão, entregue depois da data? (a versão usada não é a última)"""
+    if leitura.versao is None or leitura.ultima_versao is None or leitura.versao == leitura.ultima_versao:
+        return False
+    receb = docs.loc[docs.versao == leitura.ultima_versao, "dt_receb"]
+    return bool(not receb.empty and leitura.data_corte is not None and receb.max() > leitura.data_corte)
+
+
+def _documento(e: ExercicioNaData, localizador: Localizador | None) -> Documento:
+    url = sha = None
+    if e.origem == "enet" and e.num_doc:
+        url = ENET_DOC.format(e.num_doc)
+        sha = localizador.sha256_enet(e.num_doc) if localizador else None
+    elif localizador:
+        url, sha = localizador.documento_aberto(e.exercicio)
+    receb = None if e.dt_receb is None else str(e.dt_receb)
+    return Documento("DFP", e.cd_cvm, e.exercicio, str(e.dt_refer), e.num_doc, e.versao_usada, receb, str(e.origem),
+                     str(e.tipo), url, sha, e.notas)  # fmt: skip
+
+
+def evidencias(contas: pd.DataFrame, doc: Documento, localizador: Localizador | None = None) -> tuple[Evidencia, ...]:
+    """Cada linha da DFP lida, como `Evidencia` do contrato (seção 2)."""
+    out: dict[str, Evidencia] = {}
+    for linha in contas.itertuples(index=False):
+        dem, col, cod = str(linha.demonstracao), str(linha.ordem), str(linha.cd_conta)
+        eid = id_evidencia(doc, dem, col, cod)
+        if eid in out:
+            continue
+        loc = localizador.localizar(doc, dem, col, cod) if localizador else None
+        out[eid] = Evidencia(eid, doc, dem, col, cod, str(linha.ds_conta), float(linha.valor), loc)
+    return tuple(out.values())
 
 
 def exercicio_na_data(
-    fontes: FontesV1, cd_cvm: str, exercicio: int, data_referencia: date | str, dt_refer: str | None = None
+    fontes: FontesV1,
+    cd_cvm: str,
+    exercicio: int,
+    data_referencia: date | str,
+    dt_refer: str | None = None,
+    localizador: Localizador | None = None,
 ) -> ExercicioNaData:
     garantir_liberado(exercicio)
     d = garantir_data_referencia(data_referencia)
@@ -90,13 +150,24 @@ def exercicio_na_data(
     if leitura.versao is not None:
         lk = conhecidas.loc[conhecidas.versao == leitura.versao, "link"]
         link = None if lk.empty else str(lk.iloc[0])
-    return ExercicioNaData(
+    notas: tuple[Motivo, ...] = (NOTA_ESTRUTURA_POSTERIOR,) if estrutura_posterior(leitura, docs) else ()
+    escala = None
+    ler_escala = getattr(fontes, "escala", None)  # só o armazém tem a escala original
+    if leitura.fonte == "dados_abertos" and leitura.versao is not None and ler_escala is not None:
+        escala = ler_escala(exercicio, leitura.cd_cvm, str(leitura.dt_refer), leitura.versao, str(leitura.tipo))
+    elif leitura.fonte == "enet":
+        notas += (SEM_ESCALA_ENET,)
+    e = ExercicioNaData(
         cd_cvm=leitura.cd_cvm, exercicio=exercicio, dt_refer=leitura.dt_refer, data_referencia=d,
         situacao=SITUACAO.get(leitura.status, leitura.status), versao_usada=leitura.versao, dt_receb=leitura.dt_receb,
         versoes_conhecidas=tuple((int(v), r) for v, r in zip(conhecidas.versao, conhecidas.dt_receb)),
         tipo=leitura.tipo, origem=leitura.fonte, num_doc=leitura.num_doc, link=link, contas=leitura.contas,
-        status_motor=leitura.status,
+        status_motor=leitura.status, escala_original=escala, notas=notas,
     )  # fmt: skip
+    if leitura.fonte is not None:
+        e.documento = _documento(e, localizador)
+        e.evidencias = evidencias(leitura.contas, e.documento, localizador)
+    return e
 
 
 def nao_calculaveis_no_produto(contas: pd.DataFrame, plano: str | None) -> list[str]:
@@ -132,6 +203,8 @@ def _meta(fontes: FontesV1, exercicio: int, corte: date | None) -> tuple[pd.Data
             "sem_receita": (rec is None or rec == 0) if ok else None,
             "situacao_cadastro": sit.get(p.cd_cvm, "fora_do_cadastro"),
             "produto_nao_calculaveis": ";".join(nao_calculaveis_no_produto(leitura.contas, plano)) if ok else "",
+            "estrutura_de_documento_posterior": estrutura_posterior(
+                leitura, idx[(idx.cd_cvm == p.cd_cvm) & (idx.DT_REFER == p.DT_REFER)]),
         })  # fmt: skip
         if ok:
             c = leitura.contas.copy()
@@ -165,5 +238,6 @@ def corte_transversal(
             s[col] = float("nan")
     s, limiares = sinais_amostra.alertas(s)
     s["produto_nao_calculaveis"] = meta.produto_nao_calculaveis.values
+    s["estrutura_de_documento_posterior"] = meta.estrutura_de_documento_posterior.values
     s.insert(1, "data_referencia", corte)
     return s, limiares

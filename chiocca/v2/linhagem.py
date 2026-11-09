@@ -55,6 +55,7 @@ class Documento:
     tipo_demonstracao: str  # con ou ind
     url: str | None = None
     sha256: str | None = None
+    notas: tuple[Motivo, ...] = ()  # notas de linhagem do documento (por exemplo, estrutura de documento posterior)
 
 
 @dataclass(frozen=True)
@@ -236,6 +237,11 @@ class Localizador:
         if achado is None:
             return None
         return {"arquivo": f"dfp_cia_aberta_{doc.exercicio}.zip/{arquivo}", "linha": achado[0], "escala": achado[1]}
+
+
+def id_evidencia(doc: Documento, demonstracao: str, coluna: str, cd_conta: str) -> str:
+    """Identificador estável de uma linha da DFP: hash de empresa, documento, versão, demonstração, coluna e conta."""
+    return _id(doc, demonstracao, coluna, cd_conta)
 
 
 def _id(doc: Documento, demonstracao: str, coluna: str, cd_conta: str) -> str:

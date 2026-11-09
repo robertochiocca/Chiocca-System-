@@ -12,8 +12,9 @@ import pytest
 
 from chiocca import base, montar_base, sinais_amostra
 from chiocca.cvm import Fontes
-from chiocca.v2 import armazem, invariante, na_data
+from chiocca.v2 import armazem, buscar_enet, invariante, na_data
 from chiocca.v2.lacre import DataForaDoIntervalo, ExercicioLacrado
+from chiocca.v2.linhagem import Localizador, id_evidencia
 from tests import fixtures_cvm as fx
 from tests.test_base import mundo  # noqa: F401  (fixture)
 
@@ -198,3 +199,92 @@ def test_invariante_com_os_dados_de_2021() -> None:
     novo, _ = na_data.corte_transversal(armazem.FontesArmazem(), 2021)
     r = invariante.compara(novo, estudo[estudo.exercicio == 2021])
     assert r["empresa_anos_iguais"] == r["empresa_anos_estudo"] > 0 and r["colunas_com_diferenca"] == {}
+
+
+# ---- Fase C2: escala original, evidências, nota de estrutura posterior e busca no ENET ----
+
+
+def test_escala_original(mundo_c1: tuple[Fontes, armazem.FontesArmazem]) -> None:
+    _, arm = mundo_c1
+    e = na_data.exercicio_na_data(arm, "100", 2020, "2021-12-31")
+    assert (e.origem, e.escala_original) == ("dados_abertos", "MIL")
+    e = na_data.exercicio_na_data(arm, "100", 2020, "2021-04-30")
+    assert e.origem == "enet" and e.escala_original is None and na_data.SEM_ESCALA_ENET in e.notas
+    assert arm.escala(2020, "100", "2020-12-31", 99, "con") is None
+
+
+def test_nota_de_estrutura_de_documento_posterior(mundo_c1: tuple[Fontes, armazem.FontesArmazem]) -> None:
+    _, arm = mundo_c1
+    e = na_data.exercicio_na_data(arm, "100", 2020, "2021-04-30")  # v1 do ENET; a v2 é de 20/07/2021
+    assert na_data.NOTA_ESTRUTURA_POSTERIOR in e.notas
+    assert e.documento is not None and na_data.NOTA_ESTRUTURA_POSTERIOR in e.documento.notas
+    assert (
+        na_data.NOTA_ESTRUTURA_POSTERIOR.pt
+        == "estrutura lida de documento posterior à data (comportamento do estudo 1, emenda 8)"
+    )
+    assert na_data.NOTA_ESTRUTURA_POSTERIOR not in na_data.exercicio_na_data(arm, "100", 2020, "2021-12-31").notas
+    s, _ = na_data.corte_transversal(arm, 2020)
+    marcadas = set(s.loc[s.estrutura_de_documento_posterior.astype(bool), "cd_cvm"])
+    assert "100" in marcadas and "300" not in marcadas
+
+
+def test_evidencias_do_contrato(mundo_c1: tuple[Fontes, armazem.FontesArmazem]) -> None:
+    brutos, arm = mundo_c1
+    loc = Localizador(brutos.pasta, arm.cache_enet)
+    e = na_data.exercicio_na_data(arm, "100", 2020, "2021-12-31", localizador=loc)
+    chaves = e.contas[["demonstracao", "ordem", "cd_conta"]].drop_duplicates()
+    assert len(e.evidencias) == len(chaves) > 0
+    ev = e.evidencias[0]
+    assert ev.documento.versao == 2 and ev.documento.origem == "dados_abertos" and ev.documento.dt_receb == "2021-07-20"
+    assert ev.id == id_evidencia(ev.documento, ev.demonstracao, ev.coluna, ev.cd_conta)
+    assert ev.localizacao is not None and ev.localizacao["arquivo"].startswith("dfp_cia_aberta_2020.zip/")
+    assert ev.localizacao["escala"] == "MIL" and ev.localizacao["linha"] >= 2
+    e = na_data.exercicio_na_data(arm, "100", 2020, "2021-04-30", localizador=loc)
+    ev = next(x for x in e.evidencias if x.cd_conta == "3.01" and x.coluna == "ÚLTIMO")
+    assert ev.valor == 1_000_000.0 and ev.documento.origem == "enet" and ev.documento.url
+    assert ev.localizacao == {"arquivo": "data/cache/enet/1001_con.csv", "linha": 2}
+    sem = na_data.exercicio_na_data(arm, "100", 2020, "2021-04-30")
+    assert all(x.localizacao is None for x in sem.evidencias)
+    assert na_data.exercicio_na_data(arm, "500", 2020, "2021-04-30").evidencias == ()
+
+
+def _baixa_falso(cache: Path, num: str, versao: int) -> pd.DataFrame:
+    d = pd.DataFrame([("DRE", "ÚLTIMO", "3.01", "Receita de Venda de Bens e/ou Serviços", 70_000.0),
+                      ("BPA", "ÚLTIMO", "1", "Ativo Total", 90_000.0)], columns=base.COLUNAS)  # fmt: skip
+    d.to_csv(cache / f"{num}_con.csv", index=False)
+    return d
+
+
+def test_busca_no_enet_e_comando_separado(mundo_c1: tuple[Fontes, armazem.FontesArmazem], tmp_path: Path) -> None:
+    brutos, arm = mundo_c1
+    lista = buscar_enet.pendentes(arm, "2023-04-30", [2022])
+    assert list(lista.num_doc) == ["16001"] and list(lista.versao) == [1]
+    r = buscar_enet.buscar(lista, cache=brutos.cache_enet, baixar=_baixa_falso)
+    assert list(r.resultado) == ["baixado"]
+    assert list(buscar_enet.buscar(lista, cache=brutos.cache_enet, baixar=_baixa_falso).resultado) == ["ja_no_cache"]
+    armazem.montar(brutos, tmp_path / "armazem2", anos=range(2020, 2024))
+    novo = armazem.FontesArmazem(tmp_path / "armazem2")
+    e = na_data.exercicio_na_data(novo, "160", 2022, "2023-04-30")
+    assert (e.situacao, e.origem, e.versao_usada) == ("ok", "enet", 1)
+    assert buscar_enet.pendentes(novo, "2023-04-30", [2022]).empty
+    tardia = lista.assign(dt_receb=date(2025, 2, 1))
+    with pytest.raises(ValueError):
+        buscar_enet.buscar(tardia, cache=brutos.cache_enet, baixar=_baixa_falso)
+    with pytest.raises(ExercicioLacrado):
+        buscar_enet.pendentes(novo, "2023-04-30", [2024])
+
+
+def test_consulta_nunca_busca_no_enet() -> None:
+    """Só o comando separado chama a rede do ENET: nenhum módulo de consulta importa as funções de download."""
+    for modulo in ("armazem", "na_data", "invariante"):
+        texto = (Path(armazem.__file__).parent / f"{modulo}.py").read_text(encoding="utf-8")
+        assert "baixa_para_cache" not in texto and "baixa_consolidado" not in texto and "rede=True" not in texto
+
+
+@pytest.mark.parametrize("lang,caminho", [("pt", "docs/contratos.md"), ("en", "docs/en/contracts.md")])
+def test_contratos_contam_os_documentos_so_com_estrutura(lang: str, caminho: str) -> None:
+    n = json.loads(invariante.NUMEROS.read_text(encoding="utf-8"))
+    texto = (Path(armazem.__file__).parents[2] / caminho).read_text(encoding="utf-8")
+    assert invariante.frase_so_metadados(n, lang) in texto
+    nota = na_data.NOTA_ESTRUTURA_POSTERIOR
+    assert (nota.pt if lang == "pt" else nota.en) in texto
