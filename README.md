@@ -73,7 +73,9 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 
 **Estudo da primeira versão concluído.** O resumo de uma página está em [`docs/resumo.md`](docs/resumo.md), e os números completos, inclusive o caso a caso do gabarito, a regra boba lado a lado, as análises secundárias e a robustez, em [`docs/resultados.md`](docs/resultados.md). Qualquer mudança de regra ou estudo novo depende de autorização.
 
-**Chiocca System v2, do estudo ao produto (em andamento).** O estudo 1 está congelado no branch `estudo-1-final`, e o produto usa o motor v1 como está. Fase A concluída: inventário do código da Carchuna, da Calahonda e do DireitoAberto ([`docs/inventario.md`](docs/inventario.md)), contratos de dados ([`docs/contratos.md`](docs/contratos.md)), plano das fases B a F ([`docs/plano-v2.md`](docs/plano-v2.md)) e lacre dos exercícios de 2024 em diante (`chiocca/v2/lacre.py`), reservados ao estudo 2.
+**Depois do resultado (análise descritiva, não pré-registrada).** Com anos independentes, o acaso daria 8,56 acertos em média, e 7 ou mais com chance de 90,0%. Como os alertas se repetem na mesma empresa (73,8% das empresa-anos em alerta das não financeiras também estavam em alerta no ano anterior, contra taxa de alerta de 49,9% das empresa-anos não financeiras avaliadas), esse número é um teto. Com a chance de cada caso medida nas empresas do mesmo grupo, sem supor anos independentes, o acaso daria 7,37 acertos, e 7 ou mais com chance de 69,3%. Detalhes em [`docs/analises-pos-estudo-1.md`](docs/analises-pos-estudo-1.md).
+
+**Chiocca System v2, do estudo ao produto (em andamento).** O estudo 1 está congelado no branch `estudo-1-final`, e o produto usa o motor v1 como está. Fase A concluída: inventário do código da Carchuna, da Calahonda e do DireitoAberto ([`docs/inventario.md`](docs/inventario.md)), contratos de dados ([`docs/contratos.md`](docs/contratos.md)), plano das fases B a F ([`docs/plano-v2.md`](docs/plano-v2.md)) e lacre dos exercícios de 2024 em diante (`chiocca/v2/lacre.py`), reservados ao estudo 2. Fase B concluída: validade, conferências dos dados da CVM, linhagem e confiança ([`docs/motor-de-confianca.md`](docs/motor-de-confianca.md)), com o resultado das conferências na base inteira em [`docs/conferencias.md`](docs/conferencias.md), e CI no GitHub Actions. Fase C1 concluída: armazenamento temporal (DuckDB sobre Parquet), motor v1 em qualquer data de referência e o invariante do estudo 1 ([`docs/armazenamento-temporal.md`](docs/armazenamento-temporal.md)). Fase C2 concluída: escala original, evidências do contrato, busca no ENET por comando separado, contexto (percentis, histórico, Altman Z'' e Piotroski F, sem alerta), parecer e auditor, a seção "Limites" e a investigação em JSON e PDF, com dois exemplos da Americanas (exercício 2021, em 30/04/2022 e em 31/12/2024) em [`docs/exemplos/`](docs/exemplos/). Fase D concluída: API em FastAPI (`/api/v1`), com contratos em Pydantic, busca só por nome, código CVM ou CNPJ, em ordem alfabética, e nenhuma lista de empresas ordenada por alerta, percentil ou escore ([`docs/contratos.md`](docs/contratos.md), seção 6).
 
 | Implementado | Roadmap |
 | --- | --- |
@@ -90,6 +92,27 @@ O gabarito ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) guarda casos r
 | Pré-registro do estudo | Ficha de alerta e resumo de uma página, em PT e EN |
 | Exemplo resolvido com valores esperados (teste de referência) | |
 | Especificação para o agente de código ([`PROMPT.md`](PROMPT.md)) | Próximas fases: auditoria, ganhos não recorrentes a partir das notas explicativas, rendimento do caixa, dividendos sem caixa, F-score e teste de retorno das ações |
+
+### Limitações
+
+As limitações do estudo 1 estão no [resumo](docs/resumo.md) e nos [resultados](docs/resultados.md). As principais:
+
+- O juro implícito responde sozinho por 59,8% das empresa-anos não financeiras em alerta (2.001 de 3.345): a despesa financeira (3.06.02) inclui variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos ([resumo](docs/resumo.md)).
+- O M-score ficou sem valor em 1.548 de 6.938 empresa-anos; em 1.306, faltou o DEPI. O motivo mais comum é a DFC sem linha de depreciação na seção 6.01.01 (1.135 empresa-anos); quando a depreciação vem somada à amortização na mesma linha, o total é usado e o DEPI é calculado ([resultados](docs/resultados.md)).
+- O corte de -1,78 do M-score vem de Beneish (1999), estimado com empresas dos EUA, e não foi recalibrado para o Brasil ([resumo](docs/resumo.md)).
+- O IRB não pode ser acertado com DFP anual (emenda 3); pegá-lo exigiria dados trimestrais (ITR) ([resumo](docs/resumo.md)).
+- Poucos casos: 13 acertáveis em 42 no gabarito, nenhum deles financeiro ([resumo](docs/resumo.md)).
+- O número de acertos não superou o acaso no teste descritivo feito depois do resultado: 7 acertos, contra 7,37 esperados sem supor anos independentes (8,56 supondo anos independentes) ([análise](docs/analises-pos-estudo-1.md)).
+- Versões antigas recuperadas pelo ENET só existem para demonstrações consolidadas: de 2010 a 2023, 190 empresa-anos com a versão da época só em demonstração individual ficaram de fora (emenda 8) ([armazenamento temporal](docs/armazenamento-temporal.md)).
+- Depois do resultado, as conferências acharam 57 empresa-anos em que um balanço não preenchido entrou no cálculo como zero; 29 alertas dependem disso. Nenhum caso do gabarito foi afetado. Detalhes na [nota posterior](docs/analises-pos-estudo-1.md), seção 4.
+
+### Como este projeto foi feito
+
+O Chiocca System foi concebido, especificado e revisado por Roberto Chiocca. A pergunta de pesquisa, a metodologia e as decisões do estudo são dele: o pré-registro foi assinado antes de qualquer dado, cada emenda foi aprovada por ele com data e commit, e o resultado foi publicado como saiu, inclusive o que não funcionou.
+
+O código foi escrito com assistentes de IA para programação, trabalhando por fases a partir de especificação escrita, com parada obrigatória para revisão antes de cada fase seguinte. Nenhum número depende da palavra de ninguém: o exemplo resolvido tem o hash travado no teste, e seus valores foram calculados por um script separado (tests/referencia/gerar_exemplo_resolvido.py), escrito antes do motor e sem importar o pacote; o motor reproduz esses valores no teste de referência. As duas implementações partem da mesma especificação: a conferência pega erro de implementação, não erro na especificação. Mais de cem testes automáticos rodam no CI, e um teste garante que os documentos em português e em inglês têm os mesmos números.
+
+Os módulos reaproveitados de outros projetos do autor (Carchuna, Calahonda e DireitoAberto) foram adaptados ao formato do Chiocca e têm a origem registrada em [docs/origem-do-codigo.md](docs/origem-do-codigo.md).
 
 ### Estrutura
 
@@ -113,8 +136,10 @@ PROMPT.md                 especificação de construção para o agente de códi
 
 ### Como reproduzir
 
+O estudo 1 foi gerado com pandas 3.0.5 e numpy 2.5.3. Todas as dependências, inclusive as transitivas, estão travadas em [`requirements-lock.txt`](requirements-lock.txt) (gerado por `scripts/gerar_lock.py`), e o CI instala a partir dele. O projeto exige Python 3.12 ou mais, porque o numpy 2.5.3 não tem distribuição para Python 3.11; o CI roda em 3.12 e 3.13. A API (Fase D) usa FastAPI, Pydantic e uvicorn, fixados no `pyproject.toml` como as demais dependências; os testes da API usam o httpx.
+
 ```
-python -m pip install pandas numpy pytest
+python -m pip install -r requirements-lock.txt && python -m pip install -e . --no-deps
 python -m chiocca.dados baixar        # baixa DFP, FCA e cadastro da CVM para data/brutos/ e grava o manifesto
 python -m chiocca.dados verificar     # confere os arquivos contra os hashes do manifesto
 python -m chiocca.montar_base         # monta a base e lista as versões da época que precisam do ENET
@@ -126,6 +151,13 @@ python -m chiocca.emenda5             # secundária da emenda 5, em resultados/
 python -m chiocca.americanas          # duas leituras da Americanas, em resultados/
 python -m chiocca.relatorio_resultados  # gera os resultados e o resumo, em PT e EN
 python -m chiocca.ficha 20990 2021 pt  # ficha de alerta de uma empresa-ano
+python -m chiocca.v2.relatorio_conferencias  # conferências de qualidade na base, até o lacre
+python -m chiocca.v2.armazem          # armazém temporal em data/armazem (fora do git)
+python -m chiocca.v2.buscar_enet 2024-12-31   # busca no ENET as versões que a data precisa (comando separado)
+python -m chiocca.v2.invariante       # invariante do estudo 1 e corte na data máxima
+python -m chiocca.v2.investigacao 20990 2021 2022-04-30 pt   # investigação em JSON (com --pdf, em PDF)
+python -m chiocca.v2.exemplos         # exemplos de referência em docs/exemplos/
+python -m chiocca.v2.api 8000         # API em http://127.0.0.1:8000/api/v1 (documentação em /api/v1/docs)
 python -m pytest                      # testes sem rede
 ```
 
@@ -136,6 +168,8 @@ python -m pytest                      # testes sem rede
 - Dechow, P., Ge, W., Larson, C. e Sloan, R. (2011). [Predicting Material Accounting Misstatements](https://www.thecaq.org/wp-content/uploads/2018/03/Dechow-et-al-2011-Contemporary_Accounting_Research.pdf). *Contemporary Accounting Research*.
 - Schilit, H., Perler, J. e Engelhart, Y. (2018). [Financial Shenanigans](https://www.mheducation.com/highered/mhp/product/financial-shenanigans-fourth-edition-how-detect-accounting-gimmicks-fraud-financial-reports.html), 4ª ed. McGraw Hill.
 - Alves, M. C. D. e Oliveira, K. V. [Inconsistências em demonstrações contábeis: setor elétrico pelo M-score de Beneish](https://congressousp.fipecafi.org/Arquivos/45/Anais/5700%20.pdf). Congresso USP.
+
+Referências do produto (v2), com as páginas usadas, DOI e licença: [`docs/referencias.md`](docs/referencias.md).
 
 ---
 
@@ -197,7 +231,9 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 
 **First-version study complete.** The one-page summary is in [`docs/summary.md`](docs/summary.md), and the full figures, including the ground truth case by case, the naive baseline rule side by side, the secondary analyses and the robustness test, are in [`docs/en/results.md`](docs/en/results.md). Any rule change or new study depends on authorization.
 
-**Chiocca System v2, from study to product (in progress).** Study 1 is frozen on the `estudo-1-final` branch, and the product uses engine v1 as it is. Phase A complete: inventory of the code from Carchuna, Calahonda and DireitoAberto ([`docs/en/inventory.md`](docs/en/inventory.md)), data contracts ([`docs/en/contracts.md`](docs/en/contracts.md)), plan for phases B to F ([`docs/en/plan-v2.md`](docs/en/plan-v2.md)) and the seal on fiscal years 2024 onward (`chiocca/v2/lacre.py`), reserved for study 2.
+**After the result (descriptive analysis, not pre-registered).** With independent years, chance would produce 8.56 detections on average, and 7 or more with a probability of 90.0%. Since alerts repeat at the same company (73.8% of non-financial company-years in alert were also in alert in the previous year, against an alert rate of 49.9% of evaluated non-financial company-years), this number is a ceiling. With each case's chance measured on companies in the same group, without assuming independent years, chance would produce 7.37 detections, and 7 or more with a probability of 69.3%. Details in [`docs/en/post-study-1-analyses.md`](docs/en/post-study-1-analyses.md).
+
+**Chiocca System v2, from study to product (in progress).** Study 1 is frozen on the `estudo-1-final` branch, and the product uses engine v1 as it is. Phase A complete: inventory of the code from Carchuna, Calahonda and DireitoAberto ([`docs/en/inventory.md`](docs/en/inventory.md)), data contracts ([`docs/en/contracts.md`](docs/en/contracts.md)), plan for phases B to F ([`docs/en/plan-v2.md`](docs/en/plan-v2.md)) and the seal on fiscal years 2024 onward (`chiocca/v2/lacre.py`), reserved for study 2. Phase B complete: validity, CVM data checks, lineage and confidence ([`docs/en/trust-engine.md`](docs/en/trust-engine.md)), with the result of the checks on the whole base in [`docs/en/data-checks.md`](docs/en/data-checks.md), and CI on GitHub Actions. Phase C1 complete: temporal storage (DuckDB over Parquet), engine v1 on any reference date and the study 1 invariant ([`docs/en/temporal-storage.md`](docs/en/temporal-storage.md)). Phase C2 complete: original scale, contract evidence, ENET fetching through a separate command, context (percentiles, history, Altman Z'' and Piotroski F, with no alert), auditor's report and auditor, the "Limits" section and the investigation in JSON and PDF, with two Americanas examples (fiscal year 2021, on 2022-04-30 and on 2024-12-31) in [`docs/exemplos/`](docs/exemplos/). Phase D complete: FastAPI API (`/api/v1`), with Pydantic contracts, search only by name, CVM code or CNPJ, in alphabetical order, and no list of companies ranked by alert, percentile or score ([`docs/en/contracts.md`](docs/en/contracts.md), section 6).
 
 | Done | Roadmap |
 | --- | --- |
@@ -214,6 +250,27 @@ The ground truth ([`data/gabarito_casos.csv`](data/gabarito_casos.csv)) holds re
 | Study pre-registration | Alert sheet and one-page summary, in PT and EN |
 | Worked example with expected values (reference test) | |
 | Build specification for the coding agent ([`PROMPT.md`](PROMPT.md)) | Next phases: auditor signals, non-recurring gains from the notes to the financial statements, cash yield, dividends above free cash flow, F-score and stock-return test |
+
+### Limitations
+
+Study 1's limitations are in the [summary](docs/summary.md) and the [results](docs/en/results.md). The main ones:
+
+- The implied interest rate alone accounts for 59.8% of non-financial company-years in alert (2,001 of 3,345): finance costs (3.06.02) include exchange differences, lease interest and other items that are not interest on borrowings ([summary](docs/summary.md)).
+- The M-score had no value in 1,548 of 6,938 company-years; in 1,306, DEPI was missing. The most common reason is a cash flow statement with no depreciation line in section 6.01.01 (1,135 company-years); when depreciation is combined with amortization in the same line, the total is used and DEPI is computed ([results](docs/en/results.md)).
+- The M-score cut-off of -1.78 comes from Beneish (1999), estimated with US companies, and was not recalibrated for Brazil ([summary](docs/summary.md)).
+- IRB cannot be detected with annual DFPs (amendment 3); catching it would require quarterly data (ITR) ([summary](docs/summary.md)).
+- Few cases: 13 detectable out of 42 in the ground truth, none of them financial ([summary](docs/summary.md)).
+- The number of detections did not beat chance in the descriptive test done after the result: 7 detections, against 7.37 expected without assuming independent years (8.56 assuming independent years) ([analysis](docs/en/post-study-1-analyses.md)).
+- Old versions recovered from ENET exist only for consolidated statements: from 2010 to 2023, 190 company-years whose point-in-time version had individual statements only were left out (amendment 8) ([temporal storage](docs/en/temporal-storage.md)).
+- After the result, the data checks found 57 company-years in which an unfilled balance sheet entered the calculation as zero; 29 alerts depend on it. No ground-truth case was affected. Details in the [later note](docs/en/post-study-1-analyses.md), section 4.
+
+### How this project was built
+
+Chiocca System was conceived, specified and reviewed by Roberto Chiocca. The research question, the methodology and the study decisions are his: the pre-registration was signed before any data, every amendment was approved by him with a date and a commit, and the results were published as they came out, including what did not work.
+
+The code was written with AI coding assistants, working in phases from a written specification, with a mandatory review stop before each next phase. No number depends on anyone's word: the worked example has its hash locked in the tests, and its values were computed by a separate script (tests/referencia/gerar_exemplo_resolvido.py), written before the engine and without importing the package; the engine reproduces these values in the reference test. Both implementations start from the same specification: the check catches implementation errors, not specification errors. More than a hundred automated tests run in CI, and a test ensures the Portuguese and English documents carry the same numbers.
+
+Modules reused from the author's other projects (Carchuna, Calahonda and DireitoAberto) were adapted to Chiocca's format and their origin is recorded in [docs/origem-do-codigo.md](docs/origem-do-codigo.md).
 
 ### Structure
 
@@ -237,8 +294,10 @@ PROMPT.md                 build specification for the coding agent
 
 ### How to reproduce
 
+Study 1 was generated with pandas 3.0.5 and numpy 2.5.3. Every dependency, including transitive ones, is locked in [`requirements-lock.txt`](requirements-lock.txt) (generated by `scripts/gerar_lock.py`), and CI installs from it. The project requires Python 3.12 or later, because numpy 2.5.3 has no distribution for Python 3.11; CI runs on 3.12 and 3.13. The API (Phase D) uses FastAPI, Pydantic and uvicorn, pinned in `pyproject.toml` like the other dependencies; the API tests use httpx.
+
 ```
-python -m pip install pandas numpy pytest
+python -m pip install -r requirements-lock.txt && python -m pip install -e . --no-deps
 python -m chiocca.dados baixar        # downloads CVM DFP, FCA and registry files to data/brutos/ and writes the manifest
 python -m chiocca.dados verificar     # checks the files against the manifest hashes
 python -m chiocca.montar_base         # builds the base and lists the point-in-time versions that need ENET
@@ -250,6 +309,13 @@ python -m chiocca.emenda5             # amendment 5 secondary analysis, in resul
 python -m chiocca.americanas          # two readings of Americanas, in resultados/
 python -m chiocca.relatorio_resultados  # generates the results and the summary, in PT and EN
 python -m chiocca.ficha 20990 2021 en  # alert sheet for one company-year
+python -m chiocca.v2.relatorio_conferencias  # data quality checks on the base, up to the seal
+python -m chiocca.v2.armazem          # temporal store in data/armazem (not in git)
+python -m chiocca.v2.buscar_enet 2024-12-31   # fetches from ENET the versions the date needs (separate command)
+python -m chiocca.v2.invariante       # study 1 invariant and cross-section on the maximum date
+python -m chiocca.v2.investigacao 20990 2021 2022-04-30 en   # investigation as JSON (with --pdf, as PDF)
+python -m chiocca.v2.exemplos         # reference examples in docs/exemplos/
+python -m chiocca.v2.api 8000         # API at http://127.0.0.1:8000/api/v1 (documentation at /api/v1/docs)
 python -m pytest                      # offline tests
 ```
 
@@ -260,6 +326,8 @@ python -m pytest                      # offline tests
 - Dechow, P., Ge, W., Larson, C. and Sloan, R. (2011). [Predicting Material Accounting Misstatements](https://www.thecaq.org/wp-content/uploads/2018/03/Dechow-et-al-2011-Contemporary_Accounting_Research.pdf). *Contemporary Accounting Research*.
 - Schilit, H., Perler, J. and Engelhart, Y. (2018). [Financial Shenanigans](https://www.mheducation.com/highered/mhp/product/financial-shenanigans-fourth-edition-how-detect-accounting-gimmicks-fraud-financial-reports.html), 4th ed. McGraw Hill.
 - Alves, M. C. D. and Oliveira, K. V. [Inconsistências em demonstrações contábeis: setor elétrico pelo M-score de Beneish](https://congressousp.fipecafi.org/Arquivos/45/Anais/5700%20.pdf) (in Portuguese). USP Congress.
+
+Product references (v2), with the pages used, DOI and license: [`docs/en/references.md`](docs/en/references.md).
 
 ---
 

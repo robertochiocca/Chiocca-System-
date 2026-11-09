@@ -33,3 +33,13 @@ def test_exercicio_pela_data_de_referencia() -> None:
 def test_motor_v1_nao_calcula_acima_do_lacre() -> None:
     # O cálculo da amostra do estudo 1, que o produto reaproveita, para em 2023.
     assert max(sinais_amostra.ANOS) <= lacre.ULTIMO_EXERCICIO_LIBERADO
+
+
+def test_intervalo_da_data_de_referencia() -> None:
+    from datetime import date
+
+    assert lacre.garantir_data_referencia("2011-04-30") == date(2011, 4, 30)
+    assert lacre.garantir_data_referencia("2024-12-31") == date(2024, 12, 31)
+    for fora in ("2011-04-29", "2025-01-01"):
+        with pytest.raises(lacre.DataForaDoIntervalo):
+            lacre.garantir_data_referencia(fora)

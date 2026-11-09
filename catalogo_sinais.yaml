@@ -378,5 +378,48 @@ sinais:
     fonte_dados: "Formulário de Referência, atas e processos da CVM"
     casos_br: [irb]
 
+  - id: altman_z2
+    nome: "Altman Z'' (risco financeiro, só contexto)"
+    nome_en: "Altman Z'' (financial risk, context only)"
+    familia: risco_financeiro
+    fase: contexto_v2
+    o_que_mede: >
+      Risco de dificuldade financeira, versão para empresas não industriais e
+      mercados emergentes, sem a constante do Emerging Market Score, sem tabela
+      de rating e sem zonas de corte. Só contexto: não gera alerta e não se soma
+      a outras famílias. Coeficientes estimados fora do Brasil.
+    o_que_mede_en: "Financial distress risk, version for non-manufacturing firms and emerging markets, without the Emerging Market Score constant, without a rating table and without cut-off zones. Context only: it does not trigger alerts and is not added to other families. Coefficients estimated outside Brazil."
+    referencia_academica: "Altman (2000), Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models, p. 27"
+    formula: "Z'' = 6.56*X1 + 3.26*X2 + 6.72*X3 + 1.05*X4"
+    componentes:
+      X1: "(ativo_circulante - passivo_circulante) / ativo_total"
+      X2: "(reservas de lucros 2.03.04 + lucros ou prejuízos acumulados 2.03.05) / ativo_total (adaptação brasileira)"
+      X3: "ebit / ativo_total"
+      X4: "patrimonio_liquido / (passivo_circulante + passivo_nao_circulante)"
+    exclui: [financeiras]
+    casos_br: []
+
+  - id: piotroski_f
+    nome: "Piotroski F (qualidade financeira, só contexto)"
+    nome_en: "Piotroski F (financial quality, context only)"
+    familia: qualidade_financeira
+    fase: contexto_v2
+    o_que_mede: >
+      Nove sinais binários de rentabilidade, alavancagem e liquidez, e eficiência,
+      mostrados como "F = x/9 (y calculáveis)", sem imputar o que falta. Só
+      contexto: não gera alerta e não se soma a outras famílias.
+    o_que_mede_en: "Nine binary signals of profitability, leverage and liquidity, and efficiency, shown as \"F = x/9 (y computable)\", without imputing what is missing. Context only: it does not trigger alerts and is not added to other families."
+    referencia_academica: "Piotroski (2000), Journal of Accounting Research 38 (supl.), pp. 7-10"
+    formula: "F = soma dos sinais calculáveis entre ROA, CFO, ΔROA, ACCRUAL, ΔLEVER, ΔLIQUID, EQ_OFFER, ΔMARGIN e ΔTURN"
+    observacao: >
+      EQ_OFFER: contar só linhas de ações ou capital é a definição do próprio
+      artigo ("did not issue common equity", p. 9), não uma adaptação. A
+      adaptação é só esta: ações preferenciais também contam, porque no Brasil
+      são capital próprio, e a linha é identificada por texto na DFC (padrão
+      congelado de "emissões", reconhecimento, parte 4.2).
+    observacao_en: "EQ_OFFER: counting only share or capital lines is the article's own definition (\"did not issue common equity\", p. 9), not an adaptation. The adaptation is only this: preferred shares also count, because in Brazil they are equity, and the line is identified by text in the cash flow statement (frozen \"emissões\" pattern, reconnaissance, part 4.2)."
+    exclui: [financeiras]
+    casos_br: []
+
 # Uso proibido como SINAL: reapresentação de demonstrações. Ela é fonte de
 # GABARITO (data_publica e período afetado). Usá-la como sinal vaza a resposta.

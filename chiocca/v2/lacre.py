@@ -16,6 +16,21 @@ from datetime import date
 import pandas as pd
 
 ULTIMO_EXERCICIO_LIBERADO = 2023
+# Intervalo da data de referência (decisão de 07/11/2026): da primeira data de corte com DFP de 2010 ao fim de 2024.
+# O lacre continua por exercício: em nenhuma data um exercício acima do limite é calculado.
+DATA_REFERENCIA_MINIMA = date(2011, 4, 30)
+DATA_REFERENCIA_MAXIMA = date(2024, 12, 31)
+
+
+class DataForaDoIntervalo(ValueError):
+    """Data de referência fora de [DATA_REFERENCIA_MINIMA, DATA_REFERENCIA_MAXIMA]."""
+
+    def __init__(self, data: date) -> None:
+        super().__init__(
+            f"data de referência {data.isoformat()} fora do intervalo "
+            f"{DATA_REFERENCIA_MINIMA.isoformat()} a {DATA_REFERENCIA_MAXIMA.isoformat()}"
+        )
+        self.data = data
 
 
 class ExercicioLacrado(ValueError):
@@ -47,3 +62,11 @@ def garantir_liberado(exercicio: int) -> int:
 def so_liberados(tabela: pd.DataFrame, coluna: str = "exercicio") -> pd.DataFrame:
     """Linhas de exercícios liberados. Para ler dados brutos antes de qualquer cálculo."""
     return tabela[pd.to_numeric(tabela[coluna], errors="coerce") <= ULTIMO_EXERCICIO_LIBERADO]
+
+
+def garantir_data_referencia(data: str | date) -> date:
+    """Data de referência dentro do intervalo decidido; fora dele, a consulta é recusada com o motivo."""
+    d = date.fromisoformat(data) if isinstance(data, str) else data
+    if not DATA_REFERENCIA_MINIMA <= d <= DATA_REFERENCIA_MAXIMA:
+        raise DataForaDoIntervalo(d)
+    return d

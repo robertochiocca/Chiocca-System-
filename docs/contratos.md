@@ -16,7 +16,7 @@ Proposta da Fase A, para sua aprovação. Só o lacre (seção 1) já está no c
 - `chiocca/v2/lacre.py`: `ULTIMO_EXERCICIO_LIBERADO = 2023`, num lugar só, no código. Mudar exige um commit.
 - `garantir_liberado(exercicio)` levanta `ExercicioLacrado`; `so_liberados(tabela)` filtra antes de qualquer cálculo.
 - O teste `tests/test_v2_lacre.py` garante o limite, a recusa e que o cálculo do motor v1 reaproveitado para em 2023.
-- **Data de referência máxima: decisão sua** (pergunta 1 do [plano](plano-v2.md)). Proposta: 31/12/2024. Assim nenhuma DFP de exercício lacrado chega a ser lida, e o filtro por exercício continua valendo para quem fecha o exercício no meio do ano.
+- **Intervalo da data de referência** (decisão de 07/11/2026): de 30/04/2011 a 31/12/2024, em `DATA_REFERENCIA_MINIMA` e `DATA_REFERENCIA_MAXIMA`, com `garantir_data_referencia`. O lacre continua por exercício: nada acima de 2023 é calculado, em nenhuma data.
 
 ## 2. Entidades
 
@@ -26,15 +26,15 @@ Proposta da Fase A, para sua aprovação. Só o lacre (seção 1) já está no c
 | --- | --- | --- |
 | `cd_cvm` | texto | Código CVM, sem zeros à esquerda (convenção do estudo 1) |
 | `cnpj` | texto | Do índice da DFP |
-| `denominacao` | texto | Da DFP do exercício (o nome muda com o tempo; a investigação mostra o da época) |
-| `codigos_negociacao` | lista de texto | Do FCA `valor_mobiliario`, com o período de negociação de cada código, na versão entregue até a data de referência |
+| `denominacao` | texto | Da DFP do exercício (o nome muda com o tempo; a investigação mostra o da época) Implementado na C2: nome empresarial da última versão do FCA entregue até a data; o índice dos dados abertos traz o nome atual, que pode ser posterior à data (o da Americanas já trazia "em recuperação judicial") |
+| `codigos_negociacao` | lista de texto | Do FCA `valor_mobiliario`, com o período de negociação de cada código, na versão entregue até a data de referência. Implementado na Fase D: tabela `valores_mobiliarios` do armazém (só versões do FCA entregues até 31/12/2024); cada código vem com o valor mobiliário, o mercado, o início e o fim da negociação e o FCA de origem (ano, versão e data de entrega), da última versão do FCA entregue até a data. Lista vazia vem com `motivo_codigos_negociacao`: nos dados abertos, o campo só vem preenchido nos FCA mais recentes, e o ano a partir do qual vem preenchido é calculado do armazém e vai no motivo |
 | `setor` | texto | Setor do FCA entregue até a data de referência; sem FCA, o do cadastro (regra congelada, reconhecimento 4.1) |
 | `grupo` | `financeira` ou `nao_financeira` | Regra congelada do estudo 1 (setor candidato e plano de contas) |
-| `situacao_cadastro` | texto | Do cadastro atual, só como informação |
+| `situacao_cadastro` | texto | Do cadastro atual, só como informação No JSON, `situacao_cadastro_atual`, para deixar claro que é do cadastro atual |
 
 ### DataReferencia
 
-Data (`AAAA-MM-DD`) informada pelo analista. Vale dentro do intervalo [data mínima, data máxima] que você decidir; fora dele, a consulta é recusada com o motivo.
+Data (`AAAA-MM-DD`) informada pelo analista, de 30/04/2011 a 31/12/2024; fora desse intervalo, a consulta é recusada com o motivo. Documentos entregues depois de 31/12/2024 só têm metadados e hash registrados pelo monitor: nada é lido, resumido ou extraído deles.
 
 ### ExercicioNaData
 
@@ -44,14 +44,15 @@ Uma empresa num exercício, como era na data de referência. É a saída de `com
 | --- | --- | --- |
 | `cd_cvm`, `exercicio`, `dt_refer` | texto, inteiro, data | `exercicio` passa por `garantir_liberado` |
 | `data_referencia` | data | A da consulta |
-| `situacao` | enumeração | `ok`, `sem_versao_ate_a_data`, `versao_indisponivel_individual`, `versao_pendente_enet` ou `conta_repetida` (os estados de `como_era`) |
+| `situacao` | enumeração | `ok`, `sem_documento`, `sem_versao_ate_a_data`, `versao_indisponivel_individual`, `versao_indisponivel_enet`, `versao_pendente_enet` ou `conta_repetida` (os estados de `como_era`, com o nome do contrato em `chiocca.v2.na_data.SITUACAO`) |
 | `versao_usada`, `dt_receb` | inteiro, data | A versão mais recente entregue até a data de referência |
 | `versoes_conhecidas` | lista de (versão, data de entrega) | Só as entregues até a data de referência: a existência de uma versão posterior é informação do futuro e não aparece |
 | `tipo` | `con` ou `ind` | Consolidado quando existir; senão, individual |
 | `origem` | `dados_abertos` ou `enet` | ENET só para consolidado (emenda 8) |
 | `num_doc`, `link` | texto | Número sequencial do documento e endereço da página no ENET |
-| `escala_original` | `MIL` ou `UNIDADE` | Os valores do contrato estão sempre em reais |
-| `contas` | lista de `Evidencia` | As linhas da DFP usadas (ÚLTIMO para t e PENÚLTIMO para t−1) |
+| `escala_original` | `MIL` ou `UNIDADE` | Os valores do contrato estão sempre em reais. Implementado na C2: a escala original da versão dos dados abertos (tabela `escalas` do armazém). Nas versões do ENET o campo fica vazio, porque o cache guarda os valores já em reais e não registra a escala da página; o motivo vai nas notas |
+| `contas` | lista de `Evidencia` | As linhas da DFP usadas (ÚLTIMO para t e PENÚLTIMO para t−1). Implementado na C2 como `evidencias` (`chiocca.v2.na_data.evidencias`), com o arquivo e a linha de origem quando há `Localizador` |
+| `notas` | lista de motivos (PT e EN) | Notas de linhagem do documento. Quando a versão usada não é a última, o `como_era` lê a estrutura da última versão, entregue depois da data, e a nota é "estrutura lida de documento posterior à data (comportamento do estudo 1, emenda 8)" (decisão de 09/11/2026) |
 
 ### Evidencia
 
@@ -140,14 +141,17 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 
 ### Investigacao
 
+Implementado na C2, segunda parte (`chiocca/v2/investigacao.py`, JSON; `chiocca/v2/pdf_investigacao.py`, PDF gerado só do JSON). Exemplos de referência: Americanas, exercício 2021, em 30/04/2022 e em 31/12/2024 (este com as diferenças do comparativo da DFP de 2022 como evidência destacada), em `docs/exemplos/` (PT e EN, JSON e PDF), gerados por `python -m chiocca.v2.exemplos` e conferidos pelo mesmo teste. O relatório do auditor vem da seção de pareceres dos dados abertos, que só existe para a última versão da DFP; as trocas de auditor saem do FCA, pelo código da firma na CVM, sem CPF nem pessoa física. `gerado_em` e `calculado_em` são o único campo que muda entre execuções.
+
 | Campo | Descrição |
 | --- | --- |
 | `empresa`, `data_referencia`, `idioma` | — |
 | `exercicios` | Lista de `ExercicioNaData`, todos liberados |
 | `achados` | Agrupados por família e **nunca somados** entre famílias |
-| `mudancas` | O que mudou em relação aos exercícios anteriores e às versões anteriores conhecidas na data (reapresentações), com evidências |
+| `mudancas` | O que mudou em relação aos exercícios anteriores e às versões anteriores conhecidas na data (reapresentações), com evidências. Na C2: `comparativo_destacadas` (só as diferenças destacadas pela regra de materialidade da seção 4), `reapresentacao_pelo_comparativo` (lista completa, com o grupo de cada diferença) e `materialidade_comparativo` (linhas-chave, limite relativo, ativo total e limite) |
 | `o_que_se_sabia` | Documentos públicos na data de referência (DFP, ITR e, na Fase F, fatos relevantes), com data de entrega |
 | `qualidade_dos_dados` | Conferências e confiança |
+| `parecer_e_auditor` | Seção factual (Fase C2): tipo do parecer, trecho do texto da DFP conferido literalmente, auditor e trocas de auditor pelo FCA. Não é família de sinais e não gera nota nem alerta. Rodízio (regra de 09/11/2026): nota fixa `rodizio` sobre a Resolução CVM nº 23/2021, arts. 31 (cinco exercícios sociais consecutivos, com intervalo mínimo de três para a recontratação) e 31-A (até dez, com Comitê de Auditoria Estatutário e auditor pessoa jurídica), em vigor desde 01/04/2021 (art. 41), que revogou a Instrução CVM nº 308/1999 (art. 40, I), de regra equivalente nos seus arts. 31 e 31-A; texto conferido na CVM em 09/11/2026. Em cada troca, `saidas` traz os exercícios consecutivos da firma que saiu, pelas datas de início e fim no FCA (audita o exercício quem está contratado no fim dele); quando a troca coincide com o fim do prazo (cinco ou dez exercícios), a nota diz que a troca é compatível com o rodízio, citando a norma vigente quando a firma nova começou. Troca de auditor é fato, não alerta |
 | `como_o_motor_foi_testado` | Ligação para o resultado do estudo 1, como saiu ([`docs/resumo.md`](resumo.md)) |
 | `limitacoes` | Gerais e do caso |
 | `motor`, `gerado_em`, `aviso` | Versão do motor, data e hora, aviso fixo |
@@ -157,23 +161,82 @@ A ficha "como cheguei a este número", adaptada de `linhagem.py` (Carchuna). Ela
 | Família | Sinais | Papel | Fonte | Gera alerta? |
 | --- | --- | --- | --- | --- |
 | Possível manipulação | Motor v1 (estudo 1): os oito componentes do M-score e o M, o salto do DPO, o juro implícito, o lucro sem caixa (só contexto, como no estudo) e, nas financeiras, o peso não recorrente | Alerta do motor v1, sempre com o contexto e com o resultado do estudo 1 ao lado | Pré-registro, seção 4, e emendas 1 a 11 | Sim, pela regra do estudo 1, sem mudança |
-| Risco financeiro | Altman Z'' (versão de 1995 para mercados emergentes) | Contexto descritivo | Altman, Hartzell e Peck (1995), a conferir na fonte primária antes de implementar | Não |
-| Qualidade financeira | Piotroski F (2000), nove testes binários | Contexto descritivo | Piotroski (2000), Journal of Accounting Research, a conferir na fonte primária antes de implementar | Não |
+| Risco financeiro | Altman Z'' puro, para empresas não industriais e mercados emergentes, sem a constante do Emerging Market Score e sem zonas | Contexto descritivo | Altman (2000), "Predicting Financial Distress of Companies: Revisiting the Z-Score and ZETA Models", p. 27, em `referencias/` ([`docs/referencias.md`](referencias.md)) | Não |
+| Qualidade financeira | Piotroski F (2000), nove testes binários | Contexto descritivo | Piotroski (2000), Journal of Accounting Research, pp. 7-10, em `referencias/` ([`docs/referencias.md`](referencias.md)) | Não |
 
-- O salto do DPO e o juro implícito ficam na família de possível manipulação porque, no motor v1, fazem parte do mesmo detector (pré-registro, seção 4); separá-los mudaria a regra "em alerta". Pergunta 3 do plano.
-- **Altman Z''**: os coeficientes, a constante de mercados emergentes e as faixas serão transcritos da fonte primária e registrados em `docs/fontes.md` antes da implementação, como manda a regra de lastro. Proposta de mapeamento das variáveis para as contas da CVM, a conferir: capital de giro (1.01 − 2.01) ÷ ativo total (1); lucros retidos (2.03.04 + 2.03.05) ÷ ativo total; EBIT (3.05) ÷ ativo total; patrimônio líquido (2.03) ÷ passivo exigível (2.01 + 2.02). Limites conhecidos: calibrado fora do Brasil; no Brasil os lucros do exercício são em grande parte distribuídos ou levados a reservas, o que afeta a variável de lucros retidos; não se aplica a financeiras. As faixas da fonte aparecem como "faixas do artigo original", nunca como veredito.
-- **Piotroski F**: os nove testes (rentabilidade, caixa operacional, variação da rentabilidade, accruals, alavancagem, liquidez, emissão de ações, margem bruta e giro do ativo) serão conferidos na fonte primária. A emissão de ações depende de `composicao_capital`, que só existe nos anos recentes. Para os anos sem ele, o mapeamento (linhas de emissão na DFC, pelo padrão congelado da parte 4.2 do reconhecimento, ou variação do capital social 2.03.01) será proposto na Fase C.
+- O salto do DPO e o juro implícito ficam na família de possível manipulação, como no motor v1 (decisão de 07/11/2026). Explicações alternativas obrigatórias no Achado, com fonte quando houver: no juro implícito, dívida cara, variação cambial e juros de arrendamento dentro da despesa financeira; no DPO, poder de negociação com fornecedores e mudança de mix de compras.
+- **Altman Z''** (decisão de 07/11/2026; especificação de 08/11/2026, com as páginas informadas por Roberto e o PDF em `referencias/`). Família risco financeiro, só contexto:
+  - fórmula (Altman 2000, p. 27): Z'' = 6,56·X1 + 3,26·X2 + 6,72·X3 + 1,05·X4, com X1 = (1.01 − 2.01) ÷ 1; X2 = (2.03.04 + 2.03.05) ÷ 1; X3 = 3.05 ÷ 1; X4 = 2.03 ÷ (2.01 + 2.02). Os códigos são do plano das não financeiras (1 = ativo total; 3.05 = resultado antes do resultado financeiro e dos tributos; 2.03 = patrimônio líquido consolidado, com não controladores);
+  - X2 é **adaptação brasileira**: desde a Lei 11.638/2007, a S.A. não fecha o ano com saldo positivo em lucros acumulados, porque o lucro retido vai para as reservas de lucros (2.03.04) e o saldo restante fica em lucros ou prejuízos acumulados (2.03.05). Contas fixas, a confirmar e localizar por texto se variarem. Reservas de capital e ajustes de avaliação patrimonial não entram. A marca de adaptação vai na linhagem e no catálogo;
+  - sem a constante +3,25 e sem a tabela de rating (pp. 27-29). Um teste falha se 3,25 aparecer no cálculo do Z'';
+  - sem zonas para o Z''. As zonas 1,23 e 2,90 (p. 26) são do Z' e não se usam. A página mostra o valor, o percentil no setor e no ano e a frase "sem zona de corte: a fonte disponível não define zonas para o Z''". **Isto muda a decisão de 07/11/2026**, que previa mostrar as zonas do artigo original;
+  - o percentil segue o "como era": só entram as DFPs públicas na data de referência. Se o setor tiver menos de 10 empresas, o percentil usa o universo das não financeiras, com marca;
+  - financeiras: "não se aplica";
+  - nota de validade, sempre ao lado do valor: "coeficientes estimados fora do Brasil; modelos de falência perdem validade com o tempo (Pereira e Martins 2015, p. 25)";
+  - entrada nova no catálogo, família risco financeiro, fase `contexto_v2`, nome e descrição em PT e EN; nenhuma entrada do motor v1 muda;
+  - exemplo resolvido próprio da v2 (não o `data/exemplo_resolvido.json` do estudo 1), com o caso de lucros acumulados zerados e reservas positivas, e um teste que falha se o X2 usar só lucros acumulados;
+  - não fazer: usar as zonas do Z' no Z'' ou os coeficientes de Altman, Baidya e Dias (1979) como régua.
+- **Piotroski F** (decisão de 07/11/2026; especificação de 08/11/2026, com as páginas informadas por Roberto e o PDF em `referencias/`). Família qualidade financeira, só contexto. Nove sinais binários (Piotroski 2000, pp. 7-10), com AT início = ativo total de t−1 e AT médio = média do ativo total de t e t−1:
+  1. ROA > 0, com ROA = 3.09 ÷ AT início;
+  2. CFO > 0, com CFO = 6.01 (como apresentado) ÷ AT início;
+  3. ΔROA > 0;
+  4. ACCRUAL: CFO ÷ AT início > ROA;
+  5. ΔLEVER < 0, com alavancagem = 2.02.01 ÷ AT médio. Dívida de longo prazo zero nos dois anos: sinal 0, com a marca "sem dívida de longo prazo nos dois anos" na linhagem (decisão de Roberto, 08/11/2026). O artigo só define "caiu = 1, subiu = 0" (p. 8) e não define o empate; o 0 no empate é escolha do projeto. O relatório da implementação conta os casos;
+  6. ΔLIQUID > 0, com liquidez = 1.01 ÷ 2.01;
+  7. EQ_OFFER: 1 se não houve emissão de ações no ano, pela linha de emissão da DFC achada por texto (padrões congelados da parte 4.2 do reconhecimento), com os códigos de conta registrados; sem a linha, "não calculável". Implementado na C2: entre as linhas do padrão congelado, só as de ações ou capital (palavra inteira), porque o padrão também pega captação de empréstimos; soma positiva é emissão (0), soma zero é não emissão (1); sem linha ou com soma negativa, não calculável. Rótulo (corrigido em 09/11/2026): contar só linhas de ações ou capital é a definição do próprio artigo ("did not issue common equity", p. 9), não uma adaptação. A adaptação, marcada no resultado, é só esta: ações preferenciais também contam, porque no Brasil são capital próprio, e a linha é identificada por texto na DFC;
+  8. ΔMARGIN > 0, com margem = 3.03 ÷ 3.01;
+  9. ΔTURN > 0, com giro = 3.01 ÷ AT início.
+  - os valores de t−1 vêm do comparativo da DFP de t; os de t−2, da DFP de t−1 na versão pública na data de referência. As duas origens ficam na Linhagem;
+  - a página mostra "F = x/9 (y calculáveis)"; componente que falta não é imputado;
+  - financeiras: "não se aplica";
+  - o nome da família é "qualidade financeira", não "qualidade do lucro";
+  - entrada nova no catálogo, família qualidade financeira, fase `contexto_v2`.
+- **Seção "Limites" da página de investigação** (texto fixo, 08/11/2026). O texto sai de `chiocca.v2.limites`, com os números lidos da saída do estudo 1, e um teste confere que é igual ao daqui:
+  - Não ter alerta não é atestado. Em Dechow, Sloan e Sweeney (1995), o modelo de accruals com mais poder rejeitou 'sem manipulação' em só 28,1% de 32 empresas punidas pela SEC (Tabela 7, p. 32).
+  - No estudo 1, 49,9% das empresa-anos não financeiras avaliadas (48,3% incluindo as financeiras) ficaram em alerta, e o número de acertos não superou o acaso num teste descritivo feito depois do resultado: 7 acertos em 13 casos acertáveis, contra 7,37 esperados ao acaso sem supor anos independentes (8,56 supondo anos independentes).
+  - Os modelos de risco usam números que podem estar manipulados (Pereira e Martins 2015, p. 29). Por isso as três famílias não se somam.
 - O catálogo já tem um `fscore_dechow` (Dechow e outros, 2011), que mede outra coisa (probabilidade de reapresentação) e é sinal da fase 2 do catálogo. Ele não entra nesta etapa, e os nomes não se confundem.
 
 ## 4. Data de referência, versões e corte transversal
 
 - **Versão:** para cada empresa e exercício, a mais recente entregue até a data de referência (`como_era` com `corte = data_referencia`). Consolidado quando existir; senão, individual. Versões anteriores vêm do ENET, só no consolidado. O t−1 vem do PENÚLTIMO da mesma DFP.
 - **Corte transversal:** os decis do motor v1 (salto do DPO e peso não recorrente) e os percentis de contexto são recalculados com as empresas cuja versão era pública na data de referência. É a mesma regra do estudo 1, aplicada à informação daquela data.
-- **Invariante testável:** com a data de referência igual à data de corte do exercício, os sinais e alertas do motor v1 coincidem com os do estudo 1 (`resultados/sinais_empresa_ano.csv`). Esse teste entra na Fase C.
-- **Armazenamento:** DuckDB sobre Parquet, montado a partir de `data/brutos` (já conferido por hash) e de `data/cache/enet`. Tabelas: `versoes` (metadados de todas as versões de DFP até o lacre), `contas` (por versão disponível), `fca` e `cadastro`. Uma versão que não está armazenada sai como `versao_pendente_enet`. A busca no ENET acontece por comando separado, nunca dentro de uma consulta da API (pergunta 9 do plano).
+- **Reapresentação pelo comparativo** (regra de 09/11/2026, registrada antes da implementação; não muda nenhum cálculo nem alerta do motor v1):
+  - quando, na data de referência, já existe a DFP do exercício seguinte (versão pública na data, pelo `como_era`), cada conta do exercício t na versão usada (coluna ÚLTIMO) é comparada com a coluna PENÚLTIMO da DFP de t+1;
+  - a comparação é pela mesma demonstração (a DFC pelo prefixo, porque o método pode mudar) e pelo mesmo código de conta, no mesmo tipo (consolidado com consolidado, individual com individual). Conta que só existe numa das colunas não entra, porque o plano de contas pode mudar;
+  - tolerância: R$ 1.000 por conta, a mesma das conferências (`TOLERANCIA_POR_PARCELA`). Diferença acima disso vai para a investigação como evidência, com o texto neutro "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)", as duas versões, as duas datas de entrega, os dois valores e a diferença;
+  - não se aplica quando a DFP de t+1 não tem versão pública na data, quando uma das duas leituras não tem situação ok ou quando os tipos diferem. Pelo lacre, t+1 vai até 2023: o exercício de 2023 não tem comparação.
+- **Materialidade das diferenças do comparativo** (regra de 09/11/2026, registrada antes da implementação; não muda nenhum cálculo nem alerta do motor v1, e nada aqui vira sinal de alerta):
+  - as diferenças acima da tolerância se separam em dois grupos. Grupo (a), totais e linhas-chave: ativo total (BPA 1), passivo circulante (BPP 2.01), passivo não circulante (BPP 2.02), patrimônio líquido (BPP 2.03), receita líquida (DRE 3.01), lucro líquido (DRE 3.11) e caixa operacional (DFC 6.01), com os mesmos códigos do motor v1 (`chiocca/variaveis.py`). Grupo (b), reclassificações: diferenças nas demais linhas, que não mudam os totais; quando um total também muda, a diferença dele aparece no grupo (a);
+  - destacada: diferença do grupo (a) com valor absoluto acima de 1% do ativo total (BPA 1, coluna ÚLTIMO) da versão usada de t. Sem ativo total positivo na versão usada, nada é destacado;
+  - a investigação mostra em destaque só as diferenças destacadas, com o mesmo texto neutro; todas as diferenças (as dos dois grupos, com o grupo de cada uma) ficam na lista completa de evidências;
+  - nas financeiras, o plano de contas da DRE é outro, e os códigos 3.01 e 3.11 podem ser outras linhas; o rótulo mostrado é sempre a descrição da própria conta;
+  - descritivo: quantas empresa-anos têm diferença destacada em 31/12/2024, em [`docs/armazenamento-temporal.md`](armazenamento-temporal.md), gerado pelo `chiocca/v2/invariante.py`.
+- **Invariante testável:** com a data de referência igual à data de corte do exercício, os sinais e alertas do motor v1 coincidem com os do estudo 1 (`resultados/sinais_empresa_ano.csv`). Implementado na C1 (`chiocca/v2/invariante.py`), com o resultado em [`docs/armazenamento-temporal.md`](armazenamento-temporal.md).
+- **Armazenamento:** DuckDB sobre Parquet, montado a partir de `data/brutos` (já conferido por hash) e de `data/cache/enet`. Tabelas: `versoes` (metadados de todas as versões de DFP até o lacre), `contas` (por versão disponível), `fca` e `cadastro`. Uma versão que não está armazenada sai como `versao_pendente_enet`. A busca no ENET acontece por comando separado, nunca dentro de uma consulta da API (pergunta 9 do plano). Implementado na C1 (`chiocca/v2/armazem.py`), com uma regra a mais: de documento entregue depois de 31/12/2024, o armazém guarda só metadados e a estrutura (quais demonstrações existem), sem nenhuma conta nem valor; o `como_era` usa essa estrutura da última versão para decidir a rota do ENET (emenda 8). Decisão de 09/11/2026: a estrutura conta como metadado; um teste garante que nenhuma conta nem valor desses documentos é guardado, e, quando o motor numa data usa estrutura lida de documento entregue depois dessa data, a linhagem registra "estrutura lida de documento posterior à data (comportamento do estudo 1, emenda 8)". Documentos entregues depois de 31/12/2024 com só a estrutura no armazém, por exercício: 2023: 14 (total: 14). Busca no ENET por comando separado: `python -m chiocca.v2.buscar_enet` (C2).
 
 ## 5. Saídas
 
 - **JSON:** o contrato acima, com Pydantic na Fase D e os mesmos números do motor.
 - **PDF:** texto e tabelas, nas duas línguas, gerado sem dependência (adaptado de `pdf_simples.py`, DireitoAberto), com o aviso fixo em todas as páginas.
 - Nenhuma lista de empresas ordenada por risco, em nenhuma saída.
+
+## 6. API (Fase D)
+
+Implementada em `chiocca/v2/api.py` (FastAPI), com os contratos em Pydantic em `chiocca/v2/modelos.py`, do mesmo modelo do JSON da Fase C: a API não recalcula nada, valida o JSON de `chiocca.v2.investigacao.gerar` contra o modelo (campos desconhecidos são recusados) e devolve os mesmos números do motor. Todas as rotas são GET, sob `/api/v1`, e toda resposta traz a data de referência e o aviso fixo.
+
+| Rota | Resposta |
+| --- | --- |
+| `/saude` | Lacre, intervalo de datas, exercícios e linhas do armazém, versões do motor |
+| `/empresas?busca=&data_referencia=&limite=` | Busca de empresas (`BuscaEmpresas`): só por nome (3 caracteres ou mais, sem acento e sem diferença de maiúsculas), código CVM (até 6 dígitos) ou CNPJ (14 dígitos, com ou sem pontuação); até 50 resultados |
+| `/empresas/{cd_cvm}?data_referencia=` | A empresa na data (`Empresa`, com o nome da época, setor, grupo e códigos de negociação) e os exercícios com DFP entregue até a data |
+| `/empresas/{cd_cvm}/exercicios/{exercicio}?data_referencia=` | `ExercicioNaData` com as evidências (as linhas da DFP na versão usada) |
+| `/investigacoes/{cd_cvm}/{exercicio}?data_referencia=&idioma=` | `Investigacao`, o mesmo JSON da seção 2 |
+| `/investigacoes/{cd_cvm}/{exercicio}/pdf?…` | O PDF gerado só desse JSON |
+| `/investigacoes/{cd_cvm}/{exercicio}/linhagem/{sinal}?…` | A linhagem de um número, com as evidências que ela cita |
+
+- **Validações:** as mesmas do contrato. Data de referência de 30/04/2011 a 31/12/2024 (sem data, a máxima) e exercício até 2023 (lacre); fora disso, a recusa (422) traz o motivo (`data_fora_do_intervalo`, `exercicio_lacrado`). Empresa ou exercício sem DFP entregue até a data: 404 com o motivo. Requisição com query string acima de 2.048 caracteres (414) ou com corpo acima de 16.384 bytes (413) é recusada.
+- **Regra de 09/11/2026:** nenhum endpoint lista empresas ordenadas por alerta, percentil ou escore. A busca é só por nome, código CVM ou CNPJ (não por código de negociação, que só aparece como informação da empresa), a lista de empresas só sai da busca, sempre em ordem alfabética da denominação, e o resultado da busca não traz nenhum sinal. Nenhuma rota aceita parâmetro de ordenação. Um teste (`tests/test_v2_api.py`) confere as rotas, os parâmetros, o esquema OpenAPI e a ordem da busca.
+- **Nome da época na busca:** o nome mostrado e os nomes pesquisados são os do FCA entregue até a data; sem FCA, o do índice da DFP, marcado em `origem_denominacao`. Assim, uma empresa não é achada por um nome que só teve depois da data.
+- **Sem rede:** a API lê só o armazém; versão que falta sai como `versao_pendente_enet` (a busca no ENET é o comando separado da C2). Os testes de contrato rodam com o armazém da fixture e com a rede bloqueada.
+- **Uso:** `python -m chiocca.v2.api [porta]` (uvicorn em 127.0.0.1; documentação interativa em `/api/v1/docs`).

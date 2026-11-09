@@ -75,7 +75,7 @@ def escreve_dfp(
 
 def escreve_fca(pasta: Path, ano: int, versoes: list[tuple[str, int, str, str]]) -> None:
     """versoes: (cd, versao, dt_receb, setor)."""
-    idx, geral = [], []
+    idx, geral, vm = [], [], []
     for k, (cd, versao, receb, setor) in enumerate(versoes):
         idd = 9000 + k
         idx.append({"CNPJ_CIA": f"00.000.{cd:0>3}/0001-00", "DT_REFER": f"{ano}-01-01", "VERSAO": versao,
@@ -84,9 +84,15 @@ def escreve_fca(pasta: Path, ano: int, versoes: list[tuple[str, int, str, str]])
         geral.append({"CNPJ_Companhia": f"00.000.{cd:0>3}/0001-00", "Data_Referencia": f"{ano}-01-01",
                       "Versao": versao, "ID_Documento": idd, "Codigo_CVM": f"{cd:0>6}",
                       "Setor_Atividade": setor})  # fmt: skip
+        for codigo, valor in ((f"EMP{cd}3", "Ações Ordinárias"), ("", "Debêntures")):  # debênture sem código fica fora
+            vm.append({"CNPJ_Companhia": f"00.000.{cd:0>3}/0001-00", "Data_Referencia": f"{ano}-01-01",
+                       "Versao": versao, "ID_Documento": idd, "Valor_Mobiliario": valor,
+                       "Codigo_Negociacao": codigo or None, "Mercado": "Bolsa",
+                       "Data_Inicio_Negociacao": f"{ano - 5}-01-02", "Data_Fim_Negociacao": None})  # fmt: skip
     with zipfile.ZipFile(pasta / f"fca_cia_aberta_{ano}.zip", "w") as z:
         z.writestr(f"fca_cia_aberta_{ano}.csv", _csv(pd.DataFrame(idx)))
         z.writestr(f"fca_cia_aberta_geral_{ano}.csv", _csv(pd.DataFrame(geral)))
+        z.writestr(f"fca_cia_aberta_valor_mobiliario_{ano}.csv", _csv(pd.DataFrame(vm)))
 
 
 def escreve_cadastro(pasta: Path, linhas: list[tuple[str, str, str]]) -> None:

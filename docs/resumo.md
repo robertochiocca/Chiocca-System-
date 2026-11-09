@@ -16,7 +16,7 @@ Com dados públicos disponíveis na época, os sinais do catálogo teriam alerta
 **Resultado.**
 
 - Acerto: 7 de 13 casos acertáveis (7 de 42 no gabarito inteiro).
-- Alarmes por acerto nas não financeiras (emenda 11): 311,0 no período de teste, com 2 acertos por alerta dentro dele, e 108,3 no período inteiro. Taxa de alerta: 49,9% das empresa-anos avaliadas.
+- Alarmes por acerto nas não financeiras (emenda 11): 311,0 no período de teste, com 2 acertos por alerta dentro dele, e 108,3 no período inteiro. Taxa de alerta: 49,9% das empresa-anos não financeiras avaliadas (48,3% incluindo as financeiras).
 - Financeiras: nenhum caso acertável. O IRB não teve alerta na DFP de 2018 (0,053, contra limite de 1,024).
 
 **Regra boba lado a lado** (decil mais endividado de cada ano e grupo; sem vencedor declarado, emenda 11):
@@ -27,11 +27,13 @@ Com dados públicos disponíveis na época, os sinais do catálogo teriam alerta
 | Acertos por alerta em 2017–2023 | 2 | 1 |
 | Alarmes por acerto, período de teste | 311,0 | 108,0 |
 | Alarmes por acerto, período inteiro | 108,3 | 26,8 |
-| Taxa de alerta, 2010–2023 | 49,9% | 10,1% |
+| Taxa de alerta das empresa-anos avaliadas, 2010–2023 | 49,9% | 10,1% |
+
+**Depois do resultado (análise descritiva, não pré-registrada).** Com anos independentes, o acaso daria 8,56 acertos em média, e 7 ou mais com chance de 90,0%. Como os alertas se repetem na mesma empresa (73,8% das empresa-anos em alerta das não financeiras também estavam em alerta no ano anterior, contra taxa de alerta de 49,9% das empresa-anos não financeiras avaliadas), esse número é um teto. Com a chance de cada caso medida nas empresas do mesmo grupo, sem supor anos independentes, o acaso daria 7,37 acertos, e 7 ou mais com chance de 69,3%. Detalhes em [`docs/analises-pos-estudo-1.md`](analises-pos-estudo-1.md).
 
 **O que deu errado e por quê.**
 
-- O juro implícito sozinho responde por 59,8% das empresa-anos em alerta (2.001 de 3.345). A despesa financeira (3.06.02) inclui, por definição, variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos (2.01.04 e 2.02.01); essa decomposição não foi medida. Sem ele, a taxa de alerta seria 20,0%, e não 49,9%.
+- O juro implícito sozinho responde por 59,8% das empresa-anos em alerta (2.001 de 3.345). A despesa financeira (3.06.02) inclui, por definição, variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos (2.01.04 e 2.02.01); essa decomposição não foi medida. Sem ele, a taxa de alerta das empresa-anos não financeiras avaliadas seria 20,0%, e não 49,9%.
 - O M-score ficou sem valor em 1.548 de 6.938 empresa-anos; em 1.306, faltou o DEPI. Em 7 dos 13 casos acertáveis o M não existiu porque a DFC não tem linha de depreciação (2 deles com DFC pelo método direto). Com valores neutros, o acerto seria 8 de 13.
 - Só 2 dos 7 acertos têm alerta no período de teste: em 11 dos 13 casos acertáveis, o período afetado termina antes de 2017.
 - A emenda 10 punha numerador e acertos em janelas diferentes (88,1 alarmes por acerto); a emenda 11 corrigiu isso depois dos resultados, e as duas versões estão no relatório.
