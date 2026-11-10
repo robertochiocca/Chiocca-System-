@@ -107,7 +107,8 @@ def test_pdf_determinista_com_rodape_em_todas_as_paginas() -> None:
     a, b = pdf_simples.gerar_pdf(paginas, rodapes), pdf_simples.gerar_pdf(paginas, rodapes)
     assert a == b and a.startswith(b"%PDF-1.4") and len(paginas) > 1
     assert a.count(b"(Aviso fixo) Tj") == len(paginas)
-    assert b"T\xedtulo com - e >=" in a and b"->" in a
+    # sinal de menos na Helvetica (código 0x81 da /Differences), "≥" na Symbol, "→" transliterado (10/11/2026)
+    assert b"(T\xedtulo com \x81 e ) Tj" in a and b"/F3 11 Tf\n(\xb3) Tj" in a and b"->" in a
 
 
 def test_coeficientes_do_z2_iguais_ao_catalogo() -> None:

@@ -1,12 +1,13 @@
 // Varredura da demonstração estática real, para rodar antes de publicar (npm run varrer:demo): abre no navegador,
 // nas duas línguas, a página de cada companhia e cada investigação gerada, no site exportado (out/, com os dados de
 // public/demo/ gerados por python -m chiocca.v2.demonstracao_estatica), e confere que a tela abre sem erro, sem
-// código interno no texto e com o PDF no lugar. Não roda no CI: os dados ficam fora do git.
+// código interno no texto, sem hífen no lugar do sinal de menos e com o PDF no lugar. Serve o site debaixo do mesmo
+// prefixo do build (o do GitHub Pages, se for o caso). Não roda no CI: os dados ficam fora do git.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { codigosInternos, textoDaTela } from "./comum.mjs";
+import { codigosInternos, hifensComoSinal, textoDaTela } from "./comum.mjs";
 import { servir } from "./servidor.mjs";
 
 const out = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "out");
@@ -15,7 +16,9 @@ if (!existsSync(join(out, "demo", "manifesto.json"))) {
   process.exit(2);
 }
 const indice = JSON.parse(readFileSync(join(out, "demo", "indice.json"), "utf-8"));
-const { url, fechar } = await servir(out);
+// o prefixo do build (NEXT_PUBLIC_BASE_PATH), lido do próprio site exportado: "/Chiocca-System-" no GitHub Pages
+const prefixo = /(?:src|href)="([^"]*)\/_next\//.exec(readFileSync(join(out, "index.html"), "utf-8"))?.[1] ?? "";
+const { url, fechar } = await servir(out, prefixo);
 const navegador = await chromium.launch();
 const problemas = {};
 const anota = (chave, x) => (problemas[chave] ??= []).push(x);
@@ -41,7 +44,9 @@ for (const idioma of ["pt", "en"]) {
           continue;
         }
         comAviso += await p.locator(".aviso-topo").count();
-        for (const c of codigosInternos(await textoDaTela(p))) anota(chave, c);
+        const texto = await textoDaTela(p);
+        for (const c of codigosInternos(texto)) anota(chave, c);
+        for (const h of hifensComoSinal(texto)) anota(chave, `hífen como sinal de menos: ${h}`);
         const pdf = await p.request.get(`${url}/demo/investigacoes/${e.cd_cvm}/${ex}/${data}/${idioma}.pdf`);
         if (pdf.status() !== 200) anota(chave, `PDF: HTTP ${pdf.status()}`);
       }
@@ -51,5 +56,6 @@ for (const idioma of ["pt", "en"]) {
 }
 await navegador.close();
 await fechar();
-console.log(JSON.stringify({ empresas: indice.empresas.length, investigacoes_abertas: investigacoes, com_aviso_de_diferenca: comAviso, problemas }, null, 1));
+const resumo = { prefixo, empresas: indice.empresas.length, investigacoes_abertas: investigacoes, com_aviso_de_diferenca: comAviso };
+console.log(JSON.stringify({ ...resumo, problemas }, null, 1));
 process.exit(Object.keys(problemas).length ? 1 : 0);

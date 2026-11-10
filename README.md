@@ -43,6 +43,15 @@ Avaliação: casos reais acertados, alarmes falsos, comparação com uma regra s
 Ficha de alerta: qual sinal disparou, com qual número e de qual conta da DFP
 ```
 
+### Demonstração
+
+**[robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/)**: site estático, sem API, com as investigações geradas antes pelo próprio produto.
+
+- **O que mostra:** as 35 companhias do gabarito que entram no modo demonstração (os casos públicos, sem os casos em observação), em datas fixas: a data de corte de cada exercício do período afetado do caso, a do exercício anterior e 31/12/2024. Em cada data, a investigação completa como era naquela data, em PT e EN, com o PDF. A busca é só por nome, código CVM ou CNPJ, e o seletor só oferece as datas geradas.
+- **O que não mostra:** outras companhias, outras datas nem exercícios de 2024 em diante (reservados ao estudo 2). O produto completo, com qualquer companhia e qualquer data dentro do lacre, roda localmente com a API (veja [Como reproduzir](#como-reproduzir)).
+
+<p><img src="docs/imagens/demonstracao-computador.png" alt="Investigação da Americanas, exercício 2021, em 31/12/2024, na demonstração, no computador" width="620"> <img src="docs/imagens/demonstracao-celular.png" alt="A mesma investigação no celular" width="200"></p>
+
 ### Sinais da primeira versão
 
 - **M-score de Beneish:** oito índices que comparam um ano com o anterior.
@@ -178,6 +187,7 @@ cd web && npm ci && npm run build && npm start   # interface em http://localhost
 python -m chiocca.v2.demonstracao_estatica --processos 4   # demonstração estática em web/public/demo/ (JSON e PDF, fora do git)
 cd web && npm run build:estatico && npm run test:tela   # site estático em web/out/, sem API, e o teste de tela
 cd web && npm run varrer:demo   # antes de publicar: todas as investigações da demonstração no navegador, PT e EN
+python -m chiocca.v2.gh_pages PASTA_DO_GH_PAGES --varredura varredura.json   # monta o branch gh-pages (veja o módulo)
 python -m pytest                      # testes sem rede
 ```
 
@@ -220,6 +230,15 @@ Evaluation: real cases detected, false alarms, comparison with a naive rule
         ↓
 Alert sheet: which signal fired, with which figure, from which DFP account
 ```
+
+### Demo
+
+**[robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/)**: a static site, with no API, holding investigations generated beforehand by the product itself.
+
+- **What it shows:** the 35 ground-truth companies included in demo mode (the public cases, without the cases under observation), on fixed dates: the cut-off date of each fiscal year of the case's affected period, the one of the previous fiscal year and 2024-12-31. On each date, the full investigation as it was on that date, in PT and EN, with the PDF. Search is only by name, CVM code or CNPJ, and the date selector only offers the generated dates.
+- **What it does not show:** other companies, other dates or fiscal years from 2024 onward (reserved for study 2). The full product, with any company and any date within the seal, runs locally with the API (see [How to reproduce](#how-to-reproduce)).
+
+<p><img src="docs/imagens/demonstracao-computador.png" alt="Americanas investigation, fiscal year 2021, on 2024-12-31, in the demo, on a computer" width="620"> <img src="docs/imagens/demonstracao-celular.png" alt="The same investigation on a phone" width="200"></p>
 
 ### First-version signals
 
@@ -356,6 +375,7 @@ cd web && npm ci && npm run build && npm start   # interface at http://localhost
 python -m chiocca.v2.demonstracao_estatica --processos 4   # static demo in web/public/demo/ (JSON and PDF, outside git)
 cd web && npm run build:estatico && npm run test:tela   # static site in web/out/, no API, and the screen test
 cd web && npm run varrer:demo   # before publishing: every demo investigation in the browser, PT and EN
+python -m chiocca.v2.gh_pages GH_PAGES_FOLDER --varredura varredura.json   # assembles the gh-pages branch (see the module)
 python -m pytest                      # offline tests
 ```
 

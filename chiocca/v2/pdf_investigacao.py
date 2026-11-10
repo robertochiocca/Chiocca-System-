@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from chiocca.formato import data, decimal, inteiro, pct
+from chiocca.formato import data
+from chiocca.v2.contexto import ROTULOS_F
+from chiocca.v2.exibicao import decimal, inteiro, pct
 from chiocca.v2.pdf_simples import gerar_pdf, paginar
 
 T: dict[str, dict[str, Any]] = {
@@ -211,10 +213,10 @@ def linhas(inv: dict[str, Any]) -> list[str]:
                     + f" ({t['indices']})"
                 )
             if a["sinal"] == "piotroski_f" and comp.get("sinais"):
-                out.append(
-                    f"  {t['sinais_f']}: "
-                    + "; ".join(f"{k} = {'—' if v is None else v}" for k, v in comp["sinais"].items())
-                )
+                k = 0 if lang == "pt" else 1
+                out.append(f"  {t['sinais_f']}:")
+                out += [f"    - {ROTULOS_F[s][k] if s in ROTULOS_F else s}: {'—' if v is None else v}"
+                        for s, v in comp["sinais"].items()]  # fmt: skip
             c = a.get("contexto") or {}
             if c:
                 out += [f"  {t['pct_setor']}: {_pct(c.get('percentil_setor_ano'), lang)}",

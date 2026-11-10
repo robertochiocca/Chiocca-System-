@@ -10,7 +10,7 @@ import { dirname, join } from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { abrirTudo, codigosInternos, textoDaTela } from "./comum.mjs";
+import { abrirTudo, codigosInternos, hifensComoSinal, textoDaTela } from "./comum.mjs";
 import { INV_FIXTURE, subir } from "./servidor.mjs";
 
 let servidor;
@@ -62,8 +62,11 @@ for (const idioma of ["pt", "en"]) {
     ];
     for (const [caminho, esperar] of telas) {
       await abrir(p, caminho, esperar);
-      const codigos = codigosInternos(await textoDaTela(p));
+      const texto = await textoDaTela(p);
+      const codigos = codigosInternos(texto);
       assert.deepEqual(codigos, [], `${caminho} (${idioma}) mostra código interno: ${codigos.join(", ")}`);
+      const hifens = hifensComoSinal(texto);
+      assert.deepEqual(hifens, [], `${caminho} (${idioma}) usa hífen como sinal de menos: ${hifens.join(" | ")}`);
     }
     await abrir(p, INV_2024, "#mudancas");
     const doc = await p.locator("section.cartao", { has: p.locator("h3", { hasText: idioma === "pt" ? "Documento usado" : "Document used" }) }).innerText();
@@ -93,6 +96,22 @@ for (const idioma of ["pt", "en"]) {
     // sem diferença destacada (em 30/04/2022 a DFP 2022 ainda não existia), sem aviso
     await abrir(p, INV_2022, "#mudancas");
     assert.equal(await p.locator(".aviso-topo").count(), 0);
+    await contexto.close();
+  });
+
+  test(`rótulos do Piotroski F e sinal de menos na regra (${idioma})`, async () => {
+    const { p, contexto } = await pagina(idioma);
+    await abrir(p, INV_2024, "#mudancas");
+    const texto = await textoDaTela(p);
+    const rotulos = idioma === "pt"
+      ? ["Lucro sobre o ativo (ROA)", "Caixa operacional sobre o ativo (CFO)", "Variação do ROA (ΔROA)",
+          "Caixa maior que o lucro (ACCRUAL)", "Variação da alavancagem (ΔLEVER)", "Variação da liquidez corrente (ΔLIQUID)",
+          "Sem emissão de ações (EQ_OFFER)", "Variação da margem bruta (ΔMARGIN)", "Variação do giro do ativo (ΔTURN)"]
+      : ["Return on assets (ROA)", "Operating cash flow on assets (CFO)", "Change in ROA (ΔROA)",
+          "Cash above earnings (ACCRUAL)", "Change in leverage (ΔLEVER)", "Change in current ratio (ΔLIQUID)",
+          "No equity issuance (EQ_OFFER)", "Change in gross margin (ΔMARGIN)", "Change in asset turnover (ΔTURN)"];
+    for (const r of rotulos) assert.ok(texto.includes(`${r}: `), `falta o sinal do F: ${r}`);
+    assert.ok(texto.includes(idioma === "pt" ? "M > −1,78" : "M > −1.78"), "regra do M-score sem o sinal de menos");
     await contexto.close();
   });
 

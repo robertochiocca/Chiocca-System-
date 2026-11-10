@@ -40,16 +40,22 @@ def test_investigacao_segue_o_contrato(mundo_c1: tuple[Fontes, armazem.FontesArm
 
 
 # Código interno: identificador com sublinhado (lucro_sem_caixa, DFC_MI, componente_nao_calculavel...). Ficam de fora
-# nomes de arquivo e URLs (dfp_cia_aberta_2021.zip) e a notação do próprio artigo (EQ_OFFER, Piotroski 2000, p. 9).
+# nomes de arquivo e URLs (dfp_cia_aberta_2021.zip). Sigla do artigo só vale no formato combinado em 10/11/2026: entre
+# parênteses, logo depois do nome legível, como nos índices do M-score ("Sem emissão de ações (EQ_OFFER)").
 CODIGO_INTERNO = re.compile(r"(?<![\w./:-])[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+(?![\w./-])")
-NOTACAO_DOS_ARTIGOS = {"EQ_OFFER"}
+SIGLA_DEPOIS_DO_NOME = re.compile(r"(?<=[a-zà-ü] )\(Δ?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*\)")
 
 
 def codigos_no_pdf(inv: dict[str, Any]) -> set[str]:
     achados: set[str] = set()
     for linha in pdf_investigacao.linhas(inv):
-        achados |= set(CODIGO_INTERNO.findall(linha)) - NOTACAO_DOS_ARTIGOS
+        achados |= set(CODIGO_INTERNO.findall(SIGLA_DEPOIS_DO_NOME.sub("", linha)))
     return achados
+
+
+def test_sigla_sozinha_conta_como_codigo() -> None:
+    assert CODIGO_INTERNO.findall(SIGLA_DEPOIS_DO_NOME.sub("", "Sem emissão de ações (EQ_OFFER): 1")) == []
+    assert CODIGO_INTERNO.findall(SIGLA_DEPOIS_DO_NOME.sub("", "EQ_OFFER pela DFC")) == ["EQ_OFFER"]
 
 
 @pytest.mark.parametrize("nome", exemplos.NOMES)

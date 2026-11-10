@@ -51,13 +51,15 @@ export function montarDados(raiz) {
 
 export const INV_FIXTURE = "/investigacao/?cd=100&ex=2020&data=2022-04-30";
 
-/** Serve uma pasta (o site exportado) em http://127.0.0.1:<porta livre>. */
-export async function servir(raiz) {
+/** Serve uma pasta (o site exportado) em http://127.0.0.1:<porta livre>, debaixo de `prefixo` (o NEXT_PUBLIC_BASE_PATH
+ * do build, por exemplo "/Chiocca-System-", como no GitHub Pages). */
+export async function servir(raiz, prefixo = "") {
   const servidor = createServer((req, res) => {
-    const caminho = decodeURIComponent(new URL(req.url, "http://x").pathname);
-    let arquivo = join(raiz, caminho);
-    if (existsSync(arquivo) && statSync(arquivo).isDirectory()) arquivo = join(arquivo, "index.html");
-    if (!existsSync(arquivo)) {
+    const pedido = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    const caminho = pedido.startsWith(`${prefixo}/`) ? pedido.slice(prefixo.length) : null;
+    let arquivo = caminho === null ? "" : join(raiz, caminho);
+    if (arquivo && existsSync(arquivo) && statSync(arquivo).isDirectory()) arquivo = join(arquivo, "index.html");
+    if (!arquivo || !existsSync(arquivo)) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       return res.end("404");
     }
@@ -66,7 +68,7 @@ export async function servir(raiz) {
   });
   await new Promise((ok) => servidor.listen(0, "127.0.0.1", ok));
   const { port } = servidor.address();
-  return { url: `http://127.0.0.1:${port}`, fechar: () => new Promise((ok) => servidor.close(ok)) };
+  return { url: `http://127.0.0.1:${port}${prefixo}`, fechar: () => new Promise((ok) => servidor.close(ok)) };
 }
 
 /** Copia o site exportado para uma pasta temporária, monta os dados de teste e sobe o servidor. */

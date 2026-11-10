@@ -20,19 +20,27 @@ export async function textoDaTela(p) {
   });
 }
 
-// Código interno: identificador com sublinhado (dados_abertos, lucro_sem_caixa, nao_aplicavel, DFC_MI...). Ficam de
-// fora o nome de arquivo de fonte pública (cad_cia_aberta.csv) e a notação do próprio artigo: EQ_OFFER é o nome que
-// Piotroski (2000, p. 9) dá ao sinal, mostrado ao lado de ROA, CFO e ΔLEVER, como no artigo.
+// Código interno: identificador com sublinhado (dados_abertos, lucro_sem_caixa, nao_aplicavel, DFC_MI...). Fica de fora
+// o nome de arquivo de fonte pública (cad_cia_aberta.csv). Sigla do artigo só vale no formato combinado em 10/11/2026:
+// entre parênteses, logo depois do nome legível, como nos índices do M-score ("Sem emissão de ações (EQ_OFFER)");
+// sozinha ("EQ_OFFER pela DFC"), conta como código.
 const CODIGO = /[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+(?:\.[a-z]{2,7}\b)?/g;
-const NOTACAO_DOS_ARTIGOS = new Set(["EQ_OFFER"]);
+const SIGLA_DEPOIS_DO_NOME = /(?<=[a-zà-ü] )\(Δ?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*\)/g;
 
 export function codigosInternos(texto) {
-  const achados = [...texto.matchAll(CODIGO)]
-    .map((m) => m[0])
-    .filter((c) => !/\.[a-z]{2,7}$/.test(c) && !NOTACAO_DOS_ARTIGOS.has(c));
+  const semSiglas = texto.replace(SIGLA_DEPOIS_DO_NOME, "");
+  const achados = [...semSiglas.matchAll(CODIGO)].map((m) => m[0]).filter((c) => !/\.[a-z]{2,7}$/.test(c));
   // o defeito relatado: "dados_abertos · con" no lugar dos rótulos
   for (const m of texto.matchAll(/·\s*(con|ind)\b/g)) achados.push(m[0]);
   // valor que não virou texto
   for (const m of texto.matchAll(/\b(NaN|undefined)\b|\[object \w+\]/g)) achados.push(m[0]);
   return [...new Set(achados)];
+}
+
+// Número negativo com hífen no lugar do sinal de menos (−): hífen no começo, depois de espaço, parêntese ou sinal de
+// comparação, antes de um algarismo. Datas (2024-12-31) e intervalos (2010-2023) não entram.
+const HIFEN_COMO_SINAL = /(?<![\w.,\-\u2212/])-(?=\d)/g;
+
+export function hifensComoSinal(texto) {
+  return [...texto.matchAll(HIFEN_COMO_SINAL)].map((m) => texto.slice(Math.max(0, m.index - 25), m.index + 8));
 }

@@ -26,13 +26,13 @@ from typing import Any
 import pandas as pd
 
 from chiocca import base, variaveis
-from chiocca.formato import decimal
 from chiocca.sinais.mscore import COEFICIENTES
 from chiocca.sinais.resultado import Resultado as ResultadoV1
 from chiocca.sinais_amostra import CORTE_M, SPREAD_PP
 from chiocca.v2 import comparativo, confianca, contexto, limites
 from chiocca.v2 import conferencias as cf
 from chiocca.v2.armazem import capitalizacao
+from chiocca.v2.exibicao import decimal, textos_com_sinal_de_menos
 from chiocca.v2.lacre import ULTIMO_EXERCICIO_LIBERADO, garantir_data_referencia, garantir_liberado
 from chiocca.v2.linhagem import (
     FORMULAS,
@@ -655,7 +655,7 @@ def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, font
     out["informacao_de_hoje"] = hoje
     out["gerado_em"] = gerado_em
     out["aviso"] = AVISO[lang]
-    return out
+    return dict(textos_com_sinal_de_menos(out))  # número negativo com o sinal de menos (chiocca/v2/exibicao.py)
 
 
 def main(argv: list[str]) -> None:

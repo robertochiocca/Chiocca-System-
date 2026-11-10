@@ -48,12 +48,12 @@ VALIDADE_Z2 = Motivo(
 )
 NAO_SE_APLICA = Motivo("não se aplica a financeiras", "does not apply to financial companies")
 DIVIDA_ZERO = Motivo(
-    "sem dívida de longo prazo nos dois anos: ΔLEVER = 0 e o sinal vale 0 (escolha do projeto; o artigo só define caiu = 1, subiu = 0, p. 8)",
-    "no long-term debt in either year: ΔLEVER = 0 and the signal is 0 (project choice; the article only defines fell = 1, rose = 0, p. 8)",
+    "sem dívida de longo prazo nos dois anos: a variação da alavancagem (ΔLEVER) é zero e o sinal vale 0 (escolha do projeto; o artigo só define caiu = 1, subiu = 0, p. 8)",
+    "no long-term debt in either year: the change in leverage (ΔLEVER) is zero and the signal is 0 (project choice; the article only defines fell = 1, rose = 0, p. 8)",
 )
 ADAPTACAO_EQ = Motivo(
-    'EQ_OFFER pela DFC: linhas de 6.03 do padrão congelado de "emissões" (reconhecimento, parte 4.2), só as de ações ou capital, como define o artigo ("did not issue common equity", p. 9); adaptação: ações preferenciais também contam, porque no Brasil são capital próprio, e a linha é identificada por texto na DFC',
-    'EQ_OFFER from the cash flow statement: 6.03 lines of the frozen "emissões" pattern (reconnaissance, part 4.2), only those about shares or capital, as the article defines it ("did not issue common equity", p. 9); adaptation: preferred shares also count, because in Brazil they are equity, and the line is identified by text in the cash flow statement',
+    'Sem emissão de ações (EQ_OFFER), pela DFC: linhas de 6.03 do padrão congelado de "emissões" (reconhecimento, parte 4.2), só as de ações ou capital, como define o artigo ("did not issue common equity", p. 9); adaptação: ações preferenciais também contam, porque no Brasil são capital próprio, e a linha é identificada por texto na DFC',
+    'No equity issuance (EQ_OFFER), from the cash flow statement: 6.03 lines of the frozen "emissões" pattern (reconnaissance, part 4.2), only those about shares or capital, as the article defines it ("did not issue common equity", p. 9); adaptation: preferred shares also count, because in Brazil they are equity, and the line is identified by text in the cash flow statement',
 )
 
 
@@ -157,6 +157,19 @@ def altman_z2(contas: pd.DataFrame, grupo: str | None) -> Indicador:
 
 
 SINAIS_F = ("ROA", "CFO", "ΔROA", "ACCRUAL", "ΔLEVER", "ΔLIQUID", "EQ_OFFER", "ΔMARGIN", "ΔTURN")
+# Rótulos de exibição (pedido de 10/11/2026): nome legível com a sigla do artigo entre parênteses, como nos índices do
+# M-score. A tela usa os mesmos (web/lib/textos.ts, conferido por teste).
+ROTULOS_F = {
+    "ROA": ("Lucro sobre o ativo (ROA)", "Return on assets (ROA)"),
+    "CFO": ("Caixa operacional sobre o ativo (CFO)", "Operating cash flow on assets (CFO)"),
+    "ΔROA": ("Variação do ROA (ΔROA)", "Change in ROA (ΔROA)"),
+    "ACCRUAL": ("Caixa maior que o lucro (ACCRUAL)", "Cash above earnings (ACCRUAL)"),
+    "ΔLEVER": ("Variação da alavancagem (ΔLEVER)", "Change in leverage (ΔLEVER)"),
+    "ΔLIQUID": ("Variação da liquidez corrente (ΔLIQUID)", "Change in current ratio (ΔLIQUID)"),
+    "EQ_OFFER": ("Sem emissão de ações (EQ_OFFER)", "No equity issuance (EQ_OFFER)"),
+    "ΔMARGIN": ("Variação da margem bruta (ΔMARGIN)", "Change in gross margin (ΔMARGIN)"),
+    "ΔTURN": ("Variação do giro do ativo (ΔTURN)", "Change in asset turnover (ΔTURN)"),
+}
 TERMOS_EMISSAO = ("captac", "emiss", "ingress")
 SAIDAS_EMISSAO = ("pagamento", "amortiza", "liquida", "resgat")
 ACOES = re.compile(r"\b(acoes|acao|capital)\b")

@@ -90,12 +90,16 @@ def test_amostra_da_demonstracao_real_igual_a_api() -> None:
 
 
 @pytest.mark.skipif(not (DEMO / "manifesto.json").exists(), reason="precisa da demonstração gerada (web/public/demo)")
-def test_demonstracao_real_sem_codigo_interno_no_pdf() -> None:
+def test_demonstracao_real_sem_codigo_interno_nem_hifen_como_sinal_no_pdf() -> None:
+    from tests.test_v2_exibicao import HIFEN_COMO_SINAL
     from tests.test_v2_investigacao import codigos_no_pdf
 
     achados = {}
     for arquivo in sorted((DEMO / "investigacoes").rglob("*.json")):
-        codigos = codigos_no_pdf(json.loads(arquivo.read_text(encoding="utf-8")))
-        if codigos:
-            achados[str(arquivo.relative_to(DEMO))] = sorted(codigos)
+        inv = json.loads(arquivo.read_text(encoding="utf-8"))
+        problemas = sorted(codigos_no_pdf(inv)) + [
+            x for x in pdf_investigacao.linhas(inv) if HIFEN_COMO_SINAL.search(x)
+        ]
+        if problemas:
+            achados[str(arquivo.relative_to(DEMO))] = problemas
     assert achados == {}

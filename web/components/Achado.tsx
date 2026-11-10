@@ -15,6 +15,12 @@ function percentil(p: { valor: number | null; n: number; motivo: string | null; 
   return `${decimal(p.valor, idioma, 0)} (n = ${inteiro(p.n, idioma)})${p.marca ? `; ${p.marca}` : ""}`;
 }
 
+/** Os nove sinais do Piotroski F (1, 0 ou nulo, quando não calculável), na ordem do artigo, como vêm no JSON. */
+function sinaisF(componentes: Record<string, unknown> | null | undefined): Record<string, number | null> | null {
+  const s = componentes?.sinais;
+  return s && typeof s === "object" ? (s as Record<string, number | null>) : null;
+}
+
 export default function Achado({
   a,
   evidencias,
@@ -79,6 +85,18 @@ export default function Achado({
         <p className="discreto">
           {t.alternativas}: <TextoComLinks texto={a.explicacoes_alternativas.join(" ")} />
         </p>
+      )}
+      {a.sinal === "piotroski_f" && sinaisF(a.componentes) && (
+        <>
+          <p className="rotulo">{t.sinais_f}:</p>
+          <ul className="discreto">
+            {Object.entries(sinaisF(a.componentes) ?? {}).map(([s, v]) => (
+              <li key={s}>
+                {t.sinais_f_rotulos[s] ?? s}: {v === null ? "—" : v}
+              </li>
+            ))}
+          </ul>
+        </>
       )}
       {!!(a.limitacoes?.length || a.marcas?.length) && (
         <ul className="discreto">

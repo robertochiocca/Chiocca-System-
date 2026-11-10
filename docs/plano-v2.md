@@ -51,6 +51,7 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 - **Decisão de Roberto, 09/11/2026:** Fase E autorizada, com as regras da API, comparação com o setor só agregada, data até 31/12/2024 e exercício até 2023, "Informação de hoje" separada, aviso fixo, PT e EN, modo escuro e celular, página "Como o motor foi testado" do mesmo JSON do resumo, CI com build, tipos, testes de contrato e npm audit, e nenhum deploy: só um modo demonstração ligado por configuração.
 - **Concluída em 09/11/2026:** `web/` (Next.js 16.4.3, React 19.2.9, TypeScript 5.9.3; o Next 15 trazia um postcss com vulnerabilidade alta no `npm audit`), regras em [`docs/contratos.md`](contratos.md), seção 7; modo demonstração na API (`CHIOCCA_MODO_DEMONSTRACAO`). O deploy espera a escolha de Roberto.
 - **Resposta à Fase E, 10/11/2026:** ajustes da interface (rótulos no lugar de códigos, menu do celular, aviso de diferença destacada, faixa de Tukey, caminhos como links), com teste de tela; demonstração estática gerada por script (`chiocca/v2/demonstracao_estatica.py`), deploy preferido de Roberto, que publica depois de ver o relatório.
+- **Segunda rodada, 10/11/2026:** rótulos dos sinais do Piotroski F, sinal de menos na exibição da v2 (tela e PDF) e publicação no GitHub Pages pelo branch gerado `gh-pages` ([`docs/contratos.md`](contratos.md), seção 7).
 
 ## Fase F: inteligência documental v0
 
