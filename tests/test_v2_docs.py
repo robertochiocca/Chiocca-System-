@@ -116,3 +116,17 @@ def test_readme_invariante_e_testes_pulados_no_ci() -> None:
         and "regeneração dos 4 exemplos" in readme
         and "regeneration of the 4 examples" in readme
     )
+
+
+def test_readme_demonstracao_com_o_numero_de_companhias_do_modo_demonstracao() -> None:
+    from chiocca.v2.api import empresas_da_demonstracao
+
+    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+    n = len(empresas_da_demonstracao())
+    pt = readme.split("### Demonstração", 1)[1].split("\n### ", 1)[0]
+    en = readme.split("### Demo\n", 1)[1].split("\n### ", 1)[0]
+    for secao, companhias in ((pt, f"as {n} companhias do gabarito"), (en, f"the {n} ground-truth companies")):
+        assert "https://robertochiocca.github.io/Chiocca-System-/" in secao and companhias in secao
+        for imagem in re.findall(r'src="(docs/imagens/[^"]+)"', secao):
+            assert (RAIZ / imagem).exists()
+        assert len(re.findall(r'src="docs/imagens/', secao)) == 2  # computador e celular

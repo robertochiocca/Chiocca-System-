@@ -18,18 +18,21 @@ import hashlib
 import json
 import re
 import sys
+import weakref
+from collections import OrderedDict
 from datetime import date, datetime, timezone
 from typing import Any
 
 import pandas as pd
 
 from chiocca import base, variaveis
-from chiocca.formato import decimal
 from chiocca.sinais.mscore import COEFICIENTES
 from chiocca.sinais.resultado import Resultado as ResultadoV1
 from chiocca.sinais_amostra import CORTE_M, SPREAD_PP
 from chiocca.v2 import comparativo, confianca, contexto, limites
 from chiocca.v2 import conferencias as cf
+from chiocca.v2.armazem import capitalizacao
+from chiocca.v2.exibicao import decimal, textos_com_sinal_de_menos
 from chiocca.v2.lacre import ULTIMO_EXERCICIO_LIBERADO, garantir_data_referencia, garantir_liberado
 from chiocca.v2.linhagem import (
     FORMULAS,
@@ -48,7 +51,7 @@ AVISO = {
     "pt": "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento.",
     "en": "Statistical signal based on public financial statements. Not an accusation, not investment advice.",
 }
-MOTOR_V2 = "chiocca.v2 (Fase C2)"
+MOTOR_V2 = "chiocca.v2 (produto, fases B a E)"
 SINAIS_NF = ["mscore", *COEFICIENTES, "dpo", "juro", "lucro_sem_caixa"]
 ALERTA = {
     "mscore": "alerta_mscore",
@@ -181,7 +184,9 @@ def _percentis(valor: float | None, ref: pd.DataFrame, coluna: str, setor: str |
     no_setor = (
         contexto.percentil(valor, list(ref.loc[ref.setor == setor, coluna])) if setor else grupo | {"valor": None}
     )
-    return {"percentil_setor_ano": no_setor, "percentil_grupo_ano": grupo}
+    # distribuição agregada do setor e ano (Fase E): quantis e histograma, sem nome nem valor de outra empresa
+    dist = contexto.distribuicao(list(ref.loc[ref.setor == setor, coluna])) if setor else None
+    return {"percentil_setor_ano": no_setor, "percentil_grupo_ano": grupo, "distribuicao_setor_ano": dist}
 
 
 def _jm(d: dict[str, Any], lang: str) -> dict[str, Any]:
@@ -206,14 +211,16 @@ def gerar(
     gerado_em = gerado_em or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     t = TEXTOS[lang]
     e = exercicio_na_data(fontes, cd_cvm, exercicio, d, localizador=localizador)
-    s, limiares, contas_todas, meta = corte_transversal_completo(fontes, exercicio, d)
+    s, limiares, contas_todas, meta = _corte(fontes, exercicio, d)
     s = s.merge(meta[["cd_cvm", "dt_refer", "setor"]], on=["cd_cvm", "dt_refer"], how="left")
     linha_s = s[(s.cd_cvm == cd_cvm) & (s.dt_refer == e.dt_refer)]
     linha_m = meta[(meta.cd_cvm == cd_cvm) & (meta.dt_refer == e.dt_refer)]
     if linha_s.empty or linha_m.empty:
         raise ValueError(f"empresa {cd_cvm} sem DFP do exercício {exercicio}")
     r, mt = linha_s.iloc[0], linha_m.iloc[0]
-    grupo, setor, amostra = mt.grupo, mt.setor if isinstance(mt.setor, str) else None, r.amostra
+    # sem leitura da DFP na data, o corte não tem grupo nem setor; o pandas guarda o vazio como NaN, que vira nulo
+    grupo = mt.grupo if isinstance(mt.grupo, str) else None
+    setor, amostra = mt.setor if isinstance(mt.setor, str) else None, r.amostra
     hoje = informacao_de_hoje(mt.situacao_cadastro, lang)
     out: dict[str, Any] = {
         "empresa": _empresa(fontes, cd_cvm, d, mt, setor, grupo, lang),
@@ -272,7 +279,7 @@ def gerar(
             "natureza": {"valor": "calculado", "regra": "calculado", "explicacao": "resumo", "explicacoes_alternativas": "hipotese"},
         })  # fmt: skip
     z = contexto.altman_z2(e.contas, grupo)
-    z_ref = _z2_universo(contas_todas, meta)
+    z_ref = _z2_do_corte(fontes, exercicio, d, contas_todas, meta)
     z_ctx: dict[str, Any] = {"percentil_setor_ano": None, "percentil_grupo_ano": None}
     if z.resultado.ok and z.resultado.valor is not None:
         no_setor = (
@@ -282,7 +289,8 @@ def gerar(
         )
         universo = contexto.percentil(z.resultado.valor, list(z_ref.z2))
         z_ctx = {"percentil_setor_ano": no_setor if no_setor["valor"] is not None else universo | {"marca": t["fallback_setor"]},
-                 "percentil_grupo_ano": universo}  # fmt: skip
+                 "percentil_grupo_ano": universo,
+                 "distribuicao_setor_ano": contexto.distribuicao(list(z_ref.loc[z_ref.setor == setor, "z2"])) if setor else None}  # fmt: skip
     z_hist = {a: contexto.altman_z2(c, grupo).resultado.valor for a, c in historico_contas.items()}
     achados["risco_financeiro"].append(_achado_contexto("altman_z2", z, cd_cvm, exercicio, d, lang, por_chave, evid,
                                                         z_ctx | {"historico": contexto.historico(z_hist, z.resultado.valor)}))  # fmt: skip
@@ -296,7 +304,50 @@ def gerar(
     return _fecha(out, e, lang, gerado_em, d, fontes, exercicio, cd_cvm, evid, conferencias, hoje)
 
 
-def _empresa(fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grupo: str, lang: str) -> dict[str, Any]:
+CORTES_EM_MEMORIA = 2
+_CORTES: "weakref.WeakKeyDictionary[Any, OrderedDict[tuple[int, date], Any]]" = weakref.WeakKeyDictionary()
+
+
+def _corte(fontes: Any, exercicio: int, d: date) -> Any:
+    """O corte transversal da data (a parte cara da investigação), guardado em memória por fontes, exercício e data:
+    a mesma investigação nas duas línguas, o PDF e outras empresas do mesmo exercício e data o reaproveitam. Os
+    valores não mudam: é o mesmo `corte_transversal_completo`, só não é recalculado."""
+    try:
+        cache = _CORTES.setdefault(fontes, OrderedDict())
+    except TypeError:  # fontes que não aceitam referência fraca: sem cache
+        return corte_transversal_completo(fontes, exercicio, d)
+    chave = (exercicio, d)
+    if chave in cache:
+        cache.move_to_end(chave)
+        return cache[chave]
+    valor = corte_transversal_completo(fontes, exercicio, d)
+    cache[chave] = valor
+    while len(cache) > CORTES_EM_MEMORIA:
+        cache.popitem(last=False)
+    return valor
+
+
+_Z2: "weakref.WeakKeyDictionary[Any, dict[tuple[int, date], pd.DataFrame]]" = weakref.WeakKeyDictionary()
+
+
+def _z2_do_corte(fontes: Any, exercicio: int, d: date, contas: pd.DataFrame, meta: pd.DataFrame) -> pd.DataFrame:
+    """O Z'' de todas as não financeiras do corte da data (para o percentil), guardado junto com o corte: é o mesmo
+    para todas as empresas e as duas línguas daquele exercício e data."""
+    try:
+        cache = _Z2.setdefault(fontes, {})
+    except TypeError:
+        return _z2_universo(contas, meta)
+    chave = (exercicio, d)
+    if chave not in cache:
+        if len(cache) >= CORTES_EM_MEMORIA:
+            cache.pop(next(iter(cache)))
+        cache[chave] = _z2_universo(contas, meta)
+    return cache[chave]
+
+
+def _empresa(
+    fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grupo: str | None, lang: str
+) -> dict[str, Any]:
     """O nome da época vem do FCA entregue até a data; o índice dos dados abertos traz o nome atual."""
     from chiocca.v2.busca import codigos
 
@@ -455,7 +506,10 @@ def _auditor(x: Any, canonicos: dict[str, str], t: dict[str, Any]) -> dict[str, 
     if pf:
         nome = t["auditor_pf"]
     else:
-        nome = canonicos.get(codigo or "") or (None if pd.isna(x.auditor) else str(x.auditor).strip()) or "—"
+        bruto = None if pd.isna(x.auditor) else str(x.auditor).strip()
+        if bruto and bruto.isupper():
+            bruto = capitalizacao(bruto)  # só exibição; a comparação é pelo código
+        nome = canonicos.get(codigo or "") or bruto or "—"
     return {"auditor": nome, "codigo_cvm": codigo, "pessoa_fisica": pf,
             "inicio": None if pd.isna(x.inicio) else str(x.inicio), "fim": None if pd.isna(x.fim) else str(x.fim)}  # fmt: skip
 
@@ -601,7 +655,7 @@ def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, font
     out["informacao_de_hoje"] = hoje
     out["gerado_em"] = gerado_em
     out["aviso"] = AVISO[lang]
-    return out
+    return dict(textos_com_sinal_de_menos(out))  # número negativo com o sinal de menos (chiocca/v2/exibicao.py)
 
 
 def main(argv: list[str]) -> None:

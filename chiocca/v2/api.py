@@ -7,7 +7,13 @@ Rotas (todas GET, todas com a data de referência e o aviso fixo):
 - `/empresas/{cd_cvm}/exercicios/{exercicio}`: `ExercicioNaData` com as evidências (linhas da DFP);
 - `/investigacoes/{cd_cvm}/{exercicio}`: a investigação (o mesmo JSON de `chiocca.v2.investigacao.gerar`);
 - `/investigacoes/{cd_cvm}/{exercicio}/pdf`: o PDF gerado só desse JSON;
-- `/investigacoes/{cd_cvm}/{exercicio}/linhagem/{sinal}`: a linhagem de um número, com as evidências.
+- `/investigacoes/{cd_cvm}/{exercicio}/linhagem/{sinal}`: a linhagem de um número, com as evidências;
+- `/como-o-motor-foi-testado`: os números do estudo 1, do mesmo JSON do resumo (`chiocca.v2.ficha_do_motor`).
+
+Modo demonstração (Fase E, ligado por `CHIOCCA_MODO_DEMONSTRACAO=1` ou por `criar_app(modo_demonstracao=True)`):
+a busca e as rotas por empresa só aceitam as companhias dos casos do gabarito (`data/gabarito_casos.csv`, todos com
+condenação da CVM ou fraude admitida, pela regra do pré-registro), sem os casos em observação; as outras são
+recusadas com o motivo (403). Padrão inspirado no modo demonstração do FraudShield (MIT), sem código copiado.
 
 As mesmas validações do contrato: data de referência de 30/04/2011 a 31/12/2024 e exercício até 2023 (lacre), com
 o motivo na recusa. Regra de 09/11/2026: nenhuma rota lista empresas ordenadas por alerta, percentil ou escore, e
@@ -19,18 +25,20 @@ Uso: python -m chiocca.v2.api [porta]   (precisa de data/armazem; uvicorn em 127
 
 from __future__ import annotations
 
+import os
 import sys
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable
 from datetime import date
 from typing import Any
 
+import pandas as pd
 from fastapi import FastAPI, Path, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 
 from chiocca import base
-from chiocca.v2 import busca, investigacao, modelos, pdf_investigacao
+from chiocca.v2 import busca, ficha_do_motor, investigacao, modelos, pdf_investigacao
 from chiocca.v2.lacre import (
     DATA_REFERENCIA_MAXIMA,
     DATA_REFERENCIA_MINIMA,
@@ -55,6 +63,21 @@ BUSCA_DESCRICAO = "nome (3 caracteres ou mais), código CVM ou CNPJ; nunca códi
 
 class NaoEncontrado(LookupError):
     """Empresa ou exercício sem DFP entregue até a data; a API responde 404 com o motivo."""
+
+
+class ForaDaDemonstracao(PermissionError):
+    """Empresa fora do modo demonstração; a API responde 403 com o motivo."""
+
+
+def empresas_da_demonstracao(raiz: Any = base.RAIZ) -> set[str]:
+    """Companhias dos casos do gabarito (condenação da CVM ou fraude admitida), sem os casos em observação."""
+    gab = pd.read_csv(raiz / "data" / "gabarito_casos.csv", dtype=str)
+    obs = pd.read_csv(raiz / "data" / "casos_em_observacao.csv", dtype=str)
+    return {_cd(c) for c in gab.cd_cvm.dropna()} - {_cd(c) for c in obs.cd_cvm.dropna()}
+
+
+def modo_demonstracao_do_ambiente() -> bool:
+    return os.environ.get("CHIOCCA_MODO_DEMONSTRACAO", "").strip().lower() in ("1", "true", "sim", "yes")
 
 
 class Cache:
@@ -86,9 +109,21 @@ def _cd(cd_cvm: str) -> str:
     return str(cd_cvm).lstrip("0") or "0"
 
 
-def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Localizador | None = None) -> FastAPI:
+def criar_app(
+    fontes_fabrica: Callable[[], Any] | None = None,
+    localizador: Localizador | None = None,
+    modo_demonstracao: bool | None = None,
+) -> FastAPI:
     """`fontes_fabrica` devolve as fontes (o armazém); nos testes, o armazém montado da fixture, sem rede."""
     estado: dict[str, Any] = {}
+    demonstracao = modo_demonstracao_do_ambiente() if modo_demonstracao is None else modo_demonstracao
+    permitidas = empresas_da_demonstracao() if demonstracao else set()
+
+    def _permitida(cd_cvm: str) -> None:
+        if demonstracao and cd_cvm not in permitidas:
+            raise ForaDaDemonstracao(
+                f"modo demonstração: só as companhias dos casos públicos do gabarito; a {cd_cvm} não é uma delas"
+            )
 
     def fontes() -> Any:
         if "fontes" not in estado:
@@ -103,6 +138,7 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
     cache = Cache(CACHE_INVESTIGACOES)
     app = FastAPI(title="Chiocca System v2", version="1", docs_url=f"{PREFIXO}/docs",
                   openapi_url=f"{PREFIXO}/openapi.json", redoc_url=None)  # fmt: skip
+    app.state.fontes = fontes  # a demonstração estática usa as mesmas fontes para montar o plano e o índice
 
     @app.middleware("http")
     async def limite_de_tamanho(request: Request, seguinte: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -134,12 +170,17 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
     async def _nao_encontrado(_: Request, e: NaoEncontrado) -> JSONResponse:
         return _erro(404, "nao_encontrado", str(e.args[0]))
 
+    @app.exception_handler(ForaDaDemonstracao)
+    async def _fora_da_demonstracao(_: Request, e: ForaDaDemonstracao) -> JSONResponse:
+        return _erro(403, "fora_do_modo_demonstracao", str(e.args[0]))
+
     def _existe(cd_cvm: str, exercicio: int, d: date) -> None:
         if exercicio not in busca.exercicios_na_data(fontes(), cd_cvm, d):
             raise NaoEncontrado(f"empresa {cd_cvm} sem DFP do exercício {exercicio} entregue até {d.isoformat()}")
 
     def _investigacao(cd_cvm: str, exercicio: int, d: date, idioma: str) -> dict[str, Any]:
         garantir_liberado(exercicio)
+        _permitida(cd_cvm)
         _existe(cd_cvm, exercicio, d)
         inv = cache.pega((cd_cvm, exercicio, d.isoformat(), idioma),
                          lambda: investigacao.gerar(fontes(), cd_cvm, exercicio, d, idioma, localizador))  # fmt: skip
@@ -153,6 +194,8 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
                 "data_referencia_minima": DATA_REFERENCIA_MINIMA.isoformat(),
                 "data_referencia_maxima": DATA_REFERENCIA_MAXIMA.isoformat(),
                 "armazem": {"exercicios": manifesto.get("exercicios", []), "linhas": manifesto.get("linhas", {})},
+                "modo_demonstracao": demonstracao,
+                "empresas_na_demonstracao": len(permitidas) if demonstracao else None,
                 "motor": {"v1": MOTOR_V1, "v2": investigacao.MOTOR_V2}, "aviso": investigacao.AVISO}  # fmt: skip
 
     @app.get(f"{PREFIXO}/empresas", response_model=modelos.BuscaEmpresas)
@@ -161,7 +204,10 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
         data_referencia: str | None = DATA,
         limite: int = Query(busca.LIMITE_PADRAO, ge=1, le=busca.LIMITE_MAXIMO),
     ) -> dict[str, Any]:
-        r = busca.buscar(fontes(), busca_, _data(data_referencia), limite)
+        r = busca.buscar(fontes(), busca_, _data(data_referencia), busca.LIMITE_MAXIMO if demonstracao else limite)
+        if demonstracao:  # só as companhias da demonstração, na mesma ordem alfabética
+            dentro = [x for x in r["resultados"] if x["cd_cvm"] in permitidas]
+            r = r | {"resultados": dentro[:limite], "total": len(dentro)}
         return modelos.BuscaEmpresas.model_validate(r | {"aviso": investigacao.AVISO}).model_dump(mode="json")
 
     @app.get(f"{PREFIXO}/empresas/{{cd_cvm}}", response_model=modelos.EmpresaNaData)
@@ -169,6 +215,7 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
         cd_cvm: str = Path(..., pattern=r"^\d{1,6}$"), data_referencia: str | None = DATA, idioma: str = IDIOMA
     ) -> dict[str, Any]:
         d, cd = _data(data_referencia), _cd(cd_cvm)
+        _permitida(cd)
         f = fontes()
         anos = busca.exercicios_na_data(f, cd, d)
         if not anos:
@@ -191,6 +238,7 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
     ) -> dict[str, Any]:
         garantir_liberado(exercicio)
         d, cd = _data(data_referencia), _cd(cd_cvm)
+        _permitida(cd)
         _existe(cd, exercicio, d)
         e = exercicio_na_data(fontes(), cd, exercicio, d, localizador=localizador)
         ex = {"exercicio": exercicio, "dt_refer": e.dt_refer, "situacao": e.situacao, "versao_usada": e.versao_usada,
@@ -248,6 +296,18 @@ def criar_app(fontes_fabrica: Callable[[], Any] | None = None, localizador: Loca
                "evidencias": {k: inv["evidencias"][k] for k in ids if k in inv["evidencias"]},
                "aviso": inv["aviso"]}  # fmt: skip
         return modelos.Linhagem.model_validate(out).model_dump(mode="json", exclude_unset=True)
+
+    @app.get(f"{PREFIXO}/como-o-motor-foi-testado", response_model=modelos.ComoOMotorFoiTestadoApi)
+    def como_o_motor_foi_testado() -> dict[str, Any]:
+        """Os números do estudo 1, do mesmo JSON do resumo (os mesmos da ficha do motor e do README)."""
+        out = ficha_do_motor.numeros() | {
+            "documentos": {"pt": {"resumo": "docs/resumo.md", "ficha_do_motor": "docs/ficha-do-motor.md",
+                                  "analises": "docs/analises-pos-estudo-1.md"},
+                           "en": {"resumo": "docs/summary.md", "ficha_do_motor": "docs/en/engine-card.md",
+                                  "analises": "docs/en/post-study-1-analyses.md"}},
+            "aviso": investigacao.AVISO,
+        }  # fmt: skip
+        return modelos.ComoOMotorFoiTestadoApi.model_validate(out).model_dump(mode="json")
 
     return app
 

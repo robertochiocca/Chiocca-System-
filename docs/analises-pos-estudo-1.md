@@ -1,6 +1,6 @@
 # Análises depois do estudo 1
 
-**Análise descritiva depois do resultado, não pré-registrada.** Autorizada por Roberto Chiocca em 07/11/2026; as seções 2 a 4 foram pedidas em 08/11/2026. Não altera o estudo 1 (branch `estudo-1-final`): lê `docs/resultados_numeros.json` e `docs/analises_pos_estudo_1_numeros.json` e é gerada por `python -m chiocca.v2.analises_pos_estudo_1`. Não edite à mão: um teste compara este arquivo com a saída do script.
+**Análise descritiva depois do resultado, não pré-registrada.** Autorizada por Roberto Chiocca em 07/11/2026; as seções 2 a 4 foram pedidas em 08/11/2026, e a seção 5, em 09/11/2026. Não altera o estudo 1 (branch `estudo-1-final`): lê `docs/resultados_numeros.json` e `docs/analises_pos_estudo_1_numeros.json` e é gerada por `python -m chiocca.v2.analises_pos_estudo_1`. Não edite à mão: um teste compara este arquivo com a saída do script.
 
 ## 1. Quantos acertos o acaso daria?
 
@@ -144,3 +144,19 @@ Critério: um cálculo do estudo 1 usou zero como valor quando o sinal tem valor
 Recalcular os alertas pelas regras do estudo 1, com os limites do decil sem essas empresa-anos, dá os mesmos números.
 
 No produto, a regra é outra: indicador que depende de balanço não preenchido fica "não calculável", nunca calculado com zero (`chiocca.v2.linhagem.aplicar_nao_preenchido`). A lista das empresa-anos fica em `resultados/nao_preenchidas_estudo_1.csv`, fora do git.
+
+## 5. Antecedência dos acertos
+
+**Análise descritiva depois do resultado, não pré-registrada.** Pedida por Roberto Chiocca em 09/11/2026. O estudo 1 não muda. Para cada um dos 7 acertos, o tempo entre a entrega da primeira DFP do período afetado que deixou a empresa em alerta (entre as entregues antes da data pública, que são as que contam para o acerto) e a data pública do caso, em meses (dias × 12 ÷ 365,25). Lido de `docs/resultados_numeros.json`.
+
+| Caso | Primeira DFP em alerta no período afetado | Entregue em | Data pública | Meses de antecedência |
+| --- | --- | --- | --- | --- |
+| Americanas S.A. (`americanas`) | 2021 | 24/02/2022 | 11/01/2023 | 10,5 |
+| Metalúrgica Duque S.A. (`metalurgica_duque`) | 2010 | 22/03/2011 | 06/08/2014 | 40,5 |
+| Mundial S.A. - Produtos de Consumo (`mundial_2017`) | 2012 | 09/04/2013 | 06/03/2017 | 46,9 |
+| Tecnosolo Engenharia S.A. (`tecnosolo`) | 2013 | 07/04/2014 | 12/05/2015 | 13,1 |
+| Fibam Companhia Industrial (`fibam`) | 2016 | 27/03/2017 | 08/11/2018 | 19,4 |
+| Metalgráfica Iguaçu S.A. (`metalgrafica_iguacu`) | 2010 | 25/03/2011 | 20/12/2012 | 20,9 |
+| Cobrasma S.A. (`cobrasma`) | 2014 | 30/03/2015 | 13/07/2015 | 3,4 |
+
+Mediana de 19,4 meses, de 3,4 a 46,9 meses. Antecedência não é métrica do pré-registro do estudo 1; no estudo 2, ela entra como métrica pré-registrada (roadmap).

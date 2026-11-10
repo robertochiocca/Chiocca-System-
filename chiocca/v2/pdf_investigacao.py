@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from chiocca.formato import data, decimal, inteiro, pct
+from chiocca.formato import data
+from chiocca.v2.contexto import ROTULOS_F
+from chiocca.v2.exibicao import decimal, inteiro, pct
 from chiocca.v2.pdf_simples import gerar_pdf, paginar
 
 T: dict[str, dict[str, Any]] = {
@@ -52,6 +54,7 @@ T: dict[str, dict[str, Any]] = {
         "motor_txt": "{v1}; {v2}. Gerado em {g}.", "pagina": "Página {i} de {n}",
         "evidencias": "Evidências no JSON: {n} linhas da DFP, cada uma com documento, versão, data de entrega, conta e localização.",
         "codigos": {"nao_financeira": "não financeira", "financeira": "financeira", "dados_abertos": "dados abertos", "enet": "ENET",
+                    "DFC_MI": "DFC (método indireto)", "DFC_MD": "DFC (método direto)",
                     "con": "consolidado", "ind": "individual", "alta": "alta", "media": "média", "baixa": "baixa", "fca": "FCA",
                     "cadastro": "cadastro"},
         "pareceres": {},
@@ -96,6 +99,7 @@ T: dict[str, dict[str, Any]] = {
         "motor_txt": "{v1}; {v2}. Generated at {g}.", "pagina": "Page {i} of {n}",
         "evidencias": "Evidence in the JSON: {n} DFP lines, each with document, version, filing date, account and location.",
         "codigos": {"nao_financeira": "non-financial", "financeira": "financial", "dados_abertos": "open data", "enet": "ENET",
+                    "DFC_MI": "DFC (indirect method)", "DFC_MD": "DFC (direct method)",
                     "con": "consolidated", "ind": "individual", "alta": "high", "media": "medium", "baixa": "low", "fca": "FCA",
                     "cadastro": "registry"},
         "pareceres": {"Sem Ressalva": "Sem Ressalva (unqualified)", "Com Ressalva": "Com Ressalva (qualified)",
@@ -105,7 +109,7 @@ T: dict[str, dict[str, Any]] = {
 
 
 def _c(codigo: Any, t: dict[str, Any]) -> str:
-    """Código do JSON em texto do idioma (grupo, origem, tipo, nível de confiança)."""
+    """Código do JSON em texto do idioma (grupo, origem, tipo, demonstração, nível de confiança)."""
     return str(t["codigos"].get(codigo, codigo)) if codigo is not None else "—"
 
 
@@ -184,7 +188,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     for a in ach.get("possivel_manipulacao", []):
         alerta = t["nao_dispara"] if a["alerta_v1"] is None else t["sim"] if a["alerta_v1"] else t["nao"]
         u = a["unidade"]
-        out += ["", f"{a['rotulo']} ({a['sinal']})", f"  {t['valor']}: {_valor(a['valor'], lang, u)}"]
+        out += ["", f"{a['rotulo']}", f"  {t['valor']}: {_valor(a['valor'], lang, u)}"]  # o rótulo, sem o código
         if a.get("componente_de"):  # componente do M-score: não tem regra nem alerta próprios
             out.append(f"  {a['regra']}")
         else:
@@ -209,10 +213,10 @@ def linhas(inv: dict[str, Any]) -> list[str]:
                     + f" ({t['indices']})"
                 )
             if a["sinal"] == "piotroski_f" and comp.get("sinais"):
-                out.append(
-                    f"  {t['sinais_f']}: "
-                    + "; ".join(f"{k} = {'—' if v is None else v}" for k, v in comp["sinais"].items())
-                )
+                k = 0 if lang == "pt" else 1
+                out.append(f"  {t['sinais_f']}:")
+                out += [f"    - {ROTULOS_F[s][k] if s in ROTULOS_F else s}: {'—' if v is None else v}"
+                        for s, v in comp["sinais"].items()]  # fmt: skip
             c = a.get("contexto") or {}
             if c:
                 out += [f"  {t['pct_setor']}: {_pct(c.get('percentil_setor_ano'), lang)}",
@@ -226,7 +230,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
         dest = mud.get("comparativo_destacadas", [])
         if dest:
             out.append(t["destacadas"].format(n=inteiro(len(dest), lang), lim=_f(mat["limite"] / 1e6, lang, 1)))
-            out += ["  " + t["destacada_linha"].format(dem=x["demonstracao"], cod=x["cd_conta"], ds=x["ds_conta"],
+            out += ["  " + t["destacada_linha"].format(dem=_c(x["demonstracao"], t), cod=x["cd_conta"], ds=x["ds_conta"],
                                                        v=_f(x["valor"] / 1e6, lang, 1), ver=x["versao"], dt=data(x["dt_receb"], lang),
                                                        c=_f(x["valor_comparativo"] / 1e6, lang, 1), vers=x["versao_seguinte"],
                                                        dts=data(x["dt_receb_seguinte"], lang), dif=_f(x["diferenca"] / 1e6, lang, 1),
@@ -285,7 +289,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
         out += ["", f"# {hoje['titulo']}", t["hoje"].format(s=hoje["situacao_cadastro"] or "—", f=hoje["fonte"])]
     if difs:
         out += ["", t["anexo"]]
-        out += [t["comparativo_linha"].format(g=x["grupo"], dem=x["demonstracao"], cod=x["cd_conta"], ds=x["ds_conta"],
+        out += [t["comparativo_linha"].format(g=x["grupo"], dem=_c(x["demonstracao"], t), cod=x["cd_conta"], ds=x["ds_conta"],
                                               v=_f(x["valor"] / 1e6, lang, 1), c=_f(x["valor_comparativo"] / 1e6, lang, 1),
                                               dif=_f(x["diferenca"] / 1e6, lang, 1)) for x in difs]  # fmt: skip
     return _maiusculas(out)

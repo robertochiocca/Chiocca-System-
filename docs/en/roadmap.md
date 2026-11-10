@@ -19,7 +19,10 @@ Recorded on 2026-11-08, for the new study 2 pre-registration, before opening fis
 - Discretionary accruals by sector and year, with the modified Jones model and the margin model, with at least 10 companies per sector-year (Peasnell, Pope and Young 2000, pp. 11 and 15). Paulo's (2007, p. 168) Quadro 03 serves as a checklist.
 - Dechow and Dichev (2002) only with a lag, because the model uses cash flows of t+1.
 - Earnings just above zero or the previous year's earnings (Martinez 2001, pp. 72-80).
-- Ranking metrics: precision at the top 1%, 5% and 10% and NDCG@k, ported from JarFraud/FraudDetection's `evaluate.m` to Python, with tests that reproduce a small hand-calculated example.
+- Ranking metrics: precision at the top 1%, 5% and 10% and NDCG@k, reimplemented in Python from the definitions in Bao et al. (2020, Table 3, p. 21) and checked against JarFraud/FraudDetection's `evaluate.m`, without copying code (the repository has no license file), with tests that reproduce a small hand-calculated example (correction of 2026-11-09).
+- Lift at the top of the list, together with precision at the top and NDCG@k (2026-11-09).
+- Confidence intervals by paired bootstrap: engine and naive rule compared on the same resamples, resampling by company, because alerts repeat (73.8% of non-financial company-years in alert were also in alert the year before; [analyses](post-study-1-analyses.md), section 2). Adapted from the `bootstrap` function in FraudShield's `src/fraudshield/training/evaluate.py` (ARMAND-cod-eng/fraud-detection-ensemble, MIT), around line 142 (path given by Roberto on 2026-11-10), with an origin header and an entry in [`docs/en/code-origin.md`](code-origin.md); the exact commit is left for when it is adapted.
+- Lead time of the alert as a pre-registered metric: in study 1 it exists only as a descriptive analysis after the result ([analyses](post-study-1-analyses.md), section 5) (2026-11-09).
 - A 24-month gap between the calibration period and the test period.
 - A pre-registration rule for cases spanning several years, with an automatic test for a missing year of data and for a changed case identifier: this was the error Walker pointed out in 2021 in Bao et al. (2020) and that the 2022 erratum acknowledged.
 

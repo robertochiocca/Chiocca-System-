@@ -75,3 +75,40 @@ def secao_limitacoes(lang: str) -> str:
         "en": "Study 1's limitations are in the [summary](docs/summary.md) and the [results](docs/en/results.md). The main ones:",
     }[lang]
     return abertura + "\n\n" + "\n".join("- " + x for x in limitacoes(lang))
+
+
+# Pedido de 09/11/2026: o README separa a correção do software da efetividade da detecção.
+SEPARACAO = {
+    "pt": {
+        "h_correcao": "#### Correção do software",
+        "correcao": "Os testes automáticos (pytest) rodam no CI em Python 3.12 e 3.13. O invariante reproduz o estudo 1 a partir do armazém temporal: {i} de {e} empresa-anos iguais ao estudo, coluna por coluna ([armazenamento temporal](docs/armazenamento-temporal.md)). O exemplo resolvido confere cada fórmula contra valores calculados à mão (`data/exemplo_resolvido.json`), e as conferências de qualidade testam os próprios dados da CVM ([conferências](docs/conferencias.md)). Isso mostra que o software calcula o que o pré-registro manda e reproduz o estudo 1.",
+        "h_efetividade": "#### Efetividade da detecção",
+        "efetividade": "No estudo 1, o motor acertou {a} de {n} casos acertáveis, com {xi} alarmes por acerto no período inteiro e taxa de alerta de {taxa} das empresa-anos não financeiras avaliadas ([resumo](docs/resumo.md)). A [ficha do motor](docs/ficha-do-motor.md) reúne esses números, o teste contra o acaso, o uso pretendido e o que fica fora de escopo.",
+        "nao_prova": "Uma coisa não prova a outra: o software estar correto não faz os alertas acertarem, e um acerto não mostra que o cálculo está certo. A correção é conferida pelos testes; a efetividade, só pelo estudo, com gabarito e pré-registro.",
+    },
+    "en": {
+        "h_correcao": "#### Software correctness",
+        "correcao": "The automated tests (pytest) run in CI on Python 3.12 and 3.13. The invariant reproduces study 1 from the temporal store: {i} of {e} company-years equal to the study, column by column ([temporal storage](docs/en/temporal-storage.md)). The worked example checks every formula against hand-calculated values (`data/exemplo_resolvido.json`), and the quality checks test the CVM data itself ([data checks](docs/en/data-checks.md)). This shows that the software computes what the pre-registration prescribes and reproduces study 1.",
+        "h_efetividade": "#### Detection effectiveness",
+        "efetividade": "In study 1, the engine detected {a} of {n} detectable cases, with {xi} false alarms per detected case over the whole period and an alert rate of {taxa} of evaluated non-financial company-years ([summary](docs/summary.md)). The [engine card](docs/en/engine-card.md) brings these figures together with the test against chance, the intended use and what is out of scope.",
+        "nao_prova": "One does not prove the other: correct software does not make the alerts right, and a detection does not show that the calculation is correct. Correctness is checked by the tests; effectiveness only by the study, with a ground truth and a pre-registration.",
+    },
+}  # fmt: skip
+
+
+def separacao(lang: str) -> dict[str, str]:
+    """As duas partes do README, com os números lidos dos JSONs (invariante e estudo 1)."""
+    from chiocca.v2 import ficha_do_motor
+
+    t = SEPARACAO[lang]
+    inv = json.loads(invariante.NUMEROS.read_text(encoding="utf-8"))
+    x = ficha_do_motor.numeros()
+    i = lambda v: inteiro(v, lang)  # noqa: E731
+    return {
+        "correcao": t["correcao"].format(i=i(sum(v["empresa_anos_iguais"] for v in inv["exercicios"].values())),
+                                         e=i(sum(v["empresa_anos_estudo"] for v in inv["exercicios"].values()))),
+        "efetividade": t["efetividade"].format(a=i(x["acerto"]["acertados"]), n=i(x["acerto"]["acertaveis"]),
+                                               xi=decimal(x["alarmes_por_acerto_nf"]["periodo_inteiro"], lang, 1),
+                                               taxa=pct(x["taxa_de_alerta"]["nao_financeiras"], lang)),
+        "nao_prova": t["nao_prova"], "h_correcao": t["h_correcao"], "h_efetividade": t["h_efetividade"],
+    }  # fmt: skip

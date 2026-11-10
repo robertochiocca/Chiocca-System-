@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -10,7 +11,7 @@ import pandas as pd
 import pytest
 
 from chiocca.cvm import Fontes
-from chiocca.v2 import armazem, comparativo, exemplos, investigacao, limites, pdf_investigacao
+from chiocca.v2 import armazem, comparativo, exemplos, investigacao, limites, modelos, pdf_investigacao
 from tests.test_base import mundo  # noqa: F401  (fixture)
 from tests.test_v2_armazem import mundo_c1  # noqa: F401  (fixture)
 
@@ -36,6 +37,49 @@ def test_investigacao_segue_o_contrato(mundo_c1: tuple[Fontes, armazem.FontesArm
     pdf = pdf_investigacao.gerar(inv)
     assert pdf == pdf_investigacao.gerar(json.loads(json.dumps(inv)))  # o PDF sai só do JSON, sempre igual
     assert pdf.startswith(b"%PDF-1.4")
+
+
+# Código interno: identificador com sublinhado (lucro_sem_caixa, DFC_MI, componente_nao_calculavel...). Ficam de fora
+# nomes de arquivo e URLs (dfp_cia_aberta_2021.zip). Sigla do artigo só vale no formato combinado em 10/11/2026: entre
+# parênteses, logo depois do nome legível, como nos índices do M-score ("Sem emissão de ações (EQ_OFFER)").
+CODIGO_INTERNO = re.compile(r"(?<![\w./:-])[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+(?![\w./-])")
+SIGLA_DEPOIS_DO_NOME = re.compile(r"(?<=[a-zà-ü] )\(Δ?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*\)")
+
+
+def codigos_no_pdf(inv: dict[str, Any]) -> set[str]:
+    achados: set[str] = set()
+    for linha in pdf_investigacao.linhas(inv):
+        achados |= set(CODIGO_INTERNO.findall(SIGLA_DEPOIS_DO_NOME.sub("", linha)))
+    return achados
+
+
+def test_sigla_sozinha_conta_como_codigo() -> None:
+    assert CODIGO_INTERNO.findall(SIGLA_DEPOIS_DO_NOME.sub("", "Sem emissão de ações (EQ_OFFER): 1")) == []
+    assert CODIGO_INTERNO.findall(SIGLA_DEPOIS_DO_NOME.sub("", "EQ_OFFER pela DFC")) == ["EQ_OFFER"]
+
+
+@pytest.mark.parametrize("nome", exemplos.NOMES)
+def test_pdf_sem_codigo_interno(nome: str) -> None:
+    inv = json.loads((exemplos.PASTA / f"{nome}.json").read_text(encoding="utf-8"))
+    assert codigos_no_pdf(inv) == set()
+
+
+def test_grupo_vazio_no_corte_vira_nulo(
+    mundo_c1: tuple[Fontes, armazem.FontesArmazem], monkeypatch: pytest.MonkeyPatch  # noqa: F811
+) -> None:
+    # no armazém real, companhia sem leitura da DFP na data fica com o grupo NaN no corte; a API respondia 500
+    _, arm = mundo_c1
+    original = investigacao.corte_transversal_completo
+
+    def com_grupo_vazio(*a: Any, **k: Any) -> Any:
+        s, limiares, contas, meta = original(*a, **k)
+        return s, limiares, contas, meta.assign(grupo=float("nan"))
+
+    monkeypatch.setattr(investigacao, "corte_transversal_completo", com_grupo_vazio)
+    monkeypatch.setattr(investigacao, "_CORTES", investigacao.weakref.WeakKeyDictionary())
+    inv = investigacao.gerar(arm, "100", 2020, "2022-04-30", "pt", gerado_em="2026-11-09T00:00:00+00:00")
+    assert inv["empresa"]["grupo"] is None
+    modelos.Investigacao.model_validate(inv)
 
 
 @pytest.mark.parametrize("nome", exemplos.NOMES)
@@ -97,6 +141,11 @@ def test_rodizio_e_trocas_de_auditor_no_exemplo(lang: str) -> None:
         for a in f["auditores"]:
             nomes.setdefault(a["codigo_cvm"], set()).add(a["auditor"])
     assert all(len(v) == 1 for v in nomes.values())  # um nome canônico por código, sem variantes de grafia
+    exibidos = {n for v in nomes.values() for n in v} | {
+        x[k] for x in pa["trocas_de_auditor"] for k in ("de", "para") if x[k]
+    }
+    assert not any(n.isupper() for n in exibidos)  # capitalização normal, só para exibição (pedido de 09/11/2026)
+    assert "PricewaterhouseCoopers Auditores Independentes" in exibidos and "KPMG Auditores Independentes" in exibidos
     s = {x["ano_fca"]: x["saida"] for x in pa["trocas_de_auditor"]}
     assert s[2016]["exercicios_consecutivos"] == 5 and s[2016]["compativel_com_rodizio"]  # PwC 2011 a 2015
     assert s[2016]["norma"] == "Instrução CVM nº 308/1999"  # vigente em 2016
@@ -172,3 +221,56 @@ def test_acabamento_da_investigacao(nome: str) -> None:
     titulo = f"# {inv['informacao_de_hoje']['titulo']}"
     assert titulo in linhas and linhas.index(titulo) > linhas.index(pdf_investigacao.T[lang]["motor"])
     assert (" dias" if lang == "pt" else " days") in texto and " p.p." in texto
+
+
+@pytest.mark.skipif(not (armazem.PASTA / "manifesto.json").exists(), reason="precisa de data/armazem (fora do git)")
+def test_ponta_a_ponta_com_empresa_fora_do_gabarito(tmp_path: Path) -> None:
+    """Plano da Fase C: teste de ponta a ponta com uma empresa sem nenhum caso no gabarito (nem em observação).
+
+    A empresa é escolhida por regra, não por nome: a de menor código CVM, não financeira, com a DFP de 2021 em
+    situação ok em 30/04/2022. O resultado não é publicado em docs/ (fica só no diretório temporário do teste)."""
+    from chiocca.v2 import modelos
+    from chiocca.v2.na_data import _meta
+
+    raiz = Path(armazem.__file__).parents[2]
+    fora = set(pd.read_csv(raiz / "data" / "gabarito_casos.csv", dtype=str).cd_cvm.dropna())
+    fora |= set(pd.read_csv(raiz / "data" / "casos_em_observacao.csv", dtype=str).cd_cvm.dropna())
+    fa = armazem.FontesArmazem()
+    d = "2022-04-30"
+    candidatos = fa.consulta(
+        "SELECT DISTINCT cd_cvm FROM versoes WHERE exercicio = 2021 AND CAST(dt_receb AS DATE) <= ?", [d]
+    ).cd_cvm
+    escolhida = None
+    for cd in sorted((str(c) for c in candidatos if str(c) not in fora), key=int):
+        meta, _ = _meta(fa, 2021, pd.Timestamp(d).date(), so={cd})
+        if not meta.empty and (meta.status == "ok").any() and (meta.grupo == "nao_financeira").any():
+            escolhida = cd
+            break
+    assert escolhida is not None and escolhida not in fora
+    for lang in ("pt", "en"):
+        inv = investigacao.gerar(fa, escolhida, 2021, d, lang)
+        modelos.Investigacao.model_validate(inv)  # o contrato vale para qualquer empresa, não só para os casos
+        assert inv["aviso"] == investigacao.AVISO[lang] and inv["exercicios"][0]["situacao"] == "ok"
+        assert len(inv["achados"]["possivel_manipulacao"]) > 1 and inv["achados"]["risco_financeiro"]
+        assert all(a["unidade"] for lista in inv["achados"].values() for a in lista)
+        texto = json.dumps(inv, ensure_ascii=False).lower()
+        assert "fraude" not in texto and "fraud" not in texto and "suspeit" not in texto
+        pdf = pdf_investigacao.gerar(inv)
+        assert pdf.startswith(b"%PDF-1.4") and pdf.count(investigacao.AVISO[lang].encode("latin-1")[:20]) > 0
+        (tmp_path / f"investigacao_{lang}.pdf").write_bytes(pdf)  # nada vai para docs/
+    assert not list((raiz / "docs" / "exemplos").glob(f"*{escolhida}*"))
+
+
+def test_capitalizacao_dos_nomes_de_firmas() -> None:
+    from chiocca.v2.armazem import capitalizacao
+
+    assert (
+        capitalizacao("BDO RCS AUDITORES INDEPENDENTES - SOCIEDADE SIMPLES")
+        == "BDO RCS Auditores Independentes - Sociedade Simples"
+    )
+    assert capitalizacao("ERNST & YOUNG AUDITORES INDEPENDENTES S.S.") == "Ernst & Young Auditores Independentes S.S."
+    assert capitalizacao("KPMG AUDITORES INDEPENDENTES LTDA") == "KPMG Auditores Independentes Ltda."
+    assert (
+        capitalizacao("GRANT THORNTON AUDITORES INDEPENDENTES DO BRASIL")
+        == "Grant Thornton Auditores Independentes do Brasil"
+    )

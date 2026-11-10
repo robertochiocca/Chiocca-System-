@@ -28,6 +28,7 @@ Fase C2:
 from __future__ import annotations
 
 import tempfile
+import weakref
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -179,11 +180,25 @@ def nao_calculaveis_no_produto(contas: pd.DataFrame, plano: str | None) -> list[
     return [s for s in SINAIS_PRODUTO if any(usa_balanco(s, c) for c in colunas)]
 
 
+_SITUACOES: "weakref.WeakKeyDictionary[Any, dict[str, str]]" = weakref.WeakKeyDictionary()
+
+
+def _situacao_cadastro(fontes: FontesV1) -> dict[str, str]:
+    """A situação no cadastro de cada companhia (a mesma função do estudo 1), guardada por fontes: o cadastro não muda
+    entre as chamadas, e recalculá-la a cada exercício do histórico custava segundos por investigação."""
+    try:
+        if fontes not in _SITUACOES:
+            _SITUACOES[fontes] = montar_base.situacao_cadastro(fontes)  # type: ignore[arg-type]
+        return _SITUACOES[fontes]
+    except TypeError:  # fontes que não aceitam referência fraca
+        return montar_base.situacao_cadastro(fontes)  # type: ignore[arg-type]
+
+
 def _meta(
     fontes: FontesV1, exercicio: int, corte: date | None, so: set[str] | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """As empresa-anos do exercício na data, com os mesmos campos de `chiocca.montar_base.monta` (`so`: só essas)."""
-    sit = montar_base.situacao_cadastro(fontes)  # type: ignore[arg-type]
+    sit = _situacao_cadastro(fontes)
     idx = fontes.indice_dfp(exercicio)
     pares = idx[["cd_cvm", "DT_REFER", "CNPJ_CIA", "DENOM_CIA"]].drop_duplicates(["cd_cvm", "DT_REFER"])
     if so is not None:

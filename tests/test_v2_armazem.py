@@ -375,6 +375,21 @@ def test_codigos_de_negociacao_do_fca(mundo_c1: tuple[Fontes, armazem.FontesArma
     assert arm.codigos_negociacao("100", date(2021, 4, 30)) == []  # o FCA ainda não tinha sido entregue
 
 
+def test_codigos_de_negociacao_com_campo_vazio_viram_nulos(
+    mundo_c1: tuple[Fontes, armazem.FontesArmazem], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # no armazém real, FCA com datas de negociação vazias voltam do DuckDB como NaN; a API respondia 500
+    _, arm = mundo_c1
+    nan = float("nan")
+    linha = {"ano": 2021, "versao": 1, "dt_receb": "2021-05-01", "valor_mobiliario": "Ações Ordinárias",
+             "codigo_negociacao": "EMP1004", "mercado": nan, "inicio_negociacao": nan,
+             "fim_negociacao": nan}  # fmt: skip
+    monkeypatch.setattr(arm, "consulta", lambda *a, **k: pd.DataFrame([linha]))
+    (c,) = arm.codigos_negociacao("100", date(2022, 4, 30))
+    assert (c["mercado"], c["inicio_negociacao"], c["fim_negociacao"]) == (None, None, None)
+    assert c["valor_mobiliario"] == "Ações Ordinárias"
+
+
 def test_escala_da_pagina_do_enet() -> None:
     assert buscar_enet.escala_da_pagina("<b>Valores (Reais Mil)</b>") == "MIL"
     assert buscar_enet.escala_da_pagina("<b>Valores (Reais)</b>") == "UNIDADE"

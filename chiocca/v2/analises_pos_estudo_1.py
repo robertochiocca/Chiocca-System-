@@ -21,11 +21,12 @@ Uso: python -m chiocca.v2.analises_pos_estudo_1
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 from chiocca.base import RAIZ
-from chiocca.formato import decimal, inteiro, pct
+from chiocca.formato import data, decimal, inteiro, pct
 from chiocca.sinais.mscore import COEFICIENTES
 
 NUMEROS_ESTUDO_1 = RAIZ / "docs" / "resultados_numeros.json"
@@ -63,6 +64,31 @@ def _distribuicao(ps: list[float], observados: int) -> dict[str, Any]:
             "p_cauda": cauda_superior(pmf, observados)}  # fmt: skip
 
 
+MESES_POR_DIA = 12 / 365.25
+
+
+def antecedencia(n: dict[str, Any]) -> dict[str, Any]:
+    """Pedido de 09/11/2026 (análise descritiva depois do resultado, não pré-registrada): para cada acerto do estudo 1,
+    os meses entre a entrega da primeira DFP do período afetado que deixou a empresa em alerta (entre as que contam
+    para o acerto, entregues antes da data pública) e a data pública do caso. Lido só de docs/resultados_numeros.json.
+    """
+    casos = []
+    for c in n["casos"]:
+        em_alerta = [d for d in c.get("detalhe", []) if d["em_alerta"] and d["antes_da_data"] and d["dt_receb"]]
+        if not (c.get("acertavel") and c.get("acertado") and em_alerta and c.get("data_publica")):
+            continue
+        primeira = min(em_alerta, key=lambda d: (d["dt_receb"], d["exercicio"]))
+        dias = (date.fromisoformat(c["data_publica"]) - date.fromisoformat(primeira["dt_receb"])).days
+        casos.append({"caso_id": c["caso_id"], "empresa": c["empresa"], "exercicio": primeira["exercicio"],
+                      "dt_receb": primeira["dt_receb"], "data_publica": c["data_publica"], "dias": dias,
+                      "meses": dias * MESES_POR_DIA})  # fmt: skip
+    meses = sorted(x["meses"] for x in casos)
+    k = len(meses)
+    mediana = (meses[(k - 1) // 2] + meses[k // 2]) / 2 if k else None
+    return {"casos": casos, "mediana_meses": mediana, "minimo_meses": meses[0] if k else None,
+            "maximo_meses": meses[-1] if k else None}  # fmt: skip
+
+
 def le_dados(caminho: Path = NUMEROS_DADOS) -> dict[str, Any] | None:
     return json.loads(caminho.read_text(encoding="utf-8")) if caminho.exists() else None
 
@@ -95,6 +121,7 @@ def calcula(n: dict[str, Any], dados: dict[str, Any] | None = None) -> dict[str,
     r = {"casos": casos, "observados": observados,
          "todos_anos_iguais": all(c["anos_iguais_aos_avaliados"] for c in casos)}  # fmt: skip
     r |= _distribuicao([c["p_acaso"] for c in casos], observados)
+    r["antecedencia"] = antecedencia(n)
     if dados is None:
         return r
     por_id = {v["caso_id"]: v for v in dados["variante"]}
@@ -114,7 +141,7 @@ def calcula(n: dict[str, Any], dados: dict[str, Any] | None = None) -> dict[str,
 T: dict[str, dict[str, Any]] = {
     "pt": {
         "titulo": "# Análises depois do estudo 1",
-        "rotulo": "**Análise descritiva depois do resultado, não pré-registrada.** Autorizada por Roberto Chiocca em 07/11/2026; as seções 2 a 4 foram pedidas em 08/11/2026. Não altera o estudo 1 (branch `estudo-1-final`): lê `docs/resultados_numeros.json` e `docs/analises_pos_estudo_1_numeros.json` e é gerada por `python -m chiocca.v2.analises_pos_estudo_1`. Não edite à mão: um teste compara este arquivo com a saída do script.",
+        "rotulo": "**Análise descritiva depois do resultado, não pré-registrada.** Autorizada por Roberto Chiocca em 07/11/2026; as seções 2 a 4 foram pedidas em 08/11/2026, e a seção 5, em 09/11/2026. Não altera o estudo 1 (branch `estudo-1-final`): lê `docs/resultados_numeros.json` e `docs/analises_pos_estudo_1_numeros.json` e é gerada por `python -m chiocca.v2.analises_pos_estudo_1`. Não edite à mão: um teste compara este arquivo com a saída do script.",
         "h1": "## 1. Quantos acertos o acaso daria?",
         "modelo": "Para cada um dos {n} casos acertáveis, a chance de ser acertado ao acaso é 1 − produto de (1 − taxa de alerta do grupo no ano), sobre os anos do período afetado que estão nos dados, com as taxas de alerta observadas no estudo 1 (empresas em alerta ÷ empresas avaliadas). O número de acertos ao acaso segue a distribuição binomial de Poisson, calculada de forma exata, sem aproximação.",
         "anos_iguais": "Em todos os {n} casos, os anos do período afetado nos dados são os mesmos exercícios avaliados no estudo 1.",
@@ -147,6 +174,10 @@ T: dict[str, dict[str, Any]] = {
             "Esta conta também não substitui as métricas pré-registradas, e não foi decidida antes de ver o resultado.",
         ],
         "h4": "## 4. Nota posterior: balanços não preenchidos no estudo 1",
+        "h5": "## 5. Antecedência dos acertos",
+        "rotulo_antecedencia": "**Análise descritiva depois do resultado, não pré-registrada.** Pedida por Roberto Chiocca em 09/11/2026. O estudo 1 não muda. Para cada um dos {n} acertos, o tempo entre a entrega da primeira DFP do período afetado que deixou a empresa em alerta (entre as entregues antes da data pública, que são as que contam para o acerto) e a data pública do caso, em meses (dias × 12 ÷ 365,25). Lido de `docs/resultados_numeros.json`.",
+        "col_antecedencia": "| Caso | Primeira DFP em alerta no período afetado | Entregue em | Data pública | Meses de antecedência |",
+        "resultado_antecedencia": "Mediana de {med} meses, de {mn} a {mx} meses. Antecedência não é métrica do pré-registro do estudo 1; no estudo 2, ela entra como métrica pré-registrada (roadmap).",
         "rotulo_nota": "**Nota posterior, de 08/11/2026.** Verificação pedida na resposta à Fase B (item 1c). Não muda o estudo 1: só relata.",
         "nota_colunas": "A conferência \"não preenchido\" da v2 (`chiocca.v2.conferencias`) achou {c} colunas de balanço com ativo total zero na base do estudo 1: {u} na coluna do exercício (ÚLTIMO) e {pn} no comparativo (PENÚLTIMO), em {ea} empresa-anos. Dessas empresa-anos, {nf} estão na amostra de não financeiras, {fin} na de financeiras e {fora} fora da amostra. Em {tz} das colunas, o balanço inteiro está zerado; nas outras {tp}, só o total.",
         "nota_criterio": "Critério: um cálculo do estudo 1 usou zero como valor quando o sinal tem valor no estudo 1 e pelo menos uma conta de balanço que ele usa, numa dessas colunas, vale zero.",
@@ -179,7 +210,7 @@ T: dict[str, dict[str, Any]] = {
     },
     "en": {
         "titulo": "# Analyses after study 1",
-        "rotulo": "**Descriptive analysis after the result, not pre-registered.** Authorized by Roberto Chiocca on 2026-11-07; sections 2 to 4 were requested on 2026-11-08. It does not change study 1 (branch `estudo-1-final`): it reads `docs/resultados_numeros.json` and `docs/analises_pos_estudo_1_numeros.json` and is generated by `python -m chiocca.v2.analises_pos_estudo_1`. Do not edit by hand: a test compares this file with the script output.",
+        "rotulo": "**Descriptive analysis after the result, not pre-registered.** Authorized by Roberto Chiocca on 2026-11-07; sections 2 to 4 were requested on 2026-11-08, and section 5 on 2026-11-09. It does not change study 1 (branch `estudo-1-final`): it reads `docs/resultados_numeros.json` and `docs/analises_pos_estudo_1_numeros.json` and is generated by `python -m chiocca.v2.analises_pos_estudo_1`. Do not edit by hand: a test compares this file with the script output.",
         "h1": "## 1. How many detections would chance produce?",
         "modelo": "For each of the {n} detectable cases, the chance of being detected by chance is 1 − product of (1 − the group's alert rate in the year), over the years of the affected period that are in the data, using the alert rates observed in study 1 (companies in alert ÷ evaluated companies). The number of detections by chance follows the Poisson binomial distribution, computed exactly, with no approximation.",
         "anos_iguais": "In all {n} cases, the years of the affected period in the data are the same fiscal years evaluated in study 1.",
@@ -212,6 +243,10 @@ T: dict[str, dict[str, Any]] = {
             "This calculation does not replace the pre-registered metrics either, and it was not decided before seeing the result.",
         ],
         "h4": "## 4. Later note: unfilled balance sheets in study 1",
+        "h5": "## 5. Lead time of the detections",
+        "rotulo_antecedencia": "**Descriptive analysis after the result, not pre-registered.** Requested by Roberto Chiocca on 2026-11-09. Study 1 does not change. For each of the {n} detections, the time between the filing of the first DFP of the affected period that put the company in alert (among those filed before the public date, which are the ones that count for the detection) and the case's public date, in months (days × 12 ÷ 365.25). Read from `docs/resultados_numeros.json`.",
+        "col_antecedencia": "| Case | First DFP in alert in the affected period | Filed on | Public date | Months of lead time |",
+        "resultado_antecedencia": "Median of {med} months, from {mn} to {mx} months. Lead time is not a metric of study 1's pre-registration; in study 2, it becomes a pre-registered metric (roadmap).",
         "rotulo_nota": "**Later note, of 2026-11-08.** Check requested in the reply to Phase B (item 1c). It does not change study 1: it only reports.",
         "nota_colunas": "The v2 \"not filled in\" check (`chiocca.v2.conferencias`) found {c} balance sheet columns with zero total assets in the study 1 base: {u} in the fiscal-year column (ÚLTIMO) and {pn} in the prior-year column (PENÚLTIMO), in {ea} company-years. Of these company-years, {nf} are in the non-financial sample, {fin} in the financial sample and {fora} outside the sample. In {tz} of the columns, the whole balance sheet is zero; in the other {tp}, only the total.",
         "nota_criterio": "Criterion: a study 1 calculation used zero as a value when the signal has a value in study 1 and at least one balance sheet account it uses, in one of these columns, is zero.",
@@ -280,7 +315,7 @@ def render(r: dict[str, Any], lang: str) -> str:
     linhas += ["", t["h_premissas"], "", "- " + independencia.format(esperado=decimal(r["esperado"], lang, 2))]
     linhas += ["- " + x for x in t["premissas"]]
     if "variante" not in r:
-        return "\n".join(linhas) + "\n"
+        return "\n".join(linhas + _antecedencia(r, t, lang)) + "\n"
     pe = r["persistencia"]
     linhas += ["", t["h2"], "", t["persistencia"], "", t["col_persistencia"], "| --- | --- | --- | --- | --- |"]
     for k in ("nf", "fin", "total"):
@@ -305,7 +340,20 @@ def render(r: dict[str, Any], lang: str) -> str:
     k = sum(c["empresa_do_caso_incluida"] for c in v["casos"])
     linhas += ["- " + x.format(k=i(k), n=i(n)) for x in t["premissas_variante"]]
     linhas += _nota(r, t, lang)
+    linhas += _antecedencia(r, t, lang)
     return "\n".join(linhas) + "\n"
+
+
+def _antecedencia(r: dict[str, Any], t: dict[str, Any], lang: str) -> list[str]:
+    a = r["antecedencia"]
+    m = lambda x: decimal(x, lang, 1)  # noqa: E731
+    linhas = ["", t["h5"], "", t["rotulo_antecedencia"].format(n=inteiro(len(a["casos"]), lang)), "",
+              t["col_antecedencia"], "| --- | --- | --- | --- | --- |"]  # fmt: skip
+    linhas += [f"| {c['empresa']} (`{c['caso_id']}`) | {c['exercicio']} | {data(c['dt_receb'], lang)} | "
+               f"{data(c['data_publica'], lang)} | {m(c['meses'])} |" for c in a["casos"]]  # fmt: skip
+    linhas += ["", t["resultado_antecedencia"].format(med=m(a["mediana_meses"]), mn=m(a["minimo_meses"]),
+                                                      mx=m(a["maximo_meses"]))]  # fmt: skip
+    return linhas
 
 
 def _nota(r: dict[str, Any], t: dict[str, Any], lang: str) -> list[str]:
