@@ -1,0 +1,1668 @@
+{
+ "data_referencia": "2024-12-31",
+ "empresa": {
+  "cd_cvm": "24180",
+  "cnpj": "33.376.989/0001-91",
+  "denominacao": "IRB - BRASIL RESSEGUROS S.A.",
+  "origem_denominacao": "fca",
+  "codigos_negociacao": [
+   {
+    "codigo": "IRBR3",
+    "valor_mobiliario": "Ações Ordinárias",
+    "mercado": "Bolsa",
+    "inicio_negociacao": "2017-07-31",
+    "fim_negociacao": null,
+    "fca": {
+     "ano": 2023,
+     "versao": 2,
+     "dt_receb": "2023-06-07"
+    }
+   }
+  ],
+  "motivo_codigos_negociacao": null,
+  "setor": "Seguradoras e Corretoras",
+  "origem_setor": "fca",
+  "grupo": "financeira"
+ },
+ "idioma": "pt",
+ "exercicios": [
+  {
+   "exercicio": 2018,
+   "dt_refer": "2018-12-31",
+   "situacao": "ok",
+   "versao_usada": 4,
+   "dt_receb": "2019-03-08",
+   "versoes_conhecidas": [
+    {
+     "versao": 1,
+     "dt_receb": "2019-02-07"
+    },
+    {
+     "versao": 2,
+     "dt_receb": "2019-03-07"
+    },
+    {
+     "versao": 3,
+     "dt_receb": "2019-03-07"
+    },
+    {
+     "versao": 4,
+     "dt_receb": "2019-03-08"
+    }
+   ],
+   "tipo": "con",
+   "origem": "dados_abertos",
+   "num_doc": "81090",
+   "link": "http://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=81090",
+   "escala_original": "MIL",
+   "notas": [],
+   "amostra_estudo_1": "financeira"
+  }
+ ],
+ "achados": {
+  "possivel_manipulacao": [
+   {
+    "id": "662ce5f3ee8501f9",
+    "familia": "possivel_manipulacao",
+    "sinal": "peso_nao_recorrente",
+    "exercicio": 2018,
+    "rotulo": "Peso não recorrente (financeiras)",
+    "valor": {
+     "valor": 0.052651885664601675,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "peso não recorrente no decil superior do ano entre as financeiras (≥ percentil 90 dos calculáveis na data: 1,009)",
+    "alerta_v1": false,
+    "componente_de": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": null,
+      "n": 2,
+      "motivo": "menos de 10 empresas com o valor calculável"
+     },
+     "percentil_grupo_ano": {
+      "valor": 21.428571428571427,
+      "n": 21,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 2,
+      "motivo": "menos de 10 empresas com o valor calculável"
+     },
+     "historico": {
+      "exercicios": [
+       2016,
+       2017
+      ],
+      "serie": [
+       [
+        2016,
+        0.06431622675129067
+       ],
+       [
+        2017,
+        0.04204552696362863
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "atencao",
+       "motivo": "nenhuma conferência se aplica às demonstrações usadas"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "atencao",
+       "motivo": "4 versões entregues até a data de referência (reapresentação)"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "máx(0, soma das linhas \"outras receitas operacionais\" no nível mais alto) ÷ |resultado antes dos tributos|",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "peso_nao_recorrente",
+      "rotulo": "peso não recorrente (financeiras)",
+      "valor": 0.052651885664601675,
+      "motivo_v1": null
+     },
+     "formula": "máx(0, soma das linhas \"outras receitas operacionais\" no nível mais alto) ÷ |resultado antes dos tributos|",
+     "valores": [],
+     "entradas": [
+      "54ffb75ccce57d8c",
+      "dd7508a4b434cd48"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.peso_nao_recorrente.financeiras",
+     "calculado_em": "2026-11-10T19:40:44+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   }
+  ],
+  "risco_financeiro": [
+   {
+    "id": "19d12c06826a86fd",
+    "familia": "risco_financeiro",
+    "sinal": "altman_z2",
+    "exercicio": 2018,
+    "rotulo": "Altman Z'' (risco financeiro, só contexto)",
+    "valor": {
+     "valor": null,
+     "status": "indefinido",
+     "motivo": "não se aplica a financeiras",
+     "codigo": "nao_se_aplica"
+    },
+    "unidade": "índice",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": {
+     "percentil_setor_ano": null,
+     "percentil_grupo_ano": null,
+     "historico": {
+      "exercicios": [],
+      "serie": [],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "texto": null,
+    "componentes": {},
+    "marcas": [],
+    "linhagem": {
+     "entradas": [],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.altman_z2",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ],
+  "qualidade_financeira": [
+   {
+    "id": "8790191dded078a9",
+    "familia": "qualidade_financeira",
+    "sinal": "piotroski_f",
+    "exercicio": 2018,
+    "rotulo": "Piotroski F (qualidade financeira, só contexto)",
+    "valor": {
+     "valor": null,
+     "status": "indefinido",
+     "motivo": "não se aplica a financeiras",
+     "codigo": "nao_se_aplica"
+    },
+    "unidade": "sinais de 9",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": null,
+    "texto": null,
+    "componentes": {},
+    "marcas": [],
+    "linhagem": {
+     "entradas": [],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.piotroski_f",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)",
+      "DFP de t−1 na data, coluna PENÚLTIMO (t−2)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ]
+ },
+ "mudancas": {
+  "versoes_conhecidas": [
+   {
+    "versao": 1,
+    "dt_receb": "2019-02-07",
+    "usada": false
+   },
+   {
+    "versao": 2,
+    "dt_receb": "2019-03-07",
+    "usada": false
+   },
+   {
+    "versao": 3,
+    "dt_receb": "2019-03-07",
+    "usada": false
+   },
+   {
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "usada": true
+   }
+  ],
+  "comparativo_destacadas": [
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.03",
+    "ds_conta": "Patrimônio Líquido Consolidado",
+    "valor": 4000780000.0,
+    "valor_comparativo": 3631648000.0,
+    "diferenca": -369132000.0,
+    "grupo": "a",
+    "destacada": true,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01",
+    "ds_conta": "Passivo Circulante",
+    "valor": 10859175000.0,
+    "valor_comparativo": 11221853000.0,
+    "diferenca": 362678000.0,
+    "grupo": "a",
+    "destacada": true,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   }
+  ],
+  "reapresentacao_pelo_comparativo": [
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.03",
+    "ds_conta": "Patrimônio Líquido Consolidado",
+    "valor": 4000780000.0,
+    "valor_comparativo": 3631648000.0,
+    "diferenca": -369132000.0,
+    "grupo": "a",
+    "destacada": true,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01",
+    "ds_conta": "Passivo Circulante",
+    "valor": 10859175000.0,
+    "valor_comparativo": 11221853000.0,
+    "diferenca": 362678000.0,
+    "grupo": "a",
+    "destacada": true,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.11",
+    "ds_conta": "Resultado Líquido das Operações Continuadas",
+    "valor": 1218796000.0,
+    "valor_comparativo": 1101589000.0,
+    "diferenca": -117207000.0,
+    "grupo": "a",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1",
+    "ds_conta": "Ativo Total",
+    "valor": 15940434000.0,
+    "valor_comparativo": 15933980000.0,
+    "diferenca": -6454000.0,
+    "grupo": "a",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.08.01",
+    "ds_conta": "Receitas Financeiras",
+    "valor": 1254914000.0,
+    "valor_comparativo": 604557000.0,
+    "diferenca": -650357000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.08.02",
+    "ds_conta": "Despesas Financeiras",
+    "valor": -807110000.0,
+    "valor_comparativo": -156753000.0,
+    "diferenca": 650357000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.02.01.01",
+    "ds_conta": "Contas a Pagar",
+    "valor": 862380000.0,
+    "valor_comparativo": 427116000.0,
+    "diferenca": -435264000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.02.01.01.03",
+    "ds_conta": "Provisões para Impostos e contribuições",
+    "valor": 435264000.0,
+    "valor_comparativo": 0.0,
+    "diferenca": -435264000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.02.01.04",
+    "ds_conta": "Outros Passivos",
+    "valor": 58645000.0,
+    "valor_comparativo": 493909000.0,
+    "diferenca": 435264000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.02.01.04.01",
+    "ds_conta": "Contingências fiscais",
+    "valor": 0.0,
+    "valor_comparativo": 435264000.0,
+    "diferenca": 435264000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.03.04",
+    "ds_conta": "Reservas de Lucros",
+    "valor": 2174037000.0,
+    "valor_comparativo": 1804905000.0,
+    "diferenca": -369132000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.03.04.05",
+    "ds_conta": "Reserva de Retenção de Lucros",
+    "valor": 1595109000.0,
+    "valor_comparativo": 1225977000.0,
+    "diferenca": -369132000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.04",
+    "ds_conta": "Provisões Técnicas",
+    "valor": 8647230000.0,
+    "valor_comparativo": 8997874000.0,
+    "diferenca": 350644000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.04.01",
+    "ds_conta": "Seguros e Resseguros",
+    "valor": 8647230000.0,
+    "valor_comparativo": 8997874000.0,
+    "diferenca": 350644000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.04.01.04",
+    "ds_conta": "Sinistros a liquidar",
+    "valor": 4222549000.0,
+    "valor_comparativo": 4573193000.0,
+    "diferenca": 350644000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.03",
+    "ds_conta": "Créditos das Operações",
+    "valor": 4652082000.0,
+    "valor_comparativo": 4428424000.0,
+    "diferenca": -223658000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.03.01",
+    "ds_conta": "Seguros e Resseguros",
+    "valor": 4652082000.0,
+    "valor_comparativo": 4428424000.0,
+    "diferenca": -223658000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.02.02.01",
+    "ds_conta": "Sinistros Retidos de Resseguros",
+    "valor": -2820647000.0,
+    "valor_comparativo": -3030850000.0,
+    "diferenca": -210203000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.03.01.01",
+    "ds_conta": "Operações com Seguradoras",
+    "valor": 3305829000.0,
+    "valor_comparativo": 3100726000.0,
+    "diferenca": -205103000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.02",
+    "ds_conta": "Sinistros e Despesas das Operações",
+    "valor": -4430582000.0,
+    "valor_comparativo": -4625928000.0,
+    "diferenca": -195346000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.02.02",
+    "ds_conta": "Operações de Resseguros",
+    "valor": -4430582000.0,
+    "valor_comparativo": -4625928000.0,
+    "diferenca": -195346000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.03",
+    "ds_conta": "Resultado Bruto",
+    "valor": 1334056000.0,
+    "valor_comparativo": 1138710000.0,
+    "diferenca": -195346000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.07",
+    "ds_conta": "Resultado Antes do Resultado Financeiro e dos Tributos",
+    "valor": 1024356000.0,
+    "valor_comparativo": 829010000.0,
+    "diferenca": -195346000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.09",
+    "ds_conta": "Resultado Antes dos Tributos sobre o Lucro",
+    "valor": 1472160000.0,
+    "valor_comparativo": 1276814000.0,
+    "diferenca": -195346000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DFC_MD",
+    "cd_conta": "6.01.03",
+    "ds_conta": "Outros recebimentos operacionais (Salvados, Ressarcimentos e outros)",
+    "valor": 525396000.0,
+    "valor_comparativo": 374688000.0,
+    "diferenca": -150708000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DFC_MD",
+    "cd_conta": "6.01.07",
+    "ds_conta": "Outros pagamentos operacionais",
+    "valor": -150708000.0,
+    "valor_comparativo": 0.0,
+    "diferenca": 150708000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01",
+    "ds_conta": "Ativo Circulante",
+    "valor": 10535080000.0,
+    "valor_comparativo": 10390464000.0,
+    "diferenca": -144616000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.02",
+    "ds_conta": "Ativo Não Circulante",
+    "valor": 5405354000.0,
+    "valor_comparativo": 5543516000.0,
+    "diferenca": 138162000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.02.01",
+    "ds_conta": "Ativo Realizável a Longo Prazo",
+    "valor": 4715167000.0,
+    "valor_comparativo": 4853329000.0,
+    "diferenca": 138162000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.02.01.04",
+    "ds_conta": "Créditos das Operações",
+    "valor": 1314837000.0,
+    "valor_comparativo": 1452999000.0,
+    "diferenca": 138162000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.02.01.04.01",
+    "ds_conta": "Títulos e créditos a receber",
+    "valor": 237006000.0,
+    "valor_comparativo": 375168000.0,
+    "diferenca": 138162000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.04",
+    "ds_conta": "Títulos e Créditos a Receber",
+    "valor": 111703000.0,
+    "valor_comparativo": 248846000.0,
+    "diferenca": 137143000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.04.02",
+    "ds_conta": "Créditos Tributários e Previdênciários",
+    "valor": 71587000.0,
+    "valor_comparativo": 208730000.0,
+    "diferenca": 137143000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.13",
+    "ds_conta": "Lucro/Prejuízo Consolidado do Período",
+    "valor": 1218796000.0,
+    "valor_comparativo": 1101589000.0,
+    "diferenca": -117207000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.13.01",
+    "ds_conta": "Atribuído a Sócios da Empresa Controladora",
+    "valor": 1218796000.0,
+    "valor_comparativo": 1101589000.0,
+    "diferenca": -117207000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.10",
+    "ds_conta": "Imposto de Renda e Contribuição Social sobre o Lucro",
+    "valor": -253364000.0,
+    "valor_comparativo": -175225000.0,
+    "diferenca": 78139000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.10.01",
+    "ds_conta": "Corrente",
+    "valor": -305918000.0,
+    "valor_comparativo": -227780000.0,
+    "diferenca": 78138000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.09",
+    "ds_conta": "Outros Ativos Circulantes",
+    "valor": 3055607000.0,
+    "valor_comparativo": 2997506000.0,
+    "diferenca": -58101000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.09.03",
+    "ds_conta": "Outros",
+    "valor": 3055607000.0,
+    "valor_comparativo": 2997506000.0,
+    "diferenca": -58101000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.09.03.01",
+    "ds_conta": "Ativos de Resseguro e Retrocessão - Provisões Técnicas",
+    "valor": 3055607000.0,
+    "valor_comparativo": 2997506000.0,
+    "diferenca": -58101000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.01.03.01.03",
+    "ds_conta": "Outros Créditos Operacionais",
+    "valor": 56668000.0,
+    "valor_comparativo": 38113000.0,
+    "diferenca": -18555000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.02.02.03",
+    "ds_conta": "Outras Despesas de Resseguros",
+    "valor": -1469215000.0,
+    "valor_comparativo": -1454358000.0,
+    "diferenca": 14857000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.02",
+    "ds_conta": "Débitos de Operações",
+    "valor": 1393070000.0,
+    "valor_comparativo": 1405104000.0,
+    "diferenca": 12034000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.02.01",
+    "ds_conta": "Seguros e Resseguros",
+    "valor": 1393070000.0,
+    "valor_comparativo": 1405104000.0,
+    "diferenca": 12034000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.02.01.02",
+    "ds_conta": "Operações com resseguradoras",
+    "valor": 1251262000.0,
+    "valor_comparativo": 1260203000.0,
+    "diferenca": 8941000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2",
+    "ds_conta": "Passivo Total",
+    "valor": 15940434000.0,
+    "valor_comparativo": 15933980000.0,
+    "diferenca": -6454000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.02.03.01",
+    "ds_conta": "Imobilizado em Operação",
+    "valor": 68660000.0,
+    "valor_comparativo": 74353000.0,
+    "diferenca": 5693000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.02.03.01.03",
+    "ds_conta": "Outras Imobilizações",
+    "valor": -3029000.0,
+    "valor_comparativo": 2664000.0,
+    "diferenca": 5693000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPA",
+    "cd_conta": "1.02.03.03",
+    "ds_conta": "Imobilizado em Andamento",
+    "valor": 5693000.0,
+    "valor_comparativo": 0.0,
+    "diferenca": -5693000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.02.01.04",
+    "ds_conta": "Outros débitos operacionais",
+    "valor": 35458000.0,
+    "valor_comparativo": 38551000.0,
+    "diferenca": 3093000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.99.01.01",
+    "ds_conta": "ON",
+    "valor": 3930.0,
+    "valor_comparativo": 1180.0,
+    "diferenca": -2750.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   },
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "DRE",
+    "cd_conta": "3.99.02.01",
+    "ds_conta": "ON",
+    "valor": 3930.0,
+    "valor_comparativo": 1180.0,
+    "diferenca": -2750.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "versao_seguinte": 5,
+    "dt_receb_seguinte": "2021-02-18"
+   }
+  ],
+  "tolerancia_comparativo": 1000.0,
+  "materialidade_comparativo": {
+   "linhas_chave": [
+    {
+     "demonstracao": "BPA",
+     "cd_conta": "1"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.01"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.02"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.03"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.01"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.11"
+    },
+    {
+     "demonstracao": "DFC",
+     "cd_conta": "6.01"
+    }
+   ],
+   "limite_relativo": 0.01,
+   "ativo_total": 15940434000.0,
+   "limite": 159404340.0,
+   "texto": "Destacadas: diferenças em totais e linhas-chave (ativo total, passivo circulante, passivo não circulante, patrimônio líquido, receita líquida, lucro líquido e caixa operacional) acima de 1% do ativo total da versão usada. As demais diferenças (reclassificações entre linhas e diferenças menores) ficam na lista completa."
+  }
+ },
+ "o_que_se_sabia": {
+  "documentos": [
+   {
+    "tipo": "DFP",
+    "exercicio": 2016,
+    "versao": 1,
+    "dt_receb": "2017-07-31",
+    "num_doc": "67429"
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2018,
+    "versao": 1,
+    "dt_receb": "2018-01-17",
+    "num_doc": null
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2017,
+    "versao": 1,
+    "dt_receb": "2018-02-08",
+    "num_doc": "71429"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 1,
+    "dt_receb": "2019-02-07",
+    "num_doc": "80516"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 2,
+    "dt_receb": "2019-03-07",
+    "num_doc": "81058"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 3,
+    "dt_receb": "2019-03-07",
+    "num_doc": "81059"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "num_doc": "81090"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2019,
+    "versao": 1,
+    "dt_receb": "2020-02-18",
+    "num_doc": "91057"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2019,
+    "versao": 2,
+    "dt_receb": "2020-06-30",
+    "num_doc": "94456"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2019,
+    "versao": 3,
+    "dt_receb": "2020-06-30",
+    "num_doc": "94457"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2019,
+    "versao": 4,
+    "dt_receb": "2020-07-07",
+    "num_doc": "94639"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2019,
+    "versao": 5,
+    "dt_receb": "2021-02-18",
+    "num_doc": "100271"
+   }
+  ],
+  "nota": "DFP e FCA entregues à CVM até a data de referência; ITR e fatos relevantes entram em fases seguintes."
+ },
+ "qualidade_dos_dados": {
+  "conferencias": [
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "ativo total = passivo total",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "ativo total = passivo total",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "ativo total = circulante + não circulante",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "ativo total = circulante + não circulante",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "passivo total = circulante + não circulante + patrimônio líquido",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "passivo total = circulante + não circulante + patrimônio líquido",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "resultado bruto = receita + custo",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "resultado bruto = receita + custo",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "resultado antes do financeiro = bruto + despesas e receitas operacionais",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "resultado antes do financeiro = bruto + despesas e receitas operacionais",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "resultado antes dos tributos = antes do financeiro + resultado financeiro",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "resultado antes dos tributos = antes do financeiro + resultado financeiro",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "operações continuadas = antes dos tributos + IR e CSLL",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "operações continuadas = antes dos tributos + IR e CSLL",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "lucro do período = continuadas + descontinuadas",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "lucro do período = continuadas + descontinuadas",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "variação do caixa = operacional + investimento + financiamento + variação cambial",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "variação do caixa = operacional + investimento + financiamento + variação cambial",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "variação do caixa = saldo final − saldo inicial",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "variação do caixa = saldo final − saldo inicial",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "saldo final da DFC = caixa e equivalentes do balanço",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "saldo final da DFC = caixa e equivalentes do balanço",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "dfc_saldo_inicial_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "saldo inicial da DFC = caixa e equivalentes do balanço anterior",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "plano de contas seguradora: códigos não conferidos"
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "ativo total preenchido (diferente de zero)",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "ativo total não negativo",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "ativo total preenchido (diferente de zero)",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "ativo total não negativo",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   }
+  ]
+ },
+ "parecer_e_auditor": {
+  "natureza": "trecho_literal",
+  "gera_alerta": false,
+  "relatorio_do_auditor": {
+   "tipo": [
+    "Sem Ressalva"
+   ],
+   "trecho": "Em nossa opinião, essas demonstrações do valor adicionado foram adequadamente elaboradas, em todos os aspectos relevantes, segundo os critérios definidos nesse Pronunciamento Técnico e são consistentes em relação às demonstrações contábeis individuais e consolidadas tomadas em conjunto.",
+   "conferido": true,
+   "motivo": null,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2018.zip/dfp_cia_aberta_parecer_2018.csv",
+    "linhas": [
+     2478,
+     2479,
+     2480
+    ]
+   }
+  },
+  "auditores_no_fca": [
+   {
+    "ano_fca": 2017,
+    "dt_receb": "2017-07-31",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2018,
+    "dt_receb": "2018-01-17",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     },
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2019,
+    "dt_receb": "2019-01-29",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2020,
+    "dt_receb": "2020-11-13",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2021,
+    "dt_receb": "2021-12-01",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2022,
+    "dt_receb": "2022-10-24",
+    "auditores": [
+     {
+      "auditor": "KPMG Auditores Independetes Ltda.",
+      "codigo_cvm": "4189",
+      "pessoa_fisica": false,
+      "inicio": "2022-01-01",
+      "fim": null
+     },
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": "2021-12-31"
+     }
+    ]
+   },
+   {
+    "ano_fca": 2023,
+    "dt_receb": "2023-06-07",
+    "auditores": [
+     {
+      "auditor": "KPMG Auditores Independetes Ltda.",
+      "codigo_cvm": "4189",
+      "pessoa_fisica": false,
+      "inicio": "2022-01-01",
+      "fim": null
+     },
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": "2021-12-31"
+     }
+    ]
+   }
+  ],
+  "trocas_de_auditor": [
+   {
+    "ano_fca": 2022,
+    "de": null,
+    "para": "KPMG Auditores Independetes Ltda.",
+    "codigo_de": null,
+    "codigo_para": "4189",
+    "transicao_fca": null,
+    "saida": null
+   }
+  ],
+  "rodizio": {
+   "nota": "Rodízio de auditor: pela Resolução CVM nº 23/2021, art. 31, o mesmo auditor independente não pode prestar serviços a um mesmo cliente por mais de cinco exercícios sociais consecutivos, com intervalo mínimo de três exercícios sociais para a recontratação; pelo art. 31-A, o prazo é de até dez exercícios sociais consecutivos quando a companhia tem Comitê de Auditoria Estatutário em funcionamento permanente e o auditor é pessoa jurídica. A Resolução está em vigor desde 01/04/2021 (art. 41); antes, a regra equivalente estava nos arts. 31 e 31-A da Instrução CVM nº 308/1999, revogada pela Resolução (art. 40, I). Troca de auditor é fato, não alerta.",
+   "norma": "Resolução CVM nº 23/2021, arts. 31 e 31-A",
+   "fonte": "https://conteudo.cvm.gov.br/export/sites/cvm/legislacao/resolucoes/anexos/001/resol023.pdf",
+   "conferida_em": "2026-11-09"
+  }
+ },
+ "como_o_motor_foi_testado": {
+  "documento": "docs/resumo.md",
+  "acertados": 7,
+  "acertaveis": 13,
+  "alarmes_por_acerto_periodo_inteiro": 108.28571428571429,
+  "taxa_de_alerta_nao_financeiras": 0.49895584725536996
+ },
+ "limites": [
+  "Não ter alerta não é atestado. Em Dechow, Sloan e Sweeney (1995), o modelo de accruals com mais poder rejeitou 'sem manipulação' em só 28,1% de 32 empresas punidas pela SEC (Tabela 7, p. 32).",
+  "No estudo 1, 49,9% das empresa-anos não financeiras avaliadas (48,3% incluindo as financeiras) ficaram em alerta, e o número de acertos não superou o acaso num teste descritivo feito depois do resultado: 7 acertos em 13 casos acertáveis, contra 7,37 esperados ao acaso sem supor anos independentes (8,56 supondo anos independentes).",
+  "Os modelos de risco usam números que podem estar manipulados (Pereira e Martins 2015, p. 29). Por isso as três famílias não se somam."
+ ],
+ "limitacoes": [
+  "Indicadores de contexto (Altman Z'' e Piotroski F) não foram validados no Brasil por este projeto e não geram alerta"
+ ],
+ "evidencias": {
+  "54ffb75ccce57d8c": {
+   "id": "54ffb75ccce57d8c",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "81090",
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2018.zip",
+    "sha256": "280dcf5acd7bdb529acc186c9a1195092a1e06cf1e33ddcdca0b11c31261296f"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.05",
+   "ds_conta": "Outras Receitas e Despesas Operacionais",
+   "valor": 77512000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2018.zip/dfp_cia_aberta_DRE_con_2018.csv",
+    "linha": 14971,
+    "escala": "MIL"
+   }
+  },
+  "dd7508a4b434cd48": {
+   "id": "dd7508a4b434cd48",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "81090",
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2018.zip",
+    "sha256": "280dcf5acd7bdb529acc186c9a1195092a1e06cf1e33ddcdca0b11c31261296f"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.09",
+   "ds_conta": "Resultado Antes dos Tributos sobre o Lucro",
+   "valor": 1472160000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2018.zip/dfp_cia_aberta_DRE_con_2018.csv",
+    "linha": 14991,
+    "escala": "MIL"
+   }
+  }
+ },
+ "motor": {
+  "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+  "v2": "chiocca.v2 (produto, fases B a E)"
+ },
+ "informacao_de_hoje": {
+  "titulo": "Informação de hoje (fora da data de referência)",
+  "situacao_cadastro": "ATIVO",
+  "fonte": "cadastro de companhias abertas da CVM (cad_cia_aberta.csv), na versão baixada para o projeto, não na data de referência"
+ },
+ "gerado_em": "2026-11-10T19:40:44+00:00",
+ "aviso": "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
+}

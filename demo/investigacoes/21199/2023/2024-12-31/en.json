@@ -1,0 +1,1018 @@
+{
+ "data_referencia": "2024-12-31",
+ "empresa": {
+  "cd_cvm": "21199",
+  "cnpj": "59.285.411/0001-13",
+  "denominacao": "BCO PAN S.A.",
+  "origem_denominacao": "fca",
+  "codigos_negociacao": [
+   {
+    "codigo": "BPAN4",
+    "valor_mobiliario": "Ações Preferenciais",
+    "mercado": "Bolsa",
+    "inicio_negociacao": "2010-01-01",
+    "fim_negociacao": null,
+    "fca": {
+     "ano": 2023,
+     "versao": 4,
+     "dt_receb": "2023-06-19"
+    }
+   }
+  ],
+  "motivo_codigos_negociacao": null,
+  "setor": "Bancos",
+  "origem_setor": "fca",
+  "grupo": "financeira"
+ },
+ "idioma": "en",
+ "exercicios": [
+  {
+   "exercicio": 2023,
+   "dt_refer": "2023-12-31",
+   "situacao": "ok",
+   "versao_usada": 1,
+   "dt_receb": "2024-02-01",
+   "versoes_conhecidas": [
+    {
+     "versao": 1,
+     "dt_receb": "2024-02-01"
+    }
+   ],
+   "tipo": "con",
+   "origem": "dados_abertos",
+   "num_doc": "133795",
+   "link": "http://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=133795",
+   "escala_original": "MIL",
+   "notas": [],
+   "amostra_estudo_1": "financeira"
+  }
+ ],
+ "achados": {
+  "possivel_manipulacao": [
+   {
+    "id": "ff735ecb1cb2d92d",
+    "familia": "possivel_manipulacao",
+    "sinal": "peso_nao_recorrente",
+    "exercicio": 2023,
+    "rotulo": "Non-recurring weight (financial companies)",
+    "valor": {
+     "valor": 2.4189250386597743,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "index",
+    "valor_no_produto": null,
+    "regra": "non-recurring weight in the year's top decile among financial companies (≥ 90th percentile of computable values on the date: 3.460)",
+    "alerta_v1": false,
+    "componente_de": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 84.78260869565217,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 87.03703703703704,
+      "n": 27,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 0.0037083996357973777,
+       "p25": 0.13433917530088663,
+       "p50": 0.47651881509283356,
+       "p75": 1.3841992730973474,
+       "p90": 4.500326131758746
+      },
+      "limites": [
+       0.0,
+       0.5600154066374474,
+       1.1200308132748948,
+       1.6800462199123423,
+       2.2400616265497897,
+       2.800077033187237,
+       3.3600924398246845,
+       3.920107846462132,
+       4.480123253099579,
+       5.040138659737027,
+       5.600154066374474
+      ],
+      "contagens": [
+       12,
+       4,
+       2,
+       1,
+       1,
+       0,
+       0,
+       0,
+       1,
+       0
+      ],
+      "abaixo": 0,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2018,
+       2019,
+       2020,
+       2021,
+       2022
+      ],
+      "serie": [
+       [
+        2018,
+        1.1660267413497154
+       ],
+       [
+        2019,
+        0.919861004189741
+       ],
+       [
+        2020,
+        0.7139258108791446
+       ],
+       [
+        2021,
+        1.5518749584797127
+       ],
+       [
+        2022,
+        2.1967880322564204
+       ]
+      ],
+      "mediana": 1.1660267413497154,
+      "q1": 0.919861004189741,
+      "q3": 1.5518749584797127,
+      "faixa_tukey": [
+       -0.028159927245216432,
+       2.4998958899146704
+      ],
+      "posicao": "dentro",
+      "motivo": null
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidated, CVM open data"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "every account the signal needs is in the DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "atencao",
+       "motivo": "no check applies to the statements used"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "filed by the cut-off date, with no restatement known on the date"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "in study 1, engine v1 detected 7 of 13 detectable cases, with 108.3 false alarms per detected case over the whole period and an alert rate of 49.9% among evaluated non-financial company-years"
+      }
+     ]
+    },
+    "explicacao": "max(0, sum of the top-level \"outras receitas operacionais\" lines) ÷ |income before taxes|",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "peso_nao_recorrente",
+      "rotulo": "non-recurring weight (financial companies)",
+      "valor": 2.4189250386597743,
+      "motivo_v1": null
+     },
+     "formula": "max(0, sum of the top-level \"outras receitas operacionais\" lines) ÷ |income before taxes|",
+     "valores": [],
+     "entradas": [
+      "af79fc91650e091b",
+      "613afb704522d85f",
+      "d0cf5d1047ae8942"
+     ],
+     "transformacoes": [
+      "values converted to reais by the DFP scale (MIL or UNIDADE)"
+     ],
+     "premissas": [
+      "DFP version public on the cut-off date (point-in-time)",
+      "t−1 comes from the prior-year column (PENÚLTIMO) of the same DFP (amendment 5)",
+      "consolidated when available; otherwise individual (amendment 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.peso_nao_recorrente.financeiras",
+     "calculado_em": "2026-11-10T19:41:59+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   }
+  ],
+  "risco_financeiro": [
+   {
+    "id": "59a2ad29d564b968",
+    "familia": "risco_financeiro",
+    "sinal": "altman_z2",
+    "exercicio": 2023,
+    "rotulo": "Altman Z'' (financial risk, context only)",
+    "valor": {
+     "valor": null,
+     "status": "indefinido",
+     "motivo": "does not apply to financial companies",
+     "codigo": "nao_se_aplica"
+    },
+    "unidade": "index",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": {
+     "percentil_setor_ano": null,
+     "percentil_grupo_ano": null,
+     "historico": {
+      "exercicios": [],
+      "serie": [],
+      "motivo": "fewer than 5 previous fiscal years with a value"
+     }
+    },
+    "texto": null,
+    "componentes": {},
+    "marcas": [],
+    "linhagem": {
+     "entradas": [],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.altman_z2",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ],
+  "qualidade_financeira": [
+   {
+    "id": "0d2117e9ce24cec5",
+    "familia": "qualidade_financeira",
+    "sinal": "piotroski_f",
+    "exercicio": 2023,
+    "rotulo": "Piotroski F (financial quality, context only)",
+    "valor": {
+     "valor": null,
+     "status": "indefinido",
+     "motivo": "does not apply to financial companies",
+     "codigo": "nao_se_aplica"
+    },
+    "unidade": "signals out of 9",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": null,
+    "texto": null,
+    "componentes": {},
+    "marcas": [],
+    "linhagem": {
+     "entradas": [],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.piotroski_f",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)",
+      "DFP de t−1 na data, coluna PENÚLTIMO (t−2)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ]
+ },
+ "mudancas": {
+  "versoes_conhecidas": [
+   {
+    "versao": 1,
+    "dt_receb": "2024-02-01",
+    "usada": true
+   }
+  ],
+  "comparativo_destacadas": [],
+  "reapresentacao_pelo_comparativo": [],
+  "tolerancia_comparativo": 1000.0,
+  "materialidade_comparativo": {
+   "linhas_chave": [
+    {
+     "demonstracao": "BPA",
+     "cd_conta": "1"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.01"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.02"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.03"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.01"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.11"
+    },
+    {
+     "demonstracao": "DFC",
+     "cd_conta": "6.01"
+    }
+   ],
+   "limite_relativo": 0.01,
+   "ativo_total": 57271461000.0,
+   "limite": 572714610.0,
+   "texto": "Highlighted: differences in totals and key lines (total assets, current liabilities, non-current liabilities, equity, net revenue, net income and operating cash flow) above 1% of total assets of the version used. The other differences (reclassifications between lines and smaller differences) stay in the full list."
+  }
+ },
+ "o_que_se_sabia": {
+  "documentos": [
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 1,
+    "dt_receb": "2019-02-05",
+    "num_doc": "80468"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 2,
+    "dt_receb": "2019-03-29",
+    "num_doc": "81865"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2019,
+    "versao": 1,
+    "dt_receb": "2020-02-05",
+    "num_doc": "90773"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2019,
+    "versao": 2,
+    "dt_receb": "2020-03-27",
+    "num_doc": "91923"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2020,
+    "versao": 1,
+    "dt_receb": "2021-02-08",
+    "num_doc": "100006"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2020,
+    "versao": 2,
+    "dt_receb": "2021-02-09",
+    "num_doc": "100025"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2020,
+    "versao": 3,
+    "dt_receb": "2021-03-31",
+    "num_doc": "102565"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2021,
+    "versao": 1,
+    "dt_receb": "2022-02-08",
+    "num_doc": "111612"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2021,
+    "versao": 2,
+    "dt_receb": "2022-03-31",
+    "num_doc": "113433"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2022,
+    "versao": 1,
+    "dt_receb": "2023-02-08",
+    "num_doc": "123401"
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2023,
+    "versao": 1,
+    "dt_receb": "2023-05-31",
+    "num_doc": null
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2023,
+    "versao": 2,
+    "dt_receb": "2023-06-01",
+    "num_doc": null
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2023,
+    "versao": 3,
+    "dt_receb": "2023-06-19",
+    "num_doc": null
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2023,
+    "versao": 4,
+    "dt_receb": "2023-06-19",
+    "num_doc": null
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2023,
+    "versao": 1,
+    "dt_receb": "2024-02-01",
+    "num_doc": "133795"
+   }
+  ],
+  "nota": "DFP and FCA filed with the CVM by the reference date; ITR and material facts come in later phases."
+ },
+ "qualidade_dos_dados": {
+  "conferencias": [
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "total assets = total liabilities and equity",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "total assets = total liabilities and equity",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "total assets = current + non-current",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "total assets = current + non-current",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "total liabilities and equity = current + non-current + equity",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "total liabilities and equity = current + non-current + equity",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "gross profit = revenue + cost of sales",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "gross profit = revenue + cost of sales",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "operating profit = gross profit + operating expenses and income",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "operating profit = gross profit + operating expenses and income",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "profit before taxes = operating profit + finance result",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "profit before taxes = operating profit + finance result",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "continuing operations = profit before taxes + income taxes",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "continuing operations = profit before taxes + income taxes",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "profit for the period = continuing + discontinued",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "profit for the period = continuing + discontinued",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "change in cash = operating + investing + financing + exchange differences",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "change in cash = operating + investing + financing + exchange differences",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "change in cash = closing − opening balance",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "change in cash = closing − opening balance",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow closing balance = cash and cash equivalents on the balance sheet",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow closing balance = cash and cash equivalents on the balance sheet",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "dfc_saldo_inicial_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow opening balance = cash and cash equivalents on the prior balance sheet",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts banco: codes not checked"
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "total assets filled in (not zero)",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "total assets not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "total assets filled in (not zero)",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "total assets not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   }
+  ]
+ },
+ "parecer_e_auditor": {
+  "natureza": "trecho_literal",
+  "gera_alerta": false,
+  "relatorio_do_auditor": {
+   "tipo": [
+    "Sem Ressalva"
+   ],
+   "trecho": "Em nossa opinião, as demonstrações contábeis acima referidas apresentam adequadamente, em todos os aspectos relevantes, a posição patrimonial e financeira da Instituição e da Instituição e suas controladas em 31 de dezembro de 2023, o desempenho de suas operações e os seus respectivos fluxos de caixa, bem como o desempenho consolidado de suas operações e os seus fluxos de caixa consolidados para o semestre e exercício findos nessa data, de acordo com as práticas contábeis adotadas no Brasil, aplicáveis às instituições autorizadas a funcionar pelo Banco Central do Brasil (Bacen).",
+   "conferido": true,
+   "motivo": null,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2023.zip/dfp_cia_aberta_parecer_2023.csv",
+    "linhas": [
+     3200,
+     3201,
+     3202,
+     3203,
+     3204
+    ]
+   }
+  },
+  "auditores_no_fca": [
+   {
+    "ano_fca": 2010,
+    "dt_receb": "2010-11-12",
+    "auditores": [
+     {
+      "auditor": "Deloitte Touche Tohmatsu Auditores Independentes",
+      "codigo_cvm": "003859",
+      "pessoa_fisica": false,
+      "inicio": "2001-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2011,
+    "dt_receb": "2011-07-22",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2012,
+    "dt_receb": "2012-05-31",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2013,
+    "dt_receb": "2013-05-21",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2014,
+    "dt_receb": "2014-07-31",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2015,
+    "dt_receb": "2015-10-20",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2016,
+    "dt_receb": "2016-12-06",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2017,
+    "dt_receb": "2017-02-06",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2018,
+    "dt_receb": "2018-01-03",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2019,
+    "dt_receb": "2019-04-22",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2020,
+    "dt_receb": "2020-05-29",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-04-05",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2021,
+    "dt_receb": "2021-05-31",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2022,
+    "dt_receb": "2022-09-09",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2023,
+    "dt_receb": "2023-06-19",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-01-01",
+      "fim": null
+     },
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2011-01-01",
+      "fim": null
+     }
+    ]
+   }
+  ],
+  "trocas_de_auditor": [
+   {
+    "ano_fca": 2011,
+    "de": "Deloitte Touche Tohmatsu Auditores Independentes",
+    "para": "PricewaterhouseCoopers Auditores Independentes",
+    "codigo_de": "003859",
+    "codigo_para": "002879",
+    "transicao_fca": null,
+    "saida": {
+     "primeiro_exercicio": 2001,
+     "ultimo_exercicio": 2010,
+     "exercicios_consecutivos": 10,
+     "compativel_com_rodizio": true,
+     "artigo": "art. 31-A",
+     "norma": "Instrução CVM nº 308/1999",
+     "nota": "The outgoing firm audited 10 consecutive fiscal years (2001 to 2010), by the start and end dates in the FCA. The change coincides with the end of the 10-fiscal-year term and is compatible with the rotation rule (art. 31-A of CVM Instruction No. 308/1999, in force when the new firm started)."
+    }
+   }
+  ],
+  "rodizio": {
+   "nota": "Auditor rotation: under CVM Resolution No. 23/2021, art. 31, the same independent auditor may not serve the same client for more than five consecutive fiscal years, with a minimum interval of three fiscal years before being hired again; under art. 31-A, the term is up to ten consecutive fiscal years when the company has a statutory audit committee in permanent operation and the auditor is a firm. The Resolution has been in force since 2021-04-01 (art. 41); before that, the equivalent rule was in arts. 31 and 31-A of CVM Instruction No. 308/1999, revoked by the Resolution (art. 40, I). A change of auditor is a fact, not an alert.",
+   "norma": "Resolução CVM nº 23/2021, arts. 31 e 31-A",
+   "fonte": "https://conteudo.cvm.gov.br/export/sites/cvm/legislacao/resolucoes/anexos/001/resol023.pdf",
+   "conferida_em": "2026-11-09"
+  }
+ },
+ "como_o_motor_foi_testado": {
+  "documento": "docs/summary.md",
+  "acertados": 7,
+  "acertaveis": 13,
+  "alarmes_por_acerto_periodo_inteiro": 108.28571428571429,
+  "taxa_de_alerta_nao_financeiras": 0.49895584725536996
+ },
+ "limites": [
+  "No alert is not a clean bill of health. In Dechow, Sloan and Sweeney (1995), the most powerful accruals model rejected 'no manipulation' for only 28.1% of 32 companies sanctioned by the SEC (Table 7, p. 32).",
+  "In study 1, 49.9% of evaluated non-financial company-years (48.3% including financial companies) were in alert, and the number of detections did not beat chance in a descriptive test done after the result: 7 detections in 13 detectable cases, against 7.37 expected by chance without assuming independent years (8.56 assuming independent years).",
+  "Risk models use numbers that may be manipulated (Pereira and Martins 2015, p. 29). That is why the three families are not added up."
+ ],
+ "limitacoes": [
+  "Context indicators (Altman Z'' and Piotroski F) were not validated in Brazil by this project and do not trigger alerts"
+ ],
+ "evidencias": {
+  "613afb704522d85f": {
+   "id": "613afb704522d85f",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "133795",
+    "versao": 1,
+    "dt_receb": "2024-02-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2023.zip",
+    "sha256": "76502c1044a51fa688a748aeca1a0325b47c670da99f2c7044e5accdad2c3cca"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.04.05.06",
+   "ds_conta": "Outras Receitas Operacionais",
+   "valor": 1095551000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2023.zip/dfp_cia_aberta_DRE_con_2023.csv",
+    "linha": 26307,
+    "escala": "MIL"
+   }
+  },
+  "af79fc91650e091b": {
+   "id": "af79fc91650e091b",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "133795",
+    "versao": 1,
+    "dt_receb": "2024-02-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2023.zip",
+    "sha256": "76502c1044a51fa688a748aeca1a0325b47c670da99f2c7044e5accdad2c3cca"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.04.05",
+   "ds_conta": "Outras Receitas Operacionais",
+   "valor": 1597088000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2023.zip/dfp_cia_aberta_DRE_con_2023.csv",
+    "linha": 26295,
+    "escala": "MIL"
+   }
+  },
+  "d0cf5d1047ae8942": {
+   "id": "d0cf5d1047ae8942",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "133795",
+    "versao": 1,
+    "dt_receb": "2024-02-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2023.zip",
+    "sha256": "76502c1044a51fa688a748aeca1a0325b47c670da99f2c7044e5accdad2c3cca"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.05",
+   "ds_conta": "Resultado Antes dos Tributos sobre o Lucro",
+   "valor": 660247000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2023.zip/dfp_cia_aberta_DRE_con_2023.csv",
+    "linha": 26321,
+    "escala": "MIL"
+   }
+  }
+ },
+ "motor": {
+  "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+  "v2": "chiocca.v2 (produto, fases B a E)"
+ },
+ "informacao_de_hoje": {
+  "titulo": "Today's information (outside the reference date)",
+  "situacao_cadastro": "CANCELADA",
+  "fonte": "CVM registry of listed companies (cad_cia_aberta.csv), in the version downloaded for the project, not on the reference date"
+ },
+ "gerado_em": "2026-11-10T19:41:59+00:00",
+ "aviso": "Statistical signal based on public financial statements. Not an accusation, not investment advice."
+}

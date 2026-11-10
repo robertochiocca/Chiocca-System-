@@ -1,0 +1,4244 @@
+{
+ "data_referencia": "2024-12-31",
+ "empresa": {
+  "cd_cvm": "5312",
+  "cnpj": "88.610.191/0001-54",
+  "denominacao": "MUNDIAL S.A. - PRODUTOS DE CONSUMO",
+  "origem_denominacao": "fca",
+  "codigos_negociacao": [
+   {
+    "codigo": "MNDL3",
+    "valor_mobiliario": "Ações Ordinárias",
+    "mercado": "Bolsa",
+    "inicio_negociacao": "1979-12-12",
+    "fim_negociacao": null,
+    "fca": {
+     "ano": 2023,
+     "versao": 1,
+     "dt_receb": "2023-02-09"
+    }
+   }
+  ],
+  "motivo_codigos_negociacao": null,
+  "setor": "Têxtil e Vestuário",
+  "origem_setor": "fca",
+  "grupo": "nao_financeira"
+ },
+ "idioma": "pt",
+ "exercicios": [
+  {
+   "exercicio": 2013,
+   "dt_refer": "2013-12-31",
+   "situacao": "ok",
+   "versao_usada": 1,
+   "dt_receb": "2014-04-01",
+   "versoes_conhecidas": [
+    {
+     "versao": 1,
+     "dt_receb": "2014-04-01"
+    }
+   ],
+   "tipo": "con",
+   "origem": "dados_abertos",
+   "num_doc": "36011",
+   "link": "http://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=36011",
+   "escala_original": "MIL",
+   "notas": [],
+   "amostra_estudo_1": "nao_financeira"
+  }
+ ],
+ "achados": {
+  "possivel_manipulacao": [
+   {
+    "id": "0c3dc635e53fb896",
+    "familia": "possivel_manipulacao",
+    "sinal": "mscore",
+    "exercicio": 2013,
+    "rotulo": "M-score de Beneish",
+    "valor": {
+     "valor": -2.487100417108101,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "M > −1,78 (pré-registro, seção 4)",
+    "alerta_v1": false,
+    "componente_de": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 50.0,
+      "n": 21,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 58.76712328767123,
+      "n": 365,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 21,
+      "quantis": {
+       "p10": -3.264657490377731,
+       "p25": -2.9971757344114667,
+       "p50": -2.487100417108101,
+       "p75": -2.3599042891339486,
+       "p90": -1.9886033370043847
+      },
+      "limites": [
+       -3.3917899104718865,
+       -3.2514694910349817,
+       -3.1111490715980765,
+       -2.9708286521611718,
+       -2.830508232724267,
+       -2.690187813287362,
+       -2.549867393850457,
+       -2.4095469744135523,
+       -2.2692265549766475,
+       -2.1289061355397423,
+       -1.9885857161028375
+      ],
+      "contagens": [
+       2,
+       2,
+       1,
+       0,
+       2,
+       1,
+       6,
+       2,
+       0,
+       3
+      ],
+      "abaixo": 1,
+      "acima": 1,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        -2.105974798168114
+       ],
+       [
+        2011,
+        -2.915363429448881
+       ],
+       [
+        2012,
+        -2.4776522792925775
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "atencao",
+       "motivo": "depreciação somada com amortização ou exaustão (usado o total); sem linha de juros pagos na seção 6.01: caixa operacional como apresentado"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "53 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "−4,84 + 0,920 DSRI + 0,528 GMI + 0,404 AQI + 0,892 SGI + 0,115 DEPI − 0,172 SGAI + 4,679 TATA − 0,327 LVGI",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "mscore",
+      "rotulo": "M-score de Beneish",
+      "valor": -2.487100417108101,
+      "motivo_v1": null
+     },
+     "formula": "−4,84 + 0,920 DSRI + 0,528 GMI + 0,404 AQI + 0,892 SGI + 0,115 DEPI − 0,172 SGAI + 4,679 TATA − 0,327 LVGI",
+     "valores": [
+      [
+       "DSRI",
+       "",
+       0.9419985858007992
+      ],
+      [
+       "GMI",
+       "",
+       0.9288212934501894
+      ],
+      [
+       "AQI",
+       "",
+       1.1264811886200934
+      ],
+      [
+       "SGI",
+       "",
+       1.1128803559496063
+      ],
+      [
+       "DEPI",
+       "",
+       0.8543153030701062
+      ],
+      [
+       "SGAI",
+       "",
+       1.0280325097325032
+      ],
+      [
+       "TATA",
+       "",
+       -0.009073104740547152
+      ],
+      [
+       "LVGI",
+       "",
+       1.0119756813276897
+      ]
+     ],
+     "entradas": [
+      "1a1237e4bd469b65",
+      "6df262e4c772ec92",
+      "bf097fe35bf74f50",
+      "e6af8d62aa63b698",
+      "a7538da260b0f538",
+      "b2278d7246fff8b9",
+      "ad43438b11ca56e0",
+      "c4c4fdf08540f167",
+      "e29917bca80ee96a",
+      "c939a0bab398cb64",
+      "09be9b0998512c9e",
+      "751918fd45393676",
+      "6c2b0822bf765eeb",
+      "d54c1a4edaba5ad9",
+      "7df1b9d39edc9158",
+      "71590a5377129a6c",
+      "22157793f9e0ef2a",
+      "a4c6603a95621940",
+      "73e0116c1c201219",
+      "1cbbe4e04d584983",
+      "bb9a0c8b97ab05ac",
+      "90df61afb6b798d8",
+      "dcc3ee44178429a3",
+      "da1e93c6138ef981"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.calcula",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "e34c0f4642f8e12a",
+    "familia": "possivel_manipulacao",
+    "sinal": "DSRI",
+    "exercicio": 2013,
+    "rotulo": "DSRI, índice de dias de recebimento",
+    "valor": {
+     "valor": 0.9419985858007992,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 19.565217391304348,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 45.108695652173914,
+      "n": 460,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 0.9292419973615955,
+       "p25": 0.9496894883785225,
+       "p50": 1.0113969286766422,
+       "p75": 1.0531637165796646,
+       "p90": 1.200811381615728
+      },
+      "limites": [
+       0.6615921871580237,
+       0.7284230186954407,
+       0.7952538502328577,
+       0.8620846817702748,
+       0.9289155133076917,
+       0.9957463448451087,
+       1.0625771763825258,
+       1.1294080079199427,
+       1.1962388394573598,
+       1.2630696709947768,
+       1.3299005025321937
+      ],
+      "contagens": [
+       0,
+       0,
+       0,
+       1,
+       7,
+       8,
+       1,
+       1,
+       1,
+       0
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        1.0771946216462425
+       ],
+       [
+        2011,
+        0.9567839727139924
+       ],
+       [
+        2012,
+        1.1417788036490542
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "41 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "(contas a receber ÷ receita) de t ÷ (contas a receber ÷ receita) de t−1",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "DSRI",
+      "rotulo": "DSRI, índice de dias de recebimento",
+      "valor": 0.9419985858007992,
+      "motivo_v1": null
+     },
+     "formula": "(contas a receber ÷ receita) de t ÷ (contas a receber ÷ receita) de t−1",
+     "valores": [
+      [
+       "contas_a_receber",
+       "ÚLTIMO",
+       130077000.0
+      ],
+      [
+       "receita_liquida",
+       "ÚLTIMO",
+       409698000.0
+      ],
+      [
+       "contas_a_receber",
+       "PENÚLTIMO",
+       124080000.0
+      ],
+      [
+       "receita_liquida",
+       "PENÚLTIMO",
+       368142000.0
+      ]
+     ],
+     "entradas": [
+      "1a1237e4bd469b65",
+      "6df262e4c772ec92",
+      "bf097fe35bf74f50",
+      "e6af8d62aa63b698"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.dsri",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "f335b9310a6b1b56",
+    "familia": "possivel_manipulacao",
+    "sinal": "GMI",
+    "exercicio": 2013,
+    "rotulo": "GMI, índice de margem bruta",
+    "valor": {
+     "valor": 0.9288212934501894,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 36.95652173913044,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 28.347280334728033,
+      "n": 478,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 0.7755341004985206,
+       "p25": 0.8596048701449215,
+       "p50": 1.0041773940179781,
+       "p75": 1.0426587363552384,
+       "p90": 1.1121543481030902
+      },
+      "limites": [
+       0.7469242534615372,
+       0.7909639186504299,
+       0.8350035838393227,
+       0.8790432490282154,
+       0.9230829142171082,
+       0.9671225794060009,
+       1.0111622445948936,
+       1.0552019097837864,
+       1.099241574972679,
+       1.1432812401615717,
+       1.1873209053504645
+      ],
+      "contagens": [
+       1,
+       2,
+       2,
+       1,
+       1,
+       5,
+       4,
+       2,
+       1,
+       0
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        1.004685799119607
+       ],
+       [
+        2011,
+        1.0324705857781635
+       ],
+       [
+        2012,
+        0.9633641453975109
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "18 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "margem bruta de t−1 ÷ margem bruta de t, com margem = resultado bruto ÷ receita",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "GMI",
+      "rotulo": "GMI, índice de margem bruta",
+      "valor": 0.9288212934501894,
+      "motivo_v1": null
+     },
+     "formula": "margem bruta de t−1 ÷ margem bruta de t, com margem = resultado bruto ÷ receita",
+     "valores": [
+      [
+       "resultado_bruto",
+       "ÚLTIMO",
+       143842000.0
+      ],
+      [
+       "receita_liquida",
+       "ÚLTIMO",
+       409698000.0
+      ],
+      [
+       "resultado_bruto",
+       "PENÚLTIMO",
+       120052000.0
+      ],
+      [
+       "receita_liquida",
+       "PENÚLTIMO",
+       368142000.0
+      ]
+     ],
+     "entradas": [
+      "a7538da260b0f538",
+      "6df262e4c772ec92",
+      "b2278d7246fff8b9",
+      "e6af8d62aa63b698"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.gmi",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "10a897f9230084ef",
+    "familia": "possivel_manipulacao",
+    "sinal": "AQI",
+    "exercicio": 2013,
+    "rotulo": "AQI, índice de qualidade do ativo",
+    "valor": {
+     "valor": 1.1264811886200934,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 76.08695652173913,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 80.69620253164557,
+      "n": 474,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 0.7191381947903839,
+       "p25": 0.8991451051961333,
+       "p50": 1.0334986821904517,
+       "p75": 1.120292727361487,
+       "p90": 1.1904836498780513
+      },
+      "limites": [
+       0.6355176725142165,
+       0.6919792173846804,
+       0.7484407622551441,
+       0.804902307125608,
+       0.8613638519960718,
+       0.9178253968665355,
+       0.9742869417369994,
+       1.0307484866074632,
+       1.087210031477927,
+       1.1436715763483907,
+       1.2001331212188546
+      ],
+      "contagens": [
+       0,
+       1,
+       1,
+       2,
+       0,
+       1,
+       4,
+       3,
+       4,
+       3
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        1.0458770119156726
+       ],
+       [
+        2011,
+        0.9372886013455124
+       ],
+       [
+        2012,
+        1.0032068211441292
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "23 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "[1 − (ativo circulante + imobilizado) ÷ ativo total] de t ÷ o mesmo de t−1",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "AQI",
+      "rotulo": "AQI, índice de qualidade do ativo",
+      "valor": 1.1264811886200934,
+      "motivo_v1": null
+     },
+     "formula": "[1 − (ativo circulante + imobilizado) ÷ ativo total] de t ÷ o mesmo de t−1",
+     "valores": [
+      [
+       "ativo_circulante",
+       "ÚLTIMO",
+       198027000.0
+      ],
+      [
+       "imobilizado",
+       "ÚLTIMO",
+       160991000.0
+      ],
+      [
+       "ativo_total",
+       "ÚLTIMO",
+       932867000.0
+      ],
+      [
+       "ativo_circulante",
+       "PENÚLTIMO",
+       202531000.0
+      ],
+      [
+       "imobilizado",
+       "PENÚLTIMO",
+       192731000.0
+      ],
+      [
+       "ativo_total",
+       "PENÚLTIMO",
+       870769000.0
+      ]
+     ],
+     "entradas": [
+      "ad43438b11ca56e0",
+      "c4c4fdf08540f167",
+      "e29917bca80ee96a",
+      "c939a0bab398cb64",
+      "09be9b0998512c9e",
+      "751918fd45393676"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.aqi",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "038618d550ea64e2",
+    "familia": "possivel_manipulacao",
+    "sinal": "SGI",
+    "exercicio": 2013,
+    "rotulo": "SGI, índice de crescimento da receita",
+    "valor": {
+     "valor": 1.1128803559496063,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 50.0,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 51.979166666666664,
+      "n": 480,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 0.8979593008028903,
+       "p25": 0.9756853036848455,
+       "p50": 1.1128803559496063,
+       "p75": 1.1595354081407945,
+       "p90": 1.1738320057777993
+      },
+      "limites": [
+       0.8392262791211522,
+       0.8750397847919162,
+       0.9108532904626802,
+       0.9466667961334442,
+       0.9824803018042081,
+       1.0182938074749721,
+       1.0541073131457361,
+       1.0899208188165002,
+       1.1257343244872642,
+       1.161547830158028,
+       1.197361335828792
+      ],
+      "contagens": [
+       0,
+       1,
+       2,
+       2,
+       0,
+       2,
+       2,
+       2,
+       4,
+       4
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        1.2694515937438131
+       ],
+       [
+        2011,
+        0.9951160652723512
+       ],
+       [
+        2012,
+        1.0122161457688914
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "18 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "receita de t ÷ receita de t−1",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "SGI",
+      "rotulo": "SGI, índice de crescimento da receita",
+      "valor": 1.1128803559496063,
+      "motivo_v1": null
+     },
+     "formula": "receita de t ÷ receita de t−1",
+     "valores": [
+      [
+       "receita_liquida",
+       "ÚLTIMO",
+       409698000.0
+      ],
+      [
+       "receita_liquida",
+       "PENÚLTIMO",
+       368142000.0
+      ]
+     ],
+     "entradas": [
+      "6df262e4c772ec92",
+      "e6af8d62aa63b698"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.sgi",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "0c0a01a9eb920dad",
+    "familia": "possivel_manipulacao",
+    "sinal": "DEPI",
+    "exercicio": 2013,
+    "rotulo": "DEPI, índice de depreciação",
+    "valor": {
+     "valor": 0.8543153030701062,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 11.904761904761905,
+      "n": 21,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 21.52061855670103,
+      "n": 388,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 21,
+      "quantis": {
+       "p10": 0.8543153030701062,
+       "p25": 0.9295348798463245,
+       "p50": 0.9865683674460723,
+       "p75": 1.0821355359289504,
+       "p90": 1.151656327748102
+      },
+      "limites": [
+       0.8357588677278539,
+       0.8750397364516521,
+       0.9143206051754502,
+       0.9536014738992484,
+       0.9928823426230466,
+       1.0321632113468449,
+       1.071444080070643,
+       1.110724948794441,
+       1.1500058175182393,
+       1.1892866862420375,
+       1.2285675549658357
+      ],
+      "contagens": [
+       3,
+       0,
+       4,
+       3,
+       2,
+       1,
+       2,
+       2,
+       1,
+       1
+      ],
+      "abaixo": 1,
+      "acima": 1,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        0.8374153337013291
+       ],
+       [
+        2011,
+        1.022637084198445
+       ],
+       [
+        2012,
+        1.1014628855564235
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "atencao",
+       "motivo": "depreciação somada com amortização ou exaustão (usado o total)"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "27 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "taxa de depreciação de t−1 ÷ taxa de t, com taxa = depreciação ÷ (depreciação + imobilizado)",
+    "explicacoes_alternativas": [],
+    "limitacoes": [
+     "A depreciação vem de linhas da DFC achadas por texto; na DFC pelo método direto não há essa linha"
+    ],
+    "linhagem": {
+     "numero": {
+      "nome": "DEPI",
+      "rotulo": "DEPI, índice de depreciação",
+      "valor": 0.8543153030701062,
+      "motivo_v1": null
+     },
+     "formula": "taxa de depreciação de t−1 ÷ taxa de t, com taxa = depreciação ÷ (depreciação + imobilizado)",
+     "valores": [
+      [
+       "depreciacao",
+       "ÚLTIMO",
+       11879000.0
+      ],
+      [
+       "imobilizado",
+       "ÚLTIMO",
+       160991000.0
+      ],
+      [
+       "depreciacao",
+       "PENÚLTIMO",
+       12020000.0
+      ],
+      [
+       "imobilizado",
+       "PENÚLTIMO",
+       192731000.0
+      ]
+     ],
+     "entradas": [
+      "6c2b0822bf765eeb",
+      "c4c4fdf08540f167",
+      "d54c1a4edaba5ad9",
+      "09be9b0998512c9e"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)",
+      "depreciação: soma das linhas da seção 6.01.01 que contêm \"deprecia\" (reconhecimento, parte 4.2)",
+      "depreciação somada com amortização ou exaustão na mesma linha: usado o total, empresa-ano marcada"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [
+      "a depreciação vem de linhas da DFC achadas por texto; na DFC pelo método direto não há essa linha"
+     ],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.depi",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "6a75565cb501ecce",
+    "familia": "possivel_manipulacao",
+    "sinal": "SGAI",
+    "exercicio": 2013,
+    "rotulo": "SGAI, índice de despesas de vendas e administrativas",
+    "valor": {
+     "valor": 1.0280325097325032,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 67.3913043478261,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 61.040339702760086,
+      "n": 471,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 0.8709257759004574,
+       "p25": 0.9597736682500616,
+       "p50": 1.0154276813303715,
+       "p75": 1.0315124642981224,
+       "p90": 1.0646199199909487
+      },
+      "limites": [
+       0.8226822446629872,
+       0.8481993139729451,
+       0.873716383282903,
+       0.8992334525928609,
+       0.9247505219028188,
+       0.9502675912127767,
+       0.9757846605227345,
+       1.0013017298326925,
+       1.0268187991426503,
+       1.0523358684526083,
+       1.077852937762566
+      ],
+      "contagens": [
+       0,
+       1,
+       0,
+       1,
+       0,
+       4,
+       2,
+       4,
+       6,
+       1
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        1.025061480488305
+       ],
+       [
+        2011,
+        1.0513993931049541
+       ],
+       [
+        2012,
+        0.9531657678270212
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "18 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "[(|despesas com vendas| + |despesas gerais e administrativas|) ÷ receita] de t ÷ o mesmo de t−1",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "SGAI",
+      "rotulo": "SGAI, índice de despesas de vendas e administrativas",
+      "valor": 1.0280325097325032,
+      "motivo_v1": null
+     },
+     "formula": "[(|despesas com vendas| + |despesas gerais e administrativas|) ÷ receita] de t ÷ o mesmo de t−1",
+     "valores": [
+      [
+       "despesas_vendas",
+       "ÚLTIMO",
+       -74814000.0
+      ],
+      [
+       "despesas_gerais_adm",
+       "ÚLTIMO",
+       -31552000.0
+      ],
+      [
+       "receita_liquida",
+       "ÚLTIMO",
+       409698000.0
+      ],
+      [
+       "despesas_vendas",
+       "PENÚLTIMO",
+       -64744000.0
+      ],
+      [
+       "despesas_gerais_adm",
+       "PENÚLTIMO",
+       -28227000.0
+      ],
+      [
+       "receita_liquida",
+       "PENÚLTIMO",
+       368142000.0
+      ]
+     ],
+     "entradas": [
+      "7df1b9d39edc9158",
+      "71590a5377129a6c",
+      "6df262e4c772ec92",
+      "22157793f9e0ef2a",
+      "a4c6603a95621940",
+      "e6af8d62aa63b698"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.sgai",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "9332ded3ec7cd271",
+    "familia": "possivel_manipulacao",
+    "sinal": "TATA",
+    "exercicio": 2013,
+    "rotulo": "TATA, accruals totais sobre o ativo",
+    "valor": {
+     "valor": -0.009073104740547152,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 54.34782608695652,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 70.95808383233533,
+      "n": 501,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": -0.1807168895176976,
+       "p25": -0.1255690323135216,
+       "p50": -0.015707608833975404,
+       "p75": 0.00380721642794561,
+       "p90": 0.06774882839417243
+      },
+      "limites": [
+       -0.19483115687850586,
+       -0.16538923343892423,
+       -0.13594730999934262,
+       -0.106505386559761,
+       -0.07706346312017938,
+       -0.04762153968059776,
+       -0.018179616241016133,
+       0.011262307198565469,
+       0.0407042306381471,
+       0.0701461540777287,
+       0.09958807751731033
+      ],
+      "contagens": [
+       1,
+       3,
+       1,
+       2,
+       0,
+       1,
+       8,
+       0,
+       2,
+       1
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        0.023890432007564563
+       ],
+       [
+        2011,
+        -0.07053173736629381
+       ],
+       [
+        2012,
+        -0.03716140560814636
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "atencao",
+       "motivo": "sem linha de juros pagos na seção 6.01: caixa operacional como apresentado"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "45 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "(resultado das operações continuadas − caixa operacional) ÷ ativo total, em t",
+    "explicacoes_alternativas": [],
+    "limitacoes": [
+     "Caixa operacional sem os juros pagos que estavam na seção 6.01 (pré-registro, seção 4.1)"
+    ],
+    "linhagem": {
+     "numero": {
+      "nome": "TATA",
+      "rotulo": "TATA, accruals totais sobre o ativo",
+      "valor": -0.009073104740547152,
+      "motivo_v1": null
+     },
+     "formula": "(resultado das operações continuadas − caixa operacional) ÷ ativo total, em t",
+     "valores": [
+      [
+       "lucro_operacoes_continuadas",
+       "ÚLTIMO",
+       4856000.0
+      ],
+      [
+       "caixa_operacional",
+       "ÚLTIMO",
+       13320000.0
+      ],
+      [
+       "ativo_total",
+       "ÚLTIMO",
+       932867000.0
+      ]
+     ],
+     "entradas": [
+      "73e0116c1c201219",
+      "1cbbe4e04d584983",
+      "e29917bca80ee96a"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)",
+      "nenhuma linha de juros pagos na seção 6.01: caixa operacional como apresentado"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [
+      "caixa operacional sem os juros pagos que estavam na seção 6.01 (pré-registro, seção 4.1)"
+     ],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.tata",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "083622202f7da8b1",
+    "familia": "possivel_manipulacao",
+    "sinal": "LVGI",
+    "exercicio": 2013,
+    "rotulo": "LVGI, índice de alavancagem",
+    "valor": {
+     "valor": 1.0119756813276897,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": "Componente do M-score; não tem regra própria",
+    "alerta_v1": null,
+    "componente_de": "mscore",
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 45.65217391304348,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 46.76767676767677,
+      "n": 495,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 0.8746129140857472,
+       "p25": 0.9519051761888346,
+       "p50": 1.03040645712768,
+       "p75": 1.0979127963841218,
+       "p90": 1.20319735890424
+      },
+      "limites": [
+       0.8432787322701355,
+       0.8900393730404449,
+       0.9368000138107543,
+       0.9835606545810638,
+       1.0303212953513732,
+       1.0770819361216826,
+       1.123842576891992,
+       1.1706032176623014,
+       1.2173638584326107,
+       1.2641244992029201,
+       1.3108851399732295
+      ],
+      "contagens": [
+       1,
+       2,
+       3,
+       3,
+       4,
+       4,
+       1,
+       0,
+       1,
+       0
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        1.1441241790406174
+       ],
+       [
+        2011,
+        1.1431249196789879
+       ],
+       [
+        2012,
+        0.8984186792657388
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "31 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "[(passivo circulante + empréstimos de longo prazo) ÷ ativo total] de t ÷ o mesmo de t−1",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "LVGI",
+      "rotulo": "LVGI, índice de alavancagem",
+      "valor": 1.0119756813276897,
+      "motivo_v1": null
+     },
+     "formula": "[(passivo circulante + empréstimos de longo prazo) ÷ ativo total] de t ÷ o mesmo de t−1",
+     "valores": [
+      [
+       "passivo_circulante",
+       "ÚLTIMO",
+       391809000.0
+      ],
+      [
+       "emprestimos_lp",
+       "ÚLTIMO",
+       3305000.0
+      ],
+      [
+       "ativo_total",
+       "ÚLTIMO",
+       932867000.0
+      ],
+      [
+       "passivo_circulante",
+       "PENÚLTIMO",
+       350037000.0
+      ],
+      [
+       "emprestimos_lp",
+       "PENÚLTIMO",
+       14411000.0
+      ],
+      [
+       "ativo_total",
+       "PENÚLTIMO",
+       870769000.0
+      ]
+     ],
+     "entradas": [
+      "bb9a0c8b97ab05ac",
+      "90df61afb6b798d8",
+      "e29917bca80ee96a",
+      "dcc3ee44178429a3",
+      "da1e93c6138ef981",
+      "751918fd45393676"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.mscore.lvgi",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "6048c44ed7f59601",
+    "familia": "possivel_manipulacao",
+    "sinal": "dpo",
+    "exercicio": 2013,
+    "rotulo": "Salto do prazo de pagamento a fornecedores (DPO)",
+    "valor": {
+     "valor": -12.887843201652593,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "dias",
+    "valor_no_produto": null,
+    "regra": "variação do DPO no decil superior do ano entre as não financeiras (≥ percentil 90 dos calculáveis na data: 26,5 dias)",
+    "alerta_v1": false,
+    "componente_de": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 6.521739130434782,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 17.78523489932886,
+      "n": 447,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": -12.076975256977327,
+       "p25": -7.11868930388744,
+       "p50": -2.3228690526277394,
+       "p75": 5.102275976713538,
+       "p90": 39.90349349180238
+      },
+      "limites": [
+       -12.887500405459221,
+       -6.846155633135185,
+       -0.8048108608111484,
+       5.236533911512886,
+       11.277878683836924,
+       17.319223456160962,
+       23.360568228484993,
+       29.40191300080903,
+       35.44325777313307,
+       41.48460254545711,
+       47.525947317781146
+      ],
+      "contagens": [
+       4,
+       7,
+       4,
+       2,
+       1,
+       0,
+       0,
+       0,
+       0,
+       1
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        8.827763591190966
+       ],
+       [
+        2011,
+        2.660217479732893
+       ],
+       [
+        2012,
+        -0.3954966072488304
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "28 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "fornecedores ÷ |custo das vendas| × 365, em t, menos o mesmo em t−1",
+    "explicacoes_alternativas": [
+     "Poder de negociação com fornecedores e mudança de mix de compras (decisão de 07/11/2026)"
+    ],
+    "limitacoes": [
+     "Risco sacado informado só em nota explicativa não entra (pré-registro, seção 4.1)"
+    ],
+    "linhagem": {
+     "numero": {
+      "nome": "dpo",
+      "rotulo": "salto do prazo de pagamento a fornecedores (DPO)",
+      "valor": -12.887843201652593,
+      "motivo_v1": null
+     },
+     "formula": "fornecedores ÷ |custo das vendas| × 365, em t, menos o mesmo em t−1",
+     "valores": [
+      [
+       "fornecedores",
+       "ÚLTIMO",
+       40147000.0
+      ],
+      [
+       "custo_vendas",
+       "ÚLTIMO",
+       -265856000.0
+      ],
+      [
+       "fornecedores",
+       "PENÚLTIMO",
+       46224000.0
+      ],
+      [
+       "custo_vendas",
+       "PENÚLTIMO",
+       -248090000.0
+      ]
+     ],
+     "entradas": [
+      "0da090eb2791cfd1",
+      "da0bc01132d0e949",
+      "644c9ea24746fce6",
+      "1167d568e2c5c301"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [
+      "risco sacado informado só em nota explicativa não entra (pré-registro, seção 4.1)"
+     ],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.dpo.variacao",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "3df424cb146a1516",
+    "familia": "possivel_manipulacao",
+    "sinal": "juro",
+    "exercicio": 2013,
+    "rotulo": "Juro implícito menos CDI médio",
+    "valor": {
+     "valor": 38.285549358895985,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "p.p.",
+    "valor_no_produto": null,
+    "regra": "juro implícito acima do CDI médio do ano + 10 p.p. (pré-registro, seção 4)",
+    "alerta_v1": true,
+    "componente_de": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 84.78260869565217,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 90.42792792792793,
+      "n": 444,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": 5.3168093792250435,
+       "p25": 7.561002268001792,
+       "p50": 12.39922892555676,
+       "p75": 25.240581017929763,
+       "p90": 50.964313799346776
+      },
+      "limites": [
+       4.909590344004879,
+       15.65917712041837,
+       26.40876389683186,
+       37.15835067324535,
+       47.907937449658846,
+       58.65752422607234,
+       69.40711100248582,
+       80.15669777889931,
+       90.90628455531281,
+       101.6558713317263,
+       112.4054581081398
+      ],
+      "contagens": [
+       12,
+       3,
+       1,
+       2,
+       1,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        29.605933037658605
+       ],
+       [
+        2011,
+        32.64828060368436
+       ],
+       [
+        2012,
+        28.666388334599024
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "todas as contas de que o sinal precisa estão na DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "28 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas; o juro implícito disparou em 40,7% das empresa-anos em que era calculável"
+      }
+     ]
+    },
+    "explicacao": "|despesas financeiras de t| ÷ média dos empréstimos (curto + longo prazo) de t e t−1, menos o CDI médio, em pontos percentuais",
+    "explicacoes_alternativas": [
+     "Dívida cara, variação cambial e juros de arrendamento dentro da despesa financeira (decisão de 07/11/2026)"
+    ],
+    "limitacoes": [
+     "A despesa financeira inclui variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos"
+    ],
+    "linhagem": {
+     "numero": {
+      "nome": "juro",
+      "rotulo": "juro implícito menos CDI médio",
+      "valor": 38.285549358895985,
+      "motivo_v1": null
+     },
+     "formula": "|despesas financeiras de t| ÷ média dos empréstimos (curto + longo prazo) de t e t−1, menos o CDI médio, em pontos percentuais",
+     "valores": [
+      [
+       "despesas_financeiras",
+       "ÚLTIMO",
+       -77460000.0
+      ],
+      [
+       "emprestimos_cp",
+       "ÚLTIMO",
+       159816000.0
+      ],
+      [
+       "emprestimos_lp",
+       "ÚLTIMO",
+       3305000.0
+      ],
+      [
+       "emprestimos_cp",
+       "PENÚLTIMO",
+       156913000.0
+      ],
+      [
+       "emprestimos_lp",
+       "PENÚLTIMO",
+       14411000.0
+      ],
+      [
+       "cdi_medio",
+       "",
+       0.0803596837944664
+      ]
+     ],
+     "entradas": [
+      "3b9429986a58fcd2",
+      "89a5f9c5aa85679f",
+      "90df61afb6b798d8",
+      "29b4fd5fb8c8e68b",
+      "da1e93c6138ef981"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)",
+      "CDI médio do ano: média das taxas diárias da série 4389 do SGS do Banco Central nos 12 meses até a data de referência da DFP"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [
+      "a despesa financeira inclui variação cambial, juros de arrendamento e outros itens que não são juros dos empréstimos"
+     ],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.juro_implicito.juro",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   },
+   {
+    "id": "1976b8a4724c9aef",
+    "familia": "possivel_manipulacao",
+    "sinal": "lucro_sem_caixa",
+    "exercicio": 2013,
+    "rotulo": "Lucro sem caixa (accruals sobre o ativo médio)",
+    "valor": {
+     "valor": -0.009385485763202774,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "valor_no_produto": null,
+    "regra": null,
+    "alerta_v1": null,
+    "componente_de": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 54.34782608695652,
+      "n": 23,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 71.5,
+      "n": 500,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 23,
+      "quantis": {
+       "p10": -0.15774279432299243,
+       "p25": -0.12063971930820434,
+       "p50": -0.014867313809547273,
+       "p75": 0.003952604161747467,
+       "p90": 0.07096637454380021
+      },
+      "limites": [
+       -0.17819497835600107,
+       -0.14923572959050102,
+       -0.12027648082500095,
+       -0.0913172320595009,
+       -0.06235798329400084,
+       -0.033398734528500784,
+       -0.004439485763000739,
+       0.024519763002499334,
+       0.05347901176799938,
+       0.08243826053349945,
+       0.1113975092989995
+      ],
+      "contagens": [
+       2,
+       2,
+       3,
+       0,
+       0,
+       5,
+       4,
+       0,
+       3,
+       0
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        0.024216430677140754
+       ],
+       [
+        2011,
+        -0.07083483508630577
+       ],
+       [
+        2012,
+        -0.03777223316553586
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidado, dados abertos da CVM"
+      },
+      {
+       "nome": "completude",
+       "resultado": "atencao",
+       "motivo": "sem linha de juros pagos na seção 6.01: caixa operacional como apresentado"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "ok",
+       "motivo": "45 conferências aplicáveis, nenhuma falha"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "ok",
+       "motivo": "entregue até a data de corte, sem reapresentação conhecida na data"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "no estudo 1, o motor v1 acertou 7 de 13 casos acertáveis, com 108,3 alarmes por acerto no período inteiro e taxa de alerta de 49,9% nas empresa-anos não financeiras avaliadas"
+      }
+     ]
+    },
+    "explicacao": "(lucro líquido − caixa operacional) ÷ média do ativo total de t e t−1",
+    "explicacoes_alternativas": [],
+    "limitacoes": [
+     "Só aparece como contexto: não dispara alerta (pré-registro, seção 4)"
+    ],
+    "linhagem": {
+     "numero": {
+      "nome": "lucro_sem_caixa",
+      "rotulo": "lucro sem caixa (accruals sobre o ativo médio)",
+      "valor": -0.009385485763202774,
+      "motivo_v1": null
+     },
+     "formula": "(lucro líquido − caixa operacional) ÷ média do ativo total de t e t−1",
+     "valores": [
+      [
+       "lucro_liquido",
+       "ÚLTIMO",
+       4856000.0
+      ],
+      [
+       "caixa_operacional",
+       "ÚLTIMO",
+       13320000.0
+      ],
+      [
+       "ativo_total",
+       "ÚLTIMO",
+       932867000.0
+      ],
+      [
+       "ativo_total",
+       "PENÚLTIMO",
+       870769000.0
+      ]
+     ],
+     "entradas": [
+      "ebab703209f00431",
+      "1cbbe4e04d584983",
+      "e29917bca80ee96a",
+      "751918fd45393676"
+     ],
+     "transformacoes": [
+      "valores convertidos para reais pela escala da DFP (MIL ou UNIDADE)",
+      "nenhuma linha de juros pagos na seção 6.01: caixa operacional como apresentado"
+     ],
+     "premissas": [
+      "versão da DFP pública na data de corte (como era na época)",
+      "t−1 vem do comparativo (PENÚLTIMO) da mesma DFP (emenda 5)",
+      "consolidado quando existe; senão, individual (emenda 5)"
+     ],
+     "limitacoes": [
+      "só aparece como contexto: não dispara alerta (pré-registro, seção 4)"
+     ],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.lucro_sem_caixa.accruals",
+     "calculado_em": "2026-11-10T19:38:24+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   }
+  ],
+  "risco_financeiro": [
+   {
+    "id": "1a5b2b3150ba1882",
+    "familia": "risco_financeiro",
+    "sinal": "altman_z2",
+    "exercicio": 2013,
+    "rotulo": "Altman Z'' (risco financeiro, só contexto)",
+    "valor": {
+     "valor": -1.1865892280161177,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "índice",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 26.0,
+      "n": 25,
+      "motivo": null
+     },
+     "percentil_grupo_ano": {
+      "valor": 18.67671691792295,
+      "n": 597,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 25,
+      "quantis": {
+       "p10": -14.982195342256164,
+       "p25": -1.1865892280161177,
+       "p50": 1.758845181741544,
+       "p75": 4.500338295389359,
+       "p90": 8.414076796280268
+      },
+      "limites": [
+       -33.944081492094554,
+       -29.623171653295927,
+       -25.302261814497296,
+       -20.981351975698665,
+       -16.660442136900038,
+       -12.33953229810141,
+       -8.01862245930278,
+       -3.6977126205041486,
+       0.6231972182944787,
+       4.944107057093106,
+       9.265016895891733
+      ],
+      "contagens": [
+       0,
+       0,
+       0,
+       0,
+       2,
+       1,
+       1,
+       4,
+       9,
+       4
+      ],
+      "abaixo": 2,
+      "acima": 2,
+      "motivo": null
+     },
+     "historico": {
+      "exercicios": [
+       2010,
+       2011,
+       2012
+      ],
+      "serie": [
+       [
+        2010,
+        -0.6846143494484963
+       ],
+       [
+        2011,
+        -1.1115580497583524
+       ],
+       [
+        2012,
+        -1.0636456412377702
+       ]
+      ],
+      "motivo": "menos de 5 exercícios anteriores com valor"
+     }
+    },
+    "texto": null,
+    "componentes": {
+     "X1": -0.20772736092068858,
+     "X2": -0.05260556971143796,
+     "X3": 0.04519936925628198,
+     "X4": 0.04176824331492576
+    },
+    "marcas": [
+     "Sem zona de corte: a fonte disponível não define zonas para o Z''",
+     "Coeficientes estimados fora do Brasil; modelos de falência perdem validade com o tempo (Pereira e Martins 2015, p. 25)"
+    ],
+    "linhagem": {
+     "entradas": [
+      "e29917bca80ee96a",
+      "ad43438b11ca56e0",
+      "bb9a0c8b97ab05ac",
+      "e6acda6970e9925e",
+      "f6d9ff2adcd7f421",
+      "5c34eaeaf6e39f8b",
+      "955469f1d51ea179",
+      "3496a4b8e138503a"
+     ],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.altman_z2",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ],
+  "qualidade_financeira": [
+   {
+    "id": "73b75998b1ebf837",
+    "familia": "qualidade_financeira",
+    "sinal": "piotroski_f",
+    "exercicio": 2013,
+    "rotulo": "Piotroski F (qualidade financeira, só contexto)",
+    "valor": {
+     "valor": 7.0,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "sinais de 9",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": null,
+    "texto": "F = 7/9 (8 calculáveis)",
+    "componentes": {
+     "sinais": {
+      "ROA": 1,
+      "CFO": 1,
+      "ΔROA": 1,
+      "ACCRUAL": 1,
+      "ΔLEVER": 1,
+      "ΔLIQUID": 0,
+      "EQ_OFFER": null,
+      "ΔMARGIN": 1,
+      "ΔTURN": 1
+     },
+     "x": 7,
+     "y": 8,
+     "codigos_emissao": [],
+     "contas_t2": true
+    },
+    "marcas": [
+     "Sem emissão de ações (EQ_OFFER), pela DFC: linhas de 6.03 do padrão congelado de \"emissões\" (reconhecimento, parte 4.2), só as de ações ou capital, como define o artigo (\"did not issue common equity\", p. 9); adaptação: ações preferenciais também contam, porque no Brasil são capital próprio, e a linha é identificada por texto na DFC"
+    ],
+    "linhagem": {
+     "entradas": [
+      "e29917bca80ee96a",
+      "751918fd45393676",
+      "73e0116c1c201219",
+      "d7798ad23ee2097c",
+      "1cbbe4e04d584983",
+      "90df61afb6b798d8",
+      "da1e93c6138ef981",
+      "ad43438b11ca56e0",
+      "c939a0bab398cb64",
+      "bb9a0c8b97ab05ac",
+      "dcc3ee44178429a3",
+      "a7538da260b0f538",
+      "b2278d7246fff8b9",
+      "6df262e4c772ec92",
+      "e6af8d62aa63b698"
+     ],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.piotroski_f",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)",
+      "DFP de t−1 na data, coluna PENÚLTIMO (t−2)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ]
+ },
+ "mudancas": {
+  "versoes_conhecidas": [
+   {
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "usada": true
+   }
+  ],
+  "comparativo_destacadas": [],
+  "reapresentacao_pelo_comparativo": [
+   {
+    "texto": "valor diferente no comparativo do ano seguinte (reapresentação ou reclassificação)",
+    "demonstracao": "BPP",
+    "cd_conta": "2.01.02.01",
+    "ds_conta": "Fornecedores Nacionais",
+    "valor": 40147000.0,
+    "valor_comparativo": 0.0,
+    "diferenca": -40147000.0,
+    "grupo": "b",
+    "destacada": false,
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "versao_seguinte": 1,
+    "dt_receb_seguinte": "2015-04-30"
+   }
+  ],
+  "tolerancia_comparativo": 1000.0,
+  "materialidade_comparativo": {
+   "linhas_chave": [
+    {
+     "demonstracao": "BPA",
+     "cd_conta": "1"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.01"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.02"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.03"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.01"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.11"
+    },
+    {
+     "demonstracao": "DFC",
+     "cd_conta": "6.01"
+    }
+   ],
+   "limite_relativo": 0.01,
+   "ativo_total": 932867000.0,
+   "limite": 9328670.0,
+   "texto": "Destacadas: diferenças em totais e linhas-chave (ativo total, passivo circulante, passivo não circulante, patrimônio líquido, receita líquida, lucro líquido e caixa operacional) acima de 1% do ativo total da versão usada. As demais diferenças (reclassificações entre linhas e diferenças menores) ficam na lista completa."
+  }
+ },
+ "o_que_se_sabia": {
+  "documentos": [
+   {
+    "tipo": "DFP",
+    "exercicio": 2010,
+    "versao": 1,
+    "dt_receb": "2011-04-04",
+    "num_doc": "6288"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2010,
+    "versao": 2,
+    "dt_receb": "2011-04-04",
+    "num_doc": "6315"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2011,
+    "versao": 1,
+    "dt_receb": "2012-03-31",
+    "num_doc": "15867"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2011,
+    "versao": 2,
+    "dt_receb": "2012-04-02",
+    "num_doc": "15927"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2011,
+    "versao": 3,
+    "dt_receb": "2012-04-09",
+    "num_doc": "16056"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2012,
+    "versao": 1,
+    "dt_receb": "2013-03-29",
+    "num_doc": "25788"
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2013,
+    "versao": 1,
+    "dt_receb": "2013-03-29",
+    "num_doc": null
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2012,
+    "versao": 2,
+    "dt_receb": "2013-04-03",
+    "num_doc": "25893"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2012,
+    "versao": 3,
+    "dt_receb": "2013-04-09",
+    "num_doc": "26028"
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2013,
+    "versao": 2,
+    "dt_receb": "2013-05-30",
+    "num_doc": null
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2013,
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "num_doc": "36011"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2014,
+    "versao": 1,
+    "dt_receb": "2015-04-30",
+    "num_doc": "46282"
+   }
+  ],
+  "nota": "DFP e FCA entregues à CVM até a data de referência; ITR e fatos relevantes entram em fases seguintes."
+ },
+ "qualidade_dos_dados": {
+  "conferencias": [
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "ativo total = passivo total",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "ativo total = passivo total",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "ativo total = circulante + não circulante",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "ativo total = circulante + não circulante",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "passivo total = circulante + não circulante + patrimônio líquido",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "passivo total = circulante + não circulante + patrimônio líquido",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "resultado bruto = receita + custo",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "resultado bruto = receita + custo",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "resultado antes do financeiro = bruto + despesas e receitas operacionais",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "resultado antes do financeiro = bruto + despesas e receitas operacionais",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "resultado antes dos tributos = antes do financeiro + resultado financeiro",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "resultado antes dos tributos = antes do financeiro + resultado financeiro",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "operações continuadas = antes dos tributos + IR e CSLL",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "operações continuadas = antes dos tributos + IR e CSLL",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "lucro do período = continuadas + descontinuadas",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "lucro do período = continuadas + descontinuadas",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "variação do caixa = operacional + investimento + financiamento + variação cambial",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "variação do caixa = operacional + investimento + financiamento + variação cambial",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "variação do caixa = saldo final − saldo inicial",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "variação do caixa = saldo final − saldo inicial",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "saldo final da DFC = caixa e equivalentes do balanço",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "saldo final da DFC = caixa e equivalentes do balanço",
+    "coluna": "PENÚLTIMO",
+    "resultado": "fecha_caixa_amplo",
+    "motivo": "fecha com caixa amplo (1.01.01 + 1.01.02): a DFC usa caixa e equivalentes mais aplicações financeiras"
+   },
+   {
+    "id": "dfc_saldo_inicial_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "saldo inicial da DFC = caixa e equivalentes do balanço anterior",
+    "coluna": "ÚLTIMO",
+    "resultado": "fecha_caixa_amplo",
+    "motivo": "fecha com caixa amplo (1.01.01 + 1.01.02): a DFC usa caixa e equivalentes mais aplicações financeiras"
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "ativo total preenchido (diferente de zero)",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "ativo total não negativo",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01",
+    "tipo": "sinal_incomum",
+    "nome": "ativo circulante (1.01) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.01",
+    "tipo": "sinal_incomum",
+    "nome": "caixa e equivalentes (1.01.01) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.03",
+    "tipo": "sinal_incomum",
+    "nome": "contas a receber (1.01.03) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.04",
+    "tipo": "sinal_incomum",
+    "nome": "estoques (1.01.04) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02",
+    "tipo": "sinal_incomum",
+    "nome": "ativo não circulante (1.02) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02.03",
+    "tipo": "sinal_incomum",
+    "nome": "imobilizado (1.02.03) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01",
+    "tipo": "sinal_incomum",
+    "nome": "passivo circulante (2.01) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01.02",
+    "tipo": "sinal_incomum",
+    "nome": "fornecedores (2.01.02) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.02",
+    "tipo": "sinal_incomum",
+    "nome": "passivo não circulante (2.02) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.01",
+    "tipo": "sinal_incomum",
+    "nome": "receita (3.01) não negativa",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.02",
+    "tipo": "sinal_incomum",
+    "nome": "custo das vendas (3.02) não positiva",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.01",
+    "tipo": "sinal_incomum",
+    "nome": "despesas com vendas (3.04.01) não positiva",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.02",
+    "tipo": "sinal_incomum",
+    "nome": "despesas gerais e administrativas (3.04.02) não positiva",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "ativo total preenchido (diferente de zero)",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "ativo total não negativo",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01",
+    "tipo": "sinal_incomum",
+    "nome": "ativo circulante (1.01) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.01",
+    "tipo": "sinal_incomum",
+    "nome": "caixa e equivalentes (1.01.01) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.03",
+    "tipo": "sinal_incomum",
+    "nome": "contas a receber (1.01.03) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.04",
+    "tipo": "sinal_incomum",
+    "nome": "estoques (1.01.04) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02",
+    "tipo": "sinal_incomum",
+    "nome": "ativo não circulante (1.02) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02.03",
+    "tipo": "sinal_incomum",
+    "nome": "imobilizado (1.02.03) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01",
+    "tipo": "sinal_incomum",
+    "nome": "passivo circulante (2.01) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01.02",
+    "tipo": "sinal_incomum",
+    "nome": "fornecedores (2.01.02) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.02",
+    "tipo": "sinal_incomum",
+    "nome": "passivo não circulante (2.02) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.01",
+    "tipo": "sinal_incomum",
+    "nome": "receita (3.01) não negativa",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.02",
+    "tipo": "sinal_incomum",
+    "nome": "custo das vendas (3.02) não positiva",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.01",
+    "tipo": "sinal_incomum",
+    "nome": "despesas com vendas (3.04.01) não positiva",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.02",
+    "tipo": "sinal_incomum",
+    "nome": "despesas gerais e administrativas (3.04.02) não positiva",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   }
+  ]
+ },
+ "parecer_e_auditor": {
+  "natureza": "trecho_literal",
+  "gera_alerta": false,
+  "relatorio_do_auditor": {
+   "tipo": [
+    "Com Ressalva"
+   ],
+   "trecho": "Em nossa opinião, exceto pelos possíveis efeitos, se houver, do assunto mencionado no parágrafo Base para opinião com ressalva, as demonstrações financeiras individuais acima referidas apresentam adequadamente, em todos os aspectos relevantes, a posição patrimonial e financeira da Mundial S.A.",
+   "conferido": true,
+   "motivo": null,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_parecer_2013.csv",
+    "linhas": [
+     2252,
+     2253
+    ]
+   }
+  },
+  "auditores_no_fca": [
+   {
+    "ano_fca": 2010,
+    "dt_receb": "2010-07-10",
+    "auditores": [
+     {
+      "auditor": "Grant Thornton Auditores Independentes",
+      "codigo_cvm": "003670",
+      "pessoa_fisica": false,
+      "inicio": "2009-07-07",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2011,
+    "dt_receb": "2011-05-31",
+    "auditores": [
+     {
+      "auditor": "Grant Thornton Auditores Independentes",
+      "codigo_cvm": "003670",
+      "pessoa_fisica": false,
+      "inicio": "2009-07-07",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2012,
+    "dt_receb": "2012-05-15",
+    "auditores": [
+     {
+      "auditor": "Grant Thornton Auditores Independentes",
+      "codigo_cvm": "003670",
+      "pessoa_fisica": false,
+      "inicio": "2009-07-07",
+      "fim": "2012-04-20"
+     },
+     {
+      "auditor": "KPMG Auditores Independentes",
+      "codigo_cvm": "004189",
+      "pessoa_fisica": false,
+      "inicio": "2012-04-30",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2013,
+    "dt_receb": "2013-05-30",
+    "auditores": [
+     {
+      "auditor": "KPMG Auditores Independentes",
+      "codigo_cvm": "004189",
+      "pessoa_fisica": false,
+      "inicio": "2012-04-30",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2014,
+    "dt_receb": "2014-05-08",
+    "auditores": [
+     {
+      "auditor": "KPMG Auditores Independentes",
+      "codigo_cvm": "004189",
+      "pessoa_fisica": false,
+      "inicio": "2012-04-30",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2015,
+    "dt_receb": "2015-12-09",
+    "auditores": [
+     {
+      "auditor": "KPMG Auditores Independentes",
+      "codigo_cvm": "004189",
+      "pessoa_fisica": false,
+      "inicio": "2012-04-30",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2016,
+    "dt_receb": "2016-02-26",
+    "auditores": [
+     {
+      "auditor": "KPMG Auditores Independentes",
+      "codigo_cvm": "004189",
+      "pessoa_fisica": false,
+      "inicio": "2012-04-30",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2017,
+    "dt_receb": "2017-03-28",
+    "auditores": [
+     {
+      "auditor": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+      "codigo_cvm": "012360",
+      "pessoa_fisica": false,
+      "inicio": "2017-04-01",
+      "fim": null
+     },
+     {
+      "auditor": "KPMG Auditores Independentes",
+      "codigo_cvm": "004189",
+      "pessoa_fisica": false,
+      "inicio": "2012-04-30",
+      "fim": "2016-12-31"
+     }
+    ]
+   },
+   {
+    "ano_fca": 2018,
+    "dt_receb": "2018-03-13",
+    "auditores": [
+     {
+      "auditor": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+      "codigo_cvm": "012360",
+      "pessoa_fisica": false,
+      "inicio": "2017-04-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2019,
+    "dt_receb": "2019-10-28",
+    "auditores": [
+     {
+      "auditor": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+      "codigo_cvm": "012360",
+      "pessoa_fisica": false,
+      "inicio": "2017-04-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2020,
+    "dt_receb": "2020-01-17",
+    "auditores": [
+     {
+      "auditor": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+      "codigo_cvm": "012360",
+      "pessoa_fisica": false,
+      "inicio": "2017-04-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2021,
+    "dt_receb": "2021-01-12",
+    "auditores": [
+     {
+      "auditor": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+      "codigo_cvm": "012360",
+      "pessoa_fisica": false,
+      "inicio": "2017-04-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2022,
+    "dt_receb": "2022-04-28",
+    "auditores": [
+     {
+      "auditor": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+      "codigo_cvm": "012360",
+      "pessoa_fisica": false,
+      "inicio": "2017-04-01",
+      "fim": "2021-12-31"
+     },
+     {
+      "auditor": "Taticca Auditores Independentes S.S",
+      "codigo_cvm": "12220",
+      "pessoa_fisica": false,
+      "inicio": "2022-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2023,
+    "dt_receb": "2023-02-09",
+    "auditores": [
+     {
+      "auditor": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+      "codigo_cvm": "012360",
+      "pessoa_fisica": false,
+      "inicio": "2017-04-01",
+      "fim": "2021-12-31"
+     },
+     {
+      "auditor": "Taticca Auditores Independentes S.S",
+      "codigo_cvm": "12220",
+      "pessoa_fisica": false,
+      "inicio": "2022-01-01",
+      "fim": null
+     }
+    ]
+   }
+  ],
+  "trocas_de_auditor": [
+   {
+    "ano_fca": 2012,
+    "de": "Grant Thornton Auditores Independentes",
+    "para": "KPMG Auditores Independentes",
+    "codigo_de": "003670",
+    "codigo_para": "004189",
+    "transicao_fca": 2012,
+    "saida": {
+     "primeiro_exercicio": 2009,
+     "ultimo_exercicio": 2011,
+     "exercicios_consecutivos": 3,
+     "compativel_com_rodizio": false,
+     "artigo": null,
+     "norma": null,
+     "nota": "A firma que saiu auditou 3 exercícios sociais consecutivos (2009 a 2011), pelas datas de início e fim no FCA."
+    }
+   },
+   {
+    "ano_fca": 2017,
+    "de": "KPMG Auditores Independentes",
+    "para": "Baker Tilly Brasil RS Auditores Independentes Sociedade Simples",
+    "codigo_de": "004189",
+    "codigo_para": "012360",
+    "transicao_fca": 2017,
+    "saida": {
+     "primeiro_exercicio": 2012,
+     "ultimo_exercicio": 2016,
+     "exercicios_consecutivos": 5,
+     "compativel_com_rodizio": true,
+     "artigo": "art. 31",
+     "norma": "Instrução CVM nº 308/1999",
+     "nota": "A firma que saiu auditou 5 exercícios sociais consecutivos (2012 a 2016), pelas datas de início e fim no FCA. A troca coincide com o fim do prazo de 5 exercícios e é compatível com o rodízio (art. 31 da Instrução CVM nº 308/1999, vigente quando a firma nova começou)."
+    }
+   },
+   {
+    "ano_fca": 2022,
+    "de": null,
+    "para": "Taticca Auditores Independentes S.S",
+    "codigo_de": null,
+    "codigo_para": "12220",
+    "transicao_fca": null,
+    "saida": null
+   }
+  ],
+  "rodizio": {
+   "nota": "Rodízio de auditor: pela Resolução CVM nº 23/2021, art. 31, o mesmo auditor independente não pode prestar serviços a um mesmo cliente por mais de cinco exercícios sociais consecutivos, com intervalo mínimo de três exercícios sociais para a recontratação; pelo art. 31-A, o prazo é de até dez exercícios sociais consecutivos quando a companhia tem Comitê de Auditoria Estatutário em funcionamento permanente e o auditor é pessoa jurídica. A Resolução está em vigor desde 01/04/2021 (art. 41); antes, a regra equivalente estava nos arts. 31 e 31-A da Instrução CVM nº 308/1999, revogada pela Resolução (art. 40, I). Troca de auditor é fato, não alerta.",
+   "norma": "Resolução CVM nº 23/2021, arts. 31 e 31-A",
+   "fonte": "https://conteudo.cvm.gov.br/export/sites/cvm/legislacao/resolucoes/anexos/001/resol023.pdf",
+   "conferida_em": "2026-11-09"
+  }
+ },
+ "como_o_motor_foi_testado": {
+  "documento": "docs/resumo.md",
+  "acertados": 7,
+  "acertaveis": 13,
+  "alarmes_por_acerto_periodo_inteiro": 108.28571428571429,
+  "taxa_de_alerta_nao_financeiras": 0.49895584725536996
+ },
+ "limites": [
+  "Não ter alerta não é atestado. Em Dechow, Sloan e Sweeney (1995), o modelo de accruals com mais poder rejeitou 'sem manipulação' em só 28,1% de 32 empresas punidas pela SEC (Tabela 7, p. 32).",
+  "No estudo 1, 49,9% das empresa-anos não financeiras avaliadas (48,3% incluindo as financeiras) ficaram em alerta, e o número de acertos não superou o acaso num teste descritivo feito depois do resultado: 7 acertos em 13 casos acertáveis, contra 7,37 esperados ao acaso sem supor anos independentes (8,56 supondo anos independentes).",
+  "Os modelos de risco usam números que podem estar manipulados (Pereira e Martins 2015, p. 29). Por isso as três famílias não se somam."
+ ],
+ "limitacoes": [
+  "Indicadores de contexto (Altman Z'' e Piotroski F) não foram validados no Brasil por este projeto e não geram alerta"
+ ],
+ "evidencias": {
+  "09be9b0998512c9e": {
+   "id": "09be9b0998512c9e",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1.02.03",
+   "ds_conta": "Imobilizado",
+   "valor": 192731000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41960,
+    "escala": "MIL"
+   }
+  },
+  "0da090eb2791cfd1": {
+   "id": "0da090eb2791cfd1",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.01.02",
+   "ds_conta": "Fornecedores",
+   "valor": 40147000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70373,
+    "escala": "MIL"
+   }
+  },
+  "1167d568e2c5c301": {
+   "id": "1167d568e2c5c301",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.02",
+   "ds_conta": "Custo dos Bens e/ou Serviços Vendidos",
+   "valor": -248090000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23630,
+    "escala": "MIL"
+   }
+  },
+  "1a1237e4bd469b65": {
+   "id": "1a1237e4bd469b65",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1.01.03",
+   "ds_conta": "Contas a Receber",
+   "valor": 130077000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41857,
+    "escala": "MIL"
+   }
+  },
+  "1cbbe4e04d584983": {
+   "id": "1cbbe4e04d584983",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DFC_MI",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "6.01",
+   "ds_conta": "Caixa Líquido Atividades Operacionais",
+   "valor": 13320000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DFC_MI_con_2013.csv",
+    "linha": 29235,
+    "escala": "MIL"
+   }
+  },
+  "22157793f9e0ef2a": {
+   "id": "22157793f9e0ef2a",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.04.01",
+   "ds_conta": "Despesas com Vendas",
+   "valor": -64744000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23636,
+    "escala": "MIL"
+   }
+  },
+  "29b4fd5fb8c8e68b": {
+   "id": "29b4fd5fb8c8e68b",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.01.04",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 156913000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70388,
+    "escala": "MIL"
+   }
+  },
+  "3496a4b8e138503a": {
+   "id": "3496a4b8e138503a",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.05",
+   "ds_conta": "Resultado Antes do Resultado Financeiro e dos Tributos",
+   "valor": 42165000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23653,
+    "escala": "MIL"
+   }
+  },
+  "3b9429986a58fcd2": {
+   "id": "3b9429986a58fcd2",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.06.02",
+   "ds_conta": "Despesas Financeiras",
+   "valor": -77460000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23659,
+    "escala": "MIL"
+   }
+  },
+  "5c34eaeaf6e39f8b": {
+   "id": "5c34eaeaf6e39f8b",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.03.04",
+   "ds_conta": "Reservas de Lucros",
+   "valor": -36000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70549,
+    "escala": "MIL"
+   }
+  },
+  "644c9ea24746fce6": {
+   "id": "644c9ea24746fce6",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.01.02",
+   "ds_conta": "Fornecedores",
+   "valor": 46224000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70372,
+    "escala": "MIL"
+   }
+  },
+  "6c2b0822bf765eeb": {
+   "id": "6c2b0822bf765eeb",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DFC_MI",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "6.01.01.02",
+   "ds_conta": "Depreciação e Amortização de Ativos Imobilizados eIntangíveis",
+   "valor": 11879000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DFC_MI_con_2013.csv",
+    "linha": 29241,
+    "escala": "MIL"
+   }
+  },
+  "6df262e4c772ec92": {
+   "id": "6df262e4c772ec92",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.01",
+   "ds_conta": "Receita de Venda de Bens e/ou Serviços",
+   "valor": 409698000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23629,
+    "escala": "MIL"
+   }
+  },
+  "71590a5377129a6c": {
+   "id": "71590a5377129a6c",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.04.02",
+   "ds_conta": "Despesas Gerais e Administrativas",
+   "valor": -31552000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23639,
+    "escala": "MIL"
+   }
+  },
+  "73e0116c1c201219": {
+   "id": "73e0116c1c201219",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.09",
+   "ds_conta": "Resultado Líquido das Operações Continuadas",
+   "valor": 4856000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23673,
+    "escala": "MIL"
+   }
+  },
+  "751918fd45393676": {
+   "id": "751918fd45393676",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1",
+   "ds_conta": "Ativo Total",
+   "valor": 870769000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41838,
+    "escala": "MIL"
+   }
+  },
+  "7df1b9d39edc9158": {
+   "id": "7df1b9d39edc9158",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.04.01",
+   "ds_conta": "Despesas com Vendas",
+   "valor": -74814000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23637,
+    "escala": "MIL"
+   }
+  },
+  "89a5f9c5aa85679f": {
+   "id": "89a5f9c5aa85679f",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.01.04",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 159816000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70389,
+    "escala": "MIL"
+   }
+  },
+  "90df61afb6b798d8": {
+   "id": "90df61afb6b798d8",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.02.01",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 3305000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70449,
+    "escala": "MIL"
+   }
+  },
+  "955469f1d51ea179": {
+   "id": "955469f1d51ea179",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.03.05",
+   "ds_conta": "Lucros/Prejuízos Acumulados",
+   "valor": -49038000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70571,
+    "escala": "MIL"
+   }
+  },
+  "a4c6603a95621940": {
+   "id": "a4c6603a95621940",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.04.02",
+   "ds_conta": "Despesas Gerais e Administrativas",
+   "valor": -28227000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23638,
+    "escala": "MIL"
+   }
+  },
+  "a7538da260b0f538": {
+   "id": "a7538da260b0f538",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.03",
+   "ds_conta": "Resultado Bruto",
+   "valor": 143842000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23633,
+    "escala": "MIL"
+   }
+  },
+  "ad43438b11ca56e0": {
+   "id": "ad43438b11ca56e0",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1.01",
+   "ds_conta": "Ativo Circulante",
+   "valor": 198027000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41841,
+    "escala": "MIL"
+   }
+  },
+  "b2278d7246fff8b9": {
+   "id": "b2278d7246fff8b9",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.03",
+   "ds_conta": "Resultado Bruto",
+   "valor": 120052000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23632,
+    "escala": "MIL"
+   }
+  },
+  "bb9a0c8b97ab05ac": {
+   "id": "bb9a0c8b97ab05ac",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.01",
+   "ds_conta": "Passivo Circulante",
+   "valor": 391809000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70365,
+    "escala": "MIL"
+   }
+  },
+  "bf097fe35bf74f50": {
+   "id": "bf097fe35bf74f50",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1.01.03",
+   "ds_conta": "Contas a Receber",
+   "valor": 124080000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41856,
+    "escala": "MIL"
+   }
+  },
+  "c4c4fdf08540f167": {
+   "id": "c4c4fdf08540f167",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1.02.03",
+   "ds_conta": "Imobilizado",
+   "valor": 160991000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41961,
+    "escala": "MIL"
+   }
+  },
+  "c939a0bab398cb64": {
+   "id": "c939a0bab398cb64",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1.01",
+   "ds_conta": "Ativo Circulante",
+   "valor": 202531000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41840,
+    "escala": "MIL"
+   }
+  },
+  "d54c1a4edaba5ad9": {
+   "id": "d54c1a4edaba5ad9",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DFC_MI",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "6.01.01.02",
+   "ds_conta": "Depreciação e Amortização de Ativos Imobilizados eIntangíveis",
+   "valor": 12020000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DFC_MI_con_2013.csv",
+    "linha": 29240,
+    "escala": "MIL"
+   }
+  },
+  "d7798ad23ee2097c": {
+   "id": "d7798ad23ee2097c",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.09",
+   "ds_conta": "Resultado Líquido das Operações Continuadas",
+   "valor": -5745000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23672,
+    "escala": "MIL"
+   }
+  },
+  "da0bc01132d0e949": {
+   "id": "da0bc01132d0e949",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.02",
+   "ds_conta": "Custo dos Bens e/ou Serviços Vendidos",
+   "valor": -265856000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23631,
+    "escala": "MIL"
+   }
+  },
+  "da1e93c6138ef981": {
+   "id": "da1e93c6138ef981",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.02.01",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 14411000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70448,
+    "escala": "MIL"
+   }
+  },
+  "dcc3ee44178429a3": {
+   "id": "dcc3ee44178429a3",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.01",
+   "ds_conta": "Passivo Circulante",
+   "valor": 350037000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70364,
+    "escala": "MIL"
+   }
+  },
+  "e29917bca80ee96a": {
+   "id": "e29917bca80ee96a",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1",
+   "ds_conta": "Ativo Total",
+   "valor": 932867000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPA_con_2013.csv",
+    "linha": 41839,
+    "escala": "MIL"
+   }
+  },
+  "e6acda6970e9925e": {
+   "id": "e6acda6970e9925e",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.02",
+   "ds_conta": "Passivo Não Circulante",
+   "valor": 503656000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70447,
+    "escala": "MIL"
+   }
+  },
+  "e6af8d62aa63b698": {
+   "id": "e6af8d62aa63b698",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.01",
+   "ds_conta": "Receita de Venda de Bens e/ou Serviços",
+   "valor": 368142000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23628,
+    "escala": "MIL"
+   }
+  },
+  "ebab703209f00431": {
+   "id": "ebab703209f00431",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.11",
+   "ds_conta": "Lucro/Prejuízo Consolidado do Período",
+   "valor": 4856000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_DRE_con_2013.csv",
+    "linha": 23681,
+    "escala": "MIL"
+   }
+  },
+  "f6d9ff2adcd7f421": {
+   "id": "f6d9ff2adcd7f421",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "36011",
+    "versao": 1,
+    "dt_receb": "2014-04-01",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2013.zip",
+    "sha256": "ef379ac9aab9567434ca6d36053d8bd1f0a2a47a0c65a2e1d218259da530e224"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.03",
+   "ds_conta": "Patrimônio Líquido Consolidado",
+   "valor": 37402000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2013.zip/dfp_cia_aberta_BPP_con_2013.csv",
+    "linha": 70529,
+    "escala": "MIL"
+   }
+  }
+ },
+ "motor": {
+  "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+  "v2": "chiocca.v2 (produto, fases B a E)"
+ },
+ "informacao_de_hoje": {
+  "titulo": "Informação de hoje (fora da data de referência)",
+  "situacao_cadastro": "ATIVO",
+  "fonte": "cadastro de companhias abertas da CVM (cad_cia_aberta.csv), na versão baixada para o projeto, não na data de referência"
+ },
+ "gerado_em": "2026-11-10T19:38:24+00:00",
+ "aviso": "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
+}

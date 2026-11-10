@@ -1,0 +1,1565 @@
+{
+ "data_referencia": "2012-04-30",
+ "empresa": {
+  "cd_cvm": "6815",
+  "cnpj": "43.185.362/0001-07",
+  "denominacao": "IGB ELETRONICA S/A",
+  "origem_denominacao": "fca",
+  "codigos_negociacao": [],
+  "motivo_codigos_negociacao": "nenhum código de negociação no FCA entregue até a data (nos dados abertos, o campo só vem preenchido a partir do FCA de 2018)",
+  "setor": "Comunicação e Informática",
+  "origem_setor": "fca",
+  "grupo": "nao_financeira"
+ },
+ "idioma": "en",
+ "exercicios": [
+  {
+   "exercicio": 2011,
+   "dt_refer": "2011-12-31",
+   "situacao": "ok",
+   "versao_usada": 1,
+   "dt_receb": "2012-04-13",
+   "versoes_conhecidas": [
+    {
+     "versao": 1,
+     "dt_receb": "2012-04-13"
+    }
+   ],
+   "tipo": "con",
+   "origem": "enet",
+   "num_doc": "16196",
+   "link": "http://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=16196",
+   "escala_original": null,
+   "notas": [
+    "Structure read from a document filed after the date (study 1 behaviour, amendment 8)",
+    "ENET version: the cache keeps values already in reais and did not record the page's scale (fetches before 2026-11-09)"
+   ],
+   "amostra_estudo_1": "fora_sem_receita"
+  }
+ ],
+ "achados": {
+  "possivel_manipulacao": [],
+  "risco_financeiro": [
+   {
+    "id": "bbf89c1447096822",
+    "familia": "risco_financeiro",
+    "sinal": "altman_z2",
+    "exercicio": 2011,
+    "rotulo": "Altman Z'' (financial risk, context only)",
+    "valor": {
+     "valor": -1.6007869461625517,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "index",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": 17.293906810035843,
+      "n": 558,
+      "motivo": null,
+      "marca": "percentile in the non-financial universe: the sector has fewer than 10 companies with a value"
+     },
+     "percentil_grupo_ano": {
+      "valor": 17.293906810035843,
+      "n": 558,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 6,
+      "motivo": "fewer than 10 companies with a computable value"
+     },
+     "historico": {
+      "exercicios": [
+       2010
+      ],
+      "serie": [
+       [
+        2010,
+        -13.527135720006546
+       ]
+      ],
+      "motivo": "fewer than 5 previous fiscal years with a value"
+     }
+    },
+    "texto": null,
+    "componentes": {
+     "X1": -0.039796510796688576,
+     "X2": -0.34469713451695555,
+     "X3": 0.002894201278769517,
+     "X4": -0.22424591371841016
+    },
+    "marcas": [
+     "No cut-off zone: the available source does not define zones for Z''",
+     "Coefficients estimated outside Brazil; bankruptcy models lose validity over time (Pereira and Martins 2015, p. 25)"
+    ],
+    "linhagem": {
+     "entradas": [
+      "52e3eb53ad0622ad",
+      "1731f93173095590",
+      "67af21554049b89e",
+      "8087d30d53f79848",
+      "7b13381a748aadd6",
+      "1a3f15665aeb8578",
+      "4e117c831eac8533",
+      "edeee394005b8d02"
+     ],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.altman_z2",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ],
+  "qualidade_financeira": [
+   {
+    "id": "2bb48ff0f6580fcd",
+    "familia": "qualidade_financeira",
+    "sinal": "piotroski_f",
+    "exercicio": 2011,
+    "rotulo": "Piotroski F (financial quality, context only)",
+    "valor": {
+     "valor": 3.0,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "signals out of 9",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": null,
+    "texto": "F = 3/9 (7 computable)",
+    "componentes": {
+     "sinais": {
+      "ROA": 0,
+      "CFO": 1,
+      "ΔROA": 0,
+      "ACCRUAL": 1,
+      "ΔLEVER": 1,
+      "ΔLIQUID": 0,
+      "EQ_OFFER": null,
+      "ΔMARGIN": null,
+      "ΔTURN": 0
+     },
+     "x": 3,
+     "y": 7,
+     "codigos_emissao": [],
+     "contas_t2": true
+    },
+    "marcas": [
+     "No equity issuance (EQ_OFFER), from the cash flow statement: 6.03 lines of the frozen \"emissões\" pattern (reconnaissance, part 4.2), only those about shares or capital, as the article defines it (\"did not issue common equity\", p. 9); adaptation: preferred shares also count, because in Brazil they are equity, and the line is identified by text in the cash flow statement"
+    ],
+    "linhagem": {
+     "entradas": [
+      "52e3eb53ad0622ad",
+      "5c92c4586aaa3c9d",
+      "ae64d19c2eafe8d1",
+      "d741a71d77d9cb56",
+      "a632d55c38eb9dbc",
+      "1b695f2e1e2507ce",
+      "e2cacbd0f5f94183",
+      "1731f93173095590",
+      "12a72c332928e03e",
+      "67af21554049b89e",
+      "b3bc131998b48a2f",
+      "d7f222800db480bc",
+      "a466ffb40c19f83a",
+      "01dd5a6e530a95ee",
+      "ccb8845d004e8aad"
+     ],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.piotroski_f",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)",
+      "DFP de t−1 na data, coluna PENÚLTIMO (t−2)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ]
+ },
+ "mudancas": {
+  "versoes_conhecidas": [
+   {
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "usada": true
+   }
+  ],
+  "comparativo_destacadas": [],
+  "reapresentacao_pelo_comparativo": [],
+  "tolerancia_comparativo": 1000.0,
+  "materialidade_comparativo": {
+   "linhas_chave": [
+    {
+     "demonstracao": "BPA",
+     "cd_conta": "1"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.01"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.02"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.03"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.01"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.11"
+    },
+    {
+     "demonstracao": "DFC",
+     "cd_conta": "6.01"
+    }
+   ],
+   "limite_relativo": 0.01,
+   "ativo_total": 804367.0,
+   "limite": 8043.67,
+   "texto": "Highlighted: differences in totals and key lines (total assets, current liabilities, non-current liabilities, equity, net revenue, net income and operating cash flow) above 1% of total assets of the version used. The other differences (reclassifications between lines and smaller differences) stay in the full list."
+  }
+ },
+ "o_que_se_sabia": {
+  "documentos": [
+   {
+    "tipo": "FCA",
+    "exercicio": 2011,
+    "versao": 1,
+    "dt_receb": "2011-02-16",
+    "num_doc": null
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2010,
+    "versao": 1,
+    "dt_receb": "2011-04-27",
+    "num_doc": "6707"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2010,
+    "versao": 2,
+    "dt_receb": "2011-04-27",
+    "num_doc": "6725"
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2011,
+    "versao": 2,
+    "dt_receb": "2011-05-03",
+    "num_doc": null
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2011,
+    "versao": 3,
+    "dt_receb": "2011-05-13",
+    "num_doc": null
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2011,
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "num_doc": "16196"
+   }
+  ],
+  "nota": "DFP and FCA filed with the CVM by the reference date; ITR and material facts come in later phases."
+ },
+ "qualidade_dos_dados": {
+  "conferencias": [
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "total assets = total liabilities and equity",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "total assets = total liabilities and equity",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "total assets = current + non-current",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "total assets = current + non-current",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "total liabilities and equity = current + non-current + equity",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "total liabilities and equity = current + non-current + equity",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "gross profit = revenue + cost of sales",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "gross profit = revenue + cost of sales",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "operating profit = gross profit + operating expenses and income",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "operating profit = gross profit + operating expenses and income",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "profit before taxes = operating profit + finance result",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "profit before taxes = operating profit + finance result",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "continuing operations = profit before taxes + income taxes",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "continuing operations = profit before taxes + income taxes",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "profit for the period = continuing + discontinued",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "profit for the period = continuing + discontinued",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "change in cash = operating + investing + financing + exchange differences",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "change in cash = operating + investing + financing + exchange differences",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "change in cash = closing − opening balance",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "change in cash = closing − opening balance",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow closing balance = cash and cash equivalents on the balance sheet",
+    "coluna": "ÚLTIMO",
+    "resultado": "falhou",
+    "motivo": "difference above the tolerance of R$2,000"
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow closing balance = cash and cash equivalents on the balance sheet",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldo_inicial_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow opening balance = cash and cash equivalents on the prior balance sheet",
+    "coluna": "ÚLTIMO",
+    "resultado": "falhou",
+    "motivo": "difference above the tolerance of R$2,000"
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "total assets filled in (not zero)",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "total assets not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01",
+    "tipo": "sinal_incomum",
+    "nome": "current assets (1.01) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.01",
+    "tipo": "sinal_incomum",
+    "nome": "cash and cash equivalents (1.01.01) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.03",
+    "tipo": "sinal_incomum",
+    "nome": "trade receivables (1.01.03) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.04",
+    "tipo": "sinal_incomum",
+    "nome": "inventories (1.01.04) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02",
+    "tipo": "sinal_incomum",
+    "nome": "non-current assets (1.02) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02.03",
+    "tipo": "sinal_incomum",
+    "nome": "property, plant and equipment (1.02.03) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01",
+    "tipo": "sinal_incomum",
+    "nome": "current liabilities (2.01) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01.02",
+    "tipo": "sinal_incomum",
+    "nome": "trade payables (2.01.02) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.02",
+    "tipo": "sinal_incomum",
+    "nome": "non-current liabilities (2.02) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.01",
+    "tipo": "sinal_incomum",
+    "nome": "net revenue (3.01) not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.02",
+    "tipo": "sinal_incomum",
+    "nome": "cost of sales (3.02) not positive",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.01",
+    "tipo": "sinal_incomum",
+    "nome": "selling expenses (3.04.01) not positive",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.02",
+    "tipo": "sinal_incomum",
+    "nome": "general and administrative expenses (3.04.02) not positive",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "total assets filled in (not zero)",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "total assets not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01",
+    "tipo": "sinal_incomum",
+    "nome": "current assets (1.01) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.01",
+    "tipo": "sinal_incomum",
+    "nome": "cash and cash equivalents (1.01.01) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.03",
+    "tipo": "sinal_incomum",
+    "nome": "trade receivables (1.01.03) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.01.04",
+    "tipo": "sinal_incomum",
+    "nome": "inventories (1.01.04) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02",
+    "tipo": "sinal_incomum",
+    "nome": "non-current assets (1.02) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:1.02.03",
+    "tipo": "sinal_incomum",
+    "nome": "property, plant and equipment (1.02.03) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01",
+    "tipo": "sinal_incomum",
+    "nome": "current liabilities (2.01) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.01.02",
+    "tipo": "sinal_incomum",
+    "nome": "trade payables (2.01.02) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "saldo_negativo:2.02",
+    "tipo": "sinal_incomum",
+    "nome": "non-current liabilities (2.02) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.01",
+    "tipo": "sinal_incomum",
+    "nome": "net revenue (3.01) not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.02",
+    "tipo": "sinal_incomum",
+    "nome": "cost of sales (3.02) not positive",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.01",
+    "tipo": "sinal_incomum",
+    "nome": "selling expenses (3.04.01) not positive",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "sinal_dre:3.04.02",
+    "tipo": "sinal_incomum",
+    "nome": "general and administrative expenses (3.04.02) not positive",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   }
+  ]
+ },
+ "parecer_e_auditor": {
+  "natureza": "trecho_literal",
+  "gera_alerta": false,
+  "relatorio_do_auditor": {
+   "motivo": "the open-data opinions section is only for the latest DFP version; the version used came from ENET"
+  },
+  "auditores_no_fca": [
+   {
+    "ano_fca": 2011,
+    "dt_receb": "2011-05-13",
+    "auditores": [
+     {
+      "auditor": "BC Control Auditores Independentes",
+      "codigo_cvm": "010499",
+      "pessoa_fisica": false,
+      "inicio": "2010-01-01",
+      "fim": "2011-04-26"
+     }
+    ]
+   }
+  ],
+  "trocas_de_auditor": [],
+  "rodizio": {
+   "nota": "Auditor rotation: under CVM Resolution No. 23/2021, art. 31, the same independent auditor may not serve the same client for more than five consecutive fiscal years, with a minimum interval of three fiscal years before being hired again; under art. 31-A, the term is up to ten consecutive fiscal years when the company has a statutory audit committee in permanent operation and the auditor is a firm. The Resolution has been in force since 2021-04-01 (art. 41); before that, the equivalent rule was in arts. 31 and 31-A of CVM Instruction No. 308/1999, revoked by the Resolution (art. 40, I). A change of auditor is a fact, not an alert.",
+   "norma": "Resolução CVM nº 23/2021, arts. 31 e 31-A",
+   "fonte": "https://conteudo.cvm.gov.br/export/sites/cvm/legislacao/resolucoes/anexos/001/resol023.pdf",
+   "conferida_em": "2026-11-09"
+  }
+ },
+ "como_o_motor_foi_testado": {
+  "documento": "docs/summary.md",
+  "acertados": 7,
+  "acertaveis": 13,
+  "alarmes_por_acerto_periodo_inteiro": 108.28571428571429,
+  "taxa_de_alerta_nao_financeiras": 0.49895584725536996
+ },
+ "limites": [
+  "No alert is not a clean bill of health. In Dechow, Sloan and Sweeney (1995), the most powerful accruals model rejected 'no manipulation' for only 28.1% of 32 companies sanctioned by the SEC (Table 7, p. 32).",
+  "In study 1, 49.9% of evaluated non-financial company-years (48.3% including financial companies) were in alert, and the number of detections did not beat chance in a descriptive test done after the result: 7 detections in 13 detectable cases, against 7.37 expected by chance without assuming independent years (8.56 assuming independent years).",
+  "Risk models use numbers that may be manipulated (Pereira and Martins 2015, p. 29). That is why the three families are not added up."
+ ],
+ "limitacoes": [
+  "Structure read from a document filed after the date (study 1 behaviour, amendment 8)",
+  "ENET version: the cache keeps values already in reais and did not record the page's scale (fetches before 2026-11-09)",
+  "Context indicators (Altman Z'' and Piotroski F) were not validated in Brazil by this project and do not trigger alerts"
+ ],
+ "evidencias": {
+  "01dd5a6e530a95ee": {
+   "id": "01dd5a6e530a95ee",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.01",
+   "ds_conta": "Receita de Venda de Bens e/ou Serviços",
+   "valor": 0.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 314
+   }
+  },
+  "1189e452c04f5e65": {
+   "id": "1189e452c04f5e65",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.04.02",
+   "ds_conta": "Despesas Gerais e Administrativas",
+   "valor": -2412.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 325
+   }
+  },
+  "12a72c332928e03e": {
+   "id": "12a72c332928e03e",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1.01",
+   "ds_conta": "Ativo Circulante",
+   "valor": 8748.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 5
+   }
+  },
+  "1731f93173095590": {
+   "id": "1731f93173095590",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1.01",
+   "ds_conta": "Ativo Circulante",
+   "valor": 7817.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 4
+   }
+  },
+  "1a3f15665aeb8578": {
+   "id": "1a3f15665aeb8578",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.03.04",
+   "ds_conta": "Reservas de Lucros",
+   "valor": 0.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 284
+   }
+  },
+  "1b695f2e1e2507ce": {
+   "id": "1b695f2e1e2507ce",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.02.01",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 507257.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 198
+   }
+  },
+  "1c8280a4a4d2b790": {
+   "id": "1c8280a4a4d2b790",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.02",
+   "ds_conta": "Custo dos Bens e/ou Serviços Vendidos",
+   "valor": -777.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 317
+   }
+  },
+  "24240aa0432692f3": {
+   "id": "24240aa0432692f3",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.01.02",
+   "ds_conta": "Fornecedores",
+   "valor": 0.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 124
+   }
+  },
+  "2e1adea9d9f90cd3": {
+   "id": "2e1adea9d9f90cd3",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.04.01",
+   "ds_conta": "Despesas com Vendas",
+   "valor": 0.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 322
+   }
+  },
+  "36e3d1f88449c325": {
+   "id": "36e3d1f88449c325",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.01.04",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 4201.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 141
+   }
+  },
+  "4c12d203b4732764": {
+   "id": "4c12d203b4732764",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1.01.03",
+   "ds_conta": "Contas a Receber",
+   "valor": 985.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 20
+   }
+  },
+  "4e117c831eac8533": {
+   "id": "4e117c831eac8533",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.03.05",
+   "ds_conta": "Lucros/Prejuízos Acumulados",
+   "valor": -277263.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 304
+   }
+  },
+  "52e3eb53ad0622ad": {
+   "id": "52e3eb53ad0622ad",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1",
+   "ds_conta": "Ativo Total",
+   "valor": 804367.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 2
+   }
+  },
+  "5552b15d99e88694": {
+   "id": "5552b15d99e88694",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.04.02",
+   "ds_conta": "Despesas Gerais e Administrativas",
+   "valor": -23988.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 324
+   }
+  },
+  "5c92c4586aaa3c9d": {
+   "id": "5c92c4586aaa3c9d",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1",
+   "ds_conta": "Ativo Total",
+   "valor": 135182.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 3
+   }
+  },
+  "601a548ba535e22f": {
+   "id": "601a548ba535e22f",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.04.01",
+   "ds_conta": "Despesas com Vendas",
+   "valor": -9414.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 323
+   }
+  },
+  "67af21554049b89e": {
+   "id": "67af21554049b89e",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.01",
+   "ds_conta": "Passivo Circulante",
+   "valor": 39828.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 116
+   }
+  },
+  "76bc1296e3bb327d": {
+   "id": "76bc1296e3bb327d",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1.01.03",
+   "ds_conta": "Contas a Receber",
+   "valor": 2128.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 21
+   }
+  },
+  "7b13381a748aadd6": {
+   "id": "7b13381a748aadd6",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.03",
+   "ds_conta": "Patrimônio Líquido Consolidado",
+   "valor": -232517.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 264
+   }
+  },
+  "8087d30d53f79848": {
+   "id": "8087d30d53f79848",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.02",
+   "ds_conta": "Passivo Não Circulante",
+   "valor": 997056.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 196
+   }
+  },
+  "a403445f9ddad293": {
+   "id": "a403445f9ddad293",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "2.01.04",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 4404.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 140
+   }
+  },
+  "a466ffb40c19f83a": {
+   "id": "a466ffb40c19f83a",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.03",
+   "ds_conta": "Resultado Bruto",
+   "valor": -509.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 319
+   }
+  },
+  "a4a3e758cc4a3008": {
+   "id": "a4a3e758cc4a3008",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "1.02.03",
+   "ds_conta": "Imobilizado",
+   "valor": 111750.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 99
+   }
+  },
+  "a632d55c38eb9dbc": {
+   "id": "a632d55c38eb9dbc",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DFC_MI",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "6.01",
+   "ds_conta": "Caixa Líquido Atividades Operacionais",
+   "valor": 760424.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 370
+   }
+  },
+  "a91515fb2d0a4283": {
+   "id": "a91515fb2d0a4283",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.11",
+   "ds_conta": "Lucro/Prejuízo Consolidado do Período",
+   "valor": -31396.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 358
+   }
+  },
+  "ae64d19c2eafe8d1": {
+   "id": "ae64d19c2eafe8d1",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.09",
+   "ds_conta": "Resultado Líquido das Operações Continuadas",
+   "valor": -31396.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 350
+   }
+  },
+  "b3bc131998b48a2f": {
+   "id": "b3bc131998b48a2f",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.01",
+   "ds_conta": "Passivo Circulante",
+   "valor": 36405.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 117
+   }
+  },
+  "ccb8845d004e8aad": {
+   "id": "ccb8845d004e8aad",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.01",
+   "ds_conta": "Receita de Venda de Bens e/ou Serviços",
+   "valor": 268.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 315
+   }
+  },
+  "d741a71d77d9cb56": {
+   "id": "d741a71d77d9cb56",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "3.09",
+   "ds_conta": "Resultado Líquido das Operações Continuadas",
+   "valor": -13398.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 351
+   }
+  },
+  "d7f222800db480bc": {
+   "id": "d7f222800db480bc",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.03",
+   "ds_conta": "Resultado Bruto",
+   "valor": 0.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 318
+   }
+  },
+  "d831fb57bd3a6c8c": {
+   "id": "d831fb57bd3a6c8c",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.01.02",
+   "ds_conta": "Fornecedores",
+   "valor": 0.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 125
+   }
+  },
+  "dd93cf1c65912336": {
+   "id": "dd93cf1c65912336",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPA",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "1.02.03",
+   "ds_conta": "Imobilizado",
+   "valor": 105775.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 98
+   }
+  },
+  "e2cacbd0f5f94183": {
+   "id": "e2cacbd0f5f94183",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "BPP",
+   "coluna": "PENÚLTIMO",
+   "cd_conta": "2.02.01",
+   "ds_conta": "Empréstimos e Financiamentos",
+   "valor": 395029.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 199
+   }
+  },
+  "edeee394005b8d02": {
+   "id": "edeee394005b8d02",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.05",
+   "ds_conta": "Resultado Antes do Resultado Financeiro e dos Tributos",
+   "valor": 2328.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 334
+   }
+  },
+  "f225641c7115ad79": {
+   "id": "f225641c7115ad79",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.06.02",
+   "ds_conta": "Despesas Financeiras",
+   "valor": -70354.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 340
+   }
+  },
+  "f8924e1b5ad462b7": {
+   "id": "f8924e1b5ad462b7",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "16196",
+    "versao": 1,
+    "dt_receb": "2012-04-13",
+    "origem": "enet",
+    "tipo_demonstracao": "con",
+    "url": "https://www.rad.cvm.gov.br/ENET/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=16196&CodigoTipoInstituicao=2",
+    "sha256": "d7b05f9e8c4c503c81e8437cf11a59df28be11a1d96328065ac097b63b81f6ab"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.02",
+   "ds_conta": "Custo dos Bens e/ou Serviços Vendidos",
+   "valor": 0.0,
+   "localizacao": {
+    "arquivo": "data/cache/enet/16196_con.csv",
+    "linha": 316
+   }
+  }
+ },
+ "motor": {
+  "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+  "v2": "chiocca.v2 (produto, fases B a E)"
+ },
+ "informacao_de_hoje": {
+  "titulo": "Today's information (outside the reference date)",
+  "situacao_cadastro": "CANCELADA",
+  "fonte": "CVM registry of listed companies (cad_cia_aberta.csv), in the version downloaded for the project, not on the reference date"
+ },
+ "gerado_em": "2026-11-10T19:30:34+00:00",
+ "aviso": "Statistical signal based on public financial statements. Not an accusation, not investment advice."
+}

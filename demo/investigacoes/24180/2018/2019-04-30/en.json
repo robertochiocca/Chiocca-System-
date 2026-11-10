@@ -1,0 +1,745 @@
+{
+ "data_referencia": "2019-04-30",
+ "empresa": {
+  "cd_cvm": "24180",
+  "cnpj": "33.376.989/0001-91",
+  "denominacao": "IRB - BRASIL RESSEGUROS S.A.",
+  "origem_denominacao": "fca",
+  "codigos_negociacao": [
+   {
+    "codigo": "IRBR3",
+    "valor_mobiliario": "Ações Ordinárias",
+    "mercado": "Bolsa",
+    "inicio_negociacao": "2017-07-31",
+    "fim_negociacao": null,
+    "fca": {
+     "ano": 2019,
+     "versao": 1,
+     "dt_receb": "2019-01-29"
+    }
+   }
+  ],
+  "motivo_codigos_negociacao": null,
+  "setor": "Seguradoras e Corretoras",
+  "origem_setor": "fca",
+  "grupo": "financeira"
+ },
+ "idioma": "en",
+ "exercicios": [
+  {
+   "exercicio": 2018,
+   "dt_refer": "2018-12-31",
+   "situacao": "ok",
+   "versao_usada": 4,
+   "dt_receb": "2019-03-08",
+   "versoes_conhecidas": [
+    {
+     "versao": 1,
+     "dt_receb": "2019-02-07"
+    },
+    {
+     "versao": 2,
+     "dt_receb": "2019-03-07"
+    },
+    {
+     "versao": 3,
+     "dt_receb": "2019-03-07"
+    },
+    {
+     "versao": 4,
+     "dt_receb": "2019-03-08"
+    }
+   ],
+   "tipo": "con",
+   "origem": "dados_abertos",
+   "num_doc": "81090",
+   "link": "http://www.rad.cvm.gov.br/ENETCONSULTA/frmDownloadDocumento.aspx?CodigoInstituicao=1&NumeroSequencialDocumento=81090",
+   "escala_original": "MIL",
+   "notas": [],
+   "amostra_estudo_1": "financeira"
+  }
+ ],
+ "achados": {
+  "possivel_manipulacao": [
+   {
+    "id": "8d9094436d5af29f",
+    "familia": "possivel_manipulacao",
+    "sinal": "peso_nao_recorrente",
+    "exercicio": 2018,
+    "rotulo": "Non-recurring weight (financial companies)",
+    "valor": {
+     "valor": 0.052651885664601675,
+     "status": "ok",
+     "motivo": null,
+     "codigo": null
+    },
+    "unidade": "index",
+    "valor_no_produto": null,
+    "regra": "non-recurring weight in the year's top decile among financial companies (≥ 90th percentile of computable values on the date: 1.024)",
+    "alerta_v1": false,
+    "componente_de": null,
+    "contexto": {
+     "percentil_setor_ano": {
+      "valor": null,
+      "n": 2,
+      "motivo": "fewer than 10 companies with a computable value"
+     },
+     "percentil_grupo_ano": {
+      "valor": 22.5,
+      "n": 20,
+      "motivo": null
+     },
+     "distribuicao_setor_ano": {
+      "n": 2,
+      "motivo": "fewer than 10 companies with a computable value"
+     },
+     "historico": {
+      "exercicios": [
+       2016,
+       2017
+      ],
+      "serie": [
+       [
+        2016,
+        0.06431622675129067
+       ],
+       [
+        2017,
+        0.04204552696362863
+       ]
+      ],
+      "motivo": "fewer than 5 previous fiscal years with a value"
+     }
+    },
+    "confianca": {
+     "nivel": "media",
+     "criterios": [
+      {
+       "nome": "fonte",
+       "resultado": "ok",
+       "motivo": "consolidated, CVM open data"
+      },
+      {
+       "nome": "completude",
+       "resultado": "ok",
+       "motivo": "every account the signal needs is in the DFP"
+      },
+      {
+       "nome": "consistencia",
+       "resultado": "atencao",
+       "motivo": "no check applies to the statements used"
+      },
+      {
+       "nome": "atualidade",
+       "resultado": "atencao",
+       "motivo": "4 versions filed by the reference date (restatement)"
+      },
+      {
+       "nome": "metodo",
+       "resultado": "atencao",
+       "motivo": "in study 1, engine v1 detected 7 of 13 detectable cases, with 108.3 false alarms per detected case over the whole period and an alert rate of 49.9% among evaluated non-financial company-years"
+      }
+     ]
+    },
+    "explicacao": "max(0, sum of the top-level \"outras receitas operacionais\" lines) ÷ |income before taxes|",
+    "explicacoes_alternativas": [],
+    "limitacoes": [],
+    "linhagem": {
+     "numero": {
+      "nome": "peso_nao_recorrente",
+      "rotulo": "non-recurring weight (financial companies)",
+      "valor": 0.052651885664601675,
+      "motivo_v1": null
+     },
+     "formula": "max(0, sum of the top-level \"outras receitas operacionais\" lines) ÷ |income before taxes|",
+     "valores": [],
+     "entradas": [
+      "54ffb75ccce57d8c",
+      "dd7508a4b434cd48"
+     ],
+     "transformacoes": [
+      "values converted to reais by the DFP scale (MIL or UNIDADE)"
+     ],
+     "premissas": [
+      "DFP version public on the cut-off date (point-in-time)",
+      "t−1 comes from the prior-year column (PENÚLTIMO) of the same DFP (amendment 5)",
+      "consolidated when available; otherwise individual (amendment 5)"
+     ],
+     "limitacoes": [],
+     "motor": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+     "codigo": "chiocca.sinais.peso_nao_recorrente.financeiras",
+     "calculado_em": "2026-11-10T19:36:48+00:00"
+    },
+    "natureza": {
+     "valor": "calculado",
+     "regra": "calculado",
+     "explicacao": "resumo",
+     "explicacoes_alternativas": "hipotese"
+    }
+   }
+  ],
+  "risco_financeiro": [
+   {
+    "id": "24ee966098a76592",
+    "familia": "risco_financeiro",
+    "sinal": "altman_z2",
+    "exercicio": 2018,
+    "rotulo": "Altman Z'' (financial risk, context only)",
+    "valor": {
+     "valor": null,
+     "status": "indefinido",
+     "motivo": "does not apply to financial companies",
+     "codigo": "nao_se_aplica"
+    },
+    "unidade": "index",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": {
+     "percentil_setor_ano": null,
+     "percentil_grupo_ano": null,
+     "historico": {
+      "exercicios": [],
+      "serie": [],
+      "motivo": "fewer than 5 previous fiscal years with a value"
+     }
+    },
+    "texto": null,
+    "componentes": {},
+    "marcas": [],
+    "linhagem": {
+     "entradas": [],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.altman_z2",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ],
+  "qualidade_financeira": [
+   {
+    "id": "c4d1a1e3f3bca573",
+    "familia": "qualidade_financeira",
+    "sinal": "piotroski_f",
+    "exercicio": 2018,
+    "rotulo": "Piotroski F (financial quality, context only)",
+    "valor": {
+     "valor": null,
+     "status": "indefinido",
+     "motivo": "does not apply to financial companies",
+     "codigo": "nao_se_aplica"
+    },
+    "unidade": "signals out of 9",
+    "regra": null,
+    "alerta_v1": null,
+    "contexto": null,
+    "texto": null,
+    "componentes": {},
+    "marcas": [],
+    "linhagem": {
+     "entradas": [],
+     "motor": "chiocca.v2 (produto, fases B a E)",
+     "codigo": "chiocca.v2.contexto.piotroski_f",
+     "origens": [
+      "DFP de t, coluna ÚLTIMO",
+      "DFP de t, coluna PENÚLTIMO (t−1)",
+      "DFP de t−1 na data, coluna PENÚLTIMO (t−2)"
+     ]
+    },
+    "natureza": {
+     "valor": "calculado"
+    }
+   }
+  ]
+ },
+ "mudancas": {
+  "versoes_conhecidas": [
+   {
+    "versao": 1,
+    "dt_receb": "2019-02-07",
+    "usada": false
+   },
+   {
+    "versao": 2,
+    "dt_receb": "2019-03-07",
+    "usada": false
+   },
+   {
+    "versao": 3,
+    "dt_receb": "2019-03-07",
+    "usada": false
+   },
+   {
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "usada": true
+   }
+  ],
+  "comparativo_destacadas": [],
+  "reapresentacao_pelo_comparativo": [],
+  "tolerancia_comparativo": 1000.0,
+  "materialidade_comparativo": {
+   "linhas_chave": [
+    {
+     "demonstracao": "BPA",
+     "cd_conta": "1"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.01"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.02"
+    },
+    {
+     "demonstracao": "BPP",
+     "cd_conta": "2.03"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.01"
+    },
+    {
+     "demonstracao": "DRE",
+     "cd_conta": "3.11"
+    },
+    {
+     "demonstracao": "DFC",
+     "cd_conta": "6.01"
+    }
+   ],
+   "limite_relativo": 0.01,
+   "ativo_total": 15940434000.0,
+   "limite": 159404340.0,
+   "texto": "Highlighted: differences in totals and key lines (total assets, current liabilities, non-current liabilities, equity, net revenue, net income and operating cash flow) above 1% of total assets of the version used. The other differences (reclassifications between lines and smaller differences) stay in the full list."
+  }
+ },
+ "o_que_se_sabia": {
+  "documentos": [
+   {
+    "tipo": "DFP",
+    "exercicio": 2016,
+    "versao": 1,
+    "dt_receb": "2017-07-31",
+    "num_doc": "67429"
+   },
+   {
+    "tipo": "FCA",
+    "exercicio": 2018,
+    "versao": 1,
+    "dt_receb": "2018-01-17",
+    "num_doc": null
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2017,
+    "versao": 1,
+    "dt_receb": "2018-02-08",
+    "num_doc": "71429"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 1,
+    "dt_receb": "2019-02-07",
+    "num_doc": "80516"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 2,
+    "dt_receb": "2019-03-07",
+    "num_doc": "81058"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 3,
+    "dt_receb": "2019-03-07",
+    "num_doc": "81059"
+   },
+   {
+    "tipo": "DFP",
+    "exercicio": 2018,
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "num_doc": "81090"
+   }
+  ],
+  "nota": "DFP and FCA filed with the CVM by the reference date; ITR and material facts come in later phases."
+ },
+ "qualidade_dos_dados": {
+  "conferencias": [
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "total assets = total liabilities and equity",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_igual_passivo",
+    "tipo": "identidade",
+    "nome": "total assets = total liabilities and equity",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "total assets = current + non-current",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "ativo_partes",
+    "tipo": "identidade",
+    "nome": "total assets = current + non-current",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "total liabilities and equity = current + non-current + equity",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "passivo_partes",
+    "tipo": "identidade",
+    "nome": "total liabilities and equity = current + non-current + equity",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "gross profit = revenue + cost of sales",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_resultado_bruto",
+    "tipo": "identidade",
+    "nome": "gross profit = revenue + cost of sales",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "operating profit = gross profit + operating expenses and income",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_ebit",
+    "tipo": "identidade",
+    "nome": "operating profit = gross profit + operating expenses and income",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "profit before taxes = operating profit + finance result",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_antes_tributos",
+    "tipo": "identidade",
+    "nome": "profit before taxes = operating profit + finance result",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "continuing operations = profit before taxes + income taxes",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_continuadas",
+    "tipo": "identidade",
+    "nome": "continuing operations = profit before taxes + income taxes",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "profit for the period = continuing + discontinued",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dre_lucro",
+    "tipo": "identidade",
+    "nome": "profit for the period = continuing + discontinued",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "change in cash = operating + investing + financing + exchange differences",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_soma",
+    "tipo": "identidade",
+    "nome": "change in cash = operating + investing + financing + exchange differences",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "change in cash = closing − opening balance",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldos",
+    "tipo": "identidade",
+    "nome": "change in cash = closing − opening balance",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow closing balance = cash and cash equivalents on the balance sheet",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dfc_saldo_final_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow closing balance = cash and cash equivalents on the balance sheet",
+    "coluna": "PENÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "dfc_saldo_inicial_no_balanco",
+    "tipo": "reconciliacao",
+    "nome": "cash flow opening balance = cash and cash equivalents on the prior balance sheet",
+    "coluna": "ÚLTIMO",
+    "resultado": "nao_aplicavel",
+    "motivo": "chart of accounts seguradora: codes not checked"
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "total assets filled in (not zero)",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "total assets not negative",
+    "coluna": "ÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_preenchido",
+    "tipo": "nao_preenchido",
+    "nome": "total assets filled in (not zero)",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   },
+   {
+    "id": "ativo_total_negativo",
+    "tipo": "sinal_incomum",
+    "nome": "total assets not negative",
+    "coluna": "PENÚLTIMO",
+    "resultado": "ok",
+    "motivo": null
+   }
+  ]
+ },
+ "parecer_e_auditor": {
+  "natureza": "trecho_literal",
+  "gera_alerta": false,
+  "relatorio_do_auditor": {
+   "tipo": [
+    "Sem Ressalva"
+   ],
+   "trecho": "Em nossa opinião, essas demonstrações do valor adicionado foram adequadamente elaboradas, em todos os aspectos relevantes, segundo os critérios definidos nesse Pronunciamento Técnico e são consistentes em relação às demonstrações contábeis individuais e consolidadas tomadas em conjunto.",
+   "conferido": true,
+   "motivo": null,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2018.zip/dfp_cia_aberta_parecer_2018.csv",
+    "linhas": [
+     2478,
+     2479,
+     2480
+    ]
+   }
+  },
+  "auditores_no_fca": [
+   {
+    "ano_fca": 2017,
+    "dt_receb": "2017-07-31",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2018,
+    "dt_receb": "2018-01-17",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     },
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   },
+   {
+    "ano_fca": 2019,
+    "dt_receb": "2019-01-29",
+    "auditores": [
+     {
+      "auditor": "PricewaterhouseCoopers Auditores Independentes",
+      "codigo_cvm": "002879",
+      "pessoa_fisica": false,
+      "inicio": "2012-01-01",
+      "fim": null
+     }
+    ]
+   }
+  ],
+  "trocas_de_auditor": [],
+  "rodizio": {
+   "nota": "Auditor rotation: under CVM Resolution No. 23/2021, art. 31, the same independent auditor may not serve the same client for more than five consecutive fiscal years, with a minimum interval of three fiscal years before being hired again; under art. 31-A, the term is up to ten consecutive fiscal years when the company has a statutory audit committee in permanent operation and the auditor is a firm. The Resolution has been in force since 2021-04-01 (art. 41); before that, the equivalent rule was in arts. 31 and 31-A of CVM Instruction No. 308/1999, revoked by the Resolution (art. 40, I). A change of auditor is a fact, not an alert.",
+   "norma": "Resolução CVM nº 23/2021, arts. 31 e 31-A",
+   "fonte": "https://conteudo.cvm.gov.br/export/sites/cvm/legislacao/resolucoes/anexos/001/resol023.pdf",
+   "conferida_em": "2026-11-09"
+  }
+ },
+ "como_o_motor_foi_testado": {
+  "documento": "docs/summary.md",
+  "acertados": 7,
+  "acertaveis": 13,
+  "alarmes_por_acerto_periodo_inteiro": 108.28571428571429,
+  "taxa_de_alerta_nao_financeiras": 0.49895584725536996
+ },
+ "limites": [
+  "No alert is not a clean bill of health. In Dechow, Sloan and Sweeney (1995), the most powerful accruals model rejected 'no manipulation' for only 28.1% of 32 companies sanctioned by the SEC (Table 7, p. 32).",
+  "In study 1, 49.9% of evaluated non-financial company-years (48.3% including financial companies) were in alert, and the number of detections did not beat chance in a descriptive test done after the result: 7 detections in 13 detectable cases, against 7.37 expected by chance without assuming independent years (8.56 assuming independent years).",
+  "Risk models use numbers that may be manipulated (Pereira and Martins 2015, p. 29). That is why the three families are not added up."
+ ],
+ "limitacoes": [
+  "Context indicators (Altman Z'' and Piotroski F) were not validated in Brazil by this project and do not trigger alerts"
+ ],
+ "evidencias": {
+  "54ffb75ccce57d8c": {
+   "id": "54ffb75ccce57d8c",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "81090",
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2018.zip",
+    "sha256": "280dcf5acd7bdb529acc186c9a1195092a1e06cf1e33ddcdca0b11c31261296f"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.05",
+   "ds_conta": "Outras Receitas e Despesas Operacionais",
+   "valor": 77512000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2018.zip/dfp_cia_aberta_DRE_con_2018.csv",
+    "linha": 14971,
+    "escala": "MIL"
+   }
+  },
+  "dd7508a4b434cd48": {
+   "id": "dd7508a4b434cd48",
+   "documento": {
+    "tipo": "DFP",
+    "num_doc": "81090",
+    "versao": 4,
+    "dt_receb": "2019-03-08",
+    "origem": "dados_abertos",
+    "tipo_demonstracao": "con",
+    "url": "https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2018.zip",
+    "sha256": "280dcf5acd7bdb529acc186c9a1195092a1e06cf1e33ddcdca0b11c31261296f"
+   },
+   "demonstracao": "DRE",
+   "coluna": "ÚLTIMO",
+   "cd_conta": "3.09",
+   "ds_conta": "Resultado Antes dos Tributos sobre o Lucro",
+   "valor": 1472160000.0,
+   "localizacao": {
+    "arquivo": "dfp_cia_aberta_2018.zip/dfp_cia_aberta_DRE_con_2018.csv",
+    "linha": 14991,
+    "escala": "MIL"
+   }
+  }
+ },
+ "motor": {
+  "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
+  "v2": "chiocca.v2 (produto, fases B a E)"
+ },
+ "informacao_de_hoje": {
+  "titulo": "Today's information (outside the reference date)",
+  "situacao_cadastro": "ATIVO",
+  "fonte": "CVM registry of listed companies (cad_cia_aberta.csv), in the version downloaded for the project, not on the reference date"
+ },
+ "gerado_em": "2026-11-10T19:36:48+00:00",
+ "aviso": "Statistical signal based on public financial statements. Not an accusation, not investment advice."
+}
