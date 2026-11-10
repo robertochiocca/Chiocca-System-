@@ -86,13 +86,41 @@ class Resultado:
         return cls(valor=float(valor), status="implausivel", motivo=motivo)
 
 
-def de_resultado_v1(r: ResultadoV1, implausibilidades: list[Motivo] | None = None) -> Resultado:
-    """Traduz o resultado do motor v1, sem mudar o valor: não calculável vira indefinido, com o mesmo motivo."""
+# Códigos de motivo que o catálogo de textos do estudo 1 (chiocca/textos_resultados.py, congelado) não traduz: o
+# M-score com componente faltando, o "não calculado" genérico e a conta ausente fora da lista curta de contas do
+# catálogo (que usa, então, os nomes da tabela das duas leituras, do mesmo arquivo). O código fica como veio em
+# `codigo`; o texto, não.
+TIPOS_SEM_ROTULO_NO_V1 = {
+    "componente_nao_calculavel": ("componente não calculável", "component not computable"),
+    "nao_calculado": ("não calculado", "not computed"),
+}
+
+
+def rotulo_do_motivo_v1(codigo: str, lang: str) -> str:
+    """Texto do motivo do motor v1 na língua pedida, sem identificador interno."""
+    from chiocca.textos_resultados import CONTAS, CONTAS_TABELA, TIPOS
     from chiocca.textos_resultados import motivo as rotulo
 
+    k = 0 if lang == "pt" else 1
+    tipo, _, det = codigo.partition(":")
+    if tipo in TIPOS_SEM_ROTULO_NO_V1:
+        texto = TIPOS_SEM_ROTULO_NO_V1[tipo][k]
+        return f"{texto}: {', '.join(det.split(','))}" if det else texto
+    if tipo == "conta_ausente" and det not in CONTAS:
+        from chiocca.v2.linhagem import ROTULOS_VARIAVEIS
+
+        nome = (CONTAS_TABELA.get(det) or ROTULOS_VARIAVEIS.get(det) or (det.replace("_", " "),) * 2)[k]
+        return f"{TIPOS[tipo][k]}: {nome[:1].lower()}{nome[1:]}"
+    return rotulo(codigo, lang)
+
+
+def de_resultado_v1(r: ResultadoV1, implausibilidades: list[Motivo] | None = None) -> Resultado:
+    """Traduz o resultado do motor v1, sem mudar o valor: não calculável vira indefinido, com o mesmo motivo."""
     if r.valor is None:
         codigo = r.motivo or "nao_calculado"
-        return Resultado.indefinido(Motivo(rotulo(codigo, "pt"), rotulo(codigo, "en")), codigo=codigo)
+        return Resultado.indefinido(
+            Motivo(rotulo_do_motivo_v1(codigo, "pt"), rotulo_do_motivo_v1(codigo, "en")), codigo=codigo
+        )
     if implausibilidades:
         return Resultado.implausivel(
             r.valor,

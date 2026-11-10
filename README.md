@@ -177,6 +177,7 @@ CHIOCCA_MODO_DEMONSTRACAO=1 python -m chiocca.v2.api 8000   # a mesma API no mod
 cd web && npm ci && npm run build && npm start   # interface em http://localhost:3000 (fala com a API em :8000)
 python -m chiocca.v2.demonstracao_estatica --processos 4   # demonstração estática em web/public/demo/ (JSON e PDF, fora do git)
 cd web && npm run build:estatico && npm run test:tela   # site estático em web/out/, sem API, e o teste de tela
+cd web && npm run varrer:demo   # antes de publicar: todas as investigações da demonstração no navegador, PT e EN
 python -m pytest                      # testes sem rede
 ```
 
@@ -354,6 +355,7 @@ CHIOCCA_MODO_DEMONSTRACAO=1 python -m chiocca.v2.api 8000   # the same API in de
 cd web && npm ci && npm run build && npm start   # interface at http://localhost:3000 (talks to the API on :8000)
 python -m chiocca.v2.demonstracao_estatica --processos 4   # static demo in web/public/demo/ (JSON and PDF, outside git)
 cd web && npm run build:estatico && npm run test:tela   # static site in web/out/, no API, and the screen test
+cd web && npm run varrer:demo   # before publishing: every demo investigation in the browser, PT and EN
 python -m pytest                      # offline tests
 ```
 

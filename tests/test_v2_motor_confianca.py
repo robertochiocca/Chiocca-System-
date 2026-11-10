@@ -47,6 +47,23 @@ def test_ponte_com_o_motor_v1_nao_muda_o_valor() -> None:
     assert vd.de_resultado_v1(ResultadoV1(-0.24), [M]).status == "implausivel"
 
 
+def test_motivos_do_v1_sem_rotulo_no_catalogo_do_estudo_1_viram_texto() -> None:
+    # achado na varredura da demonstração estática: o código aparecia cru na tela
+    r = vd.de_resultado_v1(ResultadoV1(None, "componente_nao_calculavel:DEPI,SGAI"))
+    assert r.codigo == "componente_nao_calculavel:DEPI,SGAI"  # o código fica como veio
+    assert r.texto("pt") == "componente não calculável: DEPI, SGAI"
+    assert r.texto("en") == "component not computable: DEPI, SGAI"
+    assert vd.de_resultado_v1(ResultadoV1(None, None)).texto("en") == "not computed"
+    r = vd.de_resultado_v1(ResultadoV1(None, "conta_ausente:ativo_circulante"))  # fora da lista curta do catálogo
+    assert r.texto("pt") == "conta ausente: ativo circulante (1.01)"
+    assert r.texto("en") == "missing account: current assets (1.01)"
+    for conta in variaveis.CONTAS:  # toda conta que o motor pode dar como ausente vira texto
+        for lang in ("pt", "en"):
+            assert "_" not in vd.rotulo_do_motivo_v1(f"conta_ausente:{conta}", lang), conta
+    for tipo in vd.TIPOS_SEM_ROTULO_NO_V1:
+        assert "_" not in vd.rotulo_do_motivo_v1(f"{tipo}:X", "pt") + vd.rotulo_do_motivo_v1(tipo, "en")
+
+
 def test_variacao_percentual_so_com_base_positiva() -> None:
     g = vd.Motivo("receita", "revenue")
     assert vd.variacao_percentual(100.0, 150.0, g).valor == pytest.approx(50.0)

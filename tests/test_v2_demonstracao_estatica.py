@@ -87,3 +87,15 @@ def test_amostra_da_demonstracao_real_igual_a_api() -> None:
                 da_api = c.get(f"/api/v1/investigacoes/{cd}/{ex}", params=q).json()
                 assert sem_carimbos(arquivo) == sem_carimbos(da_api)
                 assert (pasta / f"{lang}.pdf").read_bytes() == pdf_investigacao.gerar(arquivo)
+
+
+@pytest.mark.skipif(not (DEMO / "manifesto.json").exists(), reason="precisa da demonstração gerada (web/public/demo)")
+def test_demonstracao_real_sem_codigo_interno_no_pdf() -> None:
+    from tests.test_v2_investigacao import codigos_no_pdf
+
+    achados = {}
+    for arquivo in sorted((DEMO / "investigacoes").rglob("*.json")):
+        codigos = codigos_no_pdf(json.loads(arquivo.read_text(encoding="utf-8")))
+        if codigos:
+            achados[str(arquivo.relative_to(DEMO))] = sorted(codigos)
+    assert achados == {}

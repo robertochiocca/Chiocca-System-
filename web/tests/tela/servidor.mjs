@@ -42,17 +42,19 @@ export function montarDados(raiz) {
   grava(raiz, "indice.json", { ordem: "denominacao", empresas: [{ cd_cvm, cnpj, denominacao, origem_denominacao,
     codigos_negociacao, motivo_codigos_negociacao, nomes: [...nomes].sort(), datas: { "2022-04-30": [2021], "2024-12-31": [2021] } }] });
   cpSync(join(web, "tests", "contrato", "como_testado.json"), join(raiz, "demo", "como-o-motor-foi-testado.json"));
+  // a investigação da fixture (resposta da API guardada, só em PT): M-score com componentes não calculáveis
+  const contrato = (nome) => readFileSync(join(web, "tests", "contrato", `${nome}.json`), "utf-8");
+  const inv = JSON.parse(contrato("investigacao"));
+  grava(raiz, `investigacoes/${inv.empresa.cd_cvm}/2020/${inv.data_referencia}/pt.json`, inv);
+  grava(raiz, `empresas/${inv.empresa.cd_cvm}/${inv.data_referencia}/pt.json`, JSON.parse(contrato("empresa")));
 }
 
-/** Copia o site exportado para uma pasta temporária, monta os dados de teste e sobe o servidor. */
-export async function subir() {
-  const out = join(web, "out");
-  if (!existsSync(join(out, "index.html"))) throw new Error("rode antes: npm run build:estatico");
-  const raiz = mkdtempSync(join(tmpdir(), "chiocca-tela-"));
-  cpSync(out, raiz, { recursive: true });
-  montarDados(raiz);
+export const INV_FIXTURE = "/investigacao/?cd=100&ex=2020&data=2022-04-30";
+
+/** Serve uma pasta (o site exportado) em http://127.0.0.1:<porta livre>. */
+export async function servir(raiz) {
   const servidor = createServer((req, res) => {
-    let caminho = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    const caminho = decodeURIComponent(new URL(req.url, "http://x").pathname);
     let arquivo = join(raiz, caminho);
     if (existsSync(arquivo) && statSync(arquivo).isDirectory()) arquivo = join(arquivo, "index.html");
     if (!existsSync(arquivo)) {
@@ -64,5 +66,15 @@ export async function subir() {
   });
   await new Promise((ok) => servidor.listen(0, "127.0.0.1", ok));
   const { port } = servidor.address();
-  return { url: `http://127.0.0.1:${port}`, fechar: () => new Promise((ok) => servidor.close(ok)), raiz };
+  return { url: `http://127.0.0.1:${port}`, fechar: () => new Promise((ok) => servidor.close(ok)) };
+}
+
+/** Copia o site exportado para uma pasta temporária, monta os dados de teste e sobe o servidor. */
+export async function subir() {
+  const out = join(web, "out");
+  if (!existsSync(join(out, "index.html"))) throw new Error("rode antes: npm run build:estatico");
+  const raiz = mkdtempSync(join(tmpdir(), "chiocca-tela-"));
+  cpSync(out, raiz, { recursive: true });
+  montarDados(raiz);
+  return { ...(await servir(raiz)), raiz };
 }

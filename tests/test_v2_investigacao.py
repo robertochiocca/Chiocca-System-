@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,25 @@ def test_investigacao_segue_o_contrato(mundo_c1: tuple[Fontes, armazem.FontesArm
     pdf = pdf_investigacao.gerar(inv)
     assert pdf == pdf_investigacao.gerar(json.loads(json.dumps(inv)))  # o PDF sai só do JSON, sempre igual
     assert pdf.startswith(b"%PDF-1.4")
+
+
+# Código interno: identificador com sublinhado (lucro_sem_caixa, DFC_MI, componente_nao_calculavel...). Ficam de fora
+# nomes de arquivo e URLs (dfp_cia_aberta_2021.zip) e a notação do próprio artigo (EQ_OFFER, Piotroski 2000, p. 9).
+CODIGO_INTERNO = re.compile(r"(?<![\w./:-])[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+(?![\w./-])")
+NOTACAO_DOS_ARTIGOS = {"EQ_OFFER"}
+
+
+def codigos_no_pdf(inv: dict[str, Any]) -> set[str]:
+    achados: set[str] = set()
+    for linha in pdf_investigacao.linhas(inv):
+        achados |= set(CODIGO_INTERNO.findall(linha)) - NOTACAO_DOS_ARTIGOS
+    return achados
+
+
+@pytest.mark.parametrize("nome", exemplos.NOMES)
+def test_pdf_sem_codigo_interno(nome: str) -> None:
+    inv = json.loads((exemplos.PASTA / f"{nome}.json").read_text(encoding="utf-8"))
+    assert codigos_no_pdf(inv) == set()
 
 
 def test_grupo_vazio_no_corte_vira_nulo(
