@@ -46,4 +46,16 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// Demonstração estática (NEXT_PUBLIC_MODO_ESTATICO=1): site exportado em out/, sem API nem servidor; os dados vêm
+// de public/demo/ (gerados por python -m chiocca.v2.demonstracao_estatica). Rewrites e cabeçalhos não existem num
+// site estático: a política de segurança fica a cargo da hospedagem. NEXT_PUBLIC_BASE_PATH serve para publicar
+// numa subpasta (por exemplo, /Chiocca-System- no GitHub Pages).
+const estatico = {
+  output: "export",
+  trailingSlash: true,
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
+  images: { unoptimized: true },
+  poweredByHeader: false,
+};
+
+export default process.env.NEXT_PUBLIC_MODO_ESTATICO === "1" ? estatico : nextConfig;

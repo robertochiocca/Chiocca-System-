@@ -8,16 +8,17 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import Achado from "@/components/Achado";
 import InformacaoDeHoje from "@/components/InformacaoDeHoje";
+import TextoComLinks from "@/components/TextoComLinks";
 import { api, FalhaApi } from "@/lib/api";
 import { data as fdata, inteiro, milhoes } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
 import { DATA_MAXIMA, dataValida, exercicioValido } from "@/lib/limites.mjs";
-import { fmt, REPOSITORIO } from "@/lib/textos";
+import { fmt, REPOSITORIO, type Textos } from "@/lib/textos";
 import type { Diferenca, Investigacao } from "@/lib/tipos";
 
 const FAMILIAS = ["possivel_manipulacao", "risco_financeiro", "qualidade_financeira"] as const;
 
-function Diferencas({ lista, idioma }: { lista: Diferenca[]; idioma: "pt" | "en" }) {
+function Diferencas({ lista, idioma, t }: { lista: Diferenca[]; idioma: "pt" | "en"; t: Textos }) {
   return (
     <div className="tabela">
       <table>
@@ -25,7 +26,7 @@ function Diferencas({ lista, idioma }: { lista: Diferenca[]; idioma: "pt" | "en"
           {lista.map((x) => (
             <tr key={`${x.demonstracao}-${x.cd_conta}`}>
               <td>
-                ({x.grupo}) {x.demonstracao} {x.cd_conta} {x.ds_conta}
+                ({x.grupo}) {t.demonstracoes[x.demonstracao] ?? x.demonstracao} {x.cd_conta} {x.ds_conta}
               </td>
               <td>{milhoes(x.valor, idioma)}</td>
               <td>{milhoes(x.valor_comparativo, idioma)}</td>
@@ -73,6 +74,16 @@ function Pagina() {
       <h1>
         {inv.empresa.denominacao} · {t.exercicio} {e0.exercicio} · {fdata(inv.data_referencia, idioma)}
       </h1>
+      {mud.comparativo_destacadas.length > 0 && (
+        <p className="aviso-topo" role="note">
+          {fmt(mud.comparativo_destacadas.length === 1 ? t.aviso_destacada : t.aviso_destacadas, {
+            n: inteiro(mud.comparativo_destacadas.length, idioma),
+            ex: e0.exercicio + 1,
+            d: fdata(mud.comparativo_destacadas[0].dt_receb_seguinte, idioma),
+          })}{" "}
+          <a href="#mudancas">{t.ver_mudancas}</a>
+        </p>
+      )}
       <p className="discreto">
         {t.setor}: {inv.empresa.setor ?? "—"} · {t.grupo}: {inv.empresa.grupo ? t.grupos[inv.empresa.grupo] : "—"}
       </p>
@@ -100,7 +111,7 @@ function Pagina() {
         )}
         {e0.notas.filter(Boolean).map((n, i) => (
           <p key={i} className="discreto">
-            {n}
+            <TextoComLinks texto={n} />
           </p>
         ))}
       </section>
@@ -118,15 +129,17 @@ function Pagina() {
         ) : null,
       )}
 
-      <h2>{t.mudancas}</h2>
+      <h2 id="mudancas">{t.mudancas}</h2>
       <section className="cartao">
         <p className="rotulo">{t.destacadas}</p>
-        {mud.comparativo_destacadas.length ? <Diferencas lista={mud.comparativo_destacadas} idioma={idioma} /> : <p>{t.sem_destacadas}</p>}
-        <p className="discreto">{mud.materialidade_comparativo.texto}</p>
+        {mud.comparativo_destacadas.length ? <Diferencas lista={mud.comparativo_destacadas} idioma={idioma} t={t} /> : <p>{t.sem_destacadas}</p>}
+        <p className="discreto">
+          <TextoComLinks texto={mud.materialidade_comparativo.texto} />
+        </p>
         {mud.reapresentacao_pelo_comparativo.length > 0 && (
           <details>
             <summary>{fmt(t.lista_completa, { n: inteiro(mud.reapresentacao_pelo_comparativo.length, idioma) })}</summary>
-            <Diferencas lista={mud.reapresentacao_pelo_comparativo} idioma={idioma} />
+            <Diferencas lista={mud.reapresentacao_pelo_comparativo} idioma={idioma} t={t} />
           </details>
         )}
       </section>
@@ -140,7 +153,9 @@ function Pagina() {
             </li>
           ))}
         </ul>
-        <p className="discreto">{inv.o_que_se_sabia.nota}</p>
+        <p className="discreto">
+          <TextoComLinks texto={inv.o_que_se_sabia.nota} />
+        </p>
       </section>
 
       <h2>{t.qualidade_dados}</h2>
@@ -178,7 +193,11 @@ function Pagina() {
             ) : (
               <p>{t.sem_trocas}</p>
             )}
-            {pa.rodizio?.nota && <p className="discreto">{pa.rodizio.nota}</p>}
+            {pa.rodizio?.nota && (
+              <p className="discreto">
+                <TextoComLinks texto={pa.rodizio.nota} />
+              </p>
+            )}
           </section>
         </>
       )}
@@ -187,7 +206,7 @@ function Pagina() {
       <ul className="cartao">
         {inv.limites.map((x, i) => (
           <li key={i} style={{ marginLeft: 16 }}>
-            {x}
+            <TextoComLinks texto={x} />
           </li>
         ))}
       </ul>
@@ -195,7 +214,7 @@ function Pagina() {
       <ul className="cartao">
         {inv.limitacoes.filter(Boolean).map((x, i) => (
           <li key={i} style={{ marginLeft: 16 }}>
-            {x}
+            <TextoComLinks texto={x} />
           </li>
         ))}
       </ul>

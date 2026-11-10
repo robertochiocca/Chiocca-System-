@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import SeletorData from "@/components/SeletorData";
-import { api, FalhaApi } from "@/lib/api";
+import { api, FalhaApi, MODO_ESTATICO } from "@/lib/api";
 import { inteiro } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
 import { DATA_MAXIMA, dataValida } from "@/lib/limites.mjs";
@@ -44,7 +44,7 @@ export default function PaginaBusca() {
           <span className="rotulo">{t.busca_campo}</span>
           <input value={busca} onChange={(e) => setBusca(e.target.value)} required minLength={1} maxLength={120} />
         </label>
-        <SeletorData valor={data} mudar={setData} t={t} />
+        {!MODO_ESTATICO && <SeletorData valor={data} mudar={setData} t={t} />}
         <button className="botao" type="submit" disabled={carregando}>
           {t.busca_botao}
         </button>
@@ -57,7 +57,7 @@ export default function PaginaBusca() {
           <ul className="lista">
             {r.resultados.map((e) => (
               <li key={e.cd_cvm}>
-                <Link href={`/empresa?cd=${e.cd_cvm}&data=${r.data_referencia}`}>{e.denominacao}</Link>
+                <Link href={MODO_ESTATICO ? `/empresa?cd=${e.cd_cvm}` : `/empresa?cd=${e.cd_cvm}&data=${r.data_referencia}`}>{e.denominacao}</Link>
                 <div className="discreto">
                   {t.codigo_cvm} {e.cd_cvm} · {t.cnpj} {e.cnpj ?? "—"}
                   {e.codigos_negociacao.length > 0 && ` · ${e.codigos_negociacao.map((c) => c.codigo).join(", ")}`}

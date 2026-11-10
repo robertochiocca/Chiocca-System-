@@ -383,8 +383,10 @@ class Armazem:
             """,
             [cd_cvm, ate, cd_cvm],
         )
-        return [{"codigo": str(x.codigo_negociacao), "valor_mobiliario": x.valor_mobiliario, "mercado": x.mercado,
-                 "inicio_negociacao": x.inicio_negociacao, "fim_negociacao": x.fim_negociacao,
+        # campo vazio no FCA pode voltar do DuckDB como NaN (float): vira nulo, como os demais campos sem valor
+        return [{"codigo": str(x.codigo_negociacao), "valor_mobiliario": _texto(x.valor_mobiliario),
+                 "mercado": _texto(x.mercado), "inicio_negociacao": _texto(x.inicio_negociacao),
+                 "fim_negociacao": _texto(x.fim_negociacao),
                  "fca": {"ano": int(x.ano), "versao": int(x.versao), "dt_receb": str(x.dt_receb)[:10]}}
                 for x in d.drop_duplicates(["codigo_negociacao", "mercado"]).itertuples(index=False)]  # fmt: skip
 
@@ -423,6 +425,11 @@ class Armazem:
         )
         valores = sorted(str(x) for x in d.escala.dropna())
         return "+".join(valores) if valores else None
+
+
+def _texto(v: Any) -> str | None:
+    """Texto do campo, ou None se o campo estiver vazio (None ou NaN)."""
+    return None if v is None or (isinstance(v, float) and pd.isna(v)) else str(v)
 
 
 class FontesArmazem(Armazem):

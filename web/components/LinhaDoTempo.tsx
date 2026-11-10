@@ -1,7 +1,7 @@
 // Linha do tempo da própria empresa: os exercícios anteriores (como eram na data) e o valor atual, com a faixa de
 // Tukey (1,5 × IQR) ao fundo. Nenhuma outra empresa aparece.
 import type { Historico, Idioma } from "@/lib/tipos";
-import { comUnidade } from "@/lib/formato";
+import { numero } from "@/lib/formato";
 import { fmt, type Textos } from "@/lib/textos";
 
 export default function LinhaDoTempo({
@@ -25,8 +25,9 @@ export default function LinhaDoTempo({
   const resumo =
     h.faixa_tukey && h.posicao
       ? fmt(t.faixa_tukey, {
-          a: comUnidade(h.faixa_tukey[0], unidade, idioma),
-          b: comUnidade(h.faixa_tukey[1], unidade, idioma),
+          a: numero(h.faixa_tukey[0], unidade, idioma),
+          b: numero(h.faixa_tukey[1], unidade, idioma),
+          u: unidade,
           p: t.posicoes[h.posicao],
         })
       : h.motivo ?? "";

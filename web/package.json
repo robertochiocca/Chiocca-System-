@@ -7,9 +7,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:estatico": "NEXT_PUBLIC_MODO_ESTATICO=1 next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --test \"tests/*.test.mjs\""
+    "test": "node --test \"tests/*.test.mjs\"",
+    "test:tela": "node --test \"tests/tela/*.test.mjs\""
   },
   "engines": {
     "node": ">=22"
@@ -23,6 +25,7 @@
     "@types/node": "22.20.5",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
+    "playwright": "1.63.0",
     "typescript": "5.9.3"
   }
 }

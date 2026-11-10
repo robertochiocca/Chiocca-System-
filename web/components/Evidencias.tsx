@@ -41,9 +41,9 @@ export default function Evidencias({
               {lista.map((e) => (
                 <tr key={e.id}>
                   <td>
-                    {e.demonstracao} {e.cd_conta} {e.ds_conta}
+                    {t.demonstracoes[e.demonstracao] ?? e.demonstracao} {e.cd_conta} {e.ds_conta}
                   </td>
-                  <td>{e.coluna}</td>
+                  <td>{t.colunas[e.coluna] ?? e.coluna}</td>
                   <td>{decimal(e.valor, idioma, 0)}</td>
                   <td>
                     {e.documento.tipo} {t.versao} {e.documento.versao}, {t.entregue_em} {data(e.documento.dt_receb, idioma)}

@@ -1,7 +1,7 @@
 # Origem: DireitoAberto (github.com/robertochiocca/direitoaberto), .github/workflows/ci.yml,
 # commit 102e3e2d9d70e87249d8df9215737e2d98b6358d. Adaptado para o Chiocca System.
 # O que mudou: comandos do Chiocca (ruff, black, mypy e pytest); na Fase E, o job do web (build, tipos, testes de
-# contrato e npm audit).
+# contrato e npm audit); na resposta à Fase E, o build da demonstração estática e o teste de tela (Playwright).
 # Não usa segredos nem faz deploy; só lê o repositório. Os testes rodam sem rede e sem os dados brutos da CVM
 # (data/brutos, data/base e resultados/ ficam fora do git): os documentos gerados são conferidos contra os JSON
 # versionados.
@@ -54,7 +54,8 @@ jobs:
         run: pip-audit -r requirements-lock.txt --no-deps --disable-pip --progress-spinner off
 
   # Interface (Fase E): checagem de tipos, testes de contrato com a API (sem rede: os exemplos guardados e as respostas
-  # da API geradas pelos testes do Python), build e auditoria de dependências do npm. Nada é publicado.
+  # da API geradas pelos testes do Python), build, build da demonstração estática com teste de tela num navegador de
+  # verdade (dados de teste montados de docs/exemplos/) e auditoria de dependências do npm. Nada é publicado.
   web:
     runs-on: ubuntu-24.04
     defaults:
@@ -76,5 +77,13 @@ jobs:
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+      - name: Build da demonstração estática
+        run: npm run build:estatico
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - name: Navegador do teste de tela
+        run: npx playwright install --with-deps chromium
+      - name: Teste de tela (PT e EN)
+        run: npm run test:tela
       - name: npm audit
         run: npm audit --audit-level=high

@@ -9,7 +9,13 @@ export function decimal(v: number | null | undefined, idioma: Idioma, casas = 3)
     maximumFractionDigits: casas,
   })
     .format(v)
-    .replace(/−/g, "-");
+    .replace(/^-/, "−"); // sinal de menos tipográfico (−) na tela
+}
+
+/** Só o número, com as casas da unidade (dias 1, p.p. 2, índice 3): a unidade vai uma vez, no fim da frase. */
+export function numero(v: number | null | undefined, unidade: string, idioma: Idioma): string {
+  const casas = unidade === "dias" || unidade === "days" ? 1 : unidade === "p.p." ? 2 : 3;
+  return decimal(v, idioma, casas);
 }
 
 export function inteiro(v: number | null | undefined, idioma: Idioma): string {

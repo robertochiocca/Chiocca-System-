@@ -5,6 +5,7 @@ import type { Achado as TipoAchado, Evidencia, Idioma } from "@/lib/tipos";
 import { comUnidade, decimal, inteiro } from "@/lib/formato";
 import type { Textos } from "@/lib/textos";
 import Evidencias from "./Evidencias";
+import TextoComLinks from "./TextoComLinks";
 import Histograma from "./Histograma";
 import LinhaDoTempo from "./LinhaDoTempo";
 
@@ -30,9 +31,7 @@ export default function Achado({
   const c = a.contexto;
   return (
     <article className="cartao">
-      <h3>
-        {a.rotulo} <span className="discreto mono">({a.sinal})</span>
-      </h3>
+      <h3>{a.rotulo}</h3>
       <p>
         <span className="rotulo">{t.valor}: </span>
         <span className="valor">{exibido}</span>
@@ -78,13 +77,15 @@ export default function Achado({
       )}
       {!!a.explicacoes_alternativas?.length && (
         <p className="discreto">
-          {t.alternativas}: {a.explicacoes_alternativas.join(" ")}
+          {t.alternativas}: <TextoComLinks texto={a.explicacoes_alternativas.join(" ")} />
         </p>
       )}
       {!!(a.limitacoes?.length || a.marcas?.length) && (
         <ul className="discreto">
           {[...(a.limitacoes ?? []), ...(a.marcas ?? [])].filter(Boolean).map((x, i) => (
-            <li key={i}>{x}</li>
+            <li key={i}>
+              <TextoComLinks texto={x} />
+            </li>
           ))}
         </ul>
       )}

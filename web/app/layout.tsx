@@ -23,10 +23,28 @@ const temaInicial = `
   }catch(e){}
 })();`;
 
+// Na demonstração estática não há servidor para mandar os cabeçalhos de segurança (next.config.mjs): a mesma
+// política de conteúdo vai numa <meta>. frame-ancestors não vale em <meta> e fica a cargo da hospedagem.
+const ESTATICO = process.env.NEXT_PUBLIC_MODO_ESTATICO === "1";
+const CSP_ESTATICO = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "frame-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        {ESTATICO && <meta httpEquiv="Content-Security-Policy" content={CSP_ESTATICO} />}
+        {ESTATICO && <meta name="referrer" content="strict-origin-when-cross-origin" />}
         <script dangerouslySetInnerHTML={{ __html: temaInicial }} />
       </head>
       <body>

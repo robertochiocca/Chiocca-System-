@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 
 from chiocca.cvm import Fontes
-from chiocca.v2 import armazem, comparativo, exemplos, investigacao, limites, pdf_investigacao
+from chiocca.v2 import armazem, comparativo, exemplos, investigacao, limites, modelos, pdf_investigacao
 from tests.test_base import mundo  # noqa: F401  (fixture)
 from tests.test_v2_armazem import mundo_c1  # noqa: F401  (fixture)
 
@@ -36,6 +36,24 @@ def test_investigacao_segue_o_contrato(mundo_c1: tuple[Fontes, armazem.FontesArm
     pdf = pdf_investigacao.gerar(inv)
     assert pdf == pdf_investigacao.gerar(json.loads(json.dumps(inv)))  # o PDF sai só do JSON, sempre igual
     assert pdf.startswith(b"%PDF-1.4")
+
+
+def test_grupo_vazio_no_corte_vira_nulo(
+    mundo_c1: tuple[Fontes, armazem.FontesArmazem], monkeypatch: pytest.MonkeyPatch  # noqa: F811
+) -> None:
+    # no armazém real, companhia sem leitura da DFP na data fica com o grupo NaN no corte; a API respondia 500
+    _, arm = mundo_c1
+    original = investigacao.corte_transversal_completo
+
+    def com_grupo_vazio(*a: Any, **k: Any) -> Any:
+        s, limiares, contas, meta = original(*a, **k)
+        return s, limiares, contas, meta.assign(grupo=float("nan"))
+
+    monkeypatch.setattr(investigacao, "corte_transversal_completo", com_grupo_vazio)
+    monkeypatch.setattr(investigacao, "_CORTES", investigacao.weakref.WeakKeyDictionary())
+    inv = investigacao.gerar(arm, "100", 2020, "2022-04-30", "pt", gerado_em="2026-11-09T00:00:00+00:00")
+    assert inv["empresa"]["grupo"] is None
+    modelos.Investigacao.model_validate(inv)
 
 
 @pytest.mark.parametrize("nome", exemplos.NOMES)

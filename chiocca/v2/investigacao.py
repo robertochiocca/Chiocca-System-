@@ -218,7 +218,9 @@ def gerar(
     if linha_s.empty or linha_m.empty:
         raise ValueError(f"empresa {cd_cvm} sem DFP do exercício {exercicio}")
     r, mt = linha_s.iloc[0], linha_m.iloc[0]
-    grupo, setor, amostra = mt.grupo, mt.setor if isinstance(mt.setor, str) else None, r.amostra
+    # sem leitura da DFP na data, o corte não tem grupo nem setor; o pandas guarda o vazio como NaN, que vira nulo
+    grupo = mt.grupo if isinstance(mt.grupo, str) else None
+    setor, amostra = mt.setor if isinstance(mt.setor, str) else None, r.amostra
     hoje = informacao_de_hoje(mt.situacao_cadastro, lang)
     out: dict[str, Any] = {
         "empresa": _empresa(fontes, cd_cvm, d, mt, setor, grupo, lang),
@@ -277,7 +279,7 @@ def gerar(
             "natureza": {"valor": "calculado", "regra": "calculado", "explicacao": "resumo", "explicacoes_alternativas": "hipotese"},
         })  # fmt: skip
     z = contexto.altman_z2(e.contas, grupo)
-    z_ref = _z2_universo(contas_todas, meta)
+    z_ref = _z2_do_corte(fontes, exercicio, d, contas_todas, meta)
     z_ctx: dict[str, Any] = {"percentil_setor_ano": None, "percentil_grupo_ano": None}
     if z.resultado.ok and z.resultado.valor is not None:
         no_setor = (
@@ -325,7 +327,27 @@ def _corte(fontes: Any, exercicio: int, d: date) -> Any:
     return valor
 
 
-def _empresa(fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grupo: str, lang: str) -> dict[str, Any]:
+_Z2: "weakref.WeakKeyDictionary[Any, dict[tuple[int, date], pd.DataFrame]]" = weakref.WeakKeyDictionary()
+
+
+def _z2_do_corte(fontes: Any, exercicio: int, d: date, contas: pd.DataFrame, meta: pd.DataFrame) -> pd.DataFrame:
+    """O Z'' de todas as não financeiras do corte da data (para o percentil), guardado junto com o corte: é o mesmo
+    para todas as empresas e as duas línguas daquele exercício e data."""
+    try:
+        cache = _Z2.setdefault(fontes, {})
+    except TypeError:
+        return _z2_universo(contas, meta)
+    chave = (exercicio, d)
+    if chave not in cache:
+        if len(cache) >= CORTES_EM_MEMORIA:
+            cache.pop(next(iter(cache)))
+        cache[chave] = _z2_universo(contas, meta)
+    return cache[chave]
+
+
+def _empresa(
+    fontes: Any, cd_cvm: str, d: date, mt: Any, setor: str | None, grupo: str | None, lang: str
+) -> dict[str, Any]:
     """O nome da época vem do FCA entregue até a data; o índice dos dados abertos traz o nome atual."""
     from chiocca.v2.busca import codigos
 

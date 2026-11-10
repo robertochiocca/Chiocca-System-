@@ -1,13 +1,14 @@
 "use client";
 
 // A empresa na data: nome da época, setor, grupo, códigos de negociação e os exercícios com DFP entregue até a data
-// (só até o lacre, 2023). A situação no cadastro de hoje fica numa seção separada, no fim.
+// (só até o lacre, 2023). A situação no cadastro de hoje fica numa seção separada, no fim. Na demonstração estática,
+// o seletor só oferece as datas pré-geradas e a lista só traz os exercícios gerados para a data.
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import InformacaoDeHoje from "@/components/InformacaoDeHoje";
-import SeletorData from "@/components/SeletorData";
-import { api, FalhaApi } from "@/lib/api";
+import SeletorData, { SeletorDataEstatico } from "@/components/SeletorData";
+import { api, FalhaApi, MODO_ESTATICO } from "@/lib/api";
 import { data as fdata } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
 import { DATA_MAXIMA, dataValida } from "@/lib/limites.mjs";
@@ -18,12 +19,19 @@ function Empresa() {
   const p = useSearchParams();
   const router = useRouter();
   const cd = p.get("cd") ?? "";
-  const data = p.get("data") ?? DATA_MAXIMA;
+  const [datasDemo, setDatasDemo] = useState<Record<string, number[]> | null>(null);
+  const datas = datasDemo ? Object.keys(datasDemo) : []; // o índice já traz as datas em ordem cronológica
+  const data = p.get("data") ?? (MODO_ESTATICO ? datas[datas.length - 1] ?? "" : DATA_MAXIMA);
   const [r, setR] = useState<EmpresaNaData | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
+    if (MODO_ESTATICO) api.datasDemo(cd).then((d) => (d ? setDatasDemo(d) : setErro(t.estatico_sem_arquivo))).catch(() => setErro(t.erro));
+  }, [cd, t]);
+
+  useEffect(() => {
     if (!/^\d{1,6}$/.test(cd)) return setErro(t.erro);
+    if (MODO_ESTATICO && !data) return;
     if (!dataValida(data)) return setErro(t.data_invalida);
     setR(null);
     setErro(null);
@@ -36,6 +44,8 @@ function Empresa() {
   if (erro) return <p className="erro">{erro}</p>;
   if (!r) return <p className="discreto">{t.carregando}</p>;
   const e = r.empresa;
+  const exercicios = MODO_ESTATICO && datasDemo ? datasDemo[r.data_referencia] ?? [] : r.exercicios;
+  const irPara = (d: string) => dataValida(d) && router.push(`/empresa?cd=${cd}&data=${d}`);
   return (
     <>
       <p>
@@ -58,12 +68,16 @@ function Empresa() {
         </p>
       </section>
       <section className="cartao form">
-        <SeletorData valor={data} mudar={(d) => dataValida(d) && router.push(`/empresa?cd=${cd}&data=${d}`)} t={t} />
+        {MODO_ESTATICO ? (
+          <SeletorDataEstatico datas={datas} valor={r.data_referencia} mudar={irPara} t={t} idioma={idioma} />
+        ) : (
+          <SeletorData valor={data} mudar={irPara} t={t} />
+        )}
       </section>
       <h2>{t.exercicios}</h2>
       <p className="discreto">{fdata(r.data_referencia, idioma)}</p>
       <ul className="lista cartao">
-        {r.exercicios
+        {exercicios
           .slice()
           .reverse()
           .map((ex) => (

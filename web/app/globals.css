@@ -44,13 +44,22 @@ ul{padding-left:20px}
 .aviso{background:var(--warn-soft);color:var(--ink);border-top:1px solid var(--line);font-size:.86rem;padding:6px 0}
 .aviso strong{color:var(--warn)}
 .demo{background:var(--brand-soft);font-size:.86rem;padding:6px 0;border-top:1px solid var(--line)}
+.rotulo-tema,.aviso-menu{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:760px){
-  .menu-btn{display:inline-block}
-  .nav{display:none;position:absolute;left:0;right:0;top:56px;flex-direction:column;align-items:stretch;
-    background:var(--paper);border-bottom:1px solid var(--line);padding:10px 18px}
+  .menu-btn{display:inline-block;min-width:44px;min-height:40px}
+  /* Menu do celular: painel de tela inteira, fundo sólido, cobre todo o conteúdo abaixo da barra. */
+  .nav{display:none;position:fixed;left:0;right:0;top:56px;bottom:0;z-index:50;flex-direction:column;align-items:stretch;
+    gap:8px;background:var(--paper);border-top:1px solid var(--line);padding:16px 18px;overflow-y:auto}
   .nav.aberto{display:flex}
+  .nav a,.nav button{font-size:1.05rem;padding:12px 14px;text-align:left;border:1px solid var(--line);background:var(--card)}
+  .botao-tema{display:flex;gap:10px;align-items:center}
+  .rotulo-tema,.aviso-menu{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
+  .aviso-menu{margin-top:auto;font-size:.86rem;background:var(--warn-soft);border-radius:8px;padding:10px 12px}
   h1{font-size:1.35rem}
 }
+html.menu-aberto{overflow:hidden}
+/* backdrop-filter prenderia o painel fixo dentro da barra: com o menu aberto, a barra fica com fundo sólido. */
+html.menu-aberto .topo{backdrop-filter:none;background:var(--paper)}
 
 main{padding-bottom:48px}
 footer{border-top:1px solid var(--line);padding:18px 0;color:var(--dead);font-size:.85rem}
@@ -90,4 +99,5 @@ details summary{cursor:pointer;color:var(--brand)}
 .grafico text{fill:var(--ink-2);font-size:10px}
 /* evidência aberta: o cartão ocupa a linha inteira da grade, para a tabela caber */
 .grade>.cartao:has(.evidencias-abertas){grid-column:1/-1}
+.aviso-topo{background:var(--brand-soft);border:1px solid var(--brand);border-radius:8px;padding:10px 12px;margin:8px 0 12px}
 .hoje{border:1px dashed var(--dead);border-radius:var(--radius);padding:12px 16px;margin-top:28px;background:transparent}
