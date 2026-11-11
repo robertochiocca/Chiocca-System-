@@ -12,12 +12,14 @@ import pytest
 
 from chiocca.cvm import Fontes
 from chiocca.v2 import armazem, comparativo, exemplos, investigacao, limites, modelos, pdf_investigacao
+from chiocca.v2.leitor import secao as leitor_secao  # noqa: E402  (Fase F1: a seção só vem com o leitor ligado)
 from tests.test_base import mundo  # noqa: F401  (fixture)
 from tests.test_v2_armazem import mundo_c1  # noqa: F401  (fixture)
 
 CAMPOS = {"empresa", "data_referencia", "idioma", "exercicios", "achados", "mudancas", "o_que_se_sabia",
           "qualidade_dos_dados", "parecer_e_auditor", "como_o_motor_foi_testado", "limites", "limitacoes", "evidencias",
           "motor", "informacao_de_hoje", "gerado_em", "aviso"}  # fmt: skip
+CAMPOS |= {"leitura_documental"} if leitor_secao.LIGADO else set()
 
 
 @pytest.mark.parametrize("lang", ["pt", "en"])

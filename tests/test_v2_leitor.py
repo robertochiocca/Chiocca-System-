@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import re
 import zipfile
 from datetime import date
 from pathlib import Path
@@ -378,9 +379,12 @@ def test_interruptor_so_liga_com_a_medida_aprovada() -> None:
         assert not MEDIDA.exists() or not json.loads(MEDIDA.read_text(encoding="utf-8"))["aprovado"]
 
 
-def test_exemplos_sem_a_secao_enquanto_desligada() -> None:
+def test_exemplos_com_a_secao_so_quando_ligada() -> None:
     for arq in (base.RAIZ / "docs" / "exemplos").glob("*.json"):
-        assert "leitura_documental" not in json.loads(arq.read_text(encoding="utf-8")), arq.name
+        inv = json.loads(arq.read_text(encoding="utf-8"))
+        assert ("leitura_documental" in inv) == secao.LIGADO, arq.name
+        if secao.LIGADO:
+            LeituraDocumental.model_validate(inv["leitura_documental"])
 
 
 def test_secao_fica_fora_do_sinal_de_menos() -> None:
@@ -544,7 +548,30 @@ def test_leitor_congelado_nao_mudou() -> None:
     atuais = {str(p.relative_to(base.RAIZ)) for p in (base.RAIZ / "chiocca" / "v2" / "leitor").glob("*.py")}
     assert atuais <= set(congelado["arquivos"]), "arquivo novo no leitor depois do congelamento"
     for arquivo, h in congelado["arquivos"].items():
-        assert (
-            hashlib.sha256((base.RAIZ / arquivo).read_bytes()).hexdigest() == h
-        ), f"{arquivo} mudou depois do congelamento"
+        conteudo = (base.RAIZ / arquivo).read_bytes()
+        if arquivo.endswith("leitor/secao.py"):
+            # o único trecho que muda depois da medida é a linha do interruptor (pré-registro, seção 3)
+            conteudo = re.sub(rb"\nLIGADO = True[^\n]*\n", b"\nLIGADO = False\n", conteudo)
+        assert hashlib.sha256(conteudo).hexdigest() == h, f"{arquivo} mudou depois do congelamento"
     assert version("pypdf") == congelado["pypdf"] and congelado["leitor"] == ler.VERSAO
+
+
+def test_medida_publicada_igual_a_saida_da_avaliacao() -> None:
+    """Os números da medida nos contratos (PT e EN) são os de docs/leitor_medida.json, a saída da avaliação como saiu,
+    feita sobre o leitor congelado, com o SHA-256 de cada caso guardado igual ao do arquivo no repositório."""
+    medida = json.loads(MEDIDA.read_text(encoding="utf-8"))
+    congelado = json.loads((base.RAIZ / "docs" / "leitor_congelado.json").read_text(encoding="utf-8"))
+    assert medida["commit"] == congelado["commit"] and medida["leitor"] == congelado["leitor"]
+    guardados = base.RAIZ / "tests" / "leitor" / "casos" / "guardados"
+    no_repositorio = {hashlib.sha256(a.read_bytes()).hexdigest() for a in guardados.glob("*.json")}
+    assert {c["sha256"] for c in medida["casos"]} == no_repositorio and len(no_repositorio) == medida["totais"]["casos"]
+    t = medida["totais"]
+    pt = (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")
+    en = (base.RAIZ / "docs" / "en" / "contracts.md").read_text(encoding="utf-8")
+    assert f"precisão de {t['precisao']:.3f}".replace(".", ",") in pt and f"precision of {t['precisao']:.3f}" in en
+    assert f"cobertura de {t['cobertura']:.3f}".replace(".", ",") in pt and f"coverage of {t['cobertura']:.3f}" in en
+    assert (
+        f"({t['corretas']} de {t['unidades']} unidades)" in pt and f"({t['corretas']} of {t['unidades']} units)" in en
+    )
+    assert f"({t['encontrados']} de {t['itens']} itens)" in pt and f"({t['encontrados']} of {t['itens']} items)" in en
+    assert f"{t['conferidos']} de {t['trechos_mostrados']} trechos" in pt and t["nomes_vazados"] == 0

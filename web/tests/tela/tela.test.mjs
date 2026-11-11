@@ -275,7 +275,8 @@ for (const idioma of ["pt", "en"]) {
     );
     // índice "Nesta página" com as âncoras; o título não fica debaixo do aviso fixo
     const ancoras = await p.locator("nav.indice a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
-    assert.deepEqual(ancoras, ["#resumo", "#manipulacao", "#risco", "#qualidade", "#parecer", "#mudancas", "#limites", "#hoje"]);
+    // "Notas explicativas" (Fase F1) vem depois de "Parecer e auditor", com a seção ligada
+    assert.deepEqual(ancoras, ["#resumo", "#manipulacao", "#risco", "#qualidade", "#parecer", "#notas", "#mudancas", "#limites", "#hoje"]);
     for (const a of ancoras) assert.equal(await p.locator(a).count(), 1, a);
     await p.locator('nav.indice a[href="#qualidade"]').click();
     await p.waitForFunction(() => Math.abs(document.querySelector("#qualidade").getBoundingClientRect().top) < 200);

@@ -316,18 +316,36 @@ LEITURA = {
            "tipo": "Type of opinion: {t}", "formulario": "Reference Form", "pagina": "p. {p}",
            "negativa": "negative mention", "original": "original excerpt in Portuguese"},
 }  # fmt: skip
+ROTULOS_LEITURA = {
+    "pt": {"controladora": "controladora", "controle_conjunto_ou_influencia": "controle conjunto ou influência significativa",
+           "controladas": "controladas", "coligadas": "coligadas", "joint_ventures": "joint ventures",
+           "pessoal_chave": "pessoal-chave da administração", "outras_partes": "outras partes relacionadas",
+           "montante": "montante das transações", "saldos": "saldos", "termos_e_condicoes": "termos e condições",
+           "garantias": "garantias", "provisao_pcld": "provisão para créditos de liquidação duvidosa",
+           "perdas_incobraveis": "dívidas incobráveis", "base_para_ressalva": "base para a opinião", "enfase": "ênfase",
+           "incerteza_continuidade": "incerteza sobre a continuidade operacional",
+           "principais_assuntos": "principais assuntos de auditoria", "outros_assuntos": "outros assuntos"},
+    "en": {"controladora": "parent company", "controle_conjunto_ou_influencia": "joint control or significant influence",
+           "controladas": "subsidiaries", "coligadas": "associates", "joint_ventures": "joint ventures",
+           "pessoal_chave": "key management personnel", "outras_partes": "other related parties",
+           "montante": "amount of the transactions", "saldos": "balances", "termos_e_condicoes": "terms and conditions",
+           "garantias": "guarantees", "provisao_pcld": "allowance for doubtful debts", "perdas_incobraveis": "bad debts",
+           "base_para_ressalva": "basis for the opinion", "enfase": "emphasis of matter",
+           "incerteza_continuidade": "material uncertainty related to going concern",
+           "principais_assuntos": "key audit matters", "outros_assuntos": "other matters"},
+}  # fmt: skip
 TIPOS_OPINIAO = {"pt": {"sem_ressalva": "sem ressalva", "com_ressalva": "com ressalva", "adversa": "adversa",
                         "abstencao": "abstenção de opinião"},
                  "en": {"sem_ressalva": "unqualified", "com_ressalva": "qualified", "adversa": "adverse",
                         "abstencao": "disclaimer of opinion"}}  # fmt: skip
 
 
-def _trecho(x: dict[str, Any], t: dict[str, str]) -> str:
+def _trecho(x: dict[str, Any], t: dict[str, str], lang: str) -> str:
     if x["omitido"]:
         return f"- {x['aviso_omissao']}"
     onde = [t["pagina"].format(p=x["pagina"])] if x["pagina"] is not None else []
     marcas = onde + ([t["negativa"]] if x.get("negacao") else []) + ([t["original"]] if t["original"] else [])
-    rotulo = f"[{x['rotulo']}] " if x.get("rotulo") else ""
+    rotulo = f"[{ROTULOS_LEITURA[lang].get(x['rotulo'], x['rotulo'])}] " if x.get("rotulo") else ""
     return f"- {rotulo}“{x['texto']}” ({', '.join(marcas)})" if marcas else f"- {rotulo}“{x['texto']}”"
 
 
@@ -345,18 +363,20 @@ def _leitura(ld: dict[str, Any], lang: str) -> list[str]:
         out.append(pr["motivo"])
     if pr.get("nota"):
         out.append(t["nota"].format(t=pr["nota"]["titulo"], a=pr["nota"]["paginas"][0], b=pr["nota"]["paginas"][1]))
-    out += [_trecho(x, t) for x in pr["trechos"]]
+    out += [_trecho(x, t, lang) for x in pr["trechos"]]
     if pr["campos_cpc05_18"]:
-        out += [t["campos"]] + [_trecho(x, t) for x in pr["campos_cpc05_18"]]
+        out += [t["campos"]] + [_trecho(x, t, lang) for x in pr["campos_cpc05_18"]]
     if pr["condicoes_de_mercado"]:
-        out += [t["condicoes"]] + [_trecho(x, t) for x in pr["condicoes_de_mercado"]] + [pr["nota_condicoes"]]
-    out += ["", t["risco"]] + ([rs["motivo"]] if rs.get("motivo") else []) + [_trecho(x, t) for x in rs["trechos"]]
+        out += [t["condicoes"]] + [_trecho(x, t, lang) for x in pr["condicoes_de_mercado"]] + [pr["nota_condicoes"]]
+    out += (
+        ["", t["risco"]] + ([rs["motivo"]] if rs.get("motivo") else []) + [_trecho(x, t, lang) for x in rs["trechos"]]
+    )
     if rs.get("nota"):
         out.append(rs["nota"])
     out += ["", t["relatorio"]] + ([rel["motivo"]] if rel.get("motivo") else [])
     if rel.get("tipo"):
         out.append(t["tipo"].format(t=TIPOS_OPINIAO[lang].get(rel["tipo"], rel["tipo"])))
-    out += [_trecho(x, t) for x in rel["trechos"]]
+    out += [_trecho(x, t, lang) for x in rel["trechos"]]
     out += ["", t["formulario"]] + ([fre["motivo"]] if fre.get("motivo") else [])
     if (fre.get("documento") or {}).get("linhagem"):
         out.append(fre["documento"]["linhagem"])

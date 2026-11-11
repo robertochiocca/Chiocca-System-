@@ -17,7 +17,7 @@ from typing import Any
 
 from chiocca.v2.leitor import enet_documentos, formulario, ler
 
-LIGADO = False
+LIGADO = True  # ligada em 11/11/2026: as quatro metas atingidas nos casos guardados (docs/leitor_medida.json)
 
 TEXTOS: dict[str, dict[str, str]] = {
     "pt": {"fora_do_cache": "documento ainda não baixado do ENET", "sem_notas": "a DFP não tem notas explicativas no ENET",
