@@ -48,6 +48,7 @@ export function milhoes(v: number | null | undefined, idioma: Idioma): string {
 /** Valor em reais, em bilhões, com o sinal de menos antes do símbolo: PT "−R$ 12,6 bilhões", EN "−R$12.6 billion". */
 export function bilhoes(v: number, idioma: Idioma): string {
   const n = decimal(Math.abs(v) / 1e9, idioma, 1);
-  const s = idioma === "pt" ? `R$ ${n} bilhões` : `R$${n} billion`;
+  // espaços sem quebra: "R$" não fica sozinho no fim da linha
+  const s = idioma === "pt" ? `R$ ${n} bilhões` : `R$${n} billion`;
   return v < 0 ? `−${s}` : s;
 }
