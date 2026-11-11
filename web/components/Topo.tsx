@@ -172,7 +172,7 @@ function Barra() {
             <strong>{t.aviso_rotulo}:</strong> {AVISO[idioma]}
           </span>
           <span className="aviso-curto">
-            {t.aviso_curto} <a href="#aviso-completo">{t.saiba_mais}</a>
+            <span className="aviso-curto-frase">{t.aviso_curto}</span> <a href="#aviso-completo">{t.saiba_mais}</a>
           </span>
         </div>
       </div>

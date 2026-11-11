@@ -58,9 +58,11 @@ ul{padding-left:20px}
 .aviso{position:sticky;top:0;z-index:30;background:var(--warn-soft);color:var(--ink);border-bottom:1px solid var(--line);
   font-size:.8rem;line-height:1.35;padding:6px 0}
 .aviso strong{color:var(--warn)}
-/* no celular, só a linha curta, com "Saiba mais" levando ao texto completo no rodapé: nenhum título fica debaixo dele */
+/* no celular, só a linha curta, com "Saiba mais" levando ao texto completo no rodapé: nenhum título fica debaixo dele.
+   Fica numa linha em qualquer fonte: "Saiba mais" nunca encolhe; se a frase não couber, o fim dela vira "…" */
 .aviso-curto{display:none}
-.aviso-curto a{font-weight:600}
+.aviso-curto a{font-weight:600;flex:none}
+.aviso-curto-frase{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .faixa-demo{background:var(--brand-soft);font-size:.88rem;padding:8px 0;border-bottom:1px solid var(--line)}
 
 /* menu do celular: diálogo de tela cheia, fundo sólido */
@@ -87,7 +89,7 @@ footer{border-top:1px solid var(--line);padding:18px 0;color:var(--dead);font-si
   .aviso{font-size:.72rem;padding:5px 0}
   .aviso>.wrap{padding:0 12px}
   .aviso-longo{display:none}
-  .aviso-curto{display:inline}
+  .aviso-curto{display:flex;align-items:baseline;gap:6px;white-space:nowrap}
   h1{font-size:1.38rem}
 }
 
@@ -186,13 +188,14 @@ details>summary::-webkit-details-marker{margin-right:6px}
 
 /* resumo */
 .grade-resumo{display:grid;gap:14px;grid-template-columns:1.4fr 1fr 1fr 1.25fr}
-.grade-resumo>.cartao{margin:0}
+.grade-resumo>.cartao{margin:0;min-width:0}
 .cartao-caso{background:var(--brand-soft);border-color:var(--brand)}
 .caso+.caso{border-top:1px solid var(--line);margin-top:8px;padding-top:8px}
 .nao-somam{margin-top:12px;font-weight:600}
 /* rótulo pequeno em caixa alta no alto de cada cartão do resumo; no risco e na qualidade, o número grande numa linha
    própria e uma linha curta embaixo */
-.rotulo-cartao{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px}
+.rotulo-cartao{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px;
+  overflow-wrap:anywhere}
 .numero-resumo{font-size:1.7rem;font-weight:700;line-height:1.15;margin:2px 0 6px;font-variant-numeric:tabular-nums}
 .linha-resumo{font-size:.92rem;color:var(--ink-2);margin:0}
 .como-ler{margin-top:6px}

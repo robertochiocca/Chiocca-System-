@@ -476,6 +476,15 @@ for (const idioma of ["pt", "en"]) {
     );
     const fixo = await p.locator(".aviso").boundingBox();
     assert.ok(fixo.height < 32, `aviso do celular em mais de uma linha: ${fixo.height}`);
+    // "Saiba mais" inteiro na tela, em qualquer fonte (se a frase não couber, o fim dela vira "…")
+    const saiba = await p.locator(".aviso .aviso-curto a").boundingBox();
+    assert.ok(saiba.x + saiba.width <= 390 && saiba.y >= fixo.y && saiba.y + saiba.height <= fixo.y + fixo.height, JSON.stringify(saiba));
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390, "sem rolagem horizontal");
+    // nem no celular estreito (320 px): o aviso continua numa linha e nada passa da largura da tela
+    await p.setViewportSize({ width: 320, height: 640 });
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 320, "rolagem horizontal em 320 px");
+    assert.ok((await p.locator(".aviso").boundingBox()).height < 32, "aviso em mais de uma linha em 320 px");
+    await p.setViewportSize({ width: 390, height: 844 });
     // nenhum título fica debaixo do aviso fixo: cada âncora do índice
     const ancoras = await p.locator("nav.indice a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
     assert.ok(ancoras.length >= 8);
