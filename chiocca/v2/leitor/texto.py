@@ -7,6 +7,7 @@ assim, no texto da página de onde veio. Página sem camada de texto não é lid
 from __future__ import annotations
 
 import io
+import logging
 import re
 import unicodedata
 from dataclasses import dataclass, field
@@ -39,11 +40,32 @@ class Paginas:
     extrator: str = f"pypdf {pypdf.__version__} (modo layout)"
 
 
+class _Avisos(logging.Handler):
+    def __init__(self) -> None:
+        super().__init__(logging.WARNING)
+        self.mensagens: list[str] = []
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.mensagens.append(record.getMessage())
+
+
 def _texto_da_pagina(pagina: pypdf.PageObject) -> str:
+    """Modo layout (mantém as colunas das tabelas); na página com texto girado, que o modo layout deixa de fora, ou
+    quando ele falha, o modo simples."""
+    avisos = _Avisos()
+    registro = logging.getLogger("pypdf")
+    registro.addHandler(avisos)
+    propagar, registro.propagate = registro.propagate, False
     try:
-        return pagina.extract_text(extraction_mode="layout") or ""
+        texto = pagina.extract_text(extraction_mode="layout") or ""
+        if any("Rotated text" in m for m in avisos.mensagens):
+            return pagina.extract_text() or ""
+        return texto
     except Exception:  # noqa: BLE001 - o modo layout falha em alguns PDFs; o modo simples ainda dá o texto
         return pagina.extract_text() or ""
+    finally:
+        registro.removeHandler(avisos)
+        registro.propagate = propagar
 
 
 def paginas_do_pdf(conteudo: bytes) -> Paginas:

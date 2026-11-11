@@ -467,3 +467,40 @@ def test_contratos_com_o_numero_de_casos_de_desenvolvimento() -> None:
     n = len(list(CASOS.glob("*.json")))
     assert f"{n} casos de desenvolvimento" in (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")
     assert f"{n} development cases" in (base.RAIZ / "docs" / "en" / "contracts.md").read_text(encoding="utf-8")
+
+
+def test_parecer_titulo_com_complemento_e_formato_antigo() -> None:
+    novo = (
+        "Opinião com ressalva sobre as demonstrações contábeis individuais e consolidadas Examinamos as demonstrações. "
+        "Base para opinião com ressalva sobre as demonstrações contábeis individuais e consolidadas A Companhia não "
+        "registrou a provisão para perdas. Responsabilidades da administração A administração é responsável."
+    )
+    antigo = (
+        "Examinamos as demonstrações financeiras. Acreditamos que a evidência de auditoria obtida é suficiente e "
+        "apropriada para fundamentar nossa opinião. A companhia não vem reconhecendo os encargos financeiros sobre "
+        "empréstimos. Opinião Em nossa opinião, exceto quanto aos efeitos do parágrafo anterior, as demonstrações "
+        "representam adequadamente a posição patrimonial."
+    )
+    tipo, trechos = parecer.ler("Relatório do Auditor Independente", novo)
+    assert tipo == "com_ressalva" and [t.rotulo for t in trechos] == ["base_para_ressalva"]
+    tipo, trechos = parecer.ler("Relatório do Auditor Independente - Com Ressalva", antigo)
+    assert [t.rotulo for t in trechos] == ["base_para_ressalva"]
+    assert trechos[0].texto.startswith("A companhia não vem reconhecendo os encargos")
+    assert texto.confere(trechos[0].texto, antigo)
+    # sem ressalva, o formato antigo não inventa base para ressalva
+    assert parecer.ler("Relatório do Auditor Independente - Sem Ressalva", antigo)[1] == []
+
+
+def test_texto_girado_usa_o_modo_simples() -> None:
+    import logging
+
+    class Pagina:
+        def extract_text(self, extraction_mode: str = "plain") -> str:
+            if extraction_mode == "layout":
+                logging.getLogger("pypdf._text_extraction").warning(
+                    "Rotated text discovered. Output will be incomplete."
+                )
+                return "parcial"
+            return "texto completo com a tabela girada"
+
+    assert texto._texto_da_pagina(Pagina()) == "texto completo com a tabela girada"  # type: ignore[arg-type]

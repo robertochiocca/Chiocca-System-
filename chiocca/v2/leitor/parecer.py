@@ -15,8 +15,10 @@ from chiocca.v2.leitor.texto import normaliza
 from chiocca.v2.leitor.trechos import Trecho, corta
 
 _M = r"(?=\s+[A-ZÀ-Ý0-9\"“(])"  # o título é seguido de frase que começa com maiúscula
+# complemento que alguns títulos trazem: "Opinião com ressalva sobre as demonstrações contábeis individuais e consolidadas"
+_Q = r"(?: sobre as demonstrações (?:financeiras|contábeis)(?: individuais(?: e consolidadas)?| consolidadas)?)?"
 SECOES: list[tuple[str, str]] = [
-    ("base_para_ressalva", r"Base para (?:opini[ãa]o com ressalvas?|opini[ãa]o adversa|abstenç[ãa]o de opini[ãa]o)"),
+    ("base_para_ressalva", r"Base para (?:opini[ãa]o com ressalvas?|opini[ãa]o adversa|abstenç[ãa]o de opini[ãa]o)" + _Q),
     ("incerteza_continuidade", r"Incerteza (?:relevante|significativa) (?:relacionada (?:com|à) a? ?)?"
                                r"continuidade operacional"),
     ("enfase", r"(?:Parágrafos? de [êÊ]nfases?|Ênfases?)(?: [-–—] [^.]{0,80}?)?"),
@@ -24,7 +26,7 @@ SECOES: list[tuple[str, str]] = [
     ("outros_assuntos", r"Outros [Aa]ssuntos(?: [-–—] [^.]{0,80}?)?"),
 ]  # fmt: skip
 # Títulos que só encerram a seção anterior.
-FIM = (r"Opini[ãa]o(?: com ressalvas?| adversa)?|Abstenç[ãa]o de opini[ãa]o|Base para (?:a )?opini[ãa]o|"
+FIM = (r"Opini[ãa]o(?: com ressalvas?| adversa)?" + _Q + r"|Abstenç[ãa]o de opini[ãa]o" + _Q + r"|Base para (?:a )?opini[ãa]o" + _Q + r"|"
        r"Outras informações que acompanham|Responsabilidades? da (?:administração|diretoria)|"
        r"Responsabilidades? do auditor|Responsabilidades dos auditores|"
        r"Valores correspondentes|Auditoria dos valores correspondentes")  # fmt: skip
@@ -37,11 +39,11 @@ def tipo(titulo: str | None, texto: str) -> str | None:
     for valor, padrao in TIPOS_NO_TITULO:
         if re.search(padrao, t):
             return valor
-    if re.search(r"Opini[ãa]o com ressalva" + _M, texto):
+    if re.search(r"Opini[ãa]o com ressalva" + _Q + _M, texto):
         return "com_ressalva"
-    if re.search(r"Opini[ãa]o adversa" + _M, texto):
+    if re.search(r"Opini[ãa]o adversa" + _Q + _M, texto):
         return "adversa"
-    if re.search(r"Abstenç[ãa]o de opini[ãa]o" + _M, texto):
+    if re.search(r"Abstenç[ãa]o de opini[ãa]o" + _Q + _M, texto):
         return "abstencao"
     if re.search(r"Opini[ãa]o" + _M, texto) or "Em nossa opinião" in texto:
         return "sem_ressalva"
@@ -68,4 +70,19 @@ def ler(titulo: str | None, texto: str) -> tuple[str | None, list[Trecho]]:
             continue
         texto_trecho, cortado = corta(corpo)
         trechos.append(Trecho("parecer", rotulo, None, texto_trecho, cortado=cortado))
-    return tipo(titulo, t), trechos
+    tp = tipo(titulo, t)
+    if tp in ("com_ressalva", "adversa", "abstencao") and not any(x.rotulo == "base_para_ressalva" for x in trechos):
+        antigo = _base_no_formato_antigo(t)
+        if antigo:
+            texto_trecho, cortado = corta(antigo)
+            trechos.insert(0, Trecho("parecer", "base_para_ressalva", None, texto_trecho, cortado=cortado))
+    return tp, trechos
+
+
+def _base_no_formato_antigo(t: str) -> str | None:
+    """Relatório no formato antigo, sem o título "Base para opinião com ressalva": o parágrafo da ressalva fica entre
+    "...para fundamentar nossa opinião." e o título "Opinião"."""
+    m = re.search(
+        r"fundamentar (?:a )?nossa opini[ãa]o(?: com ressalvas?| adversa)?\.\s+(.{40,2500}?)\s+Opini[ãa]o" + _M, t
+    )
+    return m.group(1).strip() if m else None
