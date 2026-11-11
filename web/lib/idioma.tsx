@@ -5,10 +5,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { TEXTOS, type Textos } from "./textos";
 import type { Idioma } from "./tipos";
 
-const Contexto = createContext<{ idioma: Idioma; t: Textos; trocar: () => void }>({
+const Contexto = createContext<{ idioma: Idioma; t: Textos; trocar: () => void; definir: (i: Idioma) => void }>({
   idioma: "pt",
   t: TEXTOS.pt,
   trocar: () => {},
+  definir: () => {},
 });
 
 export function ProvedorIdioma({ children }: { children: React.ReactNode }) {
@@ -22,14 +23,16 @@ export function ProvedorIdioma({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = idioma === "pt" ? "pt-BR" : "en";
   }, [idioma]);
-  const trocar = () => {
-    const novo: Idioma = idioma === "pt" ? "en" : "pt";
+  const definir = (novo: Idioma) => {
     setIdioma(novo);
     try {
       localStorage.setItem("chiocca-idioma", novo);
     } catch {}
   };
-  return <Contexto.Provider value={{ idioma, t: TEXTOS[idioma] as Textos, trocar }}>{children}</Contexto.Provider>;
+  const trocar = () => definir(idioma === "pt" ? "en" : "pt");
+  return (
+    <Contexto.Provider value={{ idioma, t: TEXTOS[idioma] as Textos, trocar, definir }}>{children}</Contexto.Provider>
+  );
 }
 
 export function useIdioma() {

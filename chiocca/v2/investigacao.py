@@ -28,7 +28,7 @@ import pandas as pd
 from chiocca import base, variaveis
 from chiocca.sinais.mscore import COEFICIENTES
 from chiocca.sinais.resultado import Resultado as ResultadoV1
-from chiocca.sinais_amostra import CORTE_M, SPREAD_PP
+from chiocca.sinais_amostra import CORTE_M, PERCENTIL, SPREAD_PP
 from chiocca.v2 import comparativo, confianca, contexto, limites
 from chiocca.v2 import conferencias as cf
 from chiocca.v2.armazem import capitalizacao
@@ -44,7 +44,13 @@ from chiocca.v2.linhagem import (
     aplicar_nao_preenchido,
     ficha_v1,
 )
-from chiocca.v2.na_data import FontesV1, corte_transversal_completo, exercicio_na_data, sinais_da_empresa
+from chiocca.v2.na_data import (
+    FontesV1,
+    corte_transversal_completo,
+    denominacao_hoje,
+    exercicio_na_data,
+    sinais_da_empresa,
+)
 from chiocca.v2.validade import Motivo, Resultado, de_resultado_v1
 
 AVISO = {
@@ -102,6 +108,8 @@ TEXTOS = {
         "regra_dpo": "variação do DPO no decil superior do ano entre as não financeiras (≥ percentil 90 dos calculáveis na data: {lim} dias)",
         "regra_juro": "juro implícito acima do CDI médio do ano + {spread} p.p. (pré-registro, seção 4)",
         "regra_pnr": "peso não recorrente no decil superior do ano entre as financeiras (≥ percentil 90 dos calculáveis na data: {lim})",
+        "regra_dpo_geral": "variação do DPO no decil superior do ano entre as não financeiras (≥ percentil {p} dos calculáveis na data)",
+        "regra_pnr_geral": "peso não recorrente no decil superior do ano entre as financeiras (≥ percentil {p} dos calculáveis na data)",
         "sem_alerta": "não dispara alerta",
         "fallback_setor": "percentil no universo das não financeiras: o setor tem menos de 10 empresas com o valor",
         "parecer_enet": "a seção de pareceres dos dados abertos é só da última versão da DFP; a versão usada veio do ENET",
@@ -124,6 +132,8 @@ TEXTOS = {
         "regra_dpo": "DPO change in the year's top decile among non-financial companies (≥ 90th percentile of computable values on the date: {lim} days)",
         "regra_juro": "implied interest rate above the year's average CDI rate + {spread} p.p. (pre-registration, section 4)",
         "regra_pnr": "non-recurring weight in the year's top decile among financial companies (≥ 90th percentile of computable values on the date: {lim})",
+        "regra_dpo_geral": "DPO change in the year's top decile among non-financial companies (≥ {p}th percentile of computable values on the date)",
+        "regra_pnr_geral": "non-recurring weight in the year's top decile among financial companies (≥ {p}th percentile of computable values on the date)",
         "sem_alerta": "does not trigger alerts",
         "fallback_setor": "percentile in the non-financial universe: the sector has fewer than 10 companies with a value",
         "parecer_enet": "the open-data opinions section is only for the latest DFP version; the version used came from ENET",
@@ -221,7 +231,7 @@ def gerar(
     # sem leitura da DFP na data, o corte não tem grupo nem setor; o pandas guarda o vazio como NaN, que vira nulo
     grupo = mt.grupo if isinstance(mt.grupo, str) else None
     setor, amostra = mt.setor if isinstance(mt.setor, str) else None, r.amostra
-    hoje = informacao_de_hoje(mt.situacao_cadastro, lang)
+    hoje = informacao_de_hoje(mt.situacao_cadastro, lang, denominacao_hoje(fontes, cd_cvm))
     out: dict[str, Any] = {
         "empresa": _empresa(fontes, cd_cvm, d, mt, setor, grupo, lang),
         "data_referencia": d.isoformat(), "idioma": lang,
@@ -352,18 +362,20 @@ def _empresa(
     from chiocca.v2.busca import codigos
 
     nome = fontes.nome_na_data(cd_cvm, d) if hasattr(fontes, "nome_na_data") else None
+    anteriores = fontes.nomes_anteriores(cd_cvm, d) if hasattr(fontes, "nomes_anteriores") else []
     origem = "fca" if nome else "indice_dfp"
     cods, motivo = codigos(fontes, cd_cvm, d)
     return {"cd_cvm": cd_cvm, "cnpj": mt.cnpj, "denominacao": nome or mt.denominacao, "origem_denominacao": origem,
             "setor": setor, "origem_setor": mt.origem_setor, "grupo": grupo, "codigos_negociacao": cods,
-            "motivo_codigos_negociacao": motivo}  # fmt: skip
+            "motivo_codigos_negociacao": motivo, "nomes_anteriores": anteriores}  # fmt: skip
 
 
-def informacao_de_hoje(situacao_cadastro: Any, lang: str) -> dict[str, Any]:
-    """O que vem do cadastro de hoje fica fora da visão "como era" (regra de 09/11/2026, docs/contratos.md)."""
+def informacao_de_hoje(situacao_cadastro: Any, lang: str, denominacao: str | None = None) -> dict[str, Any]:
+    """O que vem do cadastro de hoje fica fora da visão "como era" (regra de 09/11/2026, docs/contratos.md): a situação
+    e, desde a Fase E2, o nome de hoje, que só aparece aqui."""
     t = TEXTOS[lang]
     return {"titulo": t["hoje_titulo"], "situacao_cadastro": None if pd.isna(situacao_cadastro) else str(situacao_cadastro),
-            "fonte": t["hoje_fonte"]}  # fmt: skip
+            "denominacao": denominacao, "fonte": t["hoje_fonte"]}  # fmt: skip
 
 
 def _alerta(r: pd.Series, sinal: str) -> bool | None:
@@ -372,6 +384,36 @@ def _alerta(r: pd.Series, sinal: str) -> bool | None:
         return None
     v = r.get(col)
     return None if v is None or pd.isna(v) else bool(v)
+
+
+REGRAS_DO_ESTUDO_1 = (("mscore", "nao_financeira"), ("dpo", "nao_financeira"), ("juro", "nao_financeira"),
+                      ("peso_nao_recorrente", "financeira"))  # fmt: skip
+ROTULOS_REGRAS = {
+    "mscore": ("M-score de Beneish", "Beneish M-score"),
+    "dpo": ("Salto do prazo de pagamento a fornecedores (DPO)", "Jump in days payable outstanding (DPO)"),
+    "juro": ("Juro implícito menos CDI médio", "Implied interest minus average CDI"),
+    "peso_nao_recorrente": ("Peso de ganhos não recorrentes", "Share of non-recurring gains"),
+}
+
+
+def regras_do_estudo_1() -> list[dict[str, Any]]:
+    """As quatro regras de alerta do estudo 1 (pré-registro, seção 4), com o corte, nas duas línguas: as mesmas
+    constantes e os mesmos textos da investigação. Nos sinais de decil, o corte depende do ano e da data."""
+    out = []
+    for sinal, grupo in REGRAS_DO_ESTUDO_1:
+        regra = {}
+        for k, lang in enumerate(("pt", "en")):
+            t = TEXTOS[lang]
+            if sinal == "mscore":
+                regra[lang] = t["regra_mscore"].format(corte=decimal(CORTE_M, lang, 2))
+            elif sinal == "juro":
+                regra[lang] = t["regra_juro"].format(spread=decimal(SPREAD_PP, lang, 0))
+            else:
+                chave = "regra_dpo_geral" if sinal == "dpo" else "regra_pnr_geral"
+                regra[lang] = t[chave].format(p=decimal(100 * PERCENTIL, lang, 0))
+        out.append({"sinal": sinal, "grupo": grupo, "rotulo": {"pt": ROTULOS_REGRAS[sinal][0], "en": ROTULOS_REGRAS[sinal][1]},
+                    "regra": regra})  # fmt: skip
+    return out
 
 
 def _regra(sinal: str, t: dict[str, str], limiares: pd.DataFrame, exercicio: int, lang: str) -> str | None:

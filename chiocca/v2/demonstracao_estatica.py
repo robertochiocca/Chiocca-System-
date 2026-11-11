@@ -8,8 +8,10 @@ cada um desses exercícios cuja DFP já tinha sido entregue até ela. Companhia 
 2010 a 2023 (ou não está informado) entra só com 31/12/2024 e o último exercício entregue até essa data.
 
 Os arquivos são a própria saída da API (`chiocca.v2.api`, chamada em processo, com o modo demonstração ligado), nas
-duas línguas: a investigação em JSON e em PDF, a empresa na data e "como o motor foi testado". O `indice.json`
-reúne, em ordem alfabética, as companhias, os nomes conhecidos até 31/12/2024 (para a busca por nome) e as datas.
+duas línguas: a investigação em JSON e em PDF, a empresa na data e "como o motor foi testado". O `indice.json` é a
+rota /api/v1/demonstracao (`chiocca.v2.demonstracao`): em ordem alfabética, as companhias com o caso do gabarito,
+os nomes conhecidos até 31/12/2024 (para a busca por nome), as datas com o rótulo de cada uma e os destaques da
+página inicial; o plano da geração sai dela.
 Um teste confere que os arquivos são iguais à saída da API para as mesmas entradas.
 
 Os arquivos ficam em web/public/demo/ (fora do git: os PDFs não entram no repositório).
@@ -143,23 +145,18 @@ def gerar_grupo(args: tuple[str, int, list[str], str, Callable[[], Any] | None])
     return escritos
 
 
-def gerar(destino: Path = DESTINO, processos: int = 1, fabrica: Callable[[], Any] | None = None,
-          plano_pronto: Plano | None = None) -> dict[str, Any]:  # fmt: skip
-    """Gera a demonstração estática em `destino`. `fabrica` (testes) devolve as fontes; sem ela, o armazém real."""
-    from chiocca.v2 import api
-
+def gerar(destino: Path = DESTINO, processos: int = 1, fabrica: Callable[[], Any] | None = None) -> dict[str, Any]:
+    """Gera a demonstração estática em `destino`. `fabrica` (testes) devolve as fontes; sem ela, o armazém real. O
+    plano (companhias e datas) e o `indice.json` vêm da rota /api/v1/demonstracao (chiocca.v2.demonstracao)."""
     inicio = time.monotonic()
     destino = Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     global _CLIENTE
     _CLIENTE = None
     c = _cliente(fabrica)
-    fontes = c.app.state.fontes() if hasattr(c.app.state, "fontes") else None
-    if plano_pronto is None:
-        if fontes is None:
-            raise RuntimeError("sem fontes para montar o plano")
-        gab = pd.read_csv(base.RAIZ / "data" / "gabarito_casos.csv", dtype=str)
-        plano_pronto = plano(fontes, api.empresas_da_demonstracao(), gab)
+    r_indice = c.get("/api/v1/demonstracao")
+    indice = _json(r_indice)
+    plano_pronto: Plano = {e["cd_cvm"]: e["datas"] for e in r_indice.json()["empresas"]}
     escritos: list[tuple[str, int]] = []
     # empresa na data, nas duas línguas (rápido: só a própria companhia)
     for cd, datas in plano_pronto.items():
@@ -184,7 +181,7 @@ def gerar(destino: Path = DESTINO, processos: int = 1, fabrica: Callable[[], Any
     else:
         for tarefa in tarefas:
             escritos += gerar_grupo(tarefa)
-    escritos.append(("indice.json", _grava(destino, "indice.json", _indice(c, plano_pronto))))
+    escritos.append(("indice.json", _grava(destino, "indice.json", indice)))
     manifesto = {
         "gerado_por": "python -m chiocca.v2.demonstracao_estatica",
         "empresas": len(plano_pronto),
@@ -201,30 +198,6 @@ def gerar(destino: Path = DESTINO, processos: int = 1, fabrica: Callable[[], Any
 def _zera_cliente() -> None:
     global _CLIENTE
     _CLIENTE = None
-
-
-def _indice(c: Any, p: Plano) -> bytes:
-    """Companhias em ordem alfabética, com os nomes conhecidos até 31/12/2024 (para a busca) e as datas."""
-    fontes = c.app.state.fontes()
-    empresas = []
-    for cd, datas in p.items():
-        ultima = max(datas)
-        e = c.get(f"/api/v1/empresas/{cd}", params={"data_referencia": ultima, "idioma": "pt"}).json()["empresa"]
-        nomes = set(fontes.consulta("SELECT DISTINCT nome FROM nomes WHERE cd_cvm = ? AND CAST(dt_receb AS DATE) <= ?",
-                                    [cd, DATA_REFERENCIA_MAXIMA]).nome.dropna())  # fmt: skip
-        nomes |= {e["denominacao"]} if e["denominacao"] else set()
-        campos = (
-            "cd_cvm",
-            "cnpj",
-            "denominacao",
-            "origem_denominacao",
-            "codigos_negociacao",
-            "motivo_codigos_negociacao",
-        )
-        empresas.append({k: e[k] for k in campos} | {"nomes": sorted(nomes), "datas": datas})
-    empresas.sort(key=lambda x: (busca.normaliza(str(x["denominacao"])), x["cd_cvm"]))
-    corpo = {"gerado_por": "python -m chiocca.v2.demonstracao_estatica", "ordem": busca.ORDEM, "empresas": empresas}
-    return (json.dumps(corpo, ensure_ascii=False, indent=1) + "\n").encode("utf-8")
 
 
 def main(argv: list[str]) -> None:

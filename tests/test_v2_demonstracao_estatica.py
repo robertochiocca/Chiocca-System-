@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 
 import pandas as pd
 import pytest
@@ -14,7 +13,7 @@ from fastapi.testclient import TestClient
 
 from chiocca import base
 from chiocca.cvm import Fontes
-from chiocca.v2 import api, armazem, demonstracao_estatica, pdf_investigacao
+from chiocca.v2 import api, armazem, demonstracao, demonstracao_estatica, pdf_investigacao
 from chiocca.v2.linhagem import Localizador
 from tests.test_base import mundo  # noqa: F401  (fixture)
 from tests.test_v2_api import sem_rede  # noqa: F401  (fixture)
@@ -34,6 +33,14 @@ def test_plano_com_as_datas_do_caso(mundo_c1: tuple[Fontes, armazem.FontesArmaze
     assert list(p["200"]) == ["2024-12-31"] and len(p["200"]["2024-12-31"]) == 1
 
 
+def _gabarito_da_fixture() -> pd.DataFrame:
+    colunas = ["caso_id", "cd_cvm", "tipo_evento", "periodo_afetado_inicio", "periodo_afetado_fim", "data_publica",
+               "fonte_principal_url"]  # fmt: skip
+    gab = pd.DataFrame([("x", "100", "processo_cvm", "2021", "2021", "2023-01-11", "https://exemplo.org/caso")],
+                       columns=colunas)  # fmt: skip
+    return gab.assign(cd=gab.cd_cvm)
+
+
 def test_arquivos_estaticos_iguais_a_saida_da_api(
     mundo_c1: tuple[Fontes, armazem.FontesArmazem],  # noqa: F811
     sem_rede: None,  # noqa: F811
@@ -42,11 +49,16 @@ def test_arquivos_estaticos_iguais_a_saida_da_api(
 ) -> None:
     _, arm = mundo_c1
     monkeypatch.setattr(api, "empresas_da_demonstracao", lambda: {"100"})
-    plano = {"100": {"2021-04-30": [2020], "2022-04-30": [2020]}}
+    monkeypatch.setattr(demonstracao, "gabarito", _gabarito_da_fixture)
     demo = tmp_path / "demo"  # o tmp_path também guarda o armazém da fixture
-    m = demonstracao_estatica.gerar(demo, fabrica=lambda: arm, plano_pronto=plano)
-    assert m["investigacoes"] == 2 and m["arquivos"] == len(list(demo.rglob("*.*")))
+    m = demonstracao_estatica.gerar(demo, fabrica=lambda: arm)
+    assert m["arquivos"] == len(list(demo.rglob("*.*")))
     with TestClient(api.criar_app(lambda: arm, modo_demonstracao=True)) as c:
+        indice = json.loads((demo / "indice.json").read_text(encoding="utf-8"))
+        assert indice == c.get("/api/v1/demonstracao").json()  # o índice é a própria rota da demonstração
+        plano = {e["cd_cvm"]: e["datas"] for e in indice["empresas"]}
+        assert plano == {"100": {"2021-04-30": [2020], "2022-04-30": [2020, 2021], "2024-12-31": [2020, 2021]}}
+        assert m["investigacoes"] == 5
         for data, exs in plano["100"].items():
             for lang in ("pt", "en"):
                 q = {"data_referencia": data, "idioma": lang}
@@ -60,9 +72,24 @@ def test_arquivos_estaticos_iguais_a_saida_da_api(
                     assert (pasta / f"{lang}.pdf").read_bytes() == pdf_investigacao.gerar(arquivo)  # o PDF sai do JSON
         testado = json.loads((demo / "como-o-motor-foi-testado.json").read_text(encoding="utf-8"))
         assert testado == c.get("/api/v1/como-o-motor-foi-testado").json()
-    indice: dict[str, Any] = json.loads((demo / "indice.json").read_text(encoding="utf-8"))
-    assert [e["cd_cvm"] for e in indice["empresas"]] == ["100"] and indice["empresas"][0]["datas"] == plano["100"]
-    assert indice["ordem"] == "denominacao" and "alerta_v1" not in json.dumps(indice)  # o índice não traz sinal
+    (e,) = indice["empresas"]
+    assert e["rotulos_datas"] == {"2021-04-30": "exercicio_anterior", "2022-04-30": "periodo_afetado",
+                                  "2024-12-31": "depois_da_revelacao"}  # fmt: skip
+    assert e["data_inicial"] == "2022-04-30" and e["casos"][0]["tipo_evento"] == ["processo_cvm"]
+    texto = json.dumps(indice)
+    assert indice["ordem"] == "denominacao" and "alerta" not in texto and "percentil" not in texto  # sem sinal
+    assert "notas" not in texto  # as notas do gabarito citam pessoas e não saem
+
+
+def test_rotulos_das_datas() -> None:
+    casos = [{"periodo_afetado": [2015, 2016], "data_publica": "2018-03-01"}]
+    ex = {"2015-04-30": 2014, "2016-04-30": 2015, "2017-04-30": 2016}
+    datas = [*ex, "2024-12-31"]
+    assert demonstracao.rotulos_das_datas(datas, ex, casos) == {
+        "2015-04-30": "exercicio_anterior", "2016-04-30": "periodo_afetado", "2017-04-30": "periodo_afetado",
+        "2024-12-31": "depois_da_revelacao"}  # fmt: skip
+    sem_data = [{"periodo_afetado": None, "data_publica": None}]
+    assert demonstracao.rotulos_das_datas(["2024-12-31"], {}, sem_data) == {"2024-12-31": "data_maxima"}
 
 
 DEMO = demonstracao_estatica.DESTINO

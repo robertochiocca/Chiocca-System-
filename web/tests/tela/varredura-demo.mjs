@@ -24,6 +24,32 @@ const problemas = {};
 const anota = (chave, x) => (problemas[chave] ??= []).push(x);
 let investigacoes = 0;
 let comAviso = 0;
+// página inicial: as companhias em ordem alfabética, as dez primeiras e o botão para ver todas; busca no plural
+{
+  const contexto = await navegador.newContext();
+  await contexto.addInitScript(() => localStorage.setItem("chiocca-idioma", "pt"));
+  const p = await contexto.newPage();
+  await p.goto(`${url}/`);
+  await p.locator(".linha-companhia").first().waitFor();
+  const n = indice.empresas.length;
+  if ((await p.locator(".linha-companhia").count()) !== Math.min(10, n)) anota("página inicial", "não mostra as dez primeiras");
+  const botao = p.locator("button", { hasText: `Ver as ${n} companhias` });
+  if (n > 10) {
+    if (!(await botao.count())) anota("página inicial", `sem o botão "Ver as ${n} companhias"`);
+    else {
+      await botao.click();
+      if ((await p.locator(".linha-companhia").count()) !== n) anota("página inicial", "o botão não mostra todas");
+    }
+  }
+  const nomes = await p.locator(".linha-companhia > a").allInnerTexts();
+  if (nomes.join("|") !== indice.empresas.map((e) => e.denominacao).join("|")) anota("página inicial", "fora da ordem do índice");
+  await p.locator("form[role=search] input").fill("s.a");
+  await p.locator("form[role=search] button[type=submit]").click();
+  const rotulo = await p.locator(".resultados .rotulo").innerText();
+  if (!/^\d+ empresas encontradas/.test(rotulo)) anota("busca", `concordância: ${rotulo}`);
+  await contexto.close();
+}
+
 for (const idioma of ["pt", "en"]) {
   const contexto = await navegador.newContext();
   await contexto.addInitScript((i) => localStorage.setItem("chiocca-idioma", i), idioma);
@@ -31,7 +57,7 @@ for (const idioma of ["pt", "en"]) {
   p.on("pageerror", (e) => anota(`erro de página (${idioma})`, String(e)));
   for (const e of indice.empresas) {
     await p.goto(`${url}/empresa/?cd=${e.cd_cvm}`);
-    await p.locator("select, .erro").first().waitFor();
+    await p.locator("nav.datas, .erro").first().waitFor();
     if (await p.locator(".erro").count()) anota(`empresa ${e.cd_cvm} ${idioma}`, await p.locator(".erro").innerText());
     for (const [data, exercicios] of Object.entries(e.datas)) {
       for (const ex of exercicios) {

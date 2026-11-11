@@ -45,7 +45,10 @@ test("aviso fixo em todas as telas e informação de hoje separada", () => {
   for (const p of ["app/investigacao/page.tsx", "app/empresa/page.tsx"]) {
     const t = fonte(p);
     const i = t.lastIndexOf("<InformacaoDeHoje");
-    assert.ok(i > 0 && t.slice(i).split("\n")[1].trim() === "</>", `${p}: informação de hoje no fim`);
+    // nada é desenhado depois dela: só o fechamento dos blocos
+    const depois = t.slice(i).split("\n").slice(1).map((l) => l.trim());
+    const fim = depois.findIndex((l) => l.startsWith(");"));
+    assert.ok(i > 0 && depois.slice(0, fim).every((l) => /^<\/(div|>)?>?$/.test(l) || l === "</>"), `${p}: informação de hoje no fim`);
   }
 });
 
@@ -62,7 +65,12 @@ test("textos em PT e EN com as mesmas chaves e sem 'fraude'", async () => {
   const en = t.slice(t.indexOf("  en: {"));
   const chaves = (s) => [...s.matchAll(/^ {4}(\w+):/gm)].map((m) => m[1]).sort();
   assert.deepEqual(chaves(pt), chaves(en));
-  // A única menção é o critério do gabarito, nas palavras do pré-registro (condenação da CVM ou fraude admitida).
-  const semCriterio = t.replace("condenação da CVM ou fraude admitida", "").replace("CVM conviction or admitted fraud", "");
+  // A única menção é o critério do gabarito, nas palavras do pré-registro (condenação da CVM ou fraude admitida),
+  // inclusive como tipo do caso público (TIPOS_DE_CASO: "fraude admitida", "admitted fraud").
+  const semCriterio = t
+    .replace("condenação da CVM ou fraude admitida", "")
+    .replace("CVM conviction or admitted fraud", "")
+    .replace('fraude_confirmada: "fraude admitida"', "")
+    .replace('fraude_confirmada: "admitted fraud"', "");
   assert.ok(!/fraude|fraud|suspeit|suspect/i.test(semCriterio));
 });

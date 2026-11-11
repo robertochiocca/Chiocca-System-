@@ -94,7 +94,39 @@ export function validaComoTestado(c) {
     "como_testado", problemas)) return problemas;
   tem(c.acerto, ["acertados", "acertaveis", "casos_no_gabarito"], "acerto", problemas);
   tem(c.antecedencia, ["casos", "mediana_meses", "minimo_meses", "maximo_meses"], "antecedencia", problemas);
+  if (!Array.isArray(c.regras) || c.regras.length !== 4) problemas.push("como_testado: as quatro regras do estudo 1");
   avisoOk(c.aviso, problemas, "como_testado");
+  return problemas;
+}
+
+/** Normaliza para a ordem alfabética (como chiocca/v2/busca.py): sem acento, minúsculas, espaços simples. */
+function chaveAlfabetica(s) {
+  return String(s ?? "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+const PROIBIDAS_NA_DEMONSTRACAO = /alerta|percentil|escore|score|achado|sinal/i;
+
+/** Demonstração: companhias em ordem alfabética, com o caso do gabarito e as datas; nunca resultado de sinal. */
+export function validaDemonstracao(d) {
+  const problemas = [];
+  if (!tem(d, ["ordem", "empresas", "destaques", "aviso"], "demonstracao", problemas)) return problemas;
+  if (d.ordem !== "denominacao") problemas.push("demonstracao: ordem diferente da alfabética");
+  const chaves = d.empresas.map((e) => `${chaveAlfabetica(e.denominacao)}\u0000${e.cd_cvm}`);
+  if (chaves.some((c, i) => i > 0 && c < chaves[i - 1])) problemas.push("demonstracao: lista fora da ordem alfabética");
+  const visitar = (x, onde) => {
+    if (x && typeof x === "object")
+      for (const [k, v] of Object.entries(x)) {
+        if (PROIBIDAS_NA_DEMONSTRACAO.test(k)) problemas.push(`demonstracao: campo de sinal ${onde}.${k}`);
+        visitar(v, `${onde}.${k}`);
+      }
+  };
+  visitar(d.empresas, "empresas");
+  for (const e of d.empresas) {
+    tem(e, ["cd_cvm", "denominacao", "datas", "rotulos_datas", "data_inicial", "casos", "nomes"], `empresa ${e.cd_cvm}`, problemas);
+    if (!(e.data_inicial in e.datas)) problemas.push(`empresa ${e.cd_cvm}: data inicial fora das datas`);
+    for (const exs of Object.values(e.datas)) if (exs.some((x) => x > 2023)) problemas.push("exercício acima do lacre");
+  }
+  avisoOk(d.aviso, problemas, "demonstracao");
   return problemas;
 }
 

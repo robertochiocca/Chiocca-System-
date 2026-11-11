@@ -55,10 +55,18 @@ class EmpresaResumo(Modelo):
     motivo_codigos_negociacao: str | None
 
 
+class NomeAnterior(Modelo):
+    """Nome que a companhia teve antes, pelos FCA entregues até a data; `ate_ano` é o ano do FCA com o nome seguinte."""
+
+    nome: str
+    ate_ano: int
+
+
 class Empresa(EmpresaResumo):
     setor: str | None
     origem_setor: str | None
     grupo: Literal["financeira", "nao_financeira"] | None
+    nomes_anteriores: list[NomeAnterior] = []
 
 
 class InformacaoDeHoje(Modelo):
@@ -66,6 +74,7 @@ class InformacaoDeHoje(Modelo):
 
     titulo: str
     situacao_cadastro: str | None
+    denominacao: str | None = None
     fonte: str
 
 
@@ -322,6 +331,13 @@ class Saude(Modelo):
     aviso: dict[Idioma, str]
 
 
+class RegraDoEstudo1(Modelo):
+    sinal: Literal["mscore", "dpo", "juro", "peso_nao_recorrente"]
+    grupo: Literal["financeira", "nao_financeira"]
+    rotulo: dict[Idioma, str]
+    regra: dict[Idioma, str]
+
+
 class ComoOMotorFoiTestadoApi(Modelo):
     """Os números do estudo 1 para a página "Como o motor foi testado" (do mesmo JSON do resumo)."""
 
@@ -334,6 +350,8 @@ class ComoOMotorFoiTestadoApi(Modelo):
     acaso: dict[str, float | int]
     antecedencia: dict[str, Any]
     documentos: dict[Idioma, dict[str, str]]
+    regras: list[RegraDoEstudo1]
+    limites: dict[Idioma, list[str]]
     aviso: dict[Idioma, str]
 
 
@@ -344,6 +362,52 @@ class BuscaEmpresas(ComData):
     total: int
     resultados: list[EmpresaResumo]
     aviso: dict[Idioma, str]
+
+
+class CasoDoGabarito(Modelo):
+    """O caso público do gabarito: tipo, data pública, período afetado e fonte (nunca as notas, que citam pessoas)."""
+
+    caso_id: str
+    tipo_evento: list[Literal["processo_cvm", "fraude_confirmada", "republicacao"]]
+    data_publica: str | None
+    periodo_afetado: list[int] | None
+    fonte: str | None
+
+
+class EmpresaDaDemonstracao(EmpresaResumo):
+    nomes: list[str]
+    datas: dict[str, list[int]]
+    rotulos_datas: dict[str, Literal["exercicio_anterior", "periodo_afetado", "depois_da_revelacao", "data_maxima"]]
+    data_inicial: str
+    casos: list[CasoDoGabarito]
+
+
+class Destaques(Modelo):
+    cd_cvm: str
+    exercicio: int
+    na_epoca: str
+    depois: str
+    denominacao_na_epoca: str | None
+    patrimonio_liquido: dict[str, Any]
+
+
+class Demonstracao(Modelo):
+    """As companhias do modo demonstração em ordem alfabética, com o caso e as datas, e os destaques da página
+    inicial (rota /demonstracao e indice.json da demonstração estática). Sem resultado de sinal."""
+
+    ordem: Literal["denominacao"]
+    empresas: list[EmpresaDaDemonstracao]
+    destaques: Destaques
+    aviso: dict[Idioma, str]
+
+    @model_validator(mode="after")
+    def _alfabetica(self) -> Demonstracao:
+        from chiocca.v2.busca import normaliza
+
+        chaves = [(normaliza(e.denominacao or ""), e.cd_cvm) for e in self.empresas]
+        if chaves != sorted(chaves):
+            raise ValueError("a lista da demonstração é sempre alfabética")
+        return self
 
 
 class EmpresaNaData(ComData):

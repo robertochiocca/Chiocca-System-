@@ -48,6 +48,8 @@ T: dict[str, dict[str, Any]] = {
         "troca": "{a}: {de} → {para}{tr}.", "transicao": " (transição: duas firmas no FCA de {x})",
         "so_entrada": "{a}: entrada de {para}, sem saída de outra firma.", "so_saida": "{a}: saída de {de}, sem entrada de outra firma.",
         "hoje": "Situação no cadastro: {s}. Fonte: {f}.",
+        "hoje_nome": "Nome no cadastro de hoje: {n}.",
+        "nome_anterior": "Antes de {a}, a companhia se chamava {n}.",
         "testado": "# Como o motor foi testado",
         "testado_txt": "No estudo 1, o motor v1 acertou {a} de {n} casos acertáveis, com {x} alarmes por acerto no período inteiro e taxa de alerta de {t} nas empresa-anos não financeiras avaliadas ({doc}).",
         "limites": "# Limites", "limitacoes": "# Limitações", "motor": "# Motor",
@@ -93,6 +95,8 @@ T: dict[str, dict[str, Any]] = {
         "troca": "{a}: {de} → {para}{tr}.", "transicao": " (transition: two firms in the {x} FCA)",
         "so_entrada": "{a}: entry of {para}, with no other firm leaving.", "so_saida": "{a}: exit of {de}, with no other firm entering.",
         "hoje": "Registry status: {s}. Source: {f}.",
+        "hoje_nome": "Name in today's registry: {n}.",
+        "nome_anterior": "Before {a}, the company was called {n}.",
         "testado": "# How the engine was tested",
         "testado_txt": "In study 1, engine v1 detected {a} of {n} detectable cases, with {x} false alarms per detected case over the whole period and an alert rate of {t} among evaluated non-financial company-years ({doc}).",
         "limites": "# Limits", "limitacoes": "# Limitations", "motor": "# Engine",
@@ -176,6 +180,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     out = [t["titulo"].format(nome=emp["denominacao"], cd=emp["cd_cvm"], ex=ex["exercicio"], data=data(inv["data_referencia"], lang)),
            inv["aviso"], "", t["empresa"],
            t["setor"].format(s=emp["setor"] or "—", o=_c(emp["origem_setor"], t), g=_c(emp["grupo"], t)),
+           *[t["nome_anterior"].format(a=x["ate_ano"], n=x["nome"]) for x in reversed(emp.get("nomes_anteriores", []))],
            *_codigos(emp, t, lang), "", t["documento"],
            t["doc"].format(ex=ex["exercicio"], v=ex["versao_usada"], r=data(ex["dt_receb"], lang) if ex["dt_receb"] else "—",
                            o=_c(ex["origem"], t), t=_c(ex["tipo"], t), e=ex["escala_original"] or "—"),
@@ -287,6 +292,8 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     hoje = inv.get("informacao_de_hoje")
     if hoje:  # fora da visão "como era": seção separada no fim
         out += ["", f"# {hoje['titulo']}", t["hoje"].format(s=hoje["situacao_cadastro"] or "—", f=hoje["fonte"])]
+        if hoje.get("denominacao"):
+            out.append(t["hoje_nome"].format(n=hoje["denominacao"]))
     if difs:
         out += ["", t["anexo"]]
         out += [t["comparativo_linha"].format(g=x["grupo"], dem=_c(x["demonstracao"], t), cod=x["cd_conta"], ds=x["ds_conta"],

@@ -26,7 +26,7 @@ export default function Evidencias({
         {aberto ? t.esconder_evidencias : fmt(t.ver_evidencias, { n: inteiro(lista.length, idioma) })}
       </button>
       {aberto && (
-        <div className="tabela">
+        <div className="tabela" tabIndex={0} role="region" aria-label={fmt(t.ver_evidencias, { n: inteiro(lista.length, idioma) })}>
           <table>
             <thead>
               <tr>

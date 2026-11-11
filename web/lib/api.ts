@@ -4,12 +4,13 @@
 import {
   validaBusca,
   validaComoTestado,
+  validaDemonstracao,
   validaEmpresa,
   validaInvestigacao,
   validaSaude,
 } from "./contrato.mjs";
 import { DATA_MAXIMA } from "./limites.mjs";
-import type { Busca, ComoTestado, EmpresaNaData, EmpresaResumo, ErroApi, Idioma, Investigacao, Saude } from "./tipos";
+import type { Busca, ComoTestado, Demonstracao, EmpresaNaData, ErroApi, Idioma, Investigacao, Saude } from "./tipos";
 
 /** Demonstração estática: ligada no build por NEXT_PUBLIC_MODO_ESTATICO=1 (sem API rodando). */
 export const MODO_ESTATICO = process.env.NEXT_PUBLIC_MODO_ESTATICO === "1";
@@ -41,23 +42,17 @@ async function pegar<T>(url: string, valida: (x: unknown) => string[]): Promise<
 
 const q = (p: Record<string, string | number>) => new URLSearchParams(Object.entries(p).map(([k, v]) => [k, String(v)]));
 
-// ---- demonstração estática ----
+// ---- demonstração (rota /demonstracao; na demonstração estática, o indice.json, que é a mesma saída) ----
 
-export interface EmpresaDemo extends EmpresaResumo {
-  nomes: string[];
-  datas: Record<string, number[]>;
-}
-interface IndiceDemo {
-  empresas: EmpresaDemo[];
-}
-
-let indice: Promise<IndiceDemo> | null = null;
-export function indiceDemo(): Promise<IndiceDemo> {
-  indice ??= fetch(`${DEMO}/indice.json`).then((r) => {
-    if (!r.ok) throw new FalhaApi(r.status, "sem_demonstracao", `HTTP ${r.status}`);
-    return r.json() as Promise<IndiceDemo>;
-  });
-  return indice;
+let demonstracao: Promise<Demonstracao> | null = null;
+function lerDemonstracao(): Promise<Demonstracao> {
+  demonstracao ??= pegar<Demonstracao>(MODO_ESTATICO ? `${DEMO}/indice.json` : `${BASE}/demonstracao`, validaDemonstracao).catch(
+    (e) => {
+      demonstracao = null; // tenta de novo na próxima chamada
+      throw e;
+    },
+  );
+  return demonstracao;
 }
 
 /** Sem acento, sem diferença de maiúsculas e com espaços simples (como chiocca/v2/busca.py). */
@@ -78,7 +73,7 @@ async function buscarDemo(busca: string): Promise<Busca> {
   const c = criterio(busca);
   if (!c) throw new FalhaApi(422, "busca_invalida", "busca por nome precisa de pelo menos 3 caracteres");
   const [tipo, chave] = c;
-  const { empresas } = await indiceDemo();
+  const { empresas } = await lerDemonstracao();
   const achadas = empresas.filter((e) =>
     tipo === "cnpj"
       ? (e.cnpj ?? "").replace(/\D/g, "") === chave
@@ -136,7 +131,6 @@ export const api = {
     MODO_ESTATICO
       ? `${DEMO}/investigacoes/${cd}/${exercicio}/${data}/${idioma}.pdf`
       : `${BASE}/investigacoes/${encodeURIComponent(cd)}/${exercicio}/pdf?${q({ data_referencia: data, idioma })}`,
-  /** Datas da companhia na demonstração estática, com os exercícios de cada uma. */
-  datasDemo: async (cd: string): Promise<Record<string, number[]> | null> =>
-    (await indiceDemo()).empresas.find((e) => e.cd_cvm === cd)?.datas ?? null,
+  /** As companhias da demonstração (caso, datas e rótulos) e os destaques da página inicial. */
+  demonstracao: lerDemonstracao,
 };
