@@ -467,6 +467,21 @@ def test_secao_no_pdf_com_trechos_literais_e_sem_nomes() -> None:
         assert "A controladora prestou aval" in txt and "Ernesto" not in txt and "Paulo Fictício" not in txt
 
 
+def test_formulario_no_pdf_com_sinal_de_menos_e_json_literal() -> None:
+    """Montante e saldo do Formulário de Referência vêm da CVM com hífen no lugar do sinal de menos: o JSON guarda
+    como veio; o PDF mostra o sinal de menos (−). O trecho copiado de documento (entre aspas) fica como veio."""
+    from chiocca.v2 import pdf_investigacao
+
+    ld = json.loads((CONTRATO_WEB / "leitura_documental_pt.json").read_text(encoding="utf-8"))
+    linha = dict(ld["formulario_de_referencia"]["linhas"][0], montante="-10.790.618,68", saldo="-30")
+    ld["formulario_de_referencia"]["linhas"] = [linha]
+    ld["partes_relacionadas"]["trechos"][0]["texto"] = "Mundial Co -30 - 116"
+    linhas_pdf = pdf_investigacao._leitura(ld, "pt")
+    assert any(x.endswith("· −10.790.618,68 · −30") for x in linhas_pdf)
+    assert any("“Mundial Co -30 - 116”" in x for x in linhas_pdf)
+    assert linha["montante"] == "-10.790.618,68"
+
+
 def test_contratos_com_o_numero_de_casos_de_desenvolvimento() -> None:
     n = len(list(CASOS.glob("*.json")))
     assert f"{n} casos de desenvolvimento" in (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")

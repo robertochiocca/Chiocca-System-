@@ -10,6 +10,11 @@ import { useIdioma } from "@/lib/idioma";
 import { fmt } from "@/lib/textos";
 import type { LeituraDocumental as Leitura, TrechoLido } from "@/lib/tipos";
 
+/** Montante e saldo vêm do arquivo da CVM com hífen no lugar do sinal de menos; na tela, o sinal de menos (−). */
+function comMenos(v: string | null): string {
+  return v === null ? "—" : v.replace(/(^|[^\w.,\-−/])-(?=\d)/g, "$1−");
+}
+
 function Trecho({ x }: { x: TrechoLido }) {
   const { idioma, t } = useIdioma();
   const onde = x.pagina !== null ? fmt(t.leitura_pagina, { p: x.pagina }) : null;
@@ -137,8 +142,8 @@ export default function LeituraDocumental({ l }: { l: Leitura }) {
                     <td className={x.parte_omitida ? "trecho-omitido" : undefined}>{x.parte}</td>
                     <td lang="pt">{x.relacao ?? "—"}</td>
                     <td lang="pt">{x.objeto ?? "—"}</td>
-                    <td>{x.montante ?? "—"}</td>
-                    <td>{x.saldo ?? "—"}</td>
+                    <td>{comMenos(x.montante)}</td>
+                    <td>{comMenos(x.saldo)}</td>
                     <td>{x.data_transacao ?? "—"}</td>
                   </tr>
                 ))}

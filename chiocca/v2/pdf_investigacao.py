@@ -10,7 +10,7 @@ from typing import Any
 
 from chiocca.formato import data
 from chiocca.v2.contexto import ROTULOS_F
-from chiocca.v2.exibicao import decimal, inteiro, pct
+from chiocca.v2.exibicao import com_sinal_de_menos, decimal, inteiro, pct
 from chiocca.v2.pdf_simples import gerar_pdf, paginar
 
 T: dict[str, dict[str, Any]] = {
@@ -380,7 +380,9 @@ def _leitura(ld: dict[str, Any], lang: str) -> list[str]:
     out += ["", t["formulario"]] + ([fre["motivo"]] if fre.get("motivo") else [])
     if (fre.get("documento") or {}).get("linhagem"):
         out.append(fre["documento"]["linhagem"])
-    out += [f"- {x['parte']} · {x['relacao'] or '—'} · {x['objeto'] or '—'} · {x['montante'] or '—'} · {x['saldo'] or '—'}"
+    # montante e saldo vêm do arquivo da CVM com hífen no lugar do sinal de menos: na exibição, o sinal de menos
+    out += [f"- {x['parte']} · {x['relacao'] or '—'} · {x['objeto'] or '—'} · "
+            f"{com_sinal_de_menos(x['montante'] or '—')} · {com_sinal_de_menos(x['saldo'] or '—')}"
             for x in fre["linhas"]]  # fmt: skip
     return out
 
