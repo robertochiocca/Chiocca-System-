@@ -14,11 +14,13 @@ import re
 from chiocca.v2.leitor.texto import normaliza
 from chiocca.v2.leitor.trechos import Trecho, corta
 
-_M = r"(?=\s+[A-ZÀ-Ý0-9\"“(])"  # o título é seguido de frase que começa com maiúscula
+# o título é seguido de frase que começa com maiúscula ou de lista ("a)", "i)"), às vezes depois de " ." ou ":"
+_M = r"(?=\s*[.:]?\s+(?:[A-ZÀ-Ý0-9\"“(]|[a-z]{1,4}\)))"
 # complemento que alguns títulos trazem: "Opinião com ressalva sobre as demonstrações contábeis individuais e consolidadas"
-_Q = r"(?: sobre as demonstrações (?:financeiras|contábeis)(?: individuais(?: e consolidadas)?| consolidadas)?)?"
+_Q = r"(?i:(?: sobre as demonstrações(?: (?:financeiras|contábeis))?(?: individuais(?: e consolidadas)?| consolidadas)?)?)"
 SECOES: list[tuple[str, str]] = [
-    ("base_para_ressalva", r"Base para (?:opini[ãa]o com ressalvas?|opini[ãa]o adversa|abstenç[ãa]o de opini[ãa]o)" + _Q),
+    ("base_para_ressalva", r"Base para (?:a )?(?i:opini[ãa]o com ressalvas?|opini[ãa]o adversa|abstenç[ãa]o de opini[ãa]o|"
+                           r"conclus[ãa]o com ressalvas?)" + _Q + r"(?: [-–—] [^.]{0,80}?)?"),
     ("incerteza_continuidade", r"Incerteza (?:relevante|significativa) (?:relacionada (?:com|à) a? ?)?"
                                r"continuidade operacional"),
     ("enfase", r"(?:Parágrafos? de [êÊ]nfases?|Ênfases?)(?: [-–—] [^.]{0,80}?)?"),
@@ -31,6 +33,7 @@ FIM = (r"Opini[ãa]o(?: com ressalvas?| adversa)?" + _Q + r"|Abstenç[ãa]o de o
        r"Responsabilidades? do auditor|Responsabilidades dos auditores|"
        r"Valores correspondentes|Auditoria dos valores correspondentes")  # fmt: skip
 TIPOS_NO_TITULO = [("com_ressalva", r"com ressalva"), ("adversa", r"advers[oa]"), ("abstencao", r"absten[çc][ãa]o"),
+                   ("abstencao", r"negativa de opini[ãa]o"),
                    ("sem_ressalva", r"sem ressalva")]  # fmt: skip
 
 

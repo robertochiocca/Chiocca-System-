@@ -504,3 +504,31 @@ def test_texto_girado_usa_o_modo_simples() -> None:
             return "texto completo com a tabela girada"
 
     assert texto._texto_da_pagina(Pagina()) == "texto completo com a tabela girada"  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "titulo_secao",
+    [
+        "Base para Opinião com Ressalva sobre as Demonstrações Contábeis",
+        "Base para a opinião com ressalva i)",
+        "Base para opinião com ressalvas .",
+        "Base para opinião com ressalva – Confirmação de saldos",
+        "Base para conclusão com ressalva",
+        "Base para abstenção de opinião sobre as demonstrações individuais",
+    ],
+)
+def test_variantes_reais_do_titulo_da_base(titulo_secao: str) -> None:
+    txt = (
+        f"Opinião com ressalva Examinamos as demonstrações. {titulo_secao} Não recebemos as respostas de "
+        "circularização dos bancos. Responsabilidades da administração A administração é responsável."
+    )
+    _, trechos = parecer.ler("Relatório do Auditor Independente - Com Ressalva", txt)
+    assert [t.rotulo for t in trechos] == ["base_para_ressalva"] and "circularização" in trechos[0].texto
+
+
+def test_negativa_de_opiniao_e_titulo_de_nota_com_ponto() -> None:
+    assert parecer.tipo("Relatório do Auditor Independente - Negativa de Opinião", "") == "abstencao"
+    paginas = ["15. Operações com partes relacionadas.\nOs mútuos com a controlada Exemplo Ltda. vencem em 2025.\n"
+               "16. Imobilizado.\nTexto."]  # fmt: skip
+    nota, trechos = partes_relacionadas.ler(paginas)
+    assert nota is not None and nota.titulo.startswith("15.") and {t.rotulo for t in trechos} >= {"controladas"}

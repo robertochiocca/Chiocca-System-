@@ -101,9 +101,13 @@ def _titulo(linha: str) -> tuple[int, bool, str] | None:
     """(número, tem decimal, título) se a linha for título numerado de nota; numeral romano vale negativo (-12 para
     XII), para a nota em romanos só terminar em outro título em romanos."""
     m = _TITULO.match(linha.strip())
-    if not m or re.search(r"\.{4,}|…", linha) or len(linha.split()) > 14 or linha.rstrip().endswith((".", ",", ";")):
+    if not m or re.search(r"\.{4,}|…", linha) or len(linha.split()) > 14 or linha.rstrip().endswith((",", ";")):
         return None
     titulo = m.group(3)
+    if (
+        titulo.rstrip().endswith(".") and len(titulo.split()) > 6
+    ):  # frase, não título ("15. Operações com partes relacionadas.")
+        return None
     if linha_de_tabela(titulo):  # o número da nota e o travessão do título não são colunas de valor
         return None
     if not titulo[:1].isupper():
