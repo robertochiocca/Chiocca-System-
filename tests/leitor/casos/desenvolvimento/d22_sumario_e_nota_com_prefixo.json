@@ -1,0 +1,43 @@
+{
+ "id": "d22_sumario_e_nota_com_prefixo",
+ "descricao": "Sumário com a nota 9 e o título \"Nota 9 - ...\" na página seguinte.",
+ "notas": {
+  "paginas": [
+   [
+    "Índice das notas explicativas",
+    "1. Contexto operacional ........................ 10",
+    "9. Partes relacionadas ......................... 25",
+    "10. Imobilizado ............................... 27",
+    "",
+    "1. Contexto operacional",
+    "A Companhia atua no setor de saneamento."
+   ],
+   [
+    "Nota 9 - Saldos e transações com partes relacionadas",
+    "A Companhia mantém contrato de prestação de serviços com o acionista Município de",
+    "Exemplópolis, com receitas de R$ 22.000 mil em 2021.",
+    "",
+    "Nota 10 - Imobilizado",
+    "O imobilizado está registrado ao custo."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "outras_partes",
+    "pagina": 2,
+    "contem": "acionista Município de"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 2,
+    "contem": "com receitas de R$ 22.000 mil"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

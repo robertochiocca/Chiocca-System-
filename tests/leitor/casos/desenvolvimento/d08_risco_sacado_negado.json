@@ -1,0 +1,40 @@
+{
+ "id": "d08_risco_sacado_negado",
+ "descricao": "Menção negativa a risco sacado e convênio com fornecedores.",
+ "notas": {
+  "paginas": [
+   [
+    "20. Fornecedores",
+    "Os fornecedores são pagos em até 90 dias. A Companhia não possui operações de",
+    "risco sacado ou convênios com fornecedores.",
+    "",
+    "21. Partes relacionadas",
+    "Os saldos com a controlada Exemplo Comércio Ltda. somam R$ 2.100 mil a receber."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 1,
+    "negacao": true,
+    "contem": "não possui operações de"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "controlada Exemplo Comércio Ltda."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "R$ 2.100 mil a receber"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

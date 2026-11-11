@@ -1,0 +1,53 @@
+{
+ "id": "d25_risco_sacado_sinonimos",
+ "descricao": "Convênio sem travessão, antecipação de pagamentos a fornecedores e menção negativa noutra nota.",
+ "notas": {
+  "paginas": [
+   [
+    "17. Fornecedores",
+    "                                  2021      2020",
+    "Fornecedores convênio            8.000     6.500",
+    "",
+    "A Companhia mantém programa de antecipação de pagamentos a fornecedores com",
+    "instituições financeiras."
+   ],
+   [
+    "18. Empréstimos e financiamentos",
+    "Em 31 de dezembro de 2020, não havia saldo de operações de risco sacado.",
+    "",
+    "19. Partes relacionadas",
+    "Os aluguéis pagos à coligada Exemplo Imobiliária S.A. somaram R$ 1.900 mil."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 1,
+    "negacao": false,
+    "contem": "Fornecedores convênio"
+   },
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 2,
+    "negacao": true,
+    "contem": "não havia saldo de operações de risco sacado"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 2,
+    "contem": "coligada Exemplo Imobiliária S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 2,
+    "contem": "Os aluguéis pagos"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

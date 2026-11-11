@@ -1,0 +1,69 @@
+{
+ "id": "d02_nota_em_duas_paginas",
+ "descricao": "A nota começa numa página e continua na seguinte, com tabela.",
+ "notas": {
+  "paginas": [
+   [
+    "8. Caixa e equivalentes de caixa",
+    "Os saldos são mantidos em bancos de primeira linha.",
+    "",
+    "9. Transações com partes relacionadas",
+    "A Companhia concedeu mútuo à sua controlada Exemplo Logística Ltda.,",
+    "remunerado a 100% do CDI, com prazo de 24 meses."
+   ],
+   [
+    "Saldos com partes relacionadas          2021      2020",
+    "Mútuo - Exemplo Logística Ltda.        5.000     4.500",
+    "Receita financeira do mútuo              410       380",
+    "",
+    "As transações com a coligada Exemplo Pagamentos S.A. referem-se",
+    "a serviços de cobrança, com garantia de fiança bancária.",
+    "",
+    "10. Fornecedores",
+    "Os saldos com fornecedores são liquidados em até 60 dias."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "sua controlada Exemplo Logística Ltda."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "com prazo de 24 meses"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 2,
+    "contem": "Mútuo - Exemplo Logística Ltda."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 2,
+    "contem": "Receita financeira do mútuo"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 2,
+    "contem": "coligada Exemplo Pagamentos S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "garantias",
+    "pagina": 2,
+    "contem": "garantia de fiança bancária"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

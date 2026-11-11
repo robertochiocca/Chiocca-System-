@@ -34,6 +34,7 @@ from chiocca.v2 import conferencias as cf
 from chiocca.v2.armazem import capitalizacao
 from chiocca.v2.exibicao import decimal, textos_com_sinal_de_menos
 from chiocca.v2.lacre import ULTIMO_EXERCICIO_LIBERADO, garantir_data_referencia, garantir_liberado
+from chiocca.v2.leitor import secao as leitor_secao
 from chiocca.v2.linhagem import (
     FORMULAS,
     LIMITACOES,
@@ -685,6 +686,9 @@ def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, font
         {"id": c.id, "tipo": c.tipo, "nome": _m(c.nome, lang), "coluna": c.coluna, "resultado": c.resultado,
          "motivo": _m(c.motivo, lang)} for c in conferencias]}  # fmt: skip
     out["parecer_e_auditor"] = _parecer_e_auditor(fontes, e, exercicio, cd_cvm, d, lang) if e.situacao == "ok" else None
+    if leitor_secao.LIGADO and e.situacao == "ok":  # Fase F1: desligado até o leitor passar nos casos guardados
+        out["leitura_documental"] = leitor_secao.secao(e.num_doc, e.versao_usada, None if e.dt_receb is None else str(e.dt_receb),
+                                                       cd_cvm, exercicio, d, lang)  # fmt: skip
     est = confianca.evidencia_estudo_1()
     out["como_o_motor_foi_testado"] = {"documento": "docs/resumo.md" if lang == "pt" else "docs/summary.md",
                                        "acertados": est["acertados"], "acertaveis": est["acertaveis"],

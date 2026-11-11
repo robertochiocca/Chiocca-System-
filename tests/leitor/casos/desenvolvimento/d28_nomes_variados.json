@@ -1,0 +1,77 @@
+{
+ "id": "d28_nomes_variados",
+ "descricao": "Nomes de pessoa física com Dra., com partícula e com iniciais; tipo de pessoa errado no formulário.",
+ "notas": {
+  "paginas": [
+   [
+    "10. Partes relacionadas",
+    "A Dra. Paula Fictícia Ramos, diretora jurídica, prestou serviços à Companhia.",
+    "",
+    "O conselheiro Ana de Fictícia Souza é sócio da fornecedora Exemplo Embalagens Ltda.",
+    "",
+    "A controlada recebeu aporte de J. P. Fictício, acionista minoritário.",
+    "",
+    "11. Intangível"
+   ]
+  ]
+ },
+ "formulario_de_referencia": [
+  {
+   "Parte_Relacionada": "Ana Fictícia",
+   "Tipo_Pessoa": "PJ",
+   "Relacao_Emissor": "Conselheira",
+   "Objeto_Contrato": "Consultoria",
+   "Montante_Envolvido": "90000",
+   "Saldo_Existente": "0",
+   "Garantia_Seguro": "",
+   "Natureza_Razao_Operacao": "",
+   "Taxa_Juros": ""
+  },
+  {
+   "Parte_Relacionada": "Exemplo Embalagens Ltda.",
+   "Tipo_Pessoa": "PJ",
+   "Relacao_Emissor": "Empresa de conselheiro",
+   "Objeto_Contrato": "Fornecimento de embalagens",
+   "Montante_Envolvido": "350000",
+   "Saldo_Existente": "40000",
+   "Garantia_Seguro": "",
+   "Natureza_Razao_Operacao": "",
+   "Taxa_Juros": ""
+  }
+ ],
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "pessoal_chave",
+    "pagina": 1,
+    "contem": "diretora jurídica"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "pessoal_chave",
+    "pagina": 1,
+    "contem": "O conselheiro"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "A controlada recebeu aporte"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "outras_partes",
+    "pagina": 1,
+    "contem": "acionista minoritário"
+   }
+  ],
+  "nomes_proibidos": [
+   "Paula Fictícia Ramos",
+   "Ana de Fictícia Souza",
+   "J. P. Fictício",
+   "Ana Fictícia"
+  ]
+ }
+}

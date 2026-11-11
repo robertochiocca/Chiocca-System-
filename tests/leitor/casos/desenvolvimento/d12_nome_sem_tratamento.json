@@ -1,0 +1,40 @@
+{
+ "id": "d12_nome_sem_tratamento",
+ "descricao": "Nome de pessoa física sem pronome, em texto e em maiúsculas numa tabela.",
+ "notas": {
+  "paginas": [
+   [
+    "16. Partes relacionadas",
+    "A Companhia mantém contrato de consultoria com Helena Fictícia Moraes, membro do",
+    "conselho de administração, com honorários de R$ 240 mil no exercício.",
+    "",
+    "                                                  2021      2020",
+    "MARCOS FICTÍCIO TAVARES - mútuo a receber          1.500     1.200",
+    "Exemplo Imóveis S.A. - aluguel                      (800)     (750)",
+    "",
+    "17. Seguros"
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "pessoal_chave",
+    "pagina": 1,
+    "contem": "conselho de administração"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "mútuo a receber"
+   }
+  ],
+  "nomes_proibidos": [
+   "Helena Fictícia Moraes",
+   "Marcos Fictício Tavares"
+  ]
+ }
+}
