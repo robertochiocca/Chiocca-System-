@@ -364,6 +364,26 @@ class Armazem:
             [exercicio, cd_cvm, dt_refer, versao],
         )
 
+    def nomes_anteriores(self, cd_cvm: str, ate: date) -> list[dict[str, Any]]:
+        """Nomes que a companhia teve antes do nome na data, pelos FCA entregues até a data: a última versão de cada
+        ano de referência, em ordem de ano; `ate_ano` é o ano do primeiro FCA com o nome seguinte. Do mais antigo para
+        o mais recente, como vieram no FCA (sem mudar maiúsculas)."""
+        d = self.consulta(
+            """
+            SELECT ano, nome FROM (
+                SELECT ano, nome, row_number() OVER (PARTITION BY ano ORDER BY versao DESC) AS r
+                FROM nomes WHERE cd_cvm = ? AND CAST(dt_receb AS DATE) <= ? AND nome IS NOT NULL)
+            WHERE r = 1 ORDER BY ano
+            """,
+            [cd_cvm, ate],
+        )
+        corridas: list[tuple[str, int]] = []
+        for x in d.itertuples(index=False):
+            nome = " ".join(str(x.nome).split())
+            if not corridas or corridas[-1][0].casefold() != nome.casefold():
+                corridas.append((nome, int(x.ano)))
+        return [{"nome": n, "ate_ano": corridas[i + 1][1]} for i, (n, _) in enumerate(corridas[:-1])]
+
     def nome_na_data(self, cd_cvm: str, ate: date) -> str | None:
         """Nome empresarial na última versão do FCA entregue até a data."""
         d = self.consulta(

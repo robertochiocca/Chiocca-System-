@@ -22,16 +22,63 @@ export interface EmpresaResumo {
   motivo_codigos_negociacao: string | null;
 }
 
+export interface NomeAnterior {
+  nome: string;
+  ate_ano: number;
+}
+
 export interface Empresa extends EmpresaResumo {
   setor: string | null;
   origem_setor: string | null;
   grupo: "financeira" | "nao_financeira" | null;
+  nomes_anteriores?: NomeAnterior[];
 }
 
 export interface InformacaoDeHoje {
   titulo: string;
   situacao_cadastro: string | null;
+  denominacao?: string | null;
   fonte: string;
+}
+
+export type RotuloData = "exercicio_anterior" | "periodo_afetado" | "depois_da_revelacao" | "data_maxima";
+export type TipoCaso = "processo_cvm" | "fraude_confirmada" | "republicacao";
+
+export interface CasoDoGabarito {
+  caso_id: string;
+  tipo_evento: TipoCaso[];
+  data_publica: string | null;
+  periodo_afetado: [number, number] | null;
+  fonte: string | null;
+}
+
+export interface EmpresaDaDemonstracao extends EmpresaResumo {
+  nomes: string[];
+  datas: Record<string, number[]>;
+  rotulos_datas: Record<string, RotuloData>;
+  data_inicial: string;
+  casos: CasoDoGabarito[];
+}
+
+export interface Demonstracao {
+  ordem: "denominacao";
+  empresas: EmpresaDaDemonstracao[];
+  destaques: {
+    cd_cvm: string;
+    exercicio: number;
+    na_epoca: string;
+    depois: string;
+    denominacao_na_epoca: string | null;
+    patrimonio_liquido: { valor: number; valor_comparativo: number; exercicio_comparativo: number; dt_receb_comparativo: string };
+  };
+  aviso: Aviso;
+}
+
+export interface RegraDoEstudo1 {
+  sinal: "mscore" | "dpo" | "juro" | "peso_nao_recorrente";
+  grupo: "financeira" | "nao_financeira";
+  rotulo: Record<Idioma, string>;
+  regra: Record<Idioma, string>;
 }
 
 export interface Busca {
@@ -185,7 +232,7 @@ export interface Investigacao {
     trocas_de_auditor?: Troca[];
     rodizio?: { nota: string | null; norma: string; fonte: string };
   } | null;
-  como_o_motor_foi_testado: { documento: string; acertados: number; acertaveis: number };
+  como_o_motor_foi_testado: { documento: string; acertados: number; acertaveis: number; taxa_de_alerta_nao_financeiras?: number };
   limites: string[];
   limitacoes: (string | null)[];
   evidencias: Record<string, Evidencia>;
@@ -210,6 +257,8 @@ export interface ComoTestado {
     maximo_meses: number;
   };
   documentos: Record<Idioma, Record<string, string>>;
+  regras: RegraDoEstudo1[];
+  limites: Record<Idioma, string[]>;
   aviso: Aviso;
 }
 

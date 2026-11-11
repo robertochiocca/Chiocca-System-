@@ -423,3 +423,82 @@ sinais:
 
 # Uso proibido como SINAL: reapresentação de demonstrações. Ela é fonte de
 # GABARITO (data_publica e período afetado). Usá-la como sinal vaza a resposta.
+
+# Leitura simples para a interface (Fase E2, 10/11/2026): o que cada sinal mostrado na investigação mede e por que
+# importa, em linguagem simples, PT e EN, e uma linha por componente do M-score e do Z''. Acrescentado na v2; as
+# entradas acima (as do estudo 1) não mudam. A interface lê web/lib/catalogo.json, gerado daqui por
+# python -m chiocca.v2.catalogo_web (um teste confere que está em dia).
+leitura_simples:
+  mscore_beneish:
+    o_que_mede: "Junta num número só oito índices que comparam o ano com o anterior: recebíveis, margem, qualidade do ativo, crescimento, depreciação, despesas, alavancagem e lucro que não vira caixa."
+    o_que_mede_en: "Combines into a single number eight indices that compare the year with the previous one: receivables, margin, asset quality, growth, depreciation, expenses, leverage and profit that does not turn into cash."
+    por_que: "Empresas que manipularam resultados costumam mostrar várias dessas mudanças ao mesmo tempo, como recebíveis crescendo mais que as vendas e lucro sem caixa. Um valor alto pede um olhar mais de perto; não prova nada."
+    por_que_en: "Companies that manipulated earnings tend to show several of these changes at once, such as receivables growing faster than sales and profit without cash. A high value calls for a closer look; it proves nothing."
+    componentes:
+      DSRI:
+        pt: "Recebíveis em relação às vendas, comparados com o ano anterior. Subir muito pode indicar receita reconhecida cedo demais."
+        en: "Receivables relative to sales, compared with the previous year. A sharp rise can signal revenue recognized too early."
+      GMI:
+        pt: "Margem bruta do ano anterior dividida pela deste ano. Acima de 1, a margem piorou, o que aumenta a pressão sobre o resultado."
+        en: "Last year's gross margin divided by this year's. Above 1, the margin got worse, which adds pressure on results."
+      AQI:
+        pt: "Parte do ativo que não é circulante nem imobilizado, comparada com o ano anterior. Subir pode indicar custo lançado no ativo."
+        en: "Share of assets that are neither current nor property, plant and equipment, compared with the previous year. A rise can signal costs booked as assets."
+      SGI:
+        pt: "Receita deste ano dividida pela do ano anterior. Crescer muito não é manipulação, mas aumenta a pressão para manter o ritmo."
+        en: "This year's revenue divided by last year's. Fast growth is not manipulation, but it adds pressure to keep the pace."
+      DEPI:
+        pt: "Taxa de depreciação do ano anterior dividida pela deste ano. Acima de 1, a empresa passou a depreciar mais devagar, o que aumenta o lucro."
+        en: "Last year's depreciation rate divided by this year's. Above 1, the company is depreciating more slowly, which raises profit."
+      SGAI:
+        pt: "Despesas de vendas e administrativas em relação à receita, comparadas com o ano anterior."
+        en: "Selling and administrative expenses relative to revenue, compared with the previous year."
+      LVGI:
+        pt: "Passivo circulante e dívida de longo prazo em relação ao ativo, comparados com o ano anterior. Subir aumenta a pressão das cláusulas de dívida."
+        en: "Current liabilities and long-term debt relative to assets, compared with the previous year. A rise adds pressure from debt covenants."
+      TATA:
+        pt: "Lucro que não virou caixa, em relação ao ativo. Quanto maior, mais o resultado depende de lançamentos contábeis."
+        en: "Profit that did not turn into cash, relative to assets. The higher it is, the more the result depends on accounting entries."
+  dpo_salto:
+    o_que_mede: "Quantos dias, em média, a empresa leva para pagar os fornecedores, e quanto isso mudou de um ano para o outro."
+    o_que_mede_en: "How many days, on average, the company takes to pay its suppliers, and how much that changed from one year to the next."
+    por_que: "Pagar fornecedores mais tarde aumenta o caixa operacional sem melhorar o negócio. Dívida com banco registrada como fornecedor (risco sacado) também faz esse prazo subir."
+    por_que_en: "Paying suppliers later raises operating cash flow without improving the business. Bank debt booked as trade payables (supplier finance) also pushes this figure up."
+  juro_implicito:
+    o_que_mede: "A despesa financeira dividida pela dívida com bancos, comparada com o CDI médio do ano."
+    o_que_mede_en: "Finance costs divided by bank borrowings, compared with the year's average CDI rate."
+    por_que: "Juro muito acima do mercado sugere que parte da dívida está fora da linha de empréstimos. É hipótese: a despesa financeira também tem juros de arrendamento, desconto de recebíveis e variação cambial."
+    por_que_en: "Interest far above the market suggests part of the debt sits outside the borrowings line. It is a hypothesis: finance costs also include lease interest, receivables discounting and FX losses."
+  lucro_sem_caixa:
+    o_que_mede: "A diferença entre o lucro e o caixa gerado pelas operações, em relação ao ativo."
+    o_que_mede_en: "The gap between profit and the cash generated by operations, relative to assets."
+    por_que: "Lucro que não vira caixa pode vir de receita reconhecida cedo demais ou de custo adiado. Já entra no M-score (TATA); aqui aparece sozinho, só como contexto."
+    por_que_en: "Profit that does not turn into cash can come from revenue recognized too early or deferred costs. It is already part of the M-score (TATA); here it appears on its own, as context only."
+  peso_nao_recorrente:
+    o_que_mede: "Quanto do resultado vem de ganhos pontuais, como reversões de provisão, apresentados como se fossem do negócio."
+    o_que_mede_en: "How much of the result comes from one-off gains, such as reversals of provisions, presented as if they were part of the business."
+    por_que: "Em financeiras, onde o M-score não se aplica, ganhos pontuais podem esconder um resultado recorrente mais fraco."
+    por_que_en: "In financial companies, where the M-score does not apply, one-off gains can hide weaker recurring results."
+  altman_z2:
+    o_que_mede: "Junta capital de giro, lucros retidos, resultado operacional e patrimônio, cada um em relação ao ativo ou ao passivo, num indicador de risco de dificuldade financeira."
+    o_que_mede_en: "Combines working capital, retained earnings, operating profit and equity, each relative to assets or liabilities, into an indicator of financial distress risk."
+    por_que: "Ajuda a ler o contexto: empresa sob pressão financeira tem mais incentivo para enfeitar os números. Não mede manipulação, não tem zona de corte aqui e não dispara alerta."
+    por_que_en: "It helps read the context: a company under financial pressure has more incentive to dress up its numbers. It does not measure manipulation, has no cut-off zone here and does not trigger alerts."
+    componentes:
+      X1:
+        pt: "capital de giro / ativo"
+        en: "working capital / assets"
+      X2:
+        pt: "lucros retidos / ativo"
+        en: "retained earnings / assets"
+      X3:
+        pt: "EBIT / ativo"
+        en: "EBIT / assets"
+      X4:
+        pt: "patrimônio líquido / passivo"
+        en: "equity / liabilities"
+  piotroski_f:
+    o_que_mede: "Nove testes simples de rentabilidade, endividamento e liquidez, e eficiência; cada teste que passa vale 1 ponto."
+    o_que_mede_en: "Nine simple tests of profitability, leverage and liquidity, and efficiency; each test passed is worth 1 point."
+    por_que: "Mede força financeira, não qualidade do lucro: uma empresa pode pontuar bem e ainda assim ter números manipulados. Só contexto, não dispara alerta."
+    por_que_en: "It measures financial strength, not earnings quality: a company can score well and still have manipulated numbers. Context only; it does not trigger alerts."

@@ -38,7 +38,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 
 from chiocca import base
-from chiocca.v2 import busca, ficha_do_motor, investigacao, modelos, pdf_investigacao
+from chiocca.v2 import busca, ficha_do_motor, investigacao, limites, modelos, na_data, pdf_investigacao
+from chiocca.v2 import demonstracao as dados_da_demonstracao
 from chiocca.v2.lacre import (
     DATA_REFERENCIA_MAXIMA,
     DATA_REFERENCIA_MINIMA,
@@ -52,6 +53,7 @@ from chiocca.v2.linhagem import MOTOR_V1, Localizador
 from chiocca.v2.na_data import _meta, exercicio_na_data
 
 PREFIXO = "/api/v1"
+PRE_REGISTRO = "docs/pre-registro.md"  # só em português
 PRIMEIRO_EXERCICIO = 2010
 LIMITE_QUERY = 2048  # caracteres da query string
 LIMITE_CORPO = 16_384  # bytes de corpo (todas as rotas são GET)
@@ -210,12 +212,7 @@ def criar_app(
             r = r | {"resultados": dentro[:limite], "total": len(dentro)}
         return modelos.BuscaEmpresas.model_validate(r | {"aviso": investigacao.AVISO}).model_dump(mode="json")
 
-    @app.get(f"{PREFIXO}/empresas/{{cd_cvm}}", response_model=modelos.EmpresaNaData)
-    def empresa(
-        cd_cvm: str = Path(..., pattern=r"^\d{1,6}$"), data_referencia: str | None = DATA, idioma: str = IDIOMA
-    ) -> dict[str, Any]:
-        d, cd = _data(data_referencia), _cd(cd_cvm)
-        _permitida(cd)
+    def _empresa_na_data(cd: str, d: date, idioma: str) -> dict[str, Any]:
         f = fontes()
         anos = busca.exercicios_na_data(f, cd, d)
         if not anos:
@@ -225,9 +222,33 @@ def criar_app(
         setor = mt.setor if isinstance(mt.setor, str) else None
         e = investigacao._empresa(f, cd, d, mt, setor, mt.grupo, idioma)
         out = {"data_referencia": d.isoformat(), "empresa": e, "exercicios": anos,
-               "informacao_de_hoje": investigacao.informacao_de_hoje(mt.situacao_cadastro, idioma),
+               "informacao_de_hoje": investigacao.informacao_de_hoje(mt.situacao_cadastro, idioma,
+                                                                     na_data.denominacao_hoje(f, cd)),
                "aviso": investigacao.AVISO}  # fmt: skip
         return modelos.EmpresaNaData.model_validate(out).model_dump(mode="json")
+
+    @app.get(f"{PREFIXO}/empresas/{{cd_cvm}}", response_model=modelos.EmpresaNaData)
+    def empresa(
+        cd_cvm: str = Path(..., pattern=r"^\d{1,6}$"), data_referencia: str | None = DATA, idioma: str = IDIOMA
+    ) -> dict[str, Any]:
+        d, cd = _data(data_referencia), _cd(cd_cvm)
+        _permitida(cd)
+        return _empresa_na_data(cd, d, idioma)
+
+    @app.get(f"{PREFIXO}/demonstracao", response_model=modelos.Demonstracao)
+    def demonstracao_() -> dict[str, Any]:
+        """As companhias do modo demonstração, em ordem alfabética, com o caso do gabarito e as datas; e os destaques
+        da página inicial. Nunca o resultado dos sinais (chiocca.v2.demonstracao)."""
+        if "demonstracao" not in estado:
+
+            def bloco(cd: str, data: str) -> dict[str, Any]:
+                return dict(_empresa_na_data(cd, date.fromisoformat(data), "pt")["empresa"])
+
+            dados = dados_da_demonstracao.montar(fontes(), bloco, empresas_da_demonstracao())
+            estado["demonstracao"] = modelos.Demonstracao.model_validate(
+                dados | {"aviso": investigacao.AVISO}
+            ).model_dump(mode="json")
+        return dict(estado["demonstracao"])
 
     @app.get(f"{PREFIXO}/empresas/{{cd_cvm}}/exercicios/{{exercicio}}", response_model=modelos.ExercicioComEvidencias)
     def exercicio(
@@ -302,9 +323,11 @@ def criar_app(
         """Os números do estudo 1, do mesmo JSON do resumo (os mesmos da ficha do motor e do README)."""
         out = ficha_do_motor.numeros() | {
             "documentos": {"pt": {"resumo": "docs/resumo.md", "ficha_do_motor": "docs/ficha-do-motor.md",
-                                  "analises": "docs/analises-pos-estudo-1.md"},
+                                  "analises": "docs/analises-pos-estudo-1.md", "pre_registro": PRE_REGISTRO},
                            "en": {"resumo": "docs/summary.md", "ficha_do_motor": "docs/en/engine-card.md",
-                                  "analises": "docs/en/post-study-1-analyses.md"}},
+                                  "analises": "docs/en/post-study-1-analyses.md", "pre_registro": PRE_REGISTRO}},
+            "regras": investigacao.regras_do_estudo_1(),
+            "limites": {"pt": limites.textos("pt"), "en": limites.textos("en")},
             "aviso": investigacao.AVISO,
         }  # fmt: skip
         return modelos.ComoOMotorFoiTestadoApi.model_validate(out).model_dump(mode="json")

@@ -10,6 +10,7 @@ import {
   AVISO,
   validaBusca,
   validaComoTestado,
+  validaDemonstracao,
   validaDistribuicao,
   validaEmpresa,
   validaErro,
@@ -33,6 +34,7 @@ test("as respostas da API geradas pelo Python seguem o contrato da interface", (
   assert.deepEqual(validaEmpresa(ler("contrato", "empresa.json")), []);
   assert.deepEqual(validaInvestigacao(ler("contrato", "investigacao.json")), []);
   assert.deepEqual(validaComoTestado(ler("contrato", "como_testado.json")), []);
+  assert.deepEqual(validaDemonstracao(ler("contrato", "demonstracao.json")), []);
   for (const e of ["erro_lacre", "erro_data"]) assert.deepEqual(validaErro(ler("contrato", `${e}.json`)), [], e);
   assert.equal(ler("contrato", "erro_lacre.json").erro, "exercicio_lacrado");
   assert.equal(ler("contrato", "erro_data.json").erro, "data_fora_do_intervalo");
@@ -46,6 +48,21 @@ test("a busca vem em ordem alfabética e sem nenhum sinal", () => {
   const comSinal = { ...b, resultados: [{ ...b.resultados[0], alerta_v1: true }] };
   assert.ok(validaBusca(comSinal).some((p) => p.includes("alerta_v1")));
   assert.ok(validaBusca({ ...b, ordem: "alerta" }).length > 0);
+});
+
+test('o cartão "O motor foi testado" diz "metade das empresas": a taxa de alerta do JSON tem de continuar perto de 50%', () => {
+  const t = ler("contrato", "como_testado.json").taxa_de_alerta.nao_financeiras;
+  assert.ok(t > 0.45 && t < 0.55, `taxa de alerta ${t}: troque "metade" no texto da página inicial`);
+});
+
+test("a demonstração lista o caso, nunca o resultado dos sinais, e sempre em ordem alfabética", () => {
+  const d = ler("contrato", "demonstracao.json");
+  const comSinal = { ...d, empresas: [{ ...d.empresas[0], alerta_v1: true }] };
+  assert.ok(validaDemonstracao(comSinal).some((p) => p.includes("alerta_v1")));
+  const comPercentil = { ...d, empresas: [{ ...d.empresas[0], casos: [{ ...d.empresas[0].casos[0], percentil: 90 }] }] };
+  assert.ok(validaDemonstracao(comPercentil).some((p) => p.includes("percentil")));
+  const fora = { ...d, empresas: [{ ...d.empresas[0], denominacao: "Zeta" }, { ...d.empresas[0], denominacao: "Alfa" }] };
+  assert.ok(validaDemonstracao(fora).some((p) => p.includes("alfabética")));
 });
 
 test("o contrato recusa o que a regra recusa", () => {

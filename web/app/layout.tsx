@@ -3,6 +3,7 @@
 // web/app/layout.tsx, commit 102e3e2d9d70e87249d8df9215737e2d98b6358d, licença MIT. Adaptado: sem fontes externas.
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Rodape from "@/components/Rodape";
 import Topo from "@/components/Topo";
 import { ProvedorIdioma } from "@/lib/idioma";
 
@@ -50,12 +51,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ProvedorIdioma>
           <Topo />
-          <main className="wrap">{children}</main>
-          <footer>
-            <div className="wrap">
-              Chiocca System · <a href="https://github.com/robertochiocca/Chiocca-System-">github.com/robertochiocca/Chiocca-System-</a>
-            </div>
-          </footer>
+          <main id="conteudo" className="wrap">
+            {children}
+          </main>
+          <Rodape />
         </ProvedorIdioma>
       </body>
     </html>

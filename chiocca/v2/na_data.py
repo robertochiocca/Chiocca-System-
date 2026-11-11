@@ -194,6 +194,30 @@ def _situacao_cadastro(fontes: FontesV1) -> dict[str, str]:
         return montar_base.situacao_cadastro(fontes)  # type: ignore[arg-type]
 
 
+_DENOMINACOES: "weakref.WeakKeyDictionary[Any, dict[str, str]]" = weakref.WeakKeyDictionary()
+
+
+def _denominacoes(fontes: FontesV1) -> dict[str, str]:
+    cad = fontes.cadastro()  # type: ignore[attr-defined]
+    if "DENOM_SOCIAL" not in cad.columns:
+        return {}
+    cad = cad.assign(ativo=cad.SIT.eq("ATIVO")).sort_values("ativo", ascending=False, kind="stable")
+    return {
+        str(cd): str(g.DENOM_SOCIAL.dropna().iloc[0]) for cd, g in cad.groupby("cd_cvm") if g.DENOM_SOCIAL.notna().any()
+    }
+
+
+def denominacao_hoje(fontes: FontesV1, cd_cvm: str) -> str | None:
+    """O nome no cadastro de companhias abertas de hoje (o da linha ativa, se houver): só para a "Informação de
+    hoje", nunca para a visão "como era"."""
+    try:
+        if fontes not in _DENOMINACOES:
+            _DENOMINACOES[fontes] = _denominacoes(fontes)
+        return _DENOMINACOES[fontes].get(str(cd_cvm))
+    except TypeError:
+        return _denominacoes(fontes).get(str(cd_cvm))
+
+
 def _meta(
     fontes: FontesV1, exercicio: int, corte: date | None, so: set[str] | None = None
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
