@@ -280,6 +280,8 @@ def linhas(inv: dict[str, Any]) -> list[str]:
         out += [f"- {_troca(x, t)}" for x in trocas]
     if pa.get("rodizio"):
         out.append(pa["rodizio"]["nota"])
+    if inv.get("leitura_documental"):  # Fase F1: só com o leitor aprovado nos casos guardados
+        out += _leitura(inv["leitura_documental"], lang)
     mt = inv.get("como_o_motor_foi_testado", {})
     if mt:
         out += ["", t["testado"], t["testado_txt"].format(a=inteiro(mt["acertados"], lang), n=inteiro(mt["acertaveis"], lang),
@@ -300,6 +302,67 @@ def linhas(inv: dict[str, Any]) -> list[str]:
                                               v=_f(x["valor"] / 1e6, lang, 1), c=_f(x["valor_comparativo"] / 1e6, lang, 1),
                                               dif=_f(x["diferenca"] / 1e6, lang, 1)) for x in difs]  # fmt: skip
     return _maiusculas(out)
+
+
+LEITURA = {
+    "pt": {"titulo": "# Notas explicativas (trechos copiados; não gera alerta)", "partes": "Partes relacionadas",
+           "nota": "Nota: {t} (páginas {a} a {b})", "campos": "Campos do item 18 do CPC 05 (R1)",
+           "condicoes": "Condições de mercado", "risco": "Risco sacado e forfait", "relatorio": "Relatório do auditor",
+           "tipo": "Tipo de opinião: {t}", "formulario": "Formulário de Referência", "pagina": "p. {p}",
+           "negativa": "menção negativa", "original": ""},
+    "en": {"titulo": "# Explanatory notes (copied excerpts; no alert)", "partes": "Related parties",
+           "nota": "Note: {t} (pages {a} to {b})", "campos": "Fields of item 18 of CPC 05 (R1)",
+           "condicoes": "Market terms", "risco": "Reverse factoring and forfaiting", "relatorio": "Auditor's report",
+           "tipo": "Type of opinion: {t}", "formulario": "Reference Form", "pagina": "p. {p}",
+           "negativa": "negative mention", "original": "original excerpt in Portuguese"},
+}  # fmt: skip
+TIPOS_OPINIAO = {"pt": {"sem_ressalva": "sem ressalva", "com_ressalva": "com ressalva", "adversa": "adversa",
+                        "abstencao": "abstenção de opinião"},
+                 "en": {"sem_ressalva": "unqualified", "com_ressalva": "qualified", "adversa": "adverse",
+                        "abstencao": "disclaimer of opinion"}}  # fmt: skip
+
+
+def _trecho(x: dict[str, Any], t: dict[str, str]) -> str:
+    if x["omitido"]:
+        return f"- {x['aviso_omissao']}"
+    onde = [t["pagina"].format(p=x["pagina"])] if x["pagina"] is not None else []
+    marcas = onde + ([t["negativa"]] if x.get("negacao") else []) + ([t["original"]] if t["original"] else [])
+    rotulo = f"[{x['rotulo']}] " if x.get("rotulo") else ""
+    return f"- {rotulo}“{x['texto']}” ({', '.join(marcas)})" if marcas else f"- {rotulo}“{x['texto']}”"
+
+
+def _leitura(ld: dict[str, Any], lang: str) -> list[str]:
+    """A seção de leitura de documentos no PDF: só fato, os trechos como vieram (literais), sem selo nem alerta."""
+    t = LEITURA[lang]
+    pr, rs, rel, fre = (
+        ld["partes_relacionadas"],
+        ld["risco_sacado"],
+        ld["relatorio_do_auditor"],
+        ld["formulario_de_referencia"],
+    )
+    out = ["", t["titulo"], ld["nota"], "", t["partes"]]
+    if pr.get("motivo"):
+        out.append(pr["motivo"])
+    if pr.get("nota"):
+        out.append(t["nota"].format(t=pr["nota"]["titulo"], a=pr["nota"]["paginas"][0], b=pr["nota"]["paginas"][1]))
+    out += [_trecho(x, t) for x in pr["trechos"]]
+    if pr["campos_cpc05_18"]:
+        out += [t["campos"]] + [_trecho(x, t) for x in pr["campos_cpc05_18"]]
+    if pr["condicoes_de_mercado"]:
+        out += [t["condicoes"]] + [_trecho(x, t) for x in pr["condicoes_de_mercado"]] + [pr["nota_condicoes"]]
+    out += ["", t["risco"]] + ([rs["motivo"]] if rs.get("motivo") else []) + [_trecho(x, t) for x in rs["trechos"]]
+    if rs.get("nota"):
+        out.append(rs["nota"])
+    out += ["", t["relatorio"]] + ([rel["motivo"]] if rel.get("motivo") else [])
+    if rel.get("tipo"):
+        out.append(t["tipo"].format(t=TIPOS_OPINIAO[lang].get(rel["tipo"], rel["tipo"])))
+    out += [_trecho(x, t) for x in rel["trechos"]]
+    out += ["", t["formulario"]] + ([fre["motivo"]] if fre.get("motivo") else [])
+    if (fre.get("documento") or {}).get("linhagem"):
+        out.append(fre["documento"]["linhagem"])
+    out += [f"- {x['parte']} · {x['relacao'] or '—'} · {x['objeto'] or '—'} · {x['montante'] or '—'} · {x['saldo'] or '—'}"
+            for x in fre["linhas"]]  # fmt: skip
+    return out
 
 
 def _troca(x: dict[str, Any], t: dict[str, Any]) -> str:

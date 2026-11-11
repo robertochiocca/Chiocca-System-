@@ -61,6 +61,10 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
 - Its own adversarial set, with fictitious documents and an answer key, measured as in DireitoAberto.
 - LLM optional only, with every quotation going through the same check. Without a key, everything works in extractive mode.
 - Size: about 1,800 lines and 50 tests.
+- **Plan approved by Roberto on 2026-11-11, in two parts, with a stop between them:**
+  - *F1:* extractive reader of the DFP explanatory notes (related parties under items 18 and 19 of CPC 05, also reading the parent-company columns; reverse factoring or forfaiting), of the auditor's report of the version used and of the Reference Form related-party table; the core of the adversarial set; pypdf pinned in the lock. Pre-registration of the measurement in [`docs/en/reader-preregistration.md`](reader-preregistration.md), before any code; held-out cases written by Roberto outside this environment, measured once with the frozen reader; below the target, the section stays off. Contract in [`docs/en/contracts.md`](contracts.md), section 8.
+  - *F2:* CVM monitor (only metadata and hash for documents after 2024-12-31), the list of material facts and notices filed by the date (filing date, category, subject and link, without reading the content) in the "What was known on the date" section and the expanded adversarial set, measured again.
+  - *Decisions:* natural-person names become "trecho omitido; ver página N do documento" ("excerpt omitted; see page N of the document"), with the detector erring on the side of omitting; from the Reference Form, only the last version filed by the date; LLM outside Phase F (on the roadmap); ENET access one request at a time, with interval, retries, integrity and a cache outside git.
 
 ## Questions and decisions
 

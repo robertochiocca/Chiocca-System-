@@ -61,6 +61,10 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 - Conjunto adversarial próprio, com documentos fictícios e gabarito, medido como no DireitoAberto.
 - LLM só opcional, com toda citação passando pela mesma conferência. Sem chave, tudo funciona em modo extrativo.
 - Tamanho: cerca de 1.800 linhas e 50 testes.
+- **Plano aprovado por Roberto em 11/11/2026, em duas partes, com parada entre elas:**
+  - *F1:* leitor extrativo das notas explicativas da DFP (partes relacionadas pelos itens 18 e 19 do CPC 05, lendo também as colunas da controladora; risco sacado ou forfait), do relatório do auditor da versão usada e da tabela de partes relacionadas do Formulário de Referência; o núcleo do conjunto adversarial; pypdf com versão fixa no lock. Pré-registro da medida em [`docs/pre-registro-leitor.md`](pre-registro-leitor.md), antes de qualquer código; casos guardados escritos por Roberto fora deste ambiente, medidos uma vez com o leitor congelado; abaixo da meta, a seção fica desligada. Contrato em [`docs/contratos.md`](contratos.md), seção 8.
+  - *F2:* monitor da CVM (só metadados e hash para documentos depois de 31/12/2024), a lista de fatos relevantes e comunicados entregues até a data (data de entrega, categoria, assunto e link, sem leitura do conteúdo) na seção "O que se sabia na data" e o conjunto adversarial ampliado, medido de novo.
+  - *Decisões:* nomes de pessoa física viram "trecho omitido; ver página N do documento", com o detector errando para o lado de omitir; do Formulário de Referência, só a última versão entregue até a data; LLM fora da Fase F (no roadmap); acesso ao ENET uma requisição por vez, com intervalo, tentativas, integridade e cache fora do git.
 
 ## Perguntas e decisões
 

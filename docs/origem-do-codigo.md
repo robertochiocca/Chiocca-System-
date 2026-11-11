@@ -27,3 +27,5 @@ Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.m
 - `web/app/globals.css`, de `web/app/globals.css`: só os tokens de cor, o tema escuro e a barra fixa; paleta e componentes do Chiocca.
 - `web/app/layout.tsx`, de `web/app/layout.tsx`: só o script de tema antes da hidratação; sem fontes externas, com o provedor de idioma.
 - `web/components/Topo.tsx`, de `web/components/Nav.tsx`: só o padrão de tema e de menu compacto; sem conta nem login, com idioma PT/EN e o aviso fixo na barra.
+
+**Fase F1.** Nenhum arquivo veio de outro projeto. O avaliador do conjunto adversarial (`chiocca/v2/leitor/avaliacao.py`) segue a ideia do DireitoAberto (gabarito declarativo escrito à mão e conferência de toda citação), reescrita para o Chiocca System, sem código copiado. O pypdf é dependência instalada, fixada no `pyproject.toml` e no `requirements-lock.txt`, não código copiado.

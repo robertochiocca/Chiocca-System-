@@ -398,3 +398,72 @@ def test_leitura_pura_sem_documentos() -> None:
         s | {"formulario_de_referencia": {"status": "sem_formulario", "motivo": "x", "linhas": []}}
     )
     assert m.partes_relacionadas.status == "nao_lido" and m.risco_sacado.encontrado is None
+
+
+# ---- contrato do web: a seção guardada para os testes da interface ----
+
+CONTRATO_WEB = base.RAIZ / "web" / "tests" / "contrato"
+PAGINAS_DA_FIXTURE = [
+    [
+        "11. Transações com partes relacionadas",
+        "A controladora prestou aval em empréstimos da controlada Exemplo Energia S.A.,",
+        "no montante de R$ 30.000 mil, em condições de mercado.",
+        "",
+        "O imóvel da sede pertence ao Sr. Ernesto Fictício Barbosa, acionista controlador.",
+        "",
+        "12. Fornecedores",
+        "A Companhia mantém operações de risco sacado com bancos de primeira linha.",
+    ]
+]
+
+
+def test_secao_guardada_para_o_contrato_do_web(tmp_path: Path) -> None:
+    """A seção, gerada pelo leitor com documentos fictícios, fica em web/tests/contrato/ para os testes da interface
+    (o mesmo esquema de tests/test_v2_contrato_web.py; para regerar: CHIOCCA_REGERAR_CONTRATO_WEB=1)."""
+    import os
+
+    formulario._tabelas.cache_clear()
+    rel = json.loads((CASOS / "d16_parecer_com_ressalva.json").read_text(encoding="utf-8"))["parecer"]["texto"]
+    _cache_de_teste(tmp_path, "555", _pdf(*PAGINAS_DA_FIXTURE), rel)
+    _fre(
+        tmp_path,
+        2022,
+        [("1", "2022-05-30")],
+        [
+            "00.000.000/0001-00;2022-01-01;1;1;EXEMPLO S.A.;Exemplo Holding S.A.;PJ;Controladora;"
+            "Aluguel da sede;1000\n",
+            "00.000.000/0001-00;2022-01-01;1;1;EXEMPLO S.A.;Paulo Fictício Andrade;PF;Diretor;Mútuo;500\n",
+        ],
+    )
+    regerar = os.environ.get("CHIOCCA_REGERAR_CONTRATO_WEB") == "1"
+    for lang in ("pt", "en"):
+        s = secao.secao("555", 1, "2022-03-01", "100", 2021, date(2024, 12, 31), lang, pasta=tmp_path, brutos=tmp_path)
+        s["formulario_de_referencia"]["documento"]["arquivo"] = "fre_cia_aberta_2022.zip"
+        LeituraDocumental.model_validate(s)
+        texto_saida = json.dumps(s, ensure_ascii=False)
+        assert "Ernesto" not in texto_saida and "Paulo Fictício" not in texto_saida
+        caminho = CONTRATO_WEB / f"leitura_documental_{lang}.json"
+        if regerar:
+            caminho.write_text(json.dumps(s, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        assert json.loads(caminho.read_text(encoding="utf-8")) == s, lang
+    formulario._tabelas.cache_clear()
+
+
+def test_secao_no_pdf_com_trechos_literais_e_sem_nomes() -> None:
+    import pypdf
+
+    from chiocca.v2 import pdf_investigacao
+
+    for lang in ("pt", "en"):
+        inv = json.loads((base.RAIZ / "docs" / "exemplos" / f"americanas_2021_em_2024-12-31_{lang}.json").read_text())
+        inv["leitura_documental"] = json.loads((CONTRATO_WEB / f"leitura_documental_{lang}.json").read_text())
+        pdf = pdf_investigacao.gerar(inv)
+        txt = " ".join(p.extract_text() or "" for p in pypdf.PdfReader(io.BytesIO(pdf)).pages)
+        assert ("Notas explicativas" if lang == "pt" else "Explanatory notes") in txt
+        assert "A controladora prestou aval" in txt and "Ernesto" not in txt and "Paulo Fictício" not in txt
+
+
+def test_contratos_com_o_numero_de_casos_de_desenvolvimento() -> None:
+    n = len(list(CASOS.glob("*.json")))
+    assert f"{n} casos de desenvolvimento" in (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")
+    assert f"{n} development cases" in (base.RAIZ / "docs" / "en" / "contracts.md").read_text(encoding="utf-8")

@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
 import { abrirTudo, codigosInternos, hifensComoSinal, textoDaTela } from "./comum.mjs";
-import { INV_FIXTURE, subir } from "./servidor.mjs";
+import { INV_FIXTURE, INV_LEITURA, subir } from "./servidor.mjs";
 
 let servidor;
 let navegador;
@@ -364,6 +364,33 @@ for (const idioma of ["pt", "en"]) {
     });
   }
 
+  test(`leitura de documentos (Fase F1): trechos com página, omissão de nome e nenhum selo (${idioma})`, async () => {
+    const { p, contexto } = await pagina(idioma);
+    await abrir(p, INV_LEITURA, "#notas");
+    const ancoras = await p.locator("nav.indice a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+    assert.ok(ancoras.includes("#notas") && ancoras.indexOf("#notas") === ancoras.indexOf("#parecer") + 1);
+    const secao = p.locator("#notas");
+    assert.equal(await texto(secao.locator("h2")), pt ? "Notas explicativas" : "Explanatory notes");
+    const tudo = await texto(secao);
+    assert.match(tudo, pt ? /Ausência de menção não prova ausência\./ : /Absence of mention does not prove absence\./);
+    // trecho mostrado: literal, em português, com a página (e "trecho original" na interface em inglês)
+    const primeiro = secao.locator("figure.trecho").first();
+    assert.match(await texto(primeiro.locator("blockquote")), /A controladora prestou aval em empréstimos/);
+    assert.equal(await primeiro.locator("blockquote").getAttribute("lang"), "pt");
+    assert.equal(await texto(primeiro.locator("figcaption")), pt ? "página 1" : "page 1 · original excerpt in Portuguese");
+    // trecho com nome de pessoa física: omitido, com a página; nome nenhum na tela
+    assert.match(await texto(secao.locator(".trecho-omitido").first()), pt ? /^trecho omitido; ver página 1 do documento$/ : /^excerpt omitted; see page 1 of the document$/);
+    assert.ok(!/Ernesto|Barbosa|Paulo Fictício/.test(tudo), "nome de pessoa física na tela");
+    // só fato: nenhum selo, nenhum alerta
+    assert.equal(await secao.locator(".selo").count(), 0);
+    assert.match(tudo, pt ? /Tipo de opinião: Com ressalva/ : /Type of opinion: Qualified/);
+    assert.match(tudo, /operações de risco sacado com bancos de primeira linha/);
+    const partes = await secao.locator(".tabela tbody tr td:first-child").allInnerTexts();
+    assert.deepEqual(partes, ["Exemplo Holding S.A.", pt ? "parte relacionada (nome omitido)" : "related party (name omitted)"]);
+    assert.match(tudo, pt ? /única versão disponível nos dados abertos/ : /only version available in the open data/);
+    await contexto.close();
+  });
+
   test(`investigação na época: sem DFP seguinte, o link para o que se soube depois (${idioma})`, async () => {
     const { p, contexto } = await pagina(idioma);
     await abrir(p, INV_2022, "#mudancas");
@@ -513,6 +540,7 @@ for (const idioma of ["pt", "en"]) {
         [EMPRESA, "nav.datas", COMPUTADOR],
         [INV_2024, ".cartao-mscore", COMPUTADOR],
         [INV_2022, ".cartao-mscore", COMPUTADOR],
+        [INV_LEITURA, "#notas", COMPUTADOR],
         [TESTADO, "table", COMPUTADOR],
         [INV_2024, ".cartao-mscore", CELULAR],
       ];

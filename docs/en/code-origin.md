@@ -27,3 +27,5 @@ Commits inspected in Phase A (details in [`docs/en/inventory.md`](inventory.md))
 - `web/app/globals.css`, from `web/app/globals.css`: only the color tokens, the dark theme and the sticky bar; Chiocca's palette and components.
 - `web/app/layout.tsx`, from `web/app/layout.tsx`: only the theme script before hydration; no external fonts, with the language provider.
 - `web/components/Topo.tsx`, from `web/components/Nav.tsx`: only the theme and compact menu pattern; no account or login, with the PT/EN language switch and the fixed notice in the bar.
+
+**Phase F1.** No file came from another project. The adversarial-set evaluator (`chiocca/v2/leitor/avaliacao.py`) follows DireitoAberto's idea (hand-written declarative ground truth and checking of every citation), rewritten for Chiocca System, with no copied code. pypdf is an installed dependency, pinned in `pyproject.toml` and `requirements-lock.txt`, not copied code.

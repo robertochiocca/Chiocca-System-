@@ -39,6 +39,13 @@ Só contexto, sem alerta, e só depois de especificados no plano:
 - Ler também a nota da controladora, porque a consolidação elimina as transações dentro do grupo (Gonçalves et al. 2024, p. 9).
 - A frase "em condições de mercado" é registrada como fato, sem prova (item 23).
 - Antes de começar a Fase F: verificar se os dados abertos do Formulário de Referência têm uma tabela estruturada de transações com partes relacionadas. Só verificar e relatar.
+  - Verificado em 11/11/2026: têm (`fre_cia_aberta_transacao_parte_relacionada_<ano>.csv`), só com a última versão de cada companhia no ano. Usada na Fase F1.
+
+## Fora da Fase F (registrado em 11/11/2026)
+
+- LLM: fora da Fase F, por decisão de Roberto. O leitor é só extrativo. Se voltar, cada citação passa pela mesma conferência literal.
+- Versões anteriores do Formulário de Referência (só no ENET; os dados abertos têm a última).
+- Reconhecimento de texto em PDF sem camada de texto e notas explicativas de ITR.
 
 ## Não fazer
 

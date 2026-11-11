@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import CabecalhoEmpresa from "@/components/CabecalhoEmpresa";
+import LeituraDocumental from "@/components/LeituraDocumental";
 import InformacaoDeHoje from "@/components/InformacaoDeHoje";
 import Resumo from "@/components/Resumo";
 import { CartaoMScore, CartaoSinal } from "@/components/Sinais";
@@ -111,6 +112,7 @@ function Pagina() {
     ["risco", t.sec_risco],
     ["qualidade", t.sec_qualidade],
     ...(pa ? ([["parecer", t.sec_parecer]] as [string, string][]) : []),
+    ...(inv.leitura_documental ? ([["notas", t.sec_notas]] as [string, string][]) : []),
     ["mudancas", t.sec_mudancas],
     ["limites", t.sec_limites],
     ["hoje", t.sec_hoje],
@@ -200,6 +202,12 @@ function Pagina() {
                   </p>
                 )}
               </div>
+            </Secao>
+          )}
+
+          {inv.leitura_documental && (
+            <Secao id="notas" titulo={t.sec_notas} sub={t.sub_notas}>
+              <LeituraDocumental l={inv.leitura_documental} />
             </Secao>
           )}
 

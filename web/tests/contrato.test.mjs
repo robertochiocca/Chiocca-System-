@@ -15,6 +15,7 @@ import {
   validaEmpresa,
   validaErro,
   validaInvestigacao,
+  validaLeitura,
   validaSaude,
 } from "../lib/contrato.mjs";
 
@@ -79,4 +80,31 @@ test("o contrato recusa o que a regra recusa", () => {
   assert.ok(validaInvestigacao(c).length > 0, "aviso");
   assert.ok(validaDistribuicao({ n: 20, quantis: {}, limites: [0, 1], contagens: [20], motivo: null, nomes: ["X"] }).length > 0);
   assert.equal(AVISO.pt, inv.aviso);
+});
+
+test("seção de leitura de documentos (Fase F1): a gerada pelo Python segue o contrato; alerta, nome e omissão errada não", () => {
+  for (const lang of ["pt", "en"]) {
+    const l = ler("contrato", `leitura_documental_${lang}.json`);
+    assert.deepEqual(validaLeitura(l), [], lang);
+    const inv = { ...ler("contrato", "investigacao.json"), leitura_documental: l };
+    assert.deepEqual(validaInvestigacao(inv), [], lang);
+  }
+  const base = () => JSON.parse(JSON.stringify(ler("contrato", "leitura_documental_pt.json")));
+  const comAlerta = base();
+  comAlerta.gera_alerta = true;
+  assert.ok(validaLeitura(comAlerta).length > 0, "alerta");
+  const semConferencia = base();
+  semConferencia.partes_relacionadas.trechos[0].conferido = false;
+  assert.ok(validaLeitura(semConferencia).length > 0, "conferência");
+  const omissaoErrada = base();
+  const omitido = omissaoErrada.partes_relacionadas.trechos.find((t) => t.omitido);
+  omitido.texto = "O imóvel da sede pertence a uma pessoa";
+  assert.ok(validaLeitura(omissaoErrada).length > 0, "omitido com texto");
+  const pessoaFisica = base();
+  pessoaFisica.formulario_de_referencia.linhas[1].parte_omitida = false;
+  pessoaFisica.formulario_de_referencia.linhas[1].parte = "Nome de Pessoa";
+  assert.ok(validaLeitura(pessoaFisica).length > 0, "pessoa física com nome");
+  const comPercentil = base();
+  comPercentil.percentil = 50;
+  assert.ok(validaLeitura(comPercentil).length > 0, "campo de sinal");
 });
