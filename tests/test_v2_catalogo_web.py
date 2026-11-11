@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from chiocca.v2 import catalogo_web, contexto
 
 
@@ -19,3 +21,18 @@ def test_textos_nas_duas_linguas_e_componentes_completos() -> None:
     assert set(dados["componentes"]) == {"DSRI", "GMI", "AQI", "SGI", "DEPI", "SGAI", "LVGI", "TATA", *contexto.COEF_Z2}
     texto = json.dumps(dados, ensure_ascii=False).lower()
     assert "fraude" not in texto and "fraud" not in texto  # alerta, não acusação
+
+
+def test_leitor_estrito_igual_ao_yaml_completo() -> None:
+    yaml = pytest.importorskip("yaml")  # o PyYAML não é dependência do projeto; roda onde estiver instalado
+    texto = catalogo_web.CATALOGO.read_text(encoding="utf-8")
+    cat = yaml.safe_load(texto)
+    assert catalogo_web.ler_leitura_simples(texto) == cat["leitura_simples"]
+    nomes = catalogo_web.nomes_dos_sinais(texto)
+    for s in cat["sinais"]:
+        assert nomes[s["id"]] == {"nome": s["nome"], "nome_en": s["nome_en"]}
+
+
+def test_leitor_estrito_recusa_outro_formato() -> None:
+    with pytest.raises(ValueError, match="fora do formato"):
+        catalogo_web.ler_leitura_simples("leitura_simples:\n  x:\n    o_que_mede: texto sem aspas\n")
