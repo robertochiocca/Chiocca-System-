@@ -532,3 +532,19 @@ def test_negativa_de_opiniao_e_titulo_de_nota_com_ponto() -> None:
                "16. Imobilizado.\nTexto."]  # fmt: skip
     nota, trechos = partes_relacionadas.ler(paginas)
     assert nota is not None and nota.titulo.startswith("15.") and {t.rotulo for t in trechos} >= {"controladas"}
+
+
+def test_leitor_congelado_nao_mudou() -> None:
+    """Pré-registro, seção 4: a medida nos casos guardados roda sobre o leitor congelado. Até lá (e depois, para a
+    medida continuar valendo), os arquivos do leitor, a lista do cadastro, o gerador dos PDFs dos casos e o pypdf
+    ficam como no commit do congelamento (docs/leitor_congelado.json)."""
+    from importlib.metadata import version
+
+    congelado = json.loads((base.RAIZ / "docs" / "leitor_congelado.json").read_text(encoding="utf-8"))
+    atuais = {str(p.relative_to(base.RAIZ)) for p in (base.RAIZ / "chiocca" / "v2" / "leitor").glob("*.py")}
+    assert atuais <= set(congelado["arquivos"]), "arquivo novo no leitor depois do congelamento"
+    for arquivo, h in congelado["arquivos"].items():
+        assert (
+            hashlib.sha256((base.RAIZ / arquivo).read_bytes()).hexdigest() == h
+        ), f"{arquivo} mudou depois do congelamento"
+    assert version("pypdf") == congelado["pypdf"] and congelado["leitor"] == ler.VERSAO
