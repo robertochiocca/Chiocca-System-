@@ -34,10 +34,10 @@ def test_plano_com_as_datas_do_caso(mundo_c1: tuple[Fontes, armazem.FontesArmaze
 
 
 def _gabarito_da_fixture() -> pd.DataFrame:
-    colunas = ["caso_id", "cd_cvm", "tipo_evento", "periodo_afetado_inicio", "periodo_afetado_fim", "data_publica",
-               "fonte_principal_url"]  # fmt: skip
-    gab = pd.DataFrame([("x", "100", "processo_cvm", "2021", "2021", "2023-01-11", "https://exemplo.org/caso")],
-                       columns=colunas)  # fmt: skip
+    colunas = ["caso_id", "empresa", "cd_cvm", "tipo_evento", "periodo_afetado_inicio", "periodo_afetado_fim",
+               "data_publica", "fonte_principal_url"]  # fmt: skip
+    gab = pd.DataFrame([("x", "Empresa Cem S.A.", "100", "processo_cvm", "2021", "2021", "2023-01-11",
+                         "https://exemplo.org/caso")], columns=colunas)  # fmt: skip
     return gab.assign(cd=gab.cd_cvm)
 
 
@@ -77,7 +77,8 @@ def test_arquivos_estaticos_iguais_a_saida_da_api(
                                   "2024-12-31": "depois_da_revelacao"}  # fmt: skip
     assert e["data_inicial"] == "2022-04-30" and e["casos"][0]["tipo_evento"] == ["processo_cvm"]
     texto = json.dumps(indice)
-    assert indice["ordem"] == "denominacao" and "alerta" not in texto and "percentil" not in texto  # sem sinal
+    assert e["nome_do_caso"] == "Empresa Cem S.A."
+    assert indice["ordem"] == "nome_do_caso" and "alerta" not in texto and "percentil" not in texto  # sem sinal
     assert "notas" not in texto  # as notas do gabarito citam pessoas e não saem
 
 

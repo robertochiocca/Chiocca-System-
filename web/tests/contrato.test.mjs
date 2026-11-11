@@ -61,7 +61,7 @@ test("a demonstração lista o caso, nunca o resultado dos sinais, e sempre em o
   assert.ok(validaDemonstracao(comSinal).some((p) => p.includes("alerta_v1")));
   const comPercentil = { ...d, empresas: [{ ...d.empresas[0], casos: [{ ...d.empresas[0].casos[0], percentil: 90 }] }] };
   assert.ok(validaDemonstracao(comPercentil).some((p) => p.includes("percentil")));
-  const fora = { ...d, empresas: [{ ...d.empresas[0], denominacao: "Zeta" }, { ...d.empresas[0], denominacao: "Alfa" }] };
+  const fora = { ...d, empresas: [{ ...d.empresas[0], nome_do_caso: "Zeta" }, { ...d.empresas[0], nome_do_caso: "Alfa" }] };
   assert.ok(validaDemonstracao(fora).some((p) => p.includes("alfabética")));
 });
 

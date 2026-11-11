@@ -2,13 +2,15 @@
 
 // Página inicial (Fase E2): o que o Chiocca faz e o que quer dizer "como era numa data"; a nota da demonstração; a
 // busca (só por nome, código CVM ou CNPJ, em ordem alfabética, sem nenhum sinal); "Comece por aqui", com três
-// cartões; e as companhias da demonstração em ordem alfabética, com o caso público e nunca o resultado dos sinais.
+// cartões; e as companhias da demonstração em ordem alfabética pelo nome do caso no gabarito, com o tipo do caso, a
+// data pública e o período afetado (e a etiqueta de caso anterior a 2010), nunca o resultado dos sinais.
 // Os números vêm dos JSONs (rota da demonstração e "Como o motor foi testado").
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { casoAnteriorABase, EtiquetaAnteriorABase } from "@/components/Resumo";
 import SeletorData from "@/components/SeletorData";
 import { api, FalhaApi, MODO_ESTATICO } from "@/lib/api";
-import { bilhoes, data as fdata, inteiro } from "@/lib/formato";
+import { bilhoes, data as fdata, inteiro, periodo } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
 import { DATA_MAXIMA, dataValida } from "@/lib/limites.mjs";
 import { fmt, TIPOS_DE_CASO } from "@/lib/textos";
@@ -20,7 +22,7 @@ function LinhaDaLista({ e }: { e: EmpresaDaDemonstracao }) {
   const { idioma, t } = useIdioma();
   return (
     <li className="linha-companhia">
-      <Link href={`/empresa?cd=${e.cd_cvm}`}>{e.denominacao ?? e.cd_cvm}</Link>
+      <Link href={`/empresa?cd=${e.cd_cvm}`}>{e.nome_do_caso ?? e.denominacao ?? e.cd_cvm}</Link>
       <span className="casos-da-linha">
         {e.casos.map((c) => (
           <span key={c.caso_id} className="caso-da-linha">
@@ -28,6 +30,8 @@ function LinhaDaLista({ e }: { e: EmpresaDaDemonstracao }) {
             <span className="discreto">
               {t.data_publica}: {c.data_publica ? fdata(c.data_publica, idioma) : t.sem_data_publica}
             </span>
+            <span className="discreto">{c.periodo_afetado ? fmt(t.caso_periodo, { p: periodo(c.periodo_afetado) }) : t.caso_sem_periodo}</span>
+            {casoAnteriorABase(c) && <EtiquetaAnteriorABase />}
           </span>
         ))}
       </span>

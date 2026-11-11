@@ -375,6 +375,7 @@ class CasoDoGabarito(Modelo):
 
 
 class EmpresaDaDemonstracao(EmpresaResumo):
+    nome_do_caso: str | None
     nomes: list[str]
     datas: dict[str, list[int]]
     rotulos_datas: dict[str, Literal["exercicio_anterior", "periodo_afetado", "depois_da_revelacao", "data_maxima"]]
@@ -392,10 +393,10 @@ class Destaques(Modelo):
 
 
 class Demonstracao(Modelo):
-    """As companhias do modo demonstração em ordem alfabética, com o caso e as datas, e os destaques da página
-    inicial (rota /demonstracao e indice.json da demonstração estática). Sem resultado de sinal."""
+    """As companhias do modo demonstração em ordem alfabética pelo nome do caso, com o caso e as datas, e os destaques
+    da página inicial (rota /demonstracao e indice.json da demonstração estática). Sem resultado de sinal."""
 
-    ordem: Literal["denominacao"]
+    ordem: Literal["nome_do_caso"]
     empresas: list[EmpresaDaDemonstracao]
     destaques: Destaques
     aviso: dict[Idioma, str]
@@ -404,7 +405,7 @@ class Demonstracao(Modelo):
     def _alfabetica(self) -> Demonstracao:
         from chiocca.v2.busca import normaliza
 
-        chaves = [(normaliza(e.denominacao or ""), e.cd_cvm) for e in self.empresas]
+        chaves = [(normaliza(e.nome_do_caso or e.denominacao or ""), e.cd_cvm) for e in self.empresas]
         if chaves != sorted(chaves):
             raise ValueError("a lista da demonstração é sempre alfabética")
         return self

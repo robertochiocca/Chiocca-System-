@@ -1,12 +1,14 @@
 // Varredura da demonstração estática real, para rodar antes de publicar (npm run varrer:demo): abre no navegador,
 // nas duas línguas, a página de cada companhia e cada investigação gerada, no site exportado (out/, com os dados de
 // public/demo/ gerados por python -m chiocca.v2.demonstracao_estatica), e confere que a tela abre sem erro, sem
-// código interno no texto, sem hífen no lugar do sinal de menos e com o PDF no lugar. Serve o site debaixo do mesmo
+// código interno no texto, sem hífen no lugar do sinal de menos e com o PDF no lugar; na lista e na página da
+// companhia, o período afetado (um ano só sem intervalo) e a etiqueta de caso anterior ao início da base (2010). Serve o site debaixo do mesmo
 // prefixo do build (o do GitHub Pages, se for o caso). Não roda no CI: os dados ficam fora do git.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { PRIMEIRO_EXERCICIO } from "../../lib/limites.mjs";
 import { codigosInternos, hifensComoSinal, textoDaTela } from "./comum.mjs";
 import { servir } from "./servidor.mjs";
 
@@ -24,6 +26,9 @@ const problemas = {};
 const anota = (chave, x) => (problemas[chave] ??= []).push(x);
 let investigacoes = 0;
 let comAviso = 0;
+// casos que terminam antes do primeiro exercício da base: a lista e a página da companhia levam a etiqueta
+const anteriores = (e) => e.casos.filter((c) => c.periodo_afetado && c.periodo_afetado[1] < PRIMEIRO_EXERCICIO).length;
+const intervaloDeUmAno = /\b(\d{4})–\1\b/;
 // página inicial: as companhias em ordem alfabética, as dez primeiras e o botão para ver todas; busca no plural
 {
   const contexto = await navegador.newContext();
@@ -42,7 +47,13 @@ let comAviso = 0;
     }
   }
   const nomes = await p.locator(".linha-companhia > a").allInnerTexts();
-  if (nomes.join("|") !== indice.empresas.map((e) => e.denominacao).join("|")) anota("página inicial", "fora da ordem do índice");
+  if (nomes.join("|") !== indice.empresas.map((e) => e.nome_do_caso ?? e.denominacao).join("|")) anota("página inicial", "fora da ordem do índice");
+  const etiquetas = await p.locator(".linha-companhia").evaluateAll((ls) => ls.map((l) => l.querySelectorAll(".etiqueta-info").length));
+  indice.empresas.forEach((e, k) => {
+    if (etiquetas[k] !== anteriores(e)) anota("página inicial", `${e.cd_cvm}: ${etiquetas[k]} etiqueta(s) de caso anterior a 2010, esperado ${anteriores(e)}`);
+  });
+  const lista = await p.locator("#lista-companhias").innerText();
+  if (intervaloDeUmAno.test(lista)) anota("página inicial", `período de um ano como intervalo: ${intervaloDeUmAno.exec(lista)[0]}`);
   await p.locator("form[role=search] input").fill("s.a");
   await p.locator("form[role=search] button[type=submit]").click();
   const rotulo = await p.locator(".resultados .rotulo").innerText();
@@ -59,6 +70,12 @@ for (const idioma of ["pt", "en"]) {
     await p.goto(`${url}/empresa/?cd=${e.cd_cvm}`);
     await p.locator("nav.datas, .erro").first().waitFor();
     if (await p.locator(".erro").count()) anota(`empresa ${e.cd_cvm} ${idioma}`, await p.locator(".erro").innerText());
+    else {
+      const n = await p.locator(".cartao-caso .etiqueta-info").count();
+      if (n !== anteriores(e)) anota(`empresa ${e.cd_cvm} ${idioma}`, `${n} etiqueta(s) de caso anterior a 2010, esperado ${anteriores(e)}`);
+      const caso = await p.locator(".cartao-caso").innerText();
+      if (intervaloDeUmAno.test(caso)) anota(`empresa ${e.cd_cvm} ${idioma}`, `período de um ano como intervalo: ${intervaloDeUmAno.exec(caso)[0]}`);
+    }
     for (const [data, exercicios] of Object.entries(e.datas)) {
       for (const ex of exercicios) {
         investigacoes++;
@@ -82,6 +99,12 @@ for (const idioma of ["pt", "en"]) {
 }
 await navegador.close();
 await fechar();
-const resumo = { prefixo, empresas: indice.empresas.length, investigacoes_abertas: investigacoes, com_aviso_de_diferenca: comAviso };
+const resumo = {
+  prefixo,
+  empresas: indice.empresas.length,
+  investigacoes_abertas: investigacoes,
+  com_aviso_de_diferenca: comAviso,
+  com_caso_anterior_a_2010: indice.empresas.filter(anteriores).map((e) => `${e.cd_cvm} ${e.nome_do_caso ?? e.denominacao}`),
+};
 console.log(JSON.stringify({ ...resumo, problemas }, null, 1));
 process.exit(Object.keys(problemas).length ? 1 : 0);

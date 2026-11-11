@@ -2,8 +2,9 @@
 
 // Cabeçalho da página da empresa e da investigação (Fase E2): caminho (Buscar › Companhia › Exercício), título com o
 // nome na data, a linha "Exercício AAAA · como era em DD/MM/AAAA", o histórico de nome tirado dos FCA (o nome de hoje
-// só aparece na "Informação de hoje"), as datas como botões com rótulo e, na investigação, "Exportar em PDF" e
-// "Documento na CVM". Na API completa (fora da demonstração estática), há também o seletor de outra data.
+// só aparece na "Informação de hoje"), o que vier em `antesDasDatas` (na página da empresa, o cartão com código CVM,
+// CNPJ e setor), as datas como botões com rótulo e, na investigação, "Exportar em PDF" e "Documento na CVM". Na API
+// completa (fora da demonstração estática), há também o seletor de outra data.
 import { useRouter } from "next/navigation";
 import { data as fdata } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
@@ -36,6 +37,7 @@ export default function CabecalhoEmpresa({
   href,
   pdf,
   documento,
+  antesDasDatas,
 }: {
   empresa: Empresa;
   data: string;
@@ -45,6 +47,7 @@ export default function CabecalhoEmpresa({
   href: (d: string) => string;
   pdf?: string;
   documento?: string | null;
+  antesDasDatas?: React.ReactNode;
 }) {
   const { idioma, t } = useIdioma();
   const router = useRouter();
@@ -61,6 +64,7 @@ export default function CabecalhoEmpresa({
           : fmt(t.como_era_em, { d: fdata(data, idioma) })}
       </p>
       <HistoricoDeNome empresa={empresa} />
+      {antesDasDatas}
       <div className="datas-e-acoes">
         {datas.length > 0 && <BotoesDatas datas={datas} rotulos={rotulos} selecionada={data} href={href} />}
         {(pdf || documento) && (

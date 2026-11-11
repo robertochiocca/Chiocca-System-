@@ -119,7 +119,13 @@ for (const idioma of ["pt", "en"]) {
     const faixa = await p.locator(".faixa-demo").boundingBox();
     assert.ok(Math.abs(aviso.y) < 1, `aviso no topo: ${aviso.y}`);
     assert.ok(topo.y + topo.height <= 0 && faixa.y + faixa.height <= 0, "cabeçalho e faixa da demonstração rolam");
-    // rodapé com o repositório e a ficha do motor
+    // no computador, o aviso inteiro numa linha; a versão curta do celular fica escondida
+    assert.equal(await p.locator(".aviso .aviso-longo").isVisible(), true);
+    assert.equal(await p.locator(".aviso .aviso-curto").isVisible(), false);
+    assert.ok(aviso.height < 40, `aviso em mais de uma linha no computador: ${aviso.height}`);
+    // rodapé com o aviso completo (destino do "Saiba mais" do celular; já na outra língua, trocada acima), o
+    // repositório e a ficha do motor
+    assert.match(await texto(p.locator("footer #aviso-completo")), pt ? /Not an accusation, not investment advice\./ : /Não é acusação, não é recomendação de investimento\./);
     const rodape = await p.locator("footer a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
     assert.ok(rodape.includes("https://github.com/robertochiocca/Chiocca-System-"));
     assert.ok(rodape.some((h) => /ficha-do-motor\.md|engine-card\.md/.test(h)));
@@ -141,11 +147,16 @@ for (const idioma of ["pt", "en"]) {
       pt ? /patrimônio líquido de 2021 passa de R\$ 15,9 bilhões para −R\$ 12,6 bilhões no comparativo/ : /2021 equity goes from R\$15\.9 billion to −R\$12\.6 billion/,
     );
     assert.match(comece[2], pt ? /7 de 13 casos, com alerta em metade das empresas/ : /7 of 13 cases, with alerts on half/);
-    // companhias da demonstração: ordem alfabética, o caso público e nada de sinal
-    const linhas = (await p.locator(".linha-companhia").allInnerTexts()).map((x) => x.replace(/\s+/g, " "));
+    // companhias da demonstração: ordem alfabética pelo nome do caso no gabarito, o caso público (tipo com inicial
+    // maiúscula, data pública e período afetado, um ano só sem intervalo) e nada de sinal
+    const linhas = (await p.locator(".linha-companhia").allInnerTexts()).map((x) => x.replace(/\s+/g, " ").trim());
     assert.equal(linhas.length, 2);
-    assert.match(linhas[0], pt ? /^AMERICANAS.*fraude admitida.*Data pública: 11\/01\/2023/ : /^AMERICANAS.*admitted fraud.*Public date: 2023-01-11/);
-    assert.match(linhas[1], pt ? /^EMPRESA 100.*condenação da CVM/ : /^EMPRESA 100.*CVM conviction/);
+    assert.equal(
+      linhas[0],
+      pt ? "Americanas S.A. Fraude admitida Data pública: 11/01/2023 Período afetado: 2021" : "Americanas S.A. Admitted fraud Public date: 2023-01-11 Affected period: 2021",
+    );
+    assert.match(linhas[1], pt ? /^Empresa Cem S\.A\. Condenação da CVM .*Período afetado: / : /^Empresa Cem S\.A\. CVM conviction .*Affected period: /);
+    assert.equal(await p.locator(".linha-companhia .etiqueta-info").count(), 0, "nenhum caso da fixture termina antes de 2010");
     assert.doesNotMatch(linhas.join(" "), /alerta|alert|percentil|percentile|escore|score/i);
     // busca: concordância no singular
     await p.locator("form[role=search] input").fill("americanas");
@@ -169,6 +180,14 @@ for (const idioma of ["pt", "en"]) {
         ? /^Antes de 2021, a companhia se chamava B2W - COMPANHIA DIGITAL; antes de 2013, B2W - COMPANHIA GLOBAL DO VAREJO\.$/
         : /^Before 2021, the company was called B2W - COMPANHIA DIGITAL/,
     );
+    // o cartão da companhia logo abaixo do título, antes das datas; o caso do gabarito antes da lista de exercícios
+    const antes = (a, b) => p.evaluate(([x, y]) => !!(document.querySelector(x).compareDocumentPosition(document.querySelector(y)) & 4), [a, b]);
+    assert.match(await texto(p.locator(".cartao-companhia")), pt ? /^Código CVM 20990 · CNPJ / : /^CVM code 20990 · CNPJ /);
+    assert.ok(await antes("h1", ".cartao-companhia"), "cartão da companhia depois do título");
+    assert.ok(await antes(".cartao-companhia", "nav.datas"), "cartão da companhia antes das datas");
+    assert.ok(await antes("nav.datas", ".cartao-caso"), "caso depois das datas");
+    assert.ok(await antes(".cartao-caso", "#titulo-exercicios"), "caso antes da lista de exercícios");
+    assert.match(await texto(p.locator(".cartao-caso")), pt ? /Fraude admitida Data pública: 11\/01\/2023 Período afetado: 2021( |$)/ : /Admitted fraud Public date: 2023-01-11 Affected period: 2021( |$)/);
     const datas = (await p.locator("a.data-botao").allInnerTexts()).map((d) => d.replace(/\s+/g, " ").trim());
     assert.deepEqual(datas, pt ? ["30/04/2022 período afetado do caso", "31/12/2024 depois da revelação"] : ["2022-04-30 case's affected period", "2024-12-31 after it came to light"]);
     assert.equal(await p.locator('a.data-botao[aria-current="true"]').count(), 1);
@@ -214,19 +233,32 @@ for (const idioma of ["pt", "en"]) {
     const manip = await texto(p.locator(".resumo-manip"));
     assert.match(manip, pt ? /Em alerta/ : /Alert/);
     assert.match(manip, pt ? /Disparou: M-score de Beneish\. Abaixo do corte: Salto do prazo de pagamento/ : /Fired: Beneish M-score\. Below the cut-off:/);
-    assert.match(
-      await texto(p.locator(".resumo-risco")),
-      pt ? /Só contexto Z'' = 2,05; percentil no setor: 46; sem zona de corte\./ : /Context only Z'' = 2\.05; percentile in sector: 46; no cut-off zone\./,
+    // risco e qualidade: rótulo pequeno em caixa alta (com "só contexto" uma vez só, sem selo), o número grande numa
+    // linha própria e uma linha curta embaixo
+    const linhasDe = async (sel) => (await p.locator(`${sel} > *`).allInnerTexts()).map((x) => x.replace(/\s+/g, " ").trim());
+    assert.deepEqual(
+      await linhasDe(".resumo-risco"),
+      pt
+        ? ["RISCO FINANCEIRO · SÓ CONTEXTO", "Z'' = 2,05", "Percentil 46 no setor (45 empresas). Sem zona de corte."]
+        : ["FINANCIAL RISK · CONTEXT ONLY", "Z'' = 2.05", "Percentile 46 in the sector (45 companies). No cut-off zone."],
     );
-    assert.match(
-      await texto(p.locator(".resumo-qualidade")),
-      pt ? /F = 5\/9 \(8 calculáveis\); mede força financeira, não qualidade do lucro\./ : /F = 5\/9 \(8 computable\); measures financial strength, not earnings quality\./,
+    assert.deepEqual(
+      await linhasDe(".resumo-qualidade"),
+      pt
+        ? ["QUALIDADE FINANCEIRA · SÓ CONTEXTO", "F = 5/9", "8 dos 9 sinais calculáveis. Mede força financeira, não qualidade do lucro."]
+        : ["FINANCIAL QUALITY · CONTEXT ONLY", "F = 5/9", "8 of the 9 signals computable. Measures financial strength, not earnings quality."],
     );
+    for (const sel of [".resumo-risco", ".resumo-qualidade"]) {
+      assert.equal(await p.locator(`${sel} .selo`).count(), 0, `${sel}: sem selo repetindo "só contexto"`);
+      assert.equal(await p.locator(`${sel} .rotulo-cartao`).evaluate((n) => getComputedStyle(n).textTransform), "uppercase");
+      const [rotulo, numero] = await p.locator(`${sel} > *`).evaluateAll((ns) => ns.slice(0, 2).map((n) => parseFloat(getComputedStyle(n).fontSize)));
+      assert.ok(numero > 1.8 * rotulo, `${sel}: número grande (${numero}px) e rótulo pequeno (${rotulo}px)`);
+    }
     assert.match(
       await texto(p.locator(".cartao-caso")),
       pt
-        ? /fraude admitida Data pública: 11\/01\/2023 Período afetado: 2021–2021 O exercício 2021 está dentro do período afetado\./
-        : /admitted fraud Public date: 2023-01-11 Affected period: 2021–2021 Fiscal year 2021 is inside the affected period\./,
+        ? /Fraude admitida Data pública: 11\/01\/2023 Período afetado: 2021 O exercício 2021 está dentro do período afetado\./
+        : /Admitted fraud Public date: 2023-01-11 Affected period: 2021 Fiscal year 2021 is inside the affected period\./,
     );
     const fundoCaso = await p.locator(".cartao-caso").evaluate((n) => getComputedStyle(n).backgroundColor);
     const azulClaro = await p.locator(".faixa-demo").evaluate((n) => getComputedStyle(n).backgroundColor);
@@ -296,6 +328,39 @@ for (const idioma of ["pt", "en"]) {
     assert.equal(await m.locator(".regra .ajuda-caixa").count(), 0);
     await contexto.close();
   });
+
+  for (const tema of ["light", "dark"]) {
+    test(`âmbar só no selo "Em alerta"; a etiqueta da faixa em azul claro (${idioma}, ${tema})`, async () => {
+      const { p, contexto } = await pagina(idioma, COMPUTADOR, tema);
+      await abrir(p, INV_2024, ".cartao-mscore");
+      await abrirTudo(p);
+      const alerta = p.locator(".selo-alerta").first();
+      const ambar = await alerta.evaluate((n) => [getComputedStyle(n).backgroundColor, getComputedStyle(n).color]);
+      const contextoCor = await p.locator(".selo-contexto").first().evaluate((n) => [getComputedStyle(n).backgroundColor, getComputedStyle(n).color]);
+      // "Acima da faixa da própria empresa": azul claro, como "Só contexto"
+      const faixa = p.locator(".etiqueta-faixa");
+      assert.ok((await faixa.count()) > 0, "a investigação de teste tem a etiqueta da faixa");
+      assert.deepEqual(await faixa.first().evaluate((n) => [getComputedStyle(n).backgroundColor, getComputedStyle(n).color]), contextoCor);
+      // nenhum elemento fora do selo de alerta tem o fundo, a letra ou a borda em âmbar, em nenhuma tela
+      for (const [caminho, esperar] of [[INV_2024, ".cartao-mscore"], ["/", ".linha-companhia"], [EMPRESA, "nav.datas"]]) {
+        if (caminho !== INV_2024) {
+          await abrir(p, caminho, esperar);
+          await abrirTudo(p);
+        }
+        const fora = await p.evaluate(([fundo, letra]) => {
+          const out = [];
+          for (const n of document.querySelectorAll("body *")) {
+            const c = getComputedStyle(n);
+            const usa = c.backgroundColor === fundo || c.color === letra || c.borderTopColor === letra || c.borderTopColor === fundo;
+            if (usa && !n.closest(".selo-alerta")) out.push(`${n.tagName.toLowerCase()}.${[...n.classList].join(".")}`);
+          }
+          return out;
+        }, ambar);
+        assert.deepEqual(fora, [], `${caminho}: âmbar fora do selo de alerta`);
+      }
+      await contexto.close();
+    });
+  }
 
   test(`investigação na época: sem DFP seguinte, o link para o que se soube depois (${idioma})`, async () => {
     const { p, contexto } = await pagina(idioma);
@@ -401,6 +466,32 @@ for (const idioma of ["pt", "en"]) {
     assert.ok(caso.y > risco.y && caso.width > 300, "o caso embaixo, na largura toda");
     assert.equal(await p.locator(".cartao-mscore details.detalhes").evaluate((d) => d.open), false);
     assert.equal(await p.locator("nav.indice ul").evaluate((n) => getComputedStyle(n).flexDirection), "row");
+    // aviso no celular: a linha curta fixa, numa linha só, com "Saiba mais" levando ao texto completo no rodapé
+    assert.equal(await p.locator(".aviso .aviso-longo").isVisible(), false);
+    assert.equal(
+      await texto(p.locator(".aviso .aviso-curto")),
+      pt ? "Sinal estatístico. Não é acusação nem recomendação. Saiba mais" : "Statistical signal. Not an accusation or advice. Learn more",
+    );
+    const fixo = await p.locator(".aviso").boundingBox();
+    assert.ok(fixo.height < 32, `aviso do celular em mais de uma linha: ${fixo.height}`);
+    // nenhum título fica debaixo do aviso fixo: cada âncora do índice
+    const ancoras = await p.locator("nav.indice a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+    assert.ok(ancoras.length >= 8);
+    for (const a of ancoras) {
+      await p.locator(`nav.indice a[href="${a}"]`).click();
+      await p.waitForFunction((x) => Math.abs(document.querySelector(x).getBoundingClientRect().top) < 300, a);
+      await p.waitForTimeout(150);
+      const titulo = await p.locator(`${a} h2`).first().boundingBox();
+      const aviso = await p.locator(".aviso").boundingBox();
+      assert.ok(titulo.y >= aviso.y + aviso.height, `${a}: título escondido (${titulo.y} < ${aviso.y + aviso.height})`);
+      await p.evaluate(() => window.scrollTo(0, 0));
+    }
+    await p.locator(".aviso .aviso-curto a").click();
+    await p.waitForURL(/#aviso-completo$/);
+    const completo = await p.locator("#aviso-completo").boundingBox();
+    const aviso = await p.locator(".aviso").boundingBox();
+    assert.ok(completo.y >= aviso.y + aviso.height && completo.y < 844, "o texto completo aparece, sem ficar debaixo do aviso");
+    assert.match(await texto(p.locator("#aviso-completo")), pt ? /Não é acusação, não é recomendação de investimento\./ : /Not an accusation, not investment advice\./);
     await contexto.close();
   });
 

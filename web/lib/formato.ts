@@ -45,6 +45,11 @@ export function milhoes(v: number | null | undefined, idioma: Idioma): string {
   return v === null || v === undefined ? "—" : decimal(v / 1e6, idioma, 1);
 }
 
+/** Período afetado: um ano só ("2021") ou o intervalo ("2015–2018"). */
+export function periodo(p: [number, number]): string {
+  return p[0] === p[1] ? `${p[0]}` : `${p[0]}–${p[1]}`;
+}
+
 /** Valor em reais, em bilhões, com o sinal de menos antes do símbolo: PT "−R$ 12,6 bilhões", EN "−R$12.6 billion". */
 export function bilhoes(v: number, idioma: Idioma): string {
   const n = decimal(Math.abs(v) / 1e9, idioma, 1);

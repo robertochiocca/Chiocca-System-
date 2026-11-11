@@ -47,7 +47,7 @@ Ficha de alerta: qual sinal disparou, com qual número e de qual conta da DFP
 
 **[robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/)**: site estático, sem API, com as investigações geradas antes pelo próprio produto.
 
-- **O que mostra:** as 35 companhias do gabarito que entram no modo demonstração (os casos públicos, sem os casos em observação), em datas fixas: a data de corte de cada exercício do período afetado do caso, a do exercício anterior e 31/12/2024. Em cada data, a investigação completa como era naquela data, em PT e EN, com o PDF. A busca é só por nome, código CVM ou CNPJ, e o seletor só oferece as datas geradas.
+- **O que mostra:** as 32 companhias do gabarito que entram no modo demonstração (os casos públicos com data pública, sem os casos em observação), em datas fixas: a data de corte de cada exercício do período afetado do caso, a do exercício anterior e 31/12/2024. Em cada data, a investigação completa como era naquela data, em PT e EN, com o PDF. A busca é só por nome, código CVM ou CNPJ, e o seletor só oferece as datas geradas.
 - **O que não mostra:** outras companhias, outras datas nem exercícios de 2024 em diante (reservados ao estudo 2). O produto completo, com qualquer companhia e qualquer data dentro do lacre, roda localmente com a API (veja [Como reproduzir](#como-reproduzir)).
 
 <p><img src="docs/imagens/demonstracao-computador.png" alt="Investigação da Americanas, exercício 2021, em 31/12/2024, na demonstração, no computador" width="620"> <img src="docs/imagens/demonstracao-celular.png" alt="A mesma investigação no celular" width="200"></p>
@@ -235,7 +235,7 @@ Alert sheet: which signal fired, with which figure, from which DFP account
 
 **[robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/)**: a static site, with no API, holding investigations generated beforehand by the product itself.
 
-- **What it shows:** the 35 ground-truth companies included in demo mode (the public cases, without the cases under observation), on fixed dates: the cut-off date of each fiscal year of the case's affected period, the one of the previous fiscal year and 2024-12-31. On each date, the full investigation as it was on that date, in PT and EN, with the PDF. Search is only by name, CVM code or CNPJ, and the date selector only offers the generated dates.
+- **What it shows:** the 32 ground-truth companies included in demo mode (the public cases with a public date, without the cases under observation), on fixed dates: the cut-off date of each fiscal year of the case's affected period, the one of the previous fiscal year and 2024-12-31. On each date, the full investigation as it was on that date, in PT and EN, with the PDF. Search is only by name, CVM code or CNPJ, and the date selector only offers the generated dates.
 - **What it does not show:** other companies, other dates or fiscal years from 2024 onward (reserved for study 2). The full product, with any company and any date within the seal, runs locally with the API (see [How to reproduce](#how-to-reproduce)).
 
 <p><img src="docs/imagens/demonstracao-computador.png" alt="Americanas investigation, fiscal year 2021, on 2024-12-31, in the demo, on a computer" width="620"> <img src="docs/imagens/demonstracao-celular.png" alt="The same investigation on a phone" width="200"></p>

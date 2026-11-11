@@ -72,8 +72,10 @@ class ForaDaDemonstracao(PermissionError):
 
 
 def empresas_da_demonstracao(raiz: Any = base.RAIZ) -> set[str]:
-    """Companhias dos casos do gabarito (condenação da CVM ou fraude admitida), sem os casos em observação."""
+    """Companhias dos casos do gabarito (condenação da CVM ou fraude admitida) com data pública, sem os casos em
+    observação. Caso sem data pública no gabarito não entra na demonstração (decisão de 11/11/2026)."""
     gab = pd.read_csv(raiz / "data" / "gabarito_casos.csv", dtype=str)
+    gab = gab[gab.data_publica.fillna("").str.strip() != ""]
     obs = pd.read_csv(raiz / "data" / "casos_em_observacao.csv", dtype=str)
     return {_cd(c) for c in gab.cd_cvm.dropna()} - {_cd(c) for c in obs.cd_cvm.dropna()}
 
