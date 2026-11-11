@@ -58,7 +58,8 @@ export function validaLeitura(l) {
     if (t.omitido !== (t.texto === null) || t.omitido !== (t.aviso_omissao !== null)) problemas.push("leitura_documental: omissão inconsistente");
   }
   for (const x of l.formulario_de_referencia.linhas ?? []) {
-    if (x.parte_omitida && x.tipo_pessoa === "PJ" && !/omitid/.test(x.parte)) problemas.push("leitura_documental: parte omitida com nome");
+    // o texto no lugar do nome: "parte relacionada (nome omitido)" ou "related party (name omitted)"
+    if (x.parte_omitida && !/nome omitido|name omitted/.test(x.parte)) problemas.push("leitura_documental: parte omitida com nome");
     if (x.tipo_pessoa === "PF" && !x.parte_omitida) problemas.push("leitura_documental: pessoa física com nome");
   }
   return problemas;

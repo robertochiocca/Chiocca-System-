@@ -104,6 +104,14 @@ test("seção de leitura de documentos (Fase F1): a gerada pelo Python segue o c
   pessoaFisica.formulario_de_referencia.linhas[1].parte_omitida = false;
   pessoaFisica.formulario_de_referencia.linhas[1].parte = "Nome de Pessoa";
   assert.ok(validaLeitura(pessoaFisica).length > 0, "pessoa física com nome");
+  // pessoa jurídica com nome de pessoa física dentro (o nome da firma omitido): vale nas duas línguas
+  for (const lang of ["pt", "en"]) {
+    const firmaOmitida = JSON.parse(JSON.stringify(ler("contrato", `leitura_documental_${lang}.json`)));
+    firmaOmitida.formulario_de_referencia.linhas[1].tipo_pessoa = "PJ";
+    assert.deepEqual(validaLeitura(firmaOmitida), [], `firma omitida ${lang}`);
+    firmaOmitida.formulario_de_referencia.linhas[1].parte = "Nome de Pessoa Comércio Ltda.";
+    assert.ok(validaLeitura(firmaOmitida).length > 0, `firma omitida com nome ${lang}`);
+  }
   const comPercentil = base();
   comPercentil.percentil = 50;
   assert.ok(validaLeitura(comPercentil).length > 0, "campo de sinal");
