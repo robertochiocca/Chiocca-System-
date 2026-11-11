@@ -106,12 +106,13 @@ function chaveAlfabetica(s) {
 
 const PROIBIDAS_NA_DEMONSTRACAO = /alerta|percentil|escore|score|achado|sinal/i;
 
-/** Demonstração: companhias em ordem alfabética, com o caso do gabarito e as datas; nunca resultado de sinal. */
+/** Demonstração: companhias em ordem alfabética pelo nome do caso no gabarito, com o caso e as datas; nunca resultado
+ * de sinal. */
 export function validaDemonstracao(d) {
   const problemas = [];
   if (!tem(d, ["ordem", "empresas", "destaques", "aviso"], "demonstracao", problemas)) return problemas;
-  if (d.ordem !== "denominacao") problemas.push("demonstracao: ordem diferente da alfabética");
-  const chaves = d.empresas.map((e) => `${chaveAlfabetica(e.denominacao)}\u0000${e.cd_cvm}`);
+  if (d.ordem !== "nome_do_caso") problemas.push("demonstracao: ordem diferente da alfabética pelo nome do caso");
+  const chaves = d.empresas.map((e) => `${chaveAlfabetica(e.nome_do_caso ?? e.denominacao)}\u0000${e.cd_cvm}`);
   if (chaves.some((c, i) => i > 0 && c < chaves[i - 1])) problemas.push("demonstracao: lista fora da ordem alfabética");
   const visitar = (x, onde) => {
     if (x && typeof x === "object")

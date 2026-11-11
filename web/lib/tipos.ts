@@ -53,6 +53,8 @@ export interface CasoDoGabarito {
 }
 
 export interface EmpresaDaDemonstracao extends EmpresaResumo {
+  /** O nome da companhia no gabarito (o que a página inicial mostra). */
+  nome_do_caso: string | null;
   nomes: string[];
   datas: Record<string, number[]>;
   rotulos_datas: Record<string, RotuloData>;
@@ -61,7 +63,7 @@ export interface EmpresaDaDemonstracao extends EmpresaResumo {
 }
 
 export interface Demonstracao {
-  ordem: "denominacao";
+  ordem: "nome_do_caso";
   empresas: EmpresaDaDemonstracao[];
   destaques: {
     cd_cvm: string;

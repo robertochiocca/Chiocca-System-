@@ -1,9 +1,10 @@
 "use client";
 
-// A empresa na data (Fase E2): caminho, nome na data, "como era em", histórico de nome dos FCA, datas como botões com
+// A empresa na data (Fase E2): caminho, nome na data, "como era em", histórico de nome dos FCA, o cartão da companhia
+// (código CVM, CNPJ, setor e códigos de negociação), logo abaixo do título e antes das datas; as datas como botões com
 // rótulo (na demonstração, a data inicial é a do primeiro exercício do período afetado do caso), o caso do gabarito,
-// os exercícios com DFP entregue até a data e os dados da companhia. A situação e o nome de hoje ficam numa seção
-// separada, no fim.
+// antes da lista, e os exercícios com DFP entregue até a data. A situação e o nome de hoje ficam numa seção separada,
+// no fim.
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -53,6 +54,23 @@ function Empresa() {
   if (!r) return <p className="discreto">{t.carregando}</p>;
   const e = r.empresa;
   const exercicios = MODO_ESTATICO && entrada ? (entrada.datas[r.data_referencia] ?? []) : r.exercicios;
+  const companhia = (
+    <section className="cartao cartao-companhia" aria-label={t.companhia}>
+      <p>
+        {t.codigo_cvm} {e.cd_cvm} · {t.cnpj} {e.cnpj ?? "—"}
+      </p>
+      <p>
+        {t.setor}: {e.setor ?? "—"} · {t.grupo}: {e.grupo ? t.grupos[e.grupo] : "—"}
+      </p>
+      <p>
+        {t.codigos_negociacao}:{" "}
+        {e.codigos_negociacao.length
+          ? e.codigos_negociacao.map((c) => `${c.codigo} (${c.valor_mobiliario ?? "—"})`).join(", ")
+          : e.motivo_codigos_negociacao}
+      </p>
+      <p className="discreto">{e.origem_denominacao === "fca" ? t.nome_da_epoca : t.nome_do_indice}</p>
+    </section>
+  );
   return (
     <>
       <CabecalhoEmpresa
@@ -61,8 +79,10 @@ function Empresa() {
         datas={datas}
         rotulos={entrada?.rotulos_datas ?? {}}
         href={(d) => `/empresa?cd=${cd}&data=${d}`}
+        antesDasDatas={companhia}
       />
       {MODO_ESTATICO && <p className="discreto">{t.estatico_datas}</p>}
+      {entrada && entrada.casos.length > 0 && <CartaoCaso casos={entrada.casos} />}
       <section className="secao" aria-labelledby="titulo-exercicios">
         <h2 id="titulo-exercicios">{t.exercicios_na_data}</h2>
         <ul className="lista cartao">
@@ -80,22 +100,6 @@ function Empresa() {
               </li>
             ))}
         </ul>
-      </section>
-      {entrada && entrada.casos.length > 0 && <CartaoCaso casos={entrada.casos} />}
-      <section className="cartao" aria-label={t.companhia}>
-        <p>
-          {t.codigo_cvm} {e.cd_cvm} · {t.cnpj} {e.cnpj ?? "—"}
-        </p>
-        <p>
-          {t.setor}: {e.setor ?? "—"} · {t.grupo}: {e.grupo ? t.grupos[e.grupo] : "—"}
-        </p>
-        <p className="discreto">{e.origem_denominacao === "fca" ? t.nome_da_epoca : t.nome_do_indice}</p>
-        <p>
-          {t.codigos_negociacao}:{" "}
-          {e.codigos_negociacao.length
-            ? e.codigos_negociacao.map((c) => `${c.codigo} (${c.valor_mobiliario ?? "—"})`).join(", ")
-            : e.motivo_codigos_negociacao}
-        </p>
       </section>
       <InformacaoDeHoje h={r.informacao_de_hoje} t={t} />
     </>

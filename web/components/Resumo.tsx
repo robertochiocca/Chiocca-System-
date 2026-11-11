@@ -1,26 +1,38 @@
 "use client";
 
 // Resumo no topo da investigação (Fase E2), antes de qualquer detalhe: possível manipulação (selo e uma frase com o
-// que disparou e o que ficou abaixo do corte), risco financeiro e qualidade financeira (só contexto) e o caso do
-// gabarito, quando houver. Logo abaixo, a frase de que as famílias não se somam e o bloco "Como ler esta página".
-// Os números vêm do JSON da investigação e do de "Como o motor foi testado"; nada é escrito à mão.
+// que disparou e o que ficou abaixo do corte), risco financeiro e qualidade financeira (só contexto: rótulo pequeno,
+// número grande numa linha própria e uma linha curta embaixo) e o caso do gabarito, quando houver. Logo abaixo, a frase
+// de que as famílias não se somam e o bloco "Como ler esta página". Os números vêm do JSON da investigação e do de
+// "Como o motor foi testado"; nada é escrito à mão.
 import Link from "next/link";
-import { data as fdata, decimal, inteiro, pct } from "@/lib/formato";
+import { data as fdata, decimal, inteiro, pct, periodo } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
+import { PRIMEIRO_EXERCICIO } from "@/lib/limites.mjs";
 import { fmt, TIPOS_DE_CASO } from "@/lib/textos";
 import type { Achado, CasoDoGabarito, ComoTestado, Investigacao } from "@/lib/tipos";
 import { Selo, type EstadoSelo } from "./Pecas";
-import { estadoDoSinal, temRegra } from "./Sinais";
+import { temRegra } from "./Sinais";
 
 function lista(xs: (string | null)[]): string {
   return xs.filter(Boolean).join("; ");
+}
+
+/** Caso que termina antes do primeiro exercício da base (2010): só dá para ver exercícios de 2010 em diante. */
+export function casoAnteriorABase(c: CasoDoGabarito): boolean {
+  return c.periodo_afetado !== null && c.periodo_afetado[1] < PRIMEIRO_EXERCICIO;
+}
+
+export function EtiquetaAnteriorABase() {
+  const { t } = useIdioma();
+  return <span className="etiqueta-info">{fmt(t.caso_anterior_base, { a: PRIMEIRO_EXERCICIO })}</span>;
 }
 
 export function CartaoCaso({ casos, exercicio }: { casos: CasoDoGabarito[]; exercicio?: number }) {
   const { idioma, t } = useIdioma();
   return (
     <section className="cartao cartao-caso" aria-label={t.caso_titulo}>
-      <h3>{t.caso_titulo}</h3>
+      <h3 className="rotulo-cartao">{t.caso_titulo}</h3>
       {casos.map((c) => {
         const dentro = c.periodo_afetado && exercicio !== undefined && exercicio >= c.periodo_afetado[0] && exercicio <= c.periodo_afetado[1];
         return (
@@ -31,10 +43,13 @@ export function CartaoCaso({ casos, exercicio }: { casos: CasoDoGabarito[]; exer
             <p>
               {t.data_publica}: {c.data_publica ? fdata(c.data_publica, idioma) : t.sem_data_publica}
             </p>
-            <p>{c.periodo_afetado ? fmt(t.caso_periodo, { a: c.periodo_afetado[0], b: c.periodo_afetado[1] }) : t.caso_sem_periodo}</p>
-            {c.periodo_afetado && exercicio !== undefined && (
-              <p>{fmt(dentro ? t.caso_dentro : t.caso_fora, { ex: exercicio })}</p>
+            <p>{c.periodo_afetado ? fmt(t.caso_periodo, { p: periodo(c.periodo_afetado) }) : t.caso_sem_periodo}</p>
+            {casoAnteriorABase(c) && (
+              <p>
+                <EtiquetaAnteriorABase />
+              </p>
             )}
+            {c.periodo_afetado && exercicio !== undefined && <p>{fmt(dentro ? t.caso_dentro : t.caso_fora, { ex: exercicio })}</p>}
             {c.fonte && (
               <p>
                 <a href={c.fonte} rel="noopener noreferrer" target="_blank">
@@ -63,12 +78,16 @@ export default function Resumo({ inv, casos, testado }: { inv: Investigacao; cas
   const mt = inv.como_o_motor_foi_testado;
   const ex = inv.exercicios[0]?.exercicio;
   const pZ = z?.contexto?.percentil_setor_ano;
+  const sinaisF = f?.componentes?.sinais as Record<string, number | null> | undefined;
+  const totalF = sinaisF ? Object.keys(sinaisF).length : 0;
   return (
     <section id="resumo" className="secao" aria-labelledby="titulo-resumo">
       <h2 id="titulo-resumo">{t.resumo}</h2>
       <div className="grade-resumo">
-        <section className="cartao resumo-manip">
-          <h3>{t.sec_manipulacao}</h3>
+        <section className="cartao resumo-manip" aria-labelledby="rotulo-manip">
+          <h3 id="rotulo-manip" className="rotulo-cartao">
+            {t.sec_manipulacao}
+          </h3>
           <p>
             <Selo estado={estadoManip} />
           </p>
@@ -82,26 +101,29 @@ export default function Resumo({ inv, casos, testado }: { inv: Investigacao; cas
           </p>
         </section>
         {z && (
-          <section className="cartao resumo-risco">
-            <h3>{t.familias.risco_financeiro}</h3>
-            <p>
-              <Selo estado={estadoDoSinal(z)} />
-            </p>
-            <p>
-              {fmt(t.resumo_risco, {
-                z: z.valor.status === "ok" ? decimal(z.valor.valor, idioma, 2) : z.valor.motivo ?? "—",
-                p: pZ?.valor !== null && pZ?.valor !== undefined ? decimal(pZ.valor, idioma, 0) : "—",
-              })}
+          <section className="cartao resumo-risco" aria-labelledby="rotulo-risco">
+            <h3 id="rotulo-risco" className="rotulo-cartao">
+              {t.resumo_risco_rotulo}
+            </h3>
+            <p className="numero-resumo">Z&apos;&apos; = {z.valor.status === "ok" ? decimal(z.valor.valor, idioma, 2) : "—"}</p>
+            <p className="linha-resumo">
+              {pZ && pZ.valor !== null
+                ? fmt(t.resumo_risco_linha, { p: decimal(pZ.valor, idioma, 0), n: inteiro(pZ.n, idioma) })
+                : fmt(t.resumo_risco_sem_percentil, { m: (pZ?.motivo ?? z.valor.motivo ?? "—").replace(/\.$/, "") })}
             </p>
           </section>
         )}
         {f && (
-          <section className="cartao resumo-qualidade">
-            <h3>{t.familias.qualidade_financeira}</h3>
-            <p>
-              <Selo estado={estadoDoSinal(f)} />
+          <section className="cartao resumo-qualidade" aria-labelledby="rotulo-qualidade">
+            <h3 id="rotulo-qualidade" className="rotulo-cartao">
+              {t.resumo_qualidade_rotulo}
+            </h3>
+            <p className="numero-resumo">{sinaisF ? `F = ${inteiro(Number(f.componentes?.x ?? 0), idioma)}/${inteiro(totalF, idioma)}` : "F"}</p>
+            <p className="linha-resumo">
+              {sinaisF
+                ? fmt(t.resumo_qualidade_linha, { y: inteiro(Number(f.componentes?.y ?? 0), idioma), total: inteiro(totalF, idioma) })
+                : fmt(t.resumo_qualidade_sem_sinais, { m: (f.valor.motivo ?? "—").replace(/\.$/, "") })}
             </p>
-            <p>{fmt(t.resumo_qualidade, { f: f.texto ?? f.valor.motivo ?? "—" })}</p>
           </section>
         )}
         {casos && casos.length > 0 && <CartaoCaso casos={casos} exercicio={ex} />}

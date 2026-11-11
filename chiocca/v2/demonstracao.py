@@ -1,6 +1,7 @@
 """Dados da demonstração (Fase E2, 10/11/2026): as companhias do modo demonstração, em ordem alfabética, com o caso
-do gabarito (tipo, data pública, período afetado e fonte), as datas de cada uma, o rótulo de cada data e a data
-inicial, e os destaques da página inicial, tirados dos exemplos versionados de docs/exemplos/.
+do gabarito (tipo, data pública, período afetado, fonte e o nome da companhia no gabarito), as datas de cada uma, o
+rótulo de cada data e a data inicial, e os destaques da página inicial, tirados dos exemplos versionados de
+docs/exemplos/. Só entram casos com data pública; a ordem é alfabética pelo nome do caso.
 
 É a rota /api/v1/demonstracao e, na demonstração estática, o `indice.json` (a mesma saída, conferida por teste). A
 lista mostra o caso, nunca o resultado dos sinais: nada aqui é ordenado nem filtrado por alerta, percentil ou escore.
@@ -27,7 +28,9 @@ CAMPOS_EMPRESA = ("cd_cvm", "cnpj", "denominacao", "origem_denominacao", "codigo
 
 
 def gabarito() -> pd.DataFrame:
+    """Os casos do gabarito com data pública (caso sem data pública não entra na demonstração)."""
     gab = pd.read_csv(base.RAIZ / "data" / "gabarito_casos.csv", dtype=str)
+    gab = gab[gab.data_publica.fillna("").str.strip() != ""]
     return gab.assign(cd=gab.cd_cvm.fillna("").astype(str).str.lstrip("0"))
 
 
@@ -117,11 +120,14 @@ def montar(
                                     [cd, DATA_REFERENCIA_MAXIMA]).nome.dropna())  # fmt: skip
         nomes |= {e["denominacao"]} if e["denominacao"] else set()
         casos = casos_da_empresa(gab, cd)
+        nomes_do_caso = [n for n in (gab[gab.cd == cd].get("empresa", pd.Series(dtype=str))).dropna()]
         ex_da_data = _exercicio_de_cada_data(fontes, cd, _exercicios_do_caso(gab[gab.cd == cd]))
         rotulos = rotulos_das_datas(list(datas), ex_da_data, casos)
         afetadas = [d for d in datas if rotulos[d] == "periodo_afetado"]
-        extra = {"nomes": sorted(nomes), "datas": datas, "rotulos_datas": rotulos,
+        extra = {"nome_do_caso": nomes_do_caso[0] if nomes_do_caso else None, "nomes": sorted(nomes), "datas": datas,
+                 "rotulos_datas": rotulos,
                  "data_inicial": afetadas[0] if afetadas else ultima, "casos": casos}  # fmt: skip
         out.append({k: e[k] for k in CAMPOS_EMPRESA} | extra)
-    out.sort(key=lambda x: (busca.normaliza(str(x["denominacao"])), x["cd_cvm"]))
-    return {"ordem": busca.ORDEM, "empresas": out, "destaques": destaques()}
+    # ordem alfabética pelo nome do caso no gabarito (o nome que a página inicial mostra); sem ele, o do FCA
+    out.sort(key=lambda x: (busca.normaliza(str(x["nome_do_caso"] or x["denominacao"])), x["cd_cvm"]))
+    return {"ordem": "nome_do_caso", "empresas": out, "destaques": destaques()}

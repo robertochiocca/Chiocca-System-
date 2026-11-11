@@ -1,8 +1,8 @@
 "use client";
 
 // Cabeçalho de todas as telas (Fase E2): marca, navegação, idioma "PT | EN" lado a lado (aria-pressed) e tema, com
-// ícone e rótulo acessível. Só o aviso fica fixo, numa linha compacta; a faixa da demonstração fica no topo da página,
-// sem ficar fixa. No celular, o menu é um diálogo de tela cheia: Buscar, Como o motor foi testado, Ficha do motor,
+// ícone e rótulo acessível. Só o aviso fica fixo, numa linha compacta (no celular, a versão curta com "Saiba mais",
+// que leva ao texto completo no rodapé); a faixa da demonstração fica no topo da página, sem ficar fixa. No celular, o menu é um diálogo de tela cheia: Buscar, Como o motor foi testado, Ficha do motor,
 // "Idioma: Português | English" e "Tema: Claro | Escuro", com o aviso no pé; fecha ao navegar, ao tocar fora dos
 // itens, com Esc e com o botão de fechar.
 // Origem do padrão de tema e do menu compacto: DireitoAberto (github.com/robertochiocca/DireitoAberto),
@@ -168,7 +168,12 @@ function Barra() {
       )}
       <div className="aviso" role="note">
         <div className="wrap">
-          <strong>{t.aviso_rotulo}:</strong> {AVISO[idioma]}
+          <span className="aviso-longo">
+            <strong>{t.aviso_rotulo}:</strong> {AVISO[idioma]}
+          </span>
+          <span className="aviso-curto">
+            <span className="aviso-curto-frase">{t.aviso_curto}</span> <a href="#aviso-completo">{t.saiba_mais}</a>
+          </span>
         </div>
       </div>
       {(MODO_ESTATICO || demo) && (

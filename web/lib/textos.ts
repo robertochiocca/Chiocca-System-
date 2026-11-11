@@ -151,6 +151,8 @@ export const TEXTOS = {
     nav_ficha: "Ficha do motor",
     rodape_repositorio: "Código e documentação no GitHub",
     aviso_rotulo: "Aviso",
+    aviso_curto: "Sinal estatístico. Não é acusação nem recomendação.",
+    saiba_mais: "Saiba mais",
     home_p1:
       "O Chiocca calcula sinais estatísticos sobre as demonstrações financeiras que as companhias abertas entregam à CVM e mostra de onde vem cada número. Um alerta diz onde olhar, não que houve manipulação.",
     home_p2:
@@ -201,10 +203,16 @@ export const TEXTOS = {
     resumo_nenhum: "Nenhuma regra do estudo 1 disparou.",
     resumo_abaixo: "Abaixo do corte: {s}.",
     resumo_nc: "Sem valor: {s}.",
-    resumo_risco: "Z'' = {z}; percentil no setor: {p}; sem zona de corte.",
-    resumo_qualidade: "{f}; mede força financeira, não qualidade do lucro.",
+    // espaços sem quebra: o "·" não abre linha e "só contexto" não se separa
+    resumo_risco_rotulo: "Risco financeiro\u00a0· só\u00a0contexto",
+    resumo_qualidade_rotulo: "Qualidade financeira\u00a0· só\u00a0contexto",
+    resumo_risco_linha: "Percentil {p} no setor ({n} empresas). Sem zona de corte.",
+    resumo_risco_sem_percentil: "{m}. Sem zona de corte.",
+    resumo_qualidade_linha: "{y} dos {total} sinais calculáveis. Mede força financeira, não qualidade do lucro.",
+    resumo_qualidade_sem_sinais: "{m}. Mede força financeira, não qualidade do lucro.",
     caso_titulo: "Caso do gabarito",
-    caso_periodo: "Período afetado: {a}–{b}",
+    caso_periodo: "Período afetado: {p}",
+    caso_anterior_base: "Caso anterior ao início da base ({a}): só dá para ver exercícios de {a} em diante",
     caso_sem_periodo: "Período afetado não informado no gabarito.",
     caso_dentro: "O exercício {ex} está dentro do período afetado.",
     caso_fora: "O exercício {ex} está fora do período afetado.",
@@ -415,6 +423,8 @@ export const TEXTOS = {
     nav_ficha: "Engine card",
     rodape_repositorio: "Code and documentation on GitHub",
     aviso_rotulo: "Notice",
+    aviso_curto: "Statistical signal. Not an accusation or advice.",
+    saiba_mais: "Learn more",
     home_p1:
       "Chiocca computes statistical signals on the financial statements that Brazilian listed companies file with the CVM and shows where each number comes from. An alert says where to look, not that manipulation happened.",
     home_p2:
@@ -465,10 +475,15 @@ export const TEXTOS = {
     resumo_nenhum: "No study 1 rule fired.",
     resumo_abaixo: "Below the cut-off: {s}.",
     resumo_nc: "No value: {s}.",
-    resumo_risco: "Z'' = {z}; percentile in sector: {p}; no cut-off zone.",
-    resumo_qualidade: "{f}; measures financial strength, not earnings quality.",
+    resumo_risco_rotulo: "Financial risk\u00a0· context\u00a0only",
+    resumo_qualidade_rotulo: "Financial quality\u00a0· context\u00a0only",
+    resumo_risco_linha: "Percentile {p} in the sector ({n} companies). No cut-off zone.",
+    resumo_risco_sem_percentil: "{m}. No cut-off zone.",
+    resumo_qualidade_linha: "{y} of the {total} signals computable. Measures financial strength, not earnings quality.",
+    resumo_qualidade_sem_sinais: "{m}. Measures financial strength, not earnings quality.",
     caso_titulo: "Ground-truth case",
-    caso_periodo: "Affected period: {a}–{b}",
+    caso_periodo: "Affected period: {p}",
+    caso_anterior_base: "Case before the start of the data ({a}): only fiscal years from {a} onward can be seen",
     caso_sem_periodo: "Affected period not given in the ground truth.",
     caso_dentro: "Fiscal year {ex} is inside the affected period.",
     caso_fora: "Fiscal year {ex} is outside the affected period.",
@@ -539,8 +554,8 @@ export type Textos = (typeof TEXTOS)["pt"];
 /** Tipo do caso no gabarito, nas palavras do critério do pré-registro (com a republicação quando houve). É o caso
  * público, nunca um resultado dos sinais. */
 export const TIPOS_DE_CASO: Record<Idioma, Record<string, string>> = {
-  pt: { processo_cvm: "condenação da CVM", fraude_confirmada: "fraude admitida", republicacao: "republicação das demonstrações" },
-  en: { processo_cvm: "CVM conviction", fraude_confirmada: "admitted fraud", republicacao: "restated statements" },
+  pt: { processo_cvm: "Condenação da CVM", fraude_confirmada: "Fraude admitida", republicacao: "Republicação das demonstrações" },
+  en: { processo_cvm: "CVM conviction", fraude_confirmada: "Admitted fraud", republicacao: "Restated statements" },
 };
 
 /** Troca {chave} pelos valores. */

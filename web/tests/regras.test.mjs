@@ -66,11 +66,19 @@ test("textos em PT e EN com as mesmas chaves e sem 'fraude'", async () => {
   const chaves = (s) => [...s.matchAll(/^ {4}(\w+):/gm)].map((m) => m[1]).sort();
   assert.deepEqual(chaves(pt), chaves(en));
   // A única menção é o critério do gabarito, nas palavras do pré-registro (condenação da CVM ou fraude admitida),
-  // inclusive como tipo do caso público (TIPOS_DE_CASO: "fraude admitida", "admitted fraud").
+  // inclusive como tipo do caso público (TIPOS_DE_CASO: "Fraude admitida", "Admitted fraud").
   const semCriterio = t
     .replace("condenação da CVM ou fraude admitida", "")
     .replace("CVM conviction or admitted fraud", "")
-    .replace('fraude_confirmada: "fraude admitida"', "")
-    .replace('fraude_confirmada: "admitted fraud"', "");
+    .replace('fraude_confirmada: "Fraude admitida"', "")
+    .replace('fraude_confirmada: "Admitted fraud"', "");
   assert.ok(!/fraude|fraud|suspeit|suspect/i.test(semCriterio));
+});
+
+test("âmbar só no selo de alerta: no CSS, as cores âmbar só aparecem na regra .selo-alerta (pedido de 11/11/2026)", () => {
+  const css = fonte("app/globals.css").replace(/\/\*[\s\S]*?\*\//g, "");
+  const usos = [...css.matchAll(/([^{}]+)\{([^{}]*var\(--amber-[^{}]*)\}/g)].map((m) => m[1].trim());
+  assert.deepEqual(usos, [".selo-alerta"]);
+  for (const p of codigo) assert.ok(!/amber/.test(fonte(p)), `${p} usa âmbar fora do CSS do selo`);
+  assert.match(css, /\.etiqueta-faixa\{[^}]*background:var\(--brand-soft\);color:var\(--brand\)/);
 });

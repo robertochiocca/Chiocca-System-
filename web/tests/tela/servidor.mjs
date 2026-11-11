@@ -38,9 +38,13 @@ function lerCsv(texto) {
   return resto.map((l) => Object.fromEntries(cab.map((k, n) => [k, l[n] ?? ""])));
 }
 
-/** O caso da Americanas no gabarito versionado (data/gabarito_casos.csv), no formato da rota da demonstração. */
-function casoDaAmericanas() {
-  const g = lerCsv(readFileSync(join(web, "..", "data", "gabarito_casos.csv"), "utf-8")).find((x) => x.caso_id === "americanas");
+/** A linha da Americanas no gabarito versionado (data/gabarito_casos.csv). */
+function gabaritoDaAmericanas() {
+  return lerCsv(readFileSync(join(web, "..", "data", "gabarito_casos.csv"), "utf-8")).find((x) => x.caso_id === "americanas");
+}
+
+/** O caso da Americanas no formato da rota da demonstração. */
+function casoDaAmericanas(g) {
   return {
     caso_id: g.caso_id,
     tipo_evento: g.tipo_evento.split(";").filter(Boolean),
@@ -74,13 +78,15 @@ export function montarDados(raiz) {
   const contrato = (nome) => JSON.parse(readFileSync(join(web, "tests", "contrato", `${nome}.json`), "utf-8"));
   const demonstracao = contrato("demonstracao");
   const { cd_cvm, cnpj, denominacao, origem_denominacao, codigos_negociacao, motivo_codigos_negociacao } = ultima;
+  const g = gabaritoDaAmericanas();
   const americanas = {
     cd_cvm, cnpj, denominacao, origem_denominacao, codigos_negociacao, motivo_codigos_negociacao,
+    nome_do_caso: g.empresa,
     nomes: [...nomes].sort(),
     datas: { "2022-04-30": [2021], "2024-12-31": [2021] },
     rotulos_datas: { "2022-04-30": "periodo_afetado", "2024-12-31": "depois_da_revelacao" },
     data_inicial: "2022-04-30",
-    casos: [casoDaAmericanas()],
+    casos: [casoDaAmericanas(g)],
   };
   grava(raiz, "indice.json", { ...demonstracao, empresas: [americanas, ...demonstracao.empresas] });
   cpSync(join(web, "tests", "contrato", "como_testado.json"), join(raiz, "demo", "como-o-motor-foi-testado.json"));

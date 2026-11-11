@@ -13,10 +13,12 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 import pytest
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 
+from chiocca import base
 from chiocca.cvm import Fontes
 from chiocca.v2 import api, armazem, exemplos, investigacao, modelos, pdf_investigacao
 from tests.test_base import mundo  # noqa: F401  (fixture)
@@ -196,6 +198,11 @@ def test_modo_demonstracao(
     assert "100" not in api.empresas_da_demonstracao()  # a empresa da fixture não está no gabarito
     gabarito = api.empresas_da_demonstracao()
     assert "20990" in gabarito and "22837" not in gabarito  # Americanas entra; caso em observação não entra
+    # caso sem data pública no gabarito não entra (decisão de 11/11/2026): Sanepar, Construtora Beter, Mendes Júnior
+    assert not {"18627", "4758", "4782"} & gabarito
+    gab = pd.read_csv(base.RAIZ / "data" / "gabarito_casos.csv", dtype=str)
+    com_data = {str(c).lstrip("0") for c in gab[gab.data_publica.notna()].cd_cvm.dropna()}
+    assert gabarito <= com_data  # toda companhia da demonstração tem caso com data pública
     with TestClient(api.criar_app(lambda: arm, modo_demonstracao=True)) as c:
         assert c.get(f"{V1}/saude").json()["modo_demonstracao"] is True
         assert c.get(f"{V1}/empresas", params={"busca": "empresa", "data_referencia": D}).json()["resultados"] == []
