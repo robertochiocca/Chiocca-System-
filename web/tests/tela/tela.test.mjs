@@ -251,6 +251,8 @@ for (const idioma of ["pt", "en"]) {
     for (const sel of [".resumo-risco", ".resumo-qualidade"]) {
       assert.equal(await p.locator(`${sel} .selo`).count(), 0, `${sel}: sem selo repetindo "só contexto"`);
       assert.equal(await p.locator(`${sel} .rotulo-cartao`).evaluate((n) => getComputedStyle(n).textTransform), "uppercase");
+      // espaços sem quebra no rótulo: o "·" não abre linha e "só contexto" não se separa
+      assert.match(await p.locator(`${sel} .rotulo-cartao`).textContent(), /\u00a0· \S+\u00a0\S+$/);
       const [rotulo, numero] = await p.locator(`${sel} > *`).evaluateAll((ns) => ns.slice(0, 2).map((n) => parseFloat(getComputedStyle(n).fontSize)));
       assert.ok(numero > 1.8 * rotulo, `${sel}: número grande (${numero}px) e rótulo pequeno (${rotulo}px)`);
     }
