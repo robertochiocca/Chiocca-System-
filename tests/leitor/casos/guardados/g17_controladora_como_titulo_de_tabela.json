@@ -1,0 +1,67 @@
+{
+ "id": "g17_controladora_como_titulo_de_tabela",
+ "descricao": "'Controladora' e 'Consolidado' são títulos das tabelas (demonstrações individuais e consolidadas), não partes. Título da nota com 'Nota 21 –' e travessão.",
+ "notas": {
+  "paginas": [
+   [
+    "Nota 21 – Transações com partes relacionadas",
+    "",
+    "Controladora                                                     2021          2020",
+    "Ativo",
+    "  Dividendos a receber – controladas                           12.400        10.900",
+    "  Mútuos a receber – controladas                               31.000        27.500",
+    "Passivo",
+    "  Contas a pagar – coligada Exemplo Resinas S.A.               (2.150)       (1.980)",
+    "Resultado",
+    "  Receitas financeiras de mútuos – controladas                  2.870         2.210",
+    "  Compras de matéria-prima – coligada Exemplo Resinas S.A.    (18.300)      (16.700)",
+    "",
+    "Consolidado                                                      2021          2020",
+    "  Contas a pagar – coligada Exemplo Resinas S.A.               (2.150)       (1.980)",
+    "  Compras de matéria-prima – coligada Exemplo Resinas S.A.    (18.300)      (16.700)",
+    "",
+    "Os mútuos com controladas rendem juros equivalentes a 105% do CDI e vencem em dezembro de 2023.",
+    "",
+    "Nota 22 – Patrimônio líquido",
+    "O capital social está representado por 250.000.000 de ações ordinárias."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "controladas"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "coligada Exemplo Resinas S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "Mútuos a receber"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "Compras de matéria-prima"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "105% do CDI"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}
