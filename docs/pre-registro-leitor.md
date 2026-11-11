@@ -100,3 +100,4 @@ Julgamento de qualquer tipo, alerta, nota ou ordenação; prova de omissão (aus
 
 - Data: 11/11/2026.
 - Commit: o que introduz este arquivo. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+- Hash do commit do registro: `0e3eebc30a8dc26ded921ea0439a06cf34f207f5`.

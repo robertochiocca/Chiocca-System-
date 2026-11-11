@@ -100,3 +100,4 @@ Any kind of judgment, alert, score or ranking; proof of omission (absence of men
 
 - Date: 2026-11-11.
 - Commit: the one that introduces this file. The hash is noted here in the next commit, without changing any rule above.
+- Hash of the registration commit: `0e3eebc30a8dc26ded921ea0439a06cf34f207f5`.
