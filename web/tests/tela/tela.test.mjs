@@ -414,21 +414,30 @@ for (const idioma of ["pt", "en"]) {
     assert.equal(await texto(bloco.locator("h4")), pt ? "Fatos relevantes e comunicados ao mercado" : "Material facts and market notices");
     const n = (x) => x.toLocaleString(pt ? "pt-BR" : "en-US");
     assert.deepEqual(await bloco.locator("summary").allInnerTexts(),
-      pt ? [`Fatos relevantes (${n(fc.contagem.fato_relevante)})`, `Comunicados ao mercado (${n(fc.contagem.comunicado_ao_mercado)})`]
-        : [`Material facts (${n(fc.contagem.fato_relevante)})`, `Market notices (${n(fc.contagem.comunicado_ao_mercado)})`]);
+      pt ? [`Fatos relevantes (${n(fc.contagem.fato_relevante)} documentos)`, `Comunicados ao mercado (${n(fc.contagem.comunicado_ao_mercado)} documentos)`]
+        : [`Material facts (${n(fc.contagem.fato_relevante)} documents)`, `Market notices (${n(fc.contagem.comunicado_ao_mercado)} documents)`]);
     // recolhidas: a tabela só é montada quando a lista é aberta
     assert.equal(await bloco.locator(".tabela-ipe").count(), 0);
     await bloco.locator("summary").first().click();
     const linhas = bloco.locator(".tabela-ipe tbody tr");
     await linhas.first().waitFor();
-    assert.equal(await linhas.count(), fc.contagem.fato_relevante);
     const fatos = fc.itens.filter((x) => x.categoria === "fato_relevante");
+    assert.equal(await linhas.count(), new Set(fatos.map((x) => x.grupo)).size);  // versões e repetidos numa linha só
+    assert.ok(new Set(fatos.map((x) => x.grupo)).size < fatos.length);
     assert.equal(await texto(linhas.first().locator("td").nth(0)), pt ? fatos[0].data_entrega.split("-").reverse().join("/") : fatos[0].data_entrega);
     const links = await bloco.locator(".tabela-ipe a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
     assert.ok(links.length > 0 && links.every((h) => h.startsWith("https://www.rad.cvm.gov.br/")));
     assert.ok(fc.itens.every((x) => x.data_entrega <= inv.data_referencia));
     const omitidos = await bloco.locator(".tabela-ipe td.trecho-omitido").allInnerTexts();
-    assert.ok(omitidos.every((x) => (pt ? /^assunto omitido \(possível nome de pessoa\); ver o documento na CVM/ : /^subject omitted \(possible person's name\); see the document at the CVM/).test(x)));
+    assert.ok(omitidos.length > 0 && omitidos.every((x) => (pt
+      ? /^(assunto omitido \(possível nome de pessoa\)|sem assunto nos dados abertos); ver o documento na CVM/
+      : /^(subject omitted \(possible person's name\)|no subject in the open data); see the document at the CVM/).test(x)));
+    assert.ok(omitidos.some((x) => (pt ? /^sem assunto nos dados abertos/ : /^no subject in the open data/).test(x)));
+    assert.ok((await texto(bloco.locator(".tabela-ipe"))).includes(pt ? "versões 1 e 2" : "versions 1 and 2"));
+    // o endereço com #fatos-relevantes abre a lista
+    await p.goto(`${servidor.url}${INV_2024}#fatos-relevantes`);
+    await p.locator("#fatos-relevantes .tabela-ipe tbody tr").first().waitFor();
+    assert.equal(await p.locator("#fatos-relevantes").getAttribute("open"), "");
     await contexto.close();
   });
 

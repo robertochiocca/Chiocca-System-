@@ -213,10 +213,13 @@ class ItemIPE(Modelo):
     data_entrega: str
     assunto: str
     assunto_omitido: bool
+    assunto_vazio: bool
     link: str | None
+    link_pode_nao_abrir: bool
     id_documento: str
     protocolo: str | None
     versao: int | None
+    grupo: int  # para mostrar numa linha só: versões do mesmo documento e documentos com a mesma data e assunto
     fonte: FonteIPE
 
 
@@ -463,7 +466,7 @@ class Investigacao(ComData):
     evidencias: dict[str, Evidencia]
     motor: Motor
     informacao_de_hoje: InformacaoDeHoje
-    gerado_em: str
+    gerado_em: str | None  # nulo na demonstração estática: a data da geração fica no manifesto dela
     aviso: str
 
     @model_validator(mode="after")

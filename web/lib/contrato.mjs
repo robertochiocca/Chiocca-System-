@@ -83,6 +83,8 @@ export function validaFatos(fc, dataReferencia) {
     if (!CATEGORIAS_IPE.includes(x.categoria)) problemas.push(`fatos_e_comunicados: categoria ${x.categoria}`);
     if (!(x.data_entrega <= limite)) problemas.push("fatos_e_comunicados: entregue depois da data");
     if (x.assunto_omitido && !/assunto omitido|subject omitted/.test(x.assunto)) problemas.push("fatos_e_comunicados: assunto omitido com texto");
+    if (x.assunto_vazio && !/sem assunto nos dados abertos|no subject in the open data/.test(x.assunto)) problemas.push("fatos_e_comunicados: assunto vazio sem aviso");
+    if (!Number.isInteger(x.grupo) || x.grupo < 1) problemas.push("fatos_e_comunicados: item sem grupo");
     const f = x.fonte ?? {};
     if (!/^ipe_cia_aberta_\d{4}\.zip$/.test(f.arquivo ?? "") || !/^[0-9a-f]{64}$/.test(f.sha256 ?? "") || String(f.ano) !== x.data_entrega.slice(0, 4)) {
       problemas.push("fatos_e_comunicados: item sem fonte");
@@ -93,6 +95,11 @@ export function validaFatos(fc, dataReferencia) {
   }
   for (const c of CATEGORIAS_IPE) {
     if (fc.contagem[c] !== fc.itens.filter((x) => x.categoria === c).length) problemas.push(`fatos_e_comunicados: contagem de ${c}`);
+  }
+  const categoriaDoGrupo = new Map();
+  for (const x of fc.itens) {
+    if (categoriaDoGrupo.has(x.grupo) && categoriaDoGrupo.get(x.grupo) !== x.categoria) problemas.push("fatos_e_comunicados: grupo com duas categorias");
+    categoriaDoGrupo.set(x.grupo, x.categoria);
   }
   return problemas;
 }

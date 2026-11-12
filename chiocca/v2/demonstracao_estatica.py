@@ -12,7 +12,9 @@ duas línguas: a investigação em JSON e em PDF, a empresa na data e "como o mo
 rota /api/v1/demonstracao (`chiocca.v2.demonstracao`): em ordem alfabética, as companhias com o caso do gabarito,
 os nomes conhecidos até 31/12/2024 (para a busca por nome), as datas com o rótulo de cada uma e os destaques da
 página inicial; o plano da geração sai dela.
-Um teste confere que os arquivos são iguais à saída da API para as mesmas entradas.
+Um teste confere que os arquivos são iguais à saída da API para as mesmas entradas. As investigações saem sem
+carimbo de tempo (decisão de 12/11/2026): a data da geração e o commit ficam no manifesto.json, e duas gerações do
+mesmo conteúdo dão os mesmos bytes (o histórico do gh-pages só cresce com o que mudou).
 
 Os arquivos ficam em web/public/demo/ (fora do git: os PDFs não entram no repositório).
 
@@ -22,11 +24,12 @@ Uso: python -m chiocca.v2.demonstracao_estatica [--processos N] [--destino PASTA
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import time
 from collections import defaultdict
 from collections.abc import Callable
-from datetime import date
+from datetime import date, datetime, timezone
 from multiprocessing import get_context
 from pathlib import Path
 from typing import Any
@@ -107,9 +110,9 @@ def _cliente(fabrica: Callable[[], Any] | None) -> Any:
         if fabrica is None:
             fa = FontesArmazem()
             loc = Localizador(base.BRUTOS, fa.cache_enet, base.RAIZ / "data" / "manifesto_brutos.csv")
-            _CLIENTE = TestClient(api.criar_app(lambda: fa, loc, modo_demonstracao=True))
+            _CLIENTE = TestClient(api.criar_app(lambda: fa, loc, modo_demonstracao=True, carimbo=False))
         else:
-            _CLIENTE = TestClient(api.criar_app(fabrica, None, modo_demonstracao=True))
+            _CLIENTE = TestClient(api.criar_app(fabrica, None, modo_demonstracao=True, carimbo=False))
     return _CLIENTE
 
 
@@ -184,6 +187,10 @@ def gerar(destino: Path = DESTINO, processos: int = 1, fabrica: Callable[[], Any
     escritos.append(("indice.json", _grava(destino, "indice.json", indice)))
     manifesto = {
         "gerado_por": "python -m chiocca.v2.demonstracao_estatica",
+        # a data da geração fica só aqui: as investigações saem sem carimbo, e o arquivo que não mudou de conteúdo sai
+        # com os mesmos bytes (o gh-pages só recebe o que mudou)
+        "gerado_em": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "commit": _commit(),
         "empresas": len(plano_pronto),
         "investigacoes": sum(len(exs) for d in plano_pronto.values() for exs in d.values()),
         "arquivos": len(escritos) + 1,
@@ -193,6 +200,14 @@ def gerar(destino: Path = DESTINO, processos: int = 1, fabrica: Callable[[], Any
     }
     _grava(destino, "manifesto.json", (json.dumps(manifesto, ensure_ascii=False, indent=1) + "\n").encode("utf-8"))
     return manifesto
+
+
+def _commit() -> str | None:
+    try:
+        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=base.RAIZ, capture_output=True, text=True,
+                              check=True).stdout.strip()  # fmt: skip
+    except (OSError, subprocess.CalledProcessError):
+        return None
 
 
 def _zera_cliente() -> None:

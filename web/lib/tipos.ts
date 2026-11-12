@@ -265,10 +265,13 @@ export interface ItemIPE {
   data_entrega: string;
   assunto: string;
   assunto_omitido: boolean;
+  assunto_vazio: boolean;
   link: string | null;
+  link_pode_nao_abrir: boolean;
   id_documento: string;
   protocolo: string | null;
   versao: number | null;
+  grupo: number;
   fonte: { arquivo: string; ano: number; sha256: string };
 }
 
@@ -340,7 +343,7 @@ export interface Investigacao {
   evidencias: Record<string, Evidencia>;
   motor: { v1: string; v2: string; leitor?: string | null };
   informacao_de_hoje: InformacaoDeHoje;
-  gerado_em: string;
+  gerado_em: string | null;
   aviso: string;
 }
 

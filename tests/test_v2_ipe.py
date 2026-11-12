@@ -1,6 +1,8 @@
 """Fatos relevantes e comunicados ao mercado (Fase F2a): só metadados do IPE até a data, nunca depois de 31/12/2024,
-última versão de cada protocolo, assunto pelo detector de nomes do leitor, ordem fixa que não depende do assunto,
-linhagem de cada item, a exibição no PDF (24 meses) e os números da documentação."""
+um item por documento entregue, o assunto pelo detector de nomes do leitor e pelas regras que só omitem mais
+(maiúsculas e palavra maiúscula no meio da frase), o assunto vazio com aviso, as versões e os repetidos numa linha só,
+o aviso dos links antigos, ordem fixa que não depende do assunto, linhagem de cada item, a exibição no PDF (24
+meses) e os números da documentação."""
 
 from __future__ import annotations
 
@@ -25,10 +27,13 @@ CABECALHO = (
 
 
 def _linha(cd: str, categoria: str, assunto: str, entrega: str, protocolo: str, versao: int = 1,
-           seq: int | None = None) -> str:  # fmt: skip
+           seq: int | None = None, link: str | None = None) -> str:  # fmt: skip
     """Uma linha do IPE como na CVM: o link traz numProtocolo, numSequencia e numVersao (o documento)."""
     n = seq if seq is not None else zlib.crc32(f"{protocolo}|{versao}".encode()) % 900_000 + 100_000
-    link = f"https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?numProtocolo={n}&numSequencia={n}&numVersao={versao}"
+    link = (
+        link
+        or f"https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?numProtocolo={n}&numSequencia={n}&numVersao={versao}"
+    )
     return (f"00.000.000/0001-00;EXEMPLO S.A.;{cd};{entrega};{categoria};Outros;;{assunto};{entrega};"
             f"AP - Apresentação;{protocolo};{versao};{link}")  # fmt: skip
 
@@ -146,6 +151,7 @@ def test_pdf_fatos_relevantes_dos_24_meses_e_o_resto_no_json(brutos: Path) -> No
     fc = ipe.lista("777", date(2022, 4, 30), "pt", brutos)
     ls = pdf_investigacao.linhas(_inv_com(fc, "2022-04-30"))
     resumo = pdf_investigacao.FATOS["pt"]["resumo"].format(f="3", c="2")
+    assert "3 documentos de fato relevante e 2 documentos de comunicado ao mercado" in resumo
     assert resumo.startswith("Fatos relevantes e comunicados ao mercado entregues até a data") and resumo in ls
     i = ls.index("Fatos relevantes entregues nos 24 meses antes da data (de 01/05/2020 a 30/04/2022):")
     assert ls[i + 1] == "- 12/03/2021: Aumento de capital (reapresentação) (versão 2)"
@@ -164,15 +170,81 @@ def test_pdf_sem_fato_relevante_na_janela(brutos: Path) -> None:
     assert "Nenhum fato relevante entregue nos 24 meses antes da data (de 01/01/2022 a 31/12/2023)." in ls
 
 
-def test_assuntos_omitidos_na_documentacao() -> None:
+def test_assuntos_omitidos_e_vazios_na_documentacao() -> None:
     n = json.loads(ipe.NUMEROS.read_text(encoding="utf-8"))
-    assert n["documentos"] == sum(x["documentos"] for x in n["por_categoria"].values())
-    assert n["assuntos_omitidos"] == sum(x["assuntos_omitidos"] for x in n["por_categoria"].values())
-    pct_pt = f"{100 * n['assuntos_omitidos'] / n['documentos']:.1f}".replace(".", ",")
+    for k in ("documentos", "assuntos_vazios", "assuntos_omitidos", "omitidos_pelo_detector", "omitidos_por_maiusculas",
+              "omitidos_por_palavra_maiuscula", "assuntos_mostrados"):  # fmt: skip
+        assert n[k] == sum(x[k] for x in n["por_categoria"].values()), k
+    assert n["documentos"] == n["assuntos_vazios"] + n["assuntos_omitidos"] + n["assuntos_mostrados"]
+    assert n["assuntos_omitidos"] == (n["omitidos_pelo_detector"] + n["omitidos_por_maiusculas"]
+                                      + n["omitidos_por_palavra_maiuscula"])  # fmt: skip
     pt = (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")
     en = (base.RAIZ / "docs" / "en" / "contracts.md").read_text(encoding="utf-8")
-    assert f"{n['assuntos_omitidos']:,} de {n['documentos']:,}".replace(",", ".") + f" assuntos ({pct_pt}%)" in pt
-    assert f"{n['assuntos_omitidos']:,} of {n['documentos']:,} subjects ({pct_pt.replace(',', '.')}%)" in en
+
+    def br(x: int) -> str:
+        return f"{x:,}".replace(",", ".")
+
+    pct = f"{100 * n['assuntos_omitidos'] / n['documentos']:.1f}"
+    assert f"{br(n['assuntos_omitidos'])} de {br(n['documentos'])} assuntos ({pct.replace('.', ',')}%)" in pt
+    assert f"{n['assuntos_omitidos']:,} of {n['documentos']:,} subjects ({pct}%)" in en
+    for k in ("assuntos_vazios", "omitidos_pelo_detector", "omitidos_por_maiusculas", "omitidos_por_palavra_maiuscula"):
+        assert br(n[k]) in pt and f"{n[k]:,}" in en, k
+
+
+def test_regras_do_assunto_so_omitem_mais() -> None:
+    """Nomes inventados. O detector marca nome todo em maiúsculas com duas palavras ou mais; as regras de 12/11/2026
+    omitem também o assunto todo em maiúsculas e o que tem palavra com inicial maiúscula no meio da frase (um
+    sobrenome sozinho escapa da regra de duas palavras do detector)."""
+    from chiocca.v2.leitor import nomes
+
+    assert nomes.tem_nome_de_pessoa("RENÚNCIA DO DIRETOR FULANO DE TAL")
+    assert ipe.regra_de_omissao("RENÚNCIA DO DIRETOR FULANO DE TAL") == "detector"
+    assert not nomes.tem_nome_de_pessoa("BARBOSA") and ipe.regra_de_omissao("BARBOSA") == "maiusculas"
+    assert not nomes.tem_nome_de_pessoa("Renúncia do diretor Barbosa")
+    assert ipe.regra_de_omissao("Renúncia do diretor Barbosa") == "palavra_maiuscula"
+    assert not nomes.tem_nome_de_pessoa("Renúncia: BARBOSA") and ipe.regra_de_omissao("Renúncia: BARBOSA") is not None
+    assert ipe.regra_de_omissao("Aumento de capital aprovado") is None
+    assert ipe.regra_de_omissao("Resultados do trimestre em São Paulo") is None  # lugar está nas exceções
+    inventados = ("RENÚNCIA DO DIRETOR FULANO DE TAL", "BARBOSA", "Renúncia do diretor Barbosa", "Eleição do Sr. X")
+    for texto in inventados:
+        mostrado, omitido, vazio = ipe.assunto(texto, "pt")
+        assert omitido and not vazio and "Fulano" not in mostrado and "Barbosa" not in mostrado.title()
+    assert ipe.assunto("  ", "pt") == ("sem assunto nos dados abertos; ver o documento na CVM", False, True)
+    assert ipe.assunto("", "en") == ("no subject in the open data; see the document at the CVM", False, True)
+
+
+def _proto(seq: int, versao: int) -> str:
+    return f"000777IPE13012023{versao:02d}0449{seq:04d}-11"
+
+
+def test_versoes_e_repetidos_numa_linha_e_links_antigos(tmp_path: Path) -> None:
+    antigo = "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?numProtocolo=321741&numSequencia=0&numVersao=0"
+    _ipe(tmp_path, 2023, [
+        _linha("777", "Fato Relevante", "Tutela de urgência cautelar", "2023-01-13", _proto(3912, 1), 1, seq=11),
+        _linha("777", "Fato Relevante", "Tutela de urgência cautelar", "2023-01-13", _proto(3912, 2), 2, seq=12),
+        _linha("777", "Fato Relevante", "Esclarecimentos sobre notícia", "2023-01-12", "P8", 1, seq=13),
+        _linha("777", "Fato Relevante", "Esclarecimentos sobre notícia", "2023-01-12", "P9", 1, seq=14),
+        _linha("777", "Fato Relevante", "", "2023-01-20", _proto(4000, 1), 1, seq=15),
+        _linha("777", "Fato Relevante", "", "2023-01-20", _proto(4000, 2), 2, seq=16),
+        _linha("777", "Fato Relevante", "Outro assunto", "2023-01-11", "P10", 1, seq=17, link=antigo),
+    ])  # fmt: skip
+    ipe._ano.cache_clear()
+    fc = ipe.lista("777", date(2023, 12, 31), "pt", tmp_path)
+    FatosEComunicados.model_validate(fc)
+    assert len(fc["itens"]) == 7 and fc["contagem"]["fato_relevante"] == 7  # o JSON: um item por versão
+    grupos: dict[int, list[str]] = {}
+    for x in fc["itens"]:
+        grupos.setdefault(x["grupo"], []).append(x["id_documento"])
+    assert sorted(len(v) for v in grupos.values()) == [1, 2, 2, 2]
+    vazios = [x for x in fc["itens"] if x["assunto_vazio"]]
+    assert len(vazios) == 2 and len({x["grupo"] for x in vazios}) == 1  # vazios juntos só pelo protocolo
+    assert [x["link_pode_nao_abrir"] for x in fc["itens"] if x["protocolo"] == "P10"] == [True]
+    assert not any(x["link_pode_nao_abrir"] for x in fc["itens"] if x["protocolo"] != "P10")
+    ls = pdf_investigacao.linhas(_inv_com(fc, "2023-12-31"))
+    assert "- 20/01/2023: sem assunto nos dados abertos; ver o documento na CVM (versões 1 e 2)" in ls
+    assert "- 13/01/2023: Tutela de urgência cautelar (versões 1 e 2)" in ls
+    assert "- 12/01/2023: Esclarecimentos sobre notícia (2 documentos)" in ls
+    assert sum(1 for x in ls if "Tutela de urgência cautelar" in x) == 1
 
 
 def test_exemplos_com_a_lista_ate_a_data() -> None:

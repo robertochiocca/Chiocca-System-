@@ -222,11 +222,18 @@ def gerar(
     lang: str = "pt",
     localizador: Localizador | None = None,
     gerado_em: str | None = None,
+    carimbo: bool = True,
 ) -> dict[str, Any]:
+    """`carimbo=False` (só a demonstração estática): sem data de geração no arquivo (`gerado_em` e `calculado_em`
+    nulos); a data da geração fica uma vez só no manifesto da demonstração, e o arquivo que não mudou de conteúdo sai
+    com os mesmos bytes."""
     garantir_liberado(exercicio)
     d = garantir_data_referencia(data_referencia)
     cd_cvm = str(cd_cvm).lstrip("0") or "0"
-    gerado_em = gerado_em or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    if carimbo:
+        gerado_em = gerado_em or datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    else:
+        gerado_em = None
     t = TEXTOS[lang]
     e = exercicio_na_data(fontes, cd_cvm, exercicio, d, localizador=localizador)
     s, limiares, contas_todas, meta = _corte(fontes, exercicio, d)
@@ -644,7 +651,7 @@ def _saida(x: dict[str, Any], entrou: dict[str, Any] | None, lang: str) -> dict[
             "nota": nota}  # fmt: skip
 
 
-def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, fontes: Any, exercicio: int, cd_cvm: str,
+def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str | None, d: date, fontes: Any, exercicio: int, cd_cvm: str,
            evid: dict[str, Evidencia], conferencias: list[Any], hoje: dict[str, Any]) -> dict[str, Any]:  # fmt: skip
     t = TEXTOS[lang]
 

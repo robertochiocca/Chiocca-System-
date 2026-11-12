@@ -145,4 +145,11 @@ test("fatos relevantes e comunicados (Fase F2a): o exemplo segue o contrato; ale
   const escore = base();
   escore.itens[0].escore = 1;
   assert.ok(validaFatos(escore, D).length > 0, "campo de sinal");
+  const vazio = base();
+  const v = vazio.itens.findIndex((x) => x.assunto_vazio);
+  vazio.itens[v].assunto = "";
+  assert.ok(validaFatos(vazio, D).length > 0, "assunto vazio sem aviso");
+  const semGrupo = base();
+  delete semGrupo.itens[0].grupo;
+  assert.ok(validaFatos(semGrupo, D).length > 0, "sem grupo");
 });
