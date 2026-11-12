@@ -45,3 +45,10 @@ const HIFEN_COMO_SINAL = /(?<![\w.,\-\u2212/])-(?=\d)/g;
 export function hifensComoSinal(texto) {
   return [...texto.matchAll(HIFEN_COMO_SINAL)].map((m) => texto.slice(Math.max(0, m.index - 25), m.index + 8));
 }
+
+// Frase que termina num nome com ponto ("AMERICANAS S.A.") não ganha outro ponto: ".." sem ser reticências.
+const PONTO_DUPLO = /[^.]\.\.(?!\.)/g;
+
+export function pontosDuplos(texto) {
+  return [...texto.matchAll(PONTO_DUPLO)].map((m) => texto.slice(Math.max(0, m.index - 25), m.index + 4));
+}

@@ -476,7 +476,7 @@ def test_formulario_no_pdf_com_sinal_de_menos_e_json_literal() -> None:
     linha = dict(ld["formulario_de_referencia"]["linhas"][0], montante="-10.790.618,68", saldo="-30")
     ld["formulario_de_referencia"]["linhas"] = [linha]
     ld["partes_relacionadas"]["trechos"][0]["texto"] = "Mundial Co -30 - 116"
-    linhas_pdf = pdf_investigacao._leitura(ld, "pt")
+    linhas_pdf = pdf_investigacao._leitura({"leitura_documental": ld}, "pt")
     assert any(x.endswith("· −10.790.618,68 · −30") for x in linhas_pdf)
     assert any("“Mundial Co -30 - 116”" in x for x in linhas_pdf)
     assert linha["montante"] == "-10.790.618,68"

@@ -1521,7 +1521,7 @@
      "entradas": [
       "97f2112bddf1131f"
      ],
-     "motor": "chiocca.v2 (produto, fases B a E)",
+     "motor": "chiocca.v2 (produto, fases B a F1)",
      "codigo": "chiocca.v2.contexto.altman_z2",
      "origens": [
       "DFP de t, coluna ÚLTIMO",
@@ -1578,7 +1578,7 @@
       "e1660d3caba06ce2",
       "1a755af16d4d7010"
      ],
-     "motor": "chiocca.v2 (produto, fases B a E)",
+     "motor": "chiocca.v2 (produto, fases B a F1)",
      "codigo": "chiocca.v2.contexto.piotroski_f",
      "origens": [
       "DFP de t, coluna ÚLTIMO",
@@ -2197,6 +2197,21 @@
    "linhas": []
   }
  },
+ "como_o_leitor_foi_testado": {
+  "documento": "docs/leitor_medida.json",
+  "leitor": "leitor-f1-1",
+  "commit": "c99c953",
+  "casos": 20,
+  "precisao": 0.962,
+  "cobertura": 0.962,
+  "trechos_mostrados": 132,
+  "trechos_conferidos": 132,
+  "nomes_vazados": 0
+ },
+ "limites_da_leitura": [
+  "Em documentos reais, cerca de 22% dos trechos saem omitidos pelo detector de nomes, inclusive nomes de empresas fora do cadastro.",
+  "Em tabelas, linhas de cabeçalho (anos, títulos de coluna) podem sair como trecho; os casos guardados não tinham tabelas com cabeçalho em várias linhas."
+ ],
  "como_o_motor_foi_testado": {
   "documento": "docs/resumo.md",
   "acertados": 7,
@@ -2311,7 +2326,8 @@
  },
  "motor": {
   "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
-  "v2": "chiocca.v2 (produto, fases B a E)"
+  "v2": "chiocca.v2 (produto, fases B a F1)",
+  "leitor": "leitor-f1-1 (commit c99c953)"
  },
  "informacao_de_hoje": {
   "titulo": "Informação de hoje (fora da data de referência)",

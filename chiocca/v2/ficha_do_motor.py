@@ -18,9 +18,8 @@ from chiocca.base import RAIZ
 from chiocca.formato import data, decimal, inteiro, pct
 from chiocca.v2 import analises_pos_estudo_1 as pos_estudo
 from chiocca.v2 import textos_readme
-from chiocca.v2.investigacao import AVISO, MOTOR_V2
+from chiocca.v2.investigacao import AVISO, motor
 from chiocca.v2.lacre import ULTIMO_EXERCICIO_LIBERADO
-from chiocca.v2.linhagem import MOTOR_V1
 
 DOCS = {"pt": RAIZ / "docs" / "ficha-do-motor.md", "en": RAIZ / "docs" / "en" / "engine-card.md"}
 
@@ -33,7 +32,7 @@ def numeros(caminho: Path = pos_estudo.NUMEROS_ESTUDO_1) -> dict[str, Any]:
           for k in ("nf", "fin")}  # fmt: skip
     ant = r["antecedencia"]
     out: dict[str, Any] = {
-        "motor": {"v1": MOTOR_V1, "v2": MOTOR_V2},
+        "motor": motor(),
         "pre_registro": {"assinatura": n["pre_registro"]["assinatura"], "emendas": n["pre_registro"]["emendas"]},
         "dados": {"primeiro_exercicio": 2010, "ultimo_exercicio": ULTIMO_EXERCICIO_LIBERADO,
                   "empresa_anos_nao_financeiras": n["amostra"]["nao_financeira"],

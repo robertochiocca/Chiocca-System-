@@ -112,7 +112,7 @@ function Pagina() {
     ["risco", t.sec_risco],
     ["qualidade", t.sec_qualidade],
     ...(pa ? ([["parecer", t.sec_parecer]] as [string, string][]) : []),
-    ...(inv.leitura_documental ? ([["notas", t.sec_notas]] as [string, string][]) : []),
+    ...(inv.leitura_documental ? ([["trechos", t.idx_trechos]] as [string, string][]) : []),
     ["mudancas", t.sec_mudancas],
     ["limites", t.sec_limites],
     ["hoje", t.sec_hoje],
@@ -206,8 +206,8 @@ function Pagina() {
           )}
 
           {inv.leitura_documental && (
-            <Secao id="notas" titulo={t.sec_notas} sub={t.sub_notas}>
-              <LeituraDocumental l={inv.leitura_documental} />
+            <Secao id="trechos" titulo={t.sec_trechos} sub={t.sub_trechos}>
+              <LeituraDocumental l={inv.leitura_documental} testado={inv.como_o_leitor_foi_testado ?? null} limites={inv.limites_da_leitura ?? []} />
             </Secao>
           )}
 
@@ -294,7 +294,7 @@ function Pagina() {
                 ))}
               </p>
               <p className="discreto">
-                {inv.motor.v1}; {inv.motor.v2}
+                {[inv.motor.v1, inv.motor.v2, inv.motor.leitor].filter(Boolean).join("; ")}
               </p>
             </div>
           </Secao>

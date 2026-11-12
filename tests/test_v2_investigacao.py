@@ -19,7 +19,8 @@ from tests.test_v2_armazem import mundo_c1  # noqa: F401  (fixture)
 CAMPOS = {"empresa", "data_referencia", "idioma", "exercicios", "achados", "mudancas", "o_que_se_sabia",
           "qualidade_dos_dados", "parecer_e_auditor", "como_o_motor_foi_testado", "limites", "limitacoes", "evidencias",
           "motor", "informacao_de_hoje", "gerado_em", "aviso"}  # fmt: skip
-CAMPOS |= {"leitura_documental"} if leitor_secao.LIGADO else set()
+SECAO_F1 = {"leitura_documental", "como_o_leitor_foi_testado", "limites_da_leitura"}
+CAMPOS |= SECAO_F1 if leitor_secao.LIGADO else set()
 
 
 @pytest.mark.parametrize("lang", ["pt", "en"])
@@ -216,7 +217,8 @@ def test_acabamento_da_investigacao(nome: str) -> None:
     assert all(x[:1] == x[:1].upper() for x in inv["limitacoes"] + inv["exercicios"][0]["notas"])
     linhas = pdf_investigacao.linhas(inv)
     texto = "\n".join(linhas)
-    assert "cerca" not in texto.lower() and "fence" not in texto.lower()
+    # "cerca" (fence) de Tukey não aparece; "cerca de 22%" (aproximadamente), nos limites da seção de trechos, pode
+    assert not re.search(r"\bcerca\b(?! de \d)", texto.lower()) and "fence" not in texto.lower()
     assert ("faixa de Tukey (1,5 × IQR): de " if lang == "pt" else "Tukey range (1.5 × IQR): from ") in texto
     assert texto.count(investigacao.TEXTOS[lang]["regra_componente"]) == len(investigacao.COEFICIENTES)
     assert all(x.lstrip()[2:3] == x.lstrip()[2:3].upper() for x in linhas if x.lstrip().startswith("- "))

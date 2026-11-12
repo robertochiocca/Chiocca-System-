@@ -29,7 +29,7 @@ from chiocca import base, variaveis
 from chiocca.sinais.mscore import COEFICIENTES
 from chiocca.sinais.resultado import Resultado as ResultadoV1
 from chiocca.sinais_amostra import CORTE_M, PERCENTIL, SPREAD_PP
-from chiocca.v2 import comparativo, confianca, contexto, limites
+from chiocca.v2 import comparativo, confianca, contexto, leitura_exibicao, limites
 from chiocca.v2 import conferencias as cf
 from chiocca.v2.armazem import capitalizacao
 from chiocca.v2.exibicao import decimal, textos_com_sinal_de_menos
@@ -58,7 +58,14 @@ AVISO = {
     "pt": "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento.",
     "en": "Statistical signal based on public financial statements. Not an accusation, not investment advice.",
 }
-MOTOR_V2 = "chiocca.v2 (produto, fases B a E)"
+MOTOR_V2 = "chiocca.v2 (produto, fases B a F1)"
+
+
+def motor() -> dict[str, str]:
+    """Motor v1, camada do produto e, com a seção de trechos ligada, o leitor congelado que a gera."""
+    return {"v1": MOTOR_V1, "v2": MOTOR_V2} | ({"leitor": leitura_exibicao.versao()} if leitor_secao.LIGADO else {})
+
+
 SINAIS_NF = ["mscore", *COEFICIENTES, "dpo", "juro", "lucro_sem_caixa"]
 ALERTA = {
     "mscore": "alerta_mscore",
@@ -689,6 +696,9 @@ def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, font
     if leitor_secao.LIGADO and e.situacao == "ok":  # Fase F1: desligado até o leitor passar nos casos guardados
         out["leitura_documental"] = leitor_secao.secao(e.num_doc, e.versao_usada, None if e.dt_receb is None else str(e.dt_receb),
                                                        cd_cvm, exercicio, d, lang)  # fmt: skip
+        # fora da saída do leitor (que fica como ele entrega): a medida nos casos guardados e os limites da seção
+        out["como_o_leitor_foi_testado"] = leitura_exibicao.como_foi_testado()
+        out["limites_da_leitura"] = leitura_exibicao.limites(lang)
     est = confianca.evidencia_estudo_1()
     out["como_o_motor_foi_testado"] = {"documento": "docs/resumo.md" if lang == "pt" else "docs/summary.md",
                                        "acertados": est["acertados"], "acertaveis": est["acertaveis"],
@@ -697,7 +707,7 @@ def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, font
     out["limites"] = limites.textos(lang)
     out["limitacoes"] = [_cap(_m(n, lang)) for n in e.notas] + [_cap(t["contexto_nao_validado"])]
     out["evidencias"] = {k: _ev(v) for k, v in sorted(evid.items())}
-    out["motor"] = {"v1": MOTOR_V1, "v2": MOTOR_V2}
+    out["motor"] = motor() if "leitura_documental" in out else {"v1": MOTOR_V1, "v2": MOTOR_V2}
     out["informacao_de_hoje"] = hoje
     out["gerado_em"] = gerado_em
     out["aviso"] = AVISO[lang]

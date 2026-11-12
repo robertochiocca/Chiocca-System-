@@ -5,13 +5,13 @@
 // ajuda, mudanças), "Como o motor foi testado", o menu do celular, nenhum código interno nem hífen como sinal de menos
 // na tela, e a acessibilidade (axe, sem violação séria ou crítica, nos temas claro e escuro).
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
-import { abrirTudo, codigosInternos, hifensComoSinal, textoDaTela } from "./comum.mjs";
+import { abrirTudo, codigosInternos, hifensComoSinal, pontosDuplos, textoDaTela } from "./comum.mjs";
 import { INV_FIXTURE, INV_LEITURA, subir } from "./servidor.mjs";
 
 let servidor;
@@ -78,6 +78,7 @@ for (const idioma of ["pt", "en"]) {
     const telas = [
       [INV_2024, "#mudancas"],
       [INV_2022, "#mudancas"],
+      [INV_LEITURA, "#trechos"],
       [EMPRESA, "nav.datas"],
       [TESTADO, "table"],
       ["/", ".linha-companhia"],
@@ -88,6 +89,7 @@ for (const idioma of ["pt", "en"]) {
       const t = await textoDaTela(p);
       assert.deepEqual(codigosInternos(t), [], `${caminho} (${idioma}) mostra código interno`);
       assert.deepEqual(hifensComoSinal(t), [], `${caminho} (${idioma}) usa hífen como sinal de menos`);
+      assert.deepEqual(pontosDuplos(t), [], `${caminho} (${idioma}) com ponto duplo no fim da frase`);
     }
     await abrir(p, INV_2024, "#mudancas");
     assert.match(await texto(p.locator(".documento-usado")), pt ? /dados abertos · consolidado/ : /open data · consolidated/);
@@ -276,7 +278,7 @@ for (const idioma of ["pt", "en"]) {
     // índice "Nesta página" com as âncoras; o título não fica debaixo do aviso fixo
     const ancoras = await p.locator("nav.indice a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
     // "Notas explicativas" (Fase F1) vem depois de "Parecer e auditor", com a seção ligada
-    assert.deepEqual(ancoras, ["#resumo", "#manipulacao", "#risco", "#qualidade", "#parecer", "#notas", "#mudancas", "#limites", "#hoje"]);
+    assert.deepEqual(ancoras, ["#resumo", "#manipulacao", "#risco", "#qualidade", "#parecer", "#trechos", "#mudancas", "#limites", "#hoje"]);
     for (const a of ancoras) assert.equal(await p.locator(a).count(), 1, a);
     await p.locator('nav.indice a[href="#qualidade"]').click();
     await p.waitForFunction(() => Math.abs(document.querySelector("#qualidade").getBoundingClientRect().top) < 200);
@@ -365,22 +367,32 @@ for (const idioma of ["pt", "en"]) {
     });
   }
 
-  test(`leitura de documentos (Fase F1): trechos com página, omissão de nome e nenhum selo (${idioma})`, async () => {
+  test(`trechos dos documentos (Fase F1): título, subseções, página, omissão de nome, como foi testado e nenhum selo (${idioma})`, async () => {
     const { p, contexto } = await pagina(idioma);
-    await abrir(p, INV_LEITURA, "#notas");
+    await abrir(p, INV_LEITURA, "#trechos");
     const ancoras = await p.locator("nav.indice a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
-    assert.ok(ancoras.includes("#notas") && ancoras.indexOf("#notas") === ancoras.indexOf("#parecer") + 1);
-    const secao = p.locator("#notas");
-    assert.equal(await texto(secao.locator("h2")), pt ? "Notas explicativas" : "Explanatory notes");
+    assert.ok(ancoras.includes("#trechos") && ancoras.indexOf("#trechos") === ancoras.indexOf("#parecer") + 1);
+    const secao = p.locator("#trechos");
+    assert.equal(await texto(secao.locator("h2")), pt ? "Trechos dos documentos (copiados; não gera alerta)" : "Document excerpts (copied; no alert)");
+    assert.deepEqual(await secao.locator(".cartao > h3").allInnerTexts(),
+      pt ? ["Notas explicativas", "Relatório do auditor", "Formulário de Referência"] : ["Explanatory notes", "Auditor's report", "Reference Form"]);
     const tudo = await texto(secao);
     assert.match(tudo, pt ? /Ausência de menção não prova ausência\./ : /Absence of mention does not prove absence\./);
-    // trecho mostrado: literal, em português, com a página (e "trecho original" na interface em inglês)
+    // como o leitor foi testado: os números da saída da medida (docs/leitor_medida.json)
+    const medida = JSON.parse(readFileSync(join(RAIZ, "docs", "leitor_medida.json"), "utf-8")).totais;
+    const dec = (x) => (pt ? x.toFixed(3).replace(".", ",") : x.toFixed(3));
+    const congelado = JSON.parse(readFileSync(join(RAIZ, "docs", "leitor_congelado.json"), "utf-8")).commit.slice(0, 7);
+    assert.ok(tudo.includes(pt
+      ? `Como o leitor foi testado: ${medida.casos} casos guardados, medida única com o leitor congelado (${congelado}): precisão ${dec(medida.precisao)}, cobertura ${dec(medida.cobertura)}, conferência literal em ${medida.conferidos} de ${medida.trechos_mostrados} trechos, nenhum nome de pessoa física (docs/leitor_medida.json).`
+      : `How the reader was tested: ${medida.casos} held-out cases, a single measurement with the frozen reader (${congelado}): precision ${dec(medida.precisao)}, coverage ${dec(medida.cobertura)}, literal check on ${medida.conferidos} of ${medida.trechos_mostrados} excerpts, no natural-person name (docs/leitor_medida.json).`), "como o leitor foi testado");
+    // trecho mostrado: literal, em português, com os rótulos e a página (e "trecho original" na interface em inglês)
     const primeiro = secao.locator("figure.trecho").first();
     assert.match(await texto(primeiro.locator("blockquote")), /A controladora prestou aval em empréstimos/);
     assert.equal(await primeiro.locator("blockquote").getAttribute("lang"), "pt");
+    assert.match(await texto(primeiro.locator(".rotulos-trecho")), /^\[[^\]]+\]$/);
     assert.equal(await texto(primeiro.locator("figcaption")), pt ? "página 1" : "page 1 · original excerpt in Portuguese");
     // trecho com nome de pessoa física: omitido, com a página; nome nenhum na tela
-    assert.match(await texto(secao.locator(".trecho-omitido").first()), pt ? /^trecho omitido; ver página 1 do documento$/ : /^excerpt omitted; see page 1 of the document$/);
+    assert.match(await texto(secao.locator(".trecho-omitido").first()), pt ? /^Trecho omitido; ver página 1 do documento$/ : /^Excerpt omitted; see page 1 of the document$/);
     assert.ok(!/Ernesto|Barbosa|Paulo Fictício/.test(tudo), "nome de pessoa física na tela");
     // só fato: nenhum selo, nenhum alerta
     assert.equal(await secao.locator(".selo").count(), 0);
@@ -388,7 +400,8 @@ for (const idioma of ["pt", "en"]) {
     assert.match(tudo, /operações de risco sacado com bancos de primeira linha/);
     const partes = await secao.locator(".tabela tbody tr td:first-child").allInnerTexts();
     assert.deepEqual(partes, ["Exemplo Holding S.A.", pt ? "parte relacionada (nome omitido)" : "related party (name omitted)"]);
-    assert.match(tudo, pt ? /única versão disponível nos dados abertos/ : /only version available in the open data/);
+    assert.match(tudo, pt ? /É a única versão disponível nos dados abertos; as versões anteriores não estão lá\./ : /It is the only version available in the open data; earlier versions are not there\./);
+    assert.equal(await secao.locator(".limites-leitura li").count(), 2);
     await contexto.close();
   });
 
@@ -541,7 +554,7 @@ for (const idioma of ["pt", "en"]) {
         [EMPRESA, "nav.datas", COMPUTADOR],
         [INV_2024, ".cartao-mscore", COMPUTADOR],
         [INV_2022, ".cartao-mscore", COMPUTADOR],
-        [INV_LEITURA, "#notas", COMPUTADOR],
+        [INV_LEITURA, "#trechos", COMPUTADOR],
         [TESTADO, "table", COMPUTADOR],
         [INV_2024, ".cartao-mscore", CELULAR],
       ];

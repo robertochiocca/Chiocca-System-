@@ -28,4 +28,6 @@ Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.m
 - `web/app/layout.tsx`, de `web/app/layout.tsx`: só o script de tema antes da hidratação; sem fontes externas, com o provedor de idioma.
 - `web/components/Topo.tsx`, de `web/components/Nav.tsx`: só o padrão de tema e de menu compacto; sem conta nem login, com idioma PT/EN e o aviso fixo na barra.
 
+**Casos guardados do leitor F1** (`tests/leitor/casos/guardados/`): escritos por Roberto com o Claude (claude.ai), fora deste ambiente e sem acesso ao código de detecção do leitor (para o formato e as convenções, foram lidos o pré-registro, `avaliacao.py`, `pdf_simples.py` e os casos de desenvolvimento). O leitor e os casos foram escritos por instâncias do mesmo modelo, em ambientes separados: a separação é de informação, não de autor.
+
 **Fase F1.** Nenhum arquivo veio de outro projeto. O avaliador do conjunto adversarial (`chiocca/v2/leitor/avaliacao.py`) segue a ideia do DireitoAberto (gabarito declarativo escrito à mão e conferência de toda citação), reescrita para o Chiocca System, sem código copiado. O pypdf é dependência instalada, fixada no `pyproject.toml` e no `requirements-lock.txt`, não código copiado.

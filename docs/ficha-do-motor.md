@@ -7,7 +7,7 @@ Gerada por `python -m chiocca.v2.ficha_do_motor` a partir de `docs/resultados_nu
 ## Versão
 
 - Motor: motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823. O estudo 1 está congelado nesse commit; o produto usa o motor como está.
-- Camada do produto: chiocca.v2 (produto, fases B a E) (contexto, confiança, linhagem, investigação, API e interface), sem mudar nenhum valor do motor.
+- Camada do produto: chiocca.v2 (produto, fases B a F1) (contexto, confiança, linhagem, investigação, API e interface), sem mudar nenhum valor do motor.
 - Pré-registro assinado em 04/11/2026, com 11 emendas ([`docs/pre-registro.md`](pre-registro.md)).
 
 ## Uso pretendido

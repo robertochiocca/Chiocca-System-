@@ -391,6 +391,21 @@ class Evidencia(Modelo):
 class Motor(Modelo):
     v1: str
     v2: str
+    leitor: str | None = None  # Fase F1: o leitor congelado que gera a seção de trechos, quando ela está presente
+
+
+class ComoOLeitorFoiTestado(Modelo):
+    """A medida única do leitor congelado nos casos guardados, como saiu (docs/leitor_medida.json)."""
+
+    documento: str
+    leitor: str
+    commit: str
+    casos: int
+    precisao: float
+    cobertura: float
+    trechos_mostrados: int
+    trechos_conferidos: int
+    nomes_vazados: int
 
 
 class Investigacao(ComData):
@@ -403,6 +418,8 @@ class Investigacao(ComData):
     qualidade_dos_dados: QualidadeDosDados
     parecer_e_auditor: ParecerEAuditor | None
     leitura_documental: LeituraDocumental | None = None  # Fase F1: só com o leitor aprovado nos casos guardados
+    como_o_leitor_foi_testado: ComoOLeitorFoiTestado | None = None  # junto com a seção
+    limites_da_leitura: list[str] | None = None  # junto com a seção
     como_o_motor_foi_testado: ComoOMotorFoiTestado
     limites: list[str]
     limitacoes: list[str | None]

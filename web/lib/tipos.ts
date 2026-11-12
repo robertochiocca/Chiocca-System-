@@ -293,18 +293,30 @@ export interface Investigacao {
     rodizio?: { nota: string | null; norma: string; fonte: string };
   } | null;
   leitura_documental?: LeituraDocumental | null;
+  como_o_leitor_foi_testado?: {
+    documento: string;
+    leitor: string;
+    commit: string;
+    casos: number;
+    precisao: number;
+    cobertura: number;
+    trechos_mostrados: number;
+    trechos_conferidos: number;
+    nomes_vazados: number;
+  } | null;
+  limites_da_leitura?: string[] | null;
   como_o_motor_foi_testado: { documento: string; acertados: number; acertaveis: number; taxa_de_alerta_nao_financeiras?: number };
   limites: string[];
   limitacoes: (string | null)[];
   evidencias: Record<string, Evidencia>;
-  motor: { v1: string; v2: string };
+  motor: { v1: string; v2: string; leitor?: string | null };
   informacao_de_hoje: InformacaoDeHoje;
   gerado_em: string;
   aviso: string;
 }
 
 export interface ComoTestado {
-  motor: { v1: string; v2: string };
+  motor: { v1: string; v2: string; leitor?: string | null };
   pre_registro: { assinatura: string; emendas: number };
   dados: Record<string, number>;
   acerto: Record<string, number>;

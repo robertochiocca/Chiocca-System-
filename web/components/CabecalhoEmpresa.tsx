@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { data as fdata } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
 import { dataValida } from "@/lib/limites.mjs";
+import { comPonto } from "@/lib/trechos.mjs";
 import { MODO_ESTATICO } from "@/lib/api";
 import { fmt } from "@/lib/textos";
 import type { Empresa } from "@/lib/tipos";
@@ -22,8 +23,7 @@ export function HistoricoDeNome({ empresa }: { empresa: Empresa }) {
   const [primeiro, ...resto] = nomes;
   return (
     <p className="historico-nome">
-      {fmt(t.nome_anterior, { a: primeiro.ate_ano, n: primeiro.nome })}
-      {resto.map((x) => `; ${fmt(t.nome_anterior_mais, { a: x.ate_ano, n: x.nome })}`).join("")}.
+      {comPonto(fmt(t.nome_anterior, { a: primeiro.ate_ano, n: primeiro.nome }) + resto.map((x) => `; ${fmt(t.nome_anterior_mais, { a: x.ate_ano, n: x.nome })}`).join(""))}
     </p>
   );
 }

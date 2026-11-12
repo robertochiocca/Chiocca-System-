@@ -6,9 +6,11 @@ da página (`chiocca.v2.pdf_simples`, gerador sem dependência e determinístico
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from chiocca.formato import data
+from chiocca.v2 import leitura_exibicao
 from chiocca.v2.contexto import ROTULOS_F
 from chiocca.v2.exibicao import com_sinal_de_menos, decimal, inteiro, pct
 from chiocca.v2.pdf_simples import gerar_pdf, paginar
@@ -53,7 +55,7 @@ T: dict[str, dict[str, Any]] = {
         "testado": "# Como o motor foi testado",
         "testado_txt": "No estudo 1, o motor v1 acertou {a} de {n} casos acertáveis, com {x} alarmes por acerto no período inteiro e taxa de alerta de {t} nas empresa-anos não financeiras avaliadas ({doc}).",
         "limites": "# Limites", "limitacoes": "# Limitações", "motor": "# Motor",
-        "motor_txt": "{v1}; {v2}. Gerado em {g}.", "pagina": "Página {i} de {n}",
+        "motor_txt": "{m}. Gerado em {g}.", "pagina": "Página {i} de {n}",
         "evidencias": "Evidências no JSON: {n} linhas da DFP, cada uma com documento, versão, data de entrega, conta e localização.",
         "codigos": {"nao_financeira": "não financeira", "financeira": "financeira", "dados_abertos": "dados abertos", "enet": "ENET",
                     "DFC_MI": "DFC (método indireto)", "DFC_MD": "DFC (método direto)",
@@ -100,7 +102,7 @@ T: dict[str, dict[str, Any]] = {
         "testado": "# How the engine was tested",
         "testado_txt": "In study 1, engine v1 detected {a} of {n} detectable cases, with {x} false alarms per detected case over the whole period and an alert rate of {t} among evaluated non-financial company-years ({doc}).",
         "limites": "# Limits", "limitacoes": "# Limitations", "motor": "# Engine",
-        "motor_txt": "{v1}; {v2}. Generated at {g}.", "pagina": "Page {i} of {n}",
+        "motor_txt": "{m}. Generated at {g}.", "pagina": "Page {i} of {n}",
         "evidencias": "Evidence in the JSON: {n} DFP lines, each with document, version, filing date, account and location.",
         "codigos": {"nao_financeira": "non-financial", "financeira": "financial", "dados_abertos": "open data", "enet": "ENET",
                     "DFC_MI": "DFC (indirect method)", "DFC_MD": "DFC (direct method)",
@@ -281,7 +283,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     if pa.get("rodizio"):
         out.append(pa["rodizio"]["nota"])
     if inv.get("leitura_documental"):  # Fase F1: só com o leitor aprovado nos casos guardados
-        out += _leitura(inv["leitura_documental"], lang)
+        out += _leitura(inv, lang)
     mt = inv.get("como_o_motor_foi_testado", {})
     if mt:
         out += ["", t["testado"], t["testado_txt"].format(a=inteiro(mt["acertados"], lang), n=inteiro(mt["acertaveis"], lang),
@@ -290,7 +292,8 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     out += ["", t["limites"]] + [f"- {x}" for x in inv.get("limites", [])]
     out += ["", t["limitacoes"]] + [f"- {x}" for x in inv.get("limitacoes", [])]
     out += ["", t["evidencias"].format(n=inteiro(len(inv.get("evidencias", {})), lang))]
-    out += ["", t["motor"], t["motor_txt"].format(v1=inv["motor"]["v1"], v2=inv["motor"]["v2"], g=inv["gerado_em"])]
+    motor = "; ".join(x for x in (inv["motor"]["v1"], inv["motor"]["v2"], inv["motor"].get("leitor")) if x)
+    out += ["", t["motor"], t["motor_txt"].format(m=motor, g=inv["gerado_em"])]
     hoje = inv.get("informacao_de_hoje")
     if hoje:  # fora da visão "como era": seção separada no fim
         out += ["", f"# {hoje['titulo']}", t["hoje"].format(s=hoje["situacao_cadastro"] or "—", f=hoje["fonte"])]
@@ -301,20 +304,61 @@ def linhas(inv: dict[str, Any]) -> list[str]:
         out += [t["comparativo_linha"].format(g=x["grupo"], dem=_c(x["demonstracao"], t), cod=x["cd_conta"], ds=x["ds_conta"],
                                               v=_f(x["valor"] / 1e6, lang, 1), c=_f(x["valor_comparativo"] / 1e6, lang, 1),
                                               dif=_f(x["diferenca"] / 1e6, lang, 1)) for x in difs]  # fmt: skip
-    return _maiusculas(out)
+    return _sem_delta(_sem_ponto_duplo(_maiusculas(out)))
 
 
-LEITURA = {
-    "pt": {"titulo": "# Notas explicativas (trechos copiados; não gera alerta)", "partes": "Partes relacionadas",
-           "nota": "Nota: {t} (páginas {a} a {b})", "campos": "Campos do item 18 do CPC 05 (R1)",
-           "condicoes": "Condições de mercado", "risco": "Risco sacado e forfait", "relatorio": "Relatório do auditor",
+_DELTA = re.compile(r"\s*\(Δ[A-Z_]+\)")
+_PONTO_DUPLO = re.compile(r"(?<!\.)\.\.$")
+
+
+def _sem_delta(linhas: list[str]) -> list[str]:
+    """Sem o Δ no PDF (pedido de 11/11/2026): a fonte Symbol não vai embutida e cada leitor de PDF a substitui de um
+    jeito, e o Δ saía em branco. Sai a sigla entre parênteses: "Variação do ROA (ΔROA)" vira "Variação do ROA". A tela
+    mantém o Δ. Os trechos copiados dos documentos (entre aspas) ficam como vieram."""
+    return [x if "“" in x else _DELTA.sub("", x) for x in linhas]
+
+
+def _sem_ponto_duplo(linhas: list[str]) -> list[str]:
+    """Frase que termina num nome com ponto ("AMERICANAS S.A.") não ganha outro ponto."""
+    return [x if "“" in x else _PONTO_DUPLO.sub(".", x) for x in linhas]
+
+
+LEITURA: dict[str, dict[str, Any]] = {
+    "pt": {"titulo": "# Trechos dos documentos (copiados; não gera alerta)", "notas": "Notas explicativas",
+           "partes": "Notas explicativas · Partes relacionadas", "nota": "Nota: {t} (páginas {a} a {b})",
+           "campos": "Campos do item 18 do CPC 05 (R1)", "condicoes": "Condições de mercado",
+           "risco": "Notas explicativas · Risco sacado e forfait", "relatorio": "Relatório do auditor",
            "tipo": "Tipo de opinião: {t}", "formulario": "Formulário de Referência", "pagina": "p. {p}",
-           "negativa": "menção negativa", "original": ""},
-    "en": {"titulo": "# Explanatory notes (copied excerpts; no alert)", "partes": "Related parties",
-           "nota": "Note: {t} (pages {a} to {b})", "campos": "Fields of item 18 of CPC 05 (R1)",
-           "condicoes": "Market terms", "risco": "Reverse factoring and forfaiting", "relatorio": "Auditor's report",
+           "negativa": "menção negativa", "cortado": "cortado no fim da frase", "original": "",
+           "omitidos": "Trecho omitido; ver página {p} do documento", "omitidos_sem_pagina": "Trecho omitido; ver o "
+           "relatório do auditor no documento", "n_trechos": " ({n} trechos)",
+           "testado": "Como o leitor foi testado: {n} casos guardados, medida única com o leitor congelado ({c}): "
+                      "precisão {p}, cobertura {cob}, conferência literal em {a} de {b} trechos, {nomes} ({doc}).",
+           "sem_nomes": "nenhum nome de pessoa física", "com_nomes": "{n} nomes de pessoa física",
+           "limites": "Limites desta seção:",
+           "fre": {"sem_linhas": "O Formulário de Referência não traz transações com partes relacionadas na tabela.",
+                   "nao_disponivel_na_data": "O Formulário de Referência deste exercício não estava disponível na data.",
+                   "sem_formulario": "Não há Formulário de Referência deste exercício nos dados abertos."},
+           "fre_doc": "Formulário de {a}, versão {v}, entregue em {d}.",
+           "linhagem": "É a única versão disponível nos dados abertos; as versões anteriores não estão lá."},
+    "en": {"titulo": "# Document excerpts (copied; no alert)", "notas": "Explanatory notes",
+           "partes": "Explanatory notes · Related parties", "nota": "Note: {t} (pages {a} to {b})",
+           "campos": "Fields of item 18 of CPC 05 (R1)", "condicoes": "Market terms",
+           "risco": "Explanatory notes · Reverse factoring and forfaiting", "relatorio": "Auditor's report",
            "tipo": "Type of opinion: {t}", "formulario": "Reference Form", "pagina": "p. {p}",
-           "negativa": "negative mention", "original": "original excerpt in Portuguese"},
+           "negativa": "negative mention", "cortado": "cut at the end of a sentence",
+           "original": "original excerpt in Portuguese",
+           "omitidos": "Excerpt omitted; see page {p} of the document", "omitidos_sem_pagina": "Excerpt omitted; see "
+           "the auditor's report in the document", "n_trechos": " ({n} excerpts)",
+           "testado": "How the reader was tested: {n} held-out cases, a single measurement with the frozen reader ({c}): "
+                      "precision {p}, coverage {cob}, literal check on {a} of {b} excerpts, {nomes} ({doc}).",
+           "sem_nomes": "no natural-person name", "com_nomes": "{n} natural-person names",
+           "limites": "Limits of this section:",
+           "fre": {"sem_linhas": "The Reference Form lists no related-party transactions in the table.",
+                   "nao_disponivel_na_data": "The Reference Form for this fiscal year was not available on the date.",
+                   "sem_formulario": "There is no Reference Form for this fiscal year in the open data."},
+           "fre_doc": "Form of {a}, version {v}, filed on {d}.",
+           "linhagem": "It is the only version available in the open data; earlier versions are not there."},
 }  # fmt: skip
 ROTULOS_LEITURA = {
     "pt": {"controladora": "controladora", "controle_conjunto_ou_influencia": "controle conjunto ou influência significativa",
@@ -340,50 +384,86 @@ TIPOS_OPINIAO = {"pt": {"sem_ressalva": "sem ressalva", "com_ressalva": "com res
                         "abstencao": "disclaimer of opinion"}}  # fmt: skip
 
 
-def _trecho(x: dict[str, Any], t: dict[str, str], lang: str) -> str:
-    if x["omitido"]:
-        return f"- {x['aviso_omissao']}"
-    onde = [t["pagina"].format(p=x["pagina"])] if x["pagina"] is not None else []
-    marcas = onde + ([t["negativa"]] if x.get("negacao") else []) + ([t["original"]] if t["original"] else [])
-    rotulo = f"[{ROTULOS_LEITURA[lang].get(x['rotulo'], x['rotulo'])}] " if x.get("rotulo") else ""
-    return f"- {rotulo}“{x['texto']}” ({', '.join(marcas)})" if marcas else f"- {rotulo}“{x['texto']}”"
+def frase(x: str) -> str:
+    """Texto de motivo como frase: inicial maiúscula e ponto no fim."""
+    x = x.strip()
+    return x[:1].upper() + x[1:] + ("" if x.endswith((".", "!", "?")) else ".") if x else x
 
 
-def _leitura(ld: dict[str, Any], lang: str) -> list[str]:
-    """A seção de leitura de documentos no PDF: só fato, os trechos como vieram (literais), sem selo nem alerta."""
+def _trechos(xs: list[dict[str, Any]], t: dict[str, Any], lang: str) -> list[str]:
+    """Os trechos de um bloco, agrupados para mostrar (chiocca/v2/leitura_exibicao.py): rótulos juntos no mesmo trecho;
+    omitidos da mesma página numa linha só, com a contagem."""
+    out = []
+    for g in leitura_exibicao.agrupa(xs):
+        if g["omitido"]:
+            linha = t["omitidos"].format(p=g["pagina"]) if g["pagina"] is not None else t["omitidos_sem_pagina"]
+            out.append(f"- {linha}" + (t["n_trechos"].format(n=inteiro(g["n"], lang)) if g["n"] > 1 else ""))
+            continue
+        onde = [t["pagina"].format(p=g["pagina"])] if g["pagina"] is not None else []
+        marcas = (onde + ([t["negativa"]] if g["negacao"] else []) + ([t["cortado"]] if g["cortado"] else [])
+                  + ([t["original"]] if t["original"] else []))  # fmt: skip
+        rotulos = "; ".join(ROTULOS_LEITURA[lang].get(r, r) for r in g["rotulos"])
+        prefixo = f"[{rotulos}] " if rotulos else ""
+        out.append(f"- {prefixo}“{g['texto']}”" + (f" ({', '.join(marcas)})" if marcas else ""))
+    return out
+
+
+def _testado(mt: dict[str, Any], t: dict[str, Any], lang: str) -> str:
+    nomes = t["sem_nomes"] if mt["nomes_vazados"] == 0 else t["com_nomes"].format(n=inteiro(mt["nomes_vazados"], lang))
+    return t["testado"].format(n=inteiro(mt["casos"], lang), c=mt["commit"], p=decimal(mt["precisao"], lang, 3),
+                               cob=decimal(mt["cobertura"], lang, 3), a=inteiro(mt["trechos_conferidos"], lang),
+                               b=inteiro(mt["trechos_mostrados"], lang), nomes=nomes, doc=mt["documento"])  # fmt: skip
+
+
+def _leitura(inv: dict[str, Any], lang: str) -> list[str]:
+    """A seção de trechos dos documentos no PDF: só fato, os trechos como vieram (literais), sem selo nem alerta."""
     t = LEITURA[lang]
+    ld = inv["leitura_documental"]
     pr, rs, rel, fre = (
         ld["partes_relacionadas"],
         ld["risco_sacado"],
         ld["relatorio_do_auditor"],
         ld["formulario_de_referencia"],
     )
-    out = ["", t["titulo"], ld["nota"], "", t["partes"]]
+    out = ["", t["titulo"], ld["nota"]]
+    if inv.get("como_o_leitor_foi_testado"):
+        out.append(_testado(inv["como_o_leitor_foi_testado"], t, lang))
+    out += ["", t["partes"]]
     if pr.get("motivo"):
-        out.append(pr["motivo"])
+        out.append(frase(pr["motivo"]))
     if pr.get("nota"):
         out.append(t["nota"].format(t=pr["nota"]["titulo"], a=pr["nota"]["paginas"][0], b=pr["nota"]["paginas"][1]))
-    out += [_trecho(x, t, lang) for x in pr["trechos"]]
+    out += _trechos(pr["trechos"], t, lang)
     if pr["campos_cpc05_18"]:
-        out += [t["campos"]] + [_trecho(x, t, lang) for x in pr["campos_cpc05_18"]]
+        out += [t["campos"]] + _trechos(pr["campos_cpc05_18"], t, lang)
     if pr["condicoes_de_mercado"]:
-        out += [t["condicoes"]] + [_trecho(x, t, lang) for x in pr["condicoes_de_mercado"]] + [pr["nota_condicoes"]]
-    out += (
-        ["", t["risco"]] + ([rs["motivo"]] if rs.get("motivo") else []) + [_trecho(x, t, lang) for x in rs["trechos"]]
-    )
+        out += [t["condicoes"]] + _trechos(pr["condicoes_de_mercado"], t, lang) + [pr["nota_condicoes"]]
+    out += ["", t["risco"]] + ([frase(rs["motivo"])] if rs.get("motivo") else []) + _trechos(rs["trechos"], t, lang)
     if rs.get("nota"):
         out.append(rs["nota"])
-    out += ["", t["relatorio"]] + ([rel["motivo"]] if rel.get("motivo") else [])
+    out += ["", t["relatorio"]] + ([frase(rel["motivo"])] if rel.get("motivo") else [])
     if rel.get("tipo"):
         out.append(t["tipo"].format(t=TIPOS_OPINIAO[lang].get(rel["tipo"], rel["tipo"])))
-    out += [_trecho(x, t, lang) for x in rel["trechos"]]
-    out += ["", t["formulario"]] + ([fre["motivo"]] if fre.get("motivo") else [])
-    if (fre.get("documento") or {}).get("linhagem"):
-        out.append(fre["documento"]["linhagem"])
+    out += _trechos(rel["trechos"], t, lang)
+    out += ["", t["formulario"]]
+    doc = fre.get("documento") or {}
+    if doc.get("versao") is not None and fre["status"] in ("disponivel", "sem_linhas"):
+        out.append(t["fre_doc"].format(a=fre["ano_formulario"], v=doc["versao"], d=data(doc["dt_receb"], lang)))
+    texto_fre = (
+        [t["fre"][fre["status"]]]
+        if fre["status"] in t["fre"]
+        else ([frase(fre["motivo"])] if fre.get("motivo") else [])
+    )
+    if doc.get("linhagem"):
+        texto_fre.append(t["linhagem"])
+    if texto_fre:
+        out.append(" ".join(texto_fre))
     # montante e saldo vêm do arquivo da CVM com hífen no lugar do sinal de menos: na exibição, o sinal de menos
     out += [f"- {x['parte']} · {x['relacao'] or '—'} · {x['objeto'] or '—'} · "
             f"{com_sinal_de_menos(x['montante'] or '—')} · {com_sinal_de_menos(x['saldo'] or '—')}"
             for x in fre["linhas"]]  # fmt: skip
+    if inv.get("limites_da_leitura"):
+        out += ["", t["limites"]] + [f"- {x}" for x in inv["limites_da_leitura"]]
     return out
 
 
