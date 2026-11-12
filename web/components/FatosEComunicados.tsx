@@ -37,7 +37,7 @@ function Lista({ titulo, itens }: { titulo: string; itens: ItemIPE[] }) {
                     {x.assunto}
                     {(x.versao ?? 1) > 1 && <span className="discreto"> · {fmt(t.ipe_versao, { v: x.versao ?? 1 })}</span>}
                   </td>
-                  <td>
+                  <td className="nowrap">
                     {x.link ? (
                       <a href={x.link} rel="noopener noreferrer" target="_blank">
                         {t.ipe_ver}
