@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { PRIMEIRO_EXERCICIO } from "../../lib/limites.mjs";
-import { codigosInternos, hifensComoSinal, textoDaTela } from "./comum.mjs";
+import { codigosInternos, hifensComoSinal, pontosDuplos, textoDaTela } from "./comum.mjs";
 import { servir } from "./servidor.mjs";
 
 const out = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "out");
@@ -90,6 +90,7 @@ for (const idioma of ["pt", "en"]) {
         const texto = await textoDaTela(p);
         for (const c of codigosInternos(texto)) anota(chave, c);
         for (const h of hifensComoSinal(texto)) anota(chave, `hífen como sinal de menos: ${h}`);
+        for (const h of pontosDuplos(texto)) anota(chave, `ponto duplo: ${h}`);
         const pdf = await p.request.get(`${url}/demo/investigacoes/${e.cd_cvm}/${ex}/${data}/${idioma}.pdf`);
         if (pdf.status() !== 200) anota(chave, `PDF: HTTP ${pdf.status()}`);
       }

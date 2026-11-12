@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import CabecalhoEmpresa from "@/components/CabecalhoEmpresa";
+import LeituraDocumental from "@/components/LeituraDocumental";
 import InformacaoDeHoje from "@/components/InformacaoDeHoje";
 import Resumo from "@/components/Resumo";
 import { CartaoMScore, CartaoSinal } from "@/components/Sinais";
@@ -16,6 +17,7 @@ import { api, FalhaApi, MODO_ESTATICO } from "@/lib/api";
 import { data as fdata, inteiro, milhoes } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
 import { DATA_MAXIMA, dataValida, exercicioValido, ULTIMO_EXERCICIO_LIBERADO } from "@/lib/limites.mjs";
+import { comPonto } from "@/lib/trechos.mjs";
 import { fmt, type Textos } from "@/lib/textos";
 import type { Achado, ComoTestado, Demonstracao, Diferenca, Investigacao } from "@/lib/tipos";
 
@@ -111,6 +113,7 @@ function Pagina() {
     ["risco", t.sec_risco],
     ["qualidade", t.sec_qualidade],
     ...(pa ? ([["parecer", t.sec_parecer]] as [string, string][]) : []),
+    ...(inv.leitura_documental ? ([["trechos", t.idx_trechos]] as [string, string][]) : []),
     ["mudancas", t.sec_mudancas],
     ["limites", t.sec_limites],
     ["hoje", t.sec_hoje],
@@ -186,8 +189,8 @@ function Pagina() {
                   <ul>
                     {pa.trocas_de_auditor.map((x, i) => (
                       <li key={i}>
-                        {x.ano_fca}: {x.de ?? "—"} → {x.para ?? "—"}
-                        {x.transicao_fca ? ` (${fmt(t.transicao, { x: x.transicao_fca })})` : ""}. {x.saida?.nota}
+                        {comPonto(`${x.ano_fca}: ${x.de ?? "—"} → ${x.para ?? "—"}${x.transicao_fca ? ` (${fmt(t.transicao, { x: x.transicao_fca })})` : ""}`)}{" "}
+                        {x.saida?.nota}
                       </li>
                     ))}
                   </ul>
@@ -200,6 +203,12 @@ function Pagina() {
                   </p>
                 )}
               </div>
+            </Secao>
+          )}
+
+          {inv.leitura_documental && (
+            <Secao id="trechos" titulo={t.sec_trechos} sub={t.sub_trechos}>
+              <LeituraDocumental l={inv.leitura_documental} testado={inv.como_o_leitor_foi_testado ?? null} limites={inv.limites_da_leitura ?? []} />
             </Secao>
           )}
 
@@ -286,7 +295,7 @@ function Pagina() {
                 ))}
               </p>
               <p className="discreto">
-                {inv.motor.v1}; {inv.motor.v2}
+                {[inv.motor.v1, inv.motor.v2, inv.motor.leitor].filter(Boolean).join("; ")}
               </p>
             </div>
           </Secao>

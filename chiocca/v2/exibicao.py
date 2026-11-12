@@ -37,8 +37,9 @@ def inteiro(n: int, lang: str) -> str:
 
 def textos_com_sinal_de_menos(x: Any, chave: str | None = None) -> Any:
     """Aplica `com_sinal_de_menos` a todo texto de exibição de um JSON da v2; dado literal (trecho do parecer, nome da
-    conta como veio da CVM), identificador e as evidências ficam como vieram."""
-    if chave in LITERAIS or chave == "evidencias":
+    conta como veio da CVM), identificador, as evidências e a seção de leitura de documentos (trechos copiados e linhas
+    do Formulário de Referência, Fase F1) ficam como vieram."""
+    if chave in LITERAIS or chave in ("evidencias", "leitura_documental"):
         return x
     if isinstance(x, str):
         return com_sinal_de_menos(x)

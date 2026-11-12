@@ -41,6 +41,30 @@ export function validaDistribuicao(d, onde = "distribuicao") {
   return problemas;
 }
 
+/** Seção de leitura de documentos (Fase F1): só fato, sem alerta; trecho mostrado conferido; omitido sem texto. */
+export function validaLeitura(l) {
+  const problemas = [];
+  if (!tem(l, ["natureza", "gera_alerta", "partes_relacionadas", "risco_sacado", "relatorio_do_auditor",
+    "formulario_de_referencia"], "leitura_documental", problemas)) return problemas;
+  if (l.gera_alerta !== false || l.natureza !== "trecho_literal") problemas.push("leitura_documental: gera alerta ou não é trecho literal");
+  for (const proibido of ["alerta_v1", "nota_final", "escore", "percentil", "ranking"]) {
+    if (JSON.stringify(l).includes(`"${proibido}"`)) problemas.push(`leitura_documental: campo de sinal ${proibido}`);
+  }
+  const pr = l.partes_relacionadas;
+  const trechos = [...(pr.trechos ?? []), ...(pr.campos_cpc05_18 ?? []), ...(pr.condicoes_de_mercado ?? []),
+    ...(l.risco_sacado.trechos ?? []), ...(l.relatorio_do_auditor.trechos ?? [])];
+  for (const t of trechos) {
+    if (t.conferido !== true) problemas.push("leitura_documental: trecho sem conferência literal");
+    if (t.omitido !== (t.texto === null) || t.omitido !== (t.aviso_omissao !== null)) problemas.push("leitura_documental: omissão inconsistente");
+  }
+  for (const x of l.formulario_de_referencia.linhas ?? []) {
+    // o texto no lugar do nome: "parte relacionada (nome omitido)" ou "related party (name omitted)"
+    if (x.parte_omitida && !/nome omitido|name omitted/.test(x.parte)) problemas.push("leitura_documental: parte omitida com nome");
+    if (x.tipo_pessoa === "PF" && !x.parte_omitida) problemas.push("leitura_documental: pessoa física com nome");
+  }
+  return problemas;
+}
+
 export function validaInvestigacao(inv) {
   const problemas = [];
   if (!tem(inv, ["empresa", "data_referencia", "idioma", "exercicios", "achados", "mudancas", "parecer_e_auditor",
@@ -52,6 +76,7 @@ export function validaInvestigacao(inv) {
   for (const e of inv.exercicios) if (e.exercicio > 2023) problemas.push("exercício acima do lacre");
   if (inv.data_referencia < "2011-04-30" || inv.data_referencia > "2024-12-31") problemas.push("data fora do intervalo");
   for (const f of Object.keys(inv.achados)) if (!FAMILIAS.includes(f)) problemas.push(`família desconhecida ${f}`);
+  if (inv.leitura_documental) problemas.push(...validaLeitura(inv.leitura_documental));
   for (const lista of Object.values(inv.achados)) {
     for (const a of lista) {
       tem(a, ["sinal", "rotulo", "valor", "unidade", "regra", "alerta_v1", "linhagem"], `achado ${a.sinal}`, problemas);

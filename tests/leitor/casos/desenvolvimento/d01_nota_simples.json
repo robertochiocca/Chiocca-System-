@@ -1,0 +1,66 @@
+{
+ "id": "d01_nota_simples",
+ "descricao": "Nota numerada com texto e tabela nas colunas controladora e consolidado.",
+ "notas": {
+  "paginas": [
+   [
+    "1. Contexto operacional",
+    "A Exemplo Varejo S.A. é uma companhia aberta com sede em São Paulo.",
+    "",
+    "12. Partes relacionadas",
+    "A Companhia aluga o centro de distribuição de sua controladora, Fictícia Holding S.A.,",
+    "com vencimento em dezembro de 2025, em condições de mercado.",
+    "",
+    "Saldos e transações                  Controladora           Consolidado",
+    "                                      2021       2020        2021       2020",
+    "Fictícia Holding S.A. - aluguel a pagar (1.200)  (1.100)     (1.200)    (1.100)",
+    "Controladas - contas a receber        3.400      2.900           -          -",
+    "Despesa de aluguel                   (14.400)  (13.200)    (14.400)   (13.200)",
+    "",
+    "13. Imobilizado",
+    "O imobilizado é registrado ao custo de aquisição."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "sua controladora, Fictícia Holding S.A.,"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "Controladas - contas a receber"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "com vencimento em dezembro de 2025"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "aluguel a pagar"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "Despesa de aluguel"
+   },
+   {
+    "verificacao": "condicoes_de_mercado",
+    "pagina": 1,
+    "contem": "em condições de mercado"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

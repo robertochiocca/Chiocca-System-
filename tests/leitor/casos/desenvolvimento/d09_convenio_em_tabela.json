@@ -1,0 +1,43 @@
+{
+ "id": "d09_convenio_em_tabela",
+ "descricao": "Convênio com fornecedores numa linha de tabela.",
+ "notas": {
+  "paginas": [
+   [
+    "14. Fornecedores",
+    "                                        2021      2020",
+    "Fornecedores de mercadorias           88.000    71.000",
+    "Fornecedores - convênio               15.500    12.000",
+    "Total                                103.500    83.000",
+    "",
+    "15. Partes relacionadas",
+    "Não há transações com partes relacionadas além das divulgadas nesta nota.",
+    "As vendas para a coligada Exemplo Distribuidora S.A. totalizaram R$ 4.300 mil."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 1,
+    "negacao": false,
+    "contem": "Fornecedores - convênio"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "coligada Exemplo Distribuidora S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "As vendas para a coligada"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

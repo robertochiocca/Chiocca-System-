@@ -39,6 +39,13 @@ Context only, with no alert, and only after they are specified in the plan:
 - Also read the parent-company note, because consolidation eliminates intra-group transactions (Gonçalves et al. 2024, p. 9).
 - The phrase "on market terms" is recorded as a fact, without proof (item 23).
 - Before starting Phase F: check whether the Reference Form (Formulário de Referência) open data has a structured table of related-party transactions. Only check and report.
+  - Checked on 2026-11-11: it does (`fre_cia_aberta_transacao_parte_relacionada_<ano>.csv`), only with each company's last version in the year. Used in Phase F1.
+
+## Outside Phase F (recorded on 2026-11-11)
+
+- LLM: outside Phase F, by Roberto's decision. The reader is extractive only. If it comes back, every citation goes through the same literal check.
+- Earlier versions of the Reference Form (only on ENET; the open data has the last one).
+- Text recognition in PDFs without a text layer and ITR explanatory notes.
 
 ## Do not
 

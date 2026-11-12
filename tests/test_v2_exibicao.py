@@ -15,6 +15,11 @@ MENOS = "−"
 HIFEN_COMO_SINAL = re.compile(r"(?<![\w.,\-−/])-(?=\d)")
 
 
+def sem_trechos_literais(linha: str) -> str:
+    """A linha sem os trechos copiados dos documentos (entre aspas curvas, Fase F1): dado literal fica como veio."""
+    return re.sub(r"“[^”]*”", "", linha)
+
+
 def test_sinal_de_menos_so_onde_o_hifen_e_sinal() -> None:
     assert (
         exibicao.com_sinal_de_menos("M > -1,78 (pré-registro, seção 4)") == f"M > {MENOS}1,78 (pré-registro, seção 4)"
@@ -59,7 +64,7 @@ def _textos_de_exibicao(x: object, chave: str | None = None) -> list[str]:
 def test_exemplos_sem_hifen_como_sinal_no_json_e_no_pdf(nome: str) -> None:
     inv = json.loads((exemplos.PASTA / f"{nome}.json").read_text(encoding="utf-8"))
     assert [s for s in _textos_de_exibicao(inv) if HIFEN_COMO_SINAL.search(s)] == []
-    assert [linha for linha in pdf_investigacao.linhas(inv) if HIFEN_COMO_SINAL.search(linha)] == []
+    assert [x for x in pdf_investigacao.linhas(inv) if HIFEN_COMO_SINAL.search(sem_trechos_literais(x))] == []
     regra = inv["achados"]["possivel_manipulacao"][0]["regra"]
     assert regra.startswith(f"M > {MENOS}1") and f"M > {MENOS}1" in "\n".join(pdf_investigacao.linhas(inv))
 

@@ -1,0 +1,42 @@
+{
+ "id": "d07_risco_sacado_presente",
+ "descricao": "Risco sacado em linha de tabela e em parágrafo, fora da nota de partes relacionadas.",
+ "notas": {
+  "paginas": [
+   [
+    "10. Partes relacionadas",
+    "A Companhia não realizou transações com partes relacionadas no exercício, exceto",
+    "a remuneração dos administradores, divulgada na nota 22.",
+    "",
+    "11. Fornecedores"
+   ],
+   [
+    "Fornecedores nacionais                     45.000     38.000",
+    "Fornecedores - risco sacado                12.300      9.800",
+    "",
+    "A Companhia mantém operações de risco sacado (forfait) com bancos de primeira linha,",
+    "nas quais os fornecedores antecipam seus recebíveis.",
+    "",
+    "12. Empréstimos"
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "pessoal_chave",
+    "pagina": 1,
+    "contem": "a remuneração dos administradores"
+   },
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 2,
+    "negacao": false,
+    "contem": "operações de risco sacado (forfait)"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

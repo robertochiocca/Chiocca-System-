@@ -1,0 +1,49 @@
+{
+ "id": "d24_nota_de_remuneracao_separada",
+ "descricao": "Remuneração da administração numa nota própria, fora da nota de partes relacionadas.",
+ "notas": {
+  "paginas": [
+   [
+    "8.Partes relacionadas",
+    "A Companhia comprou matéria-prima da controladora Exemplo Química S.A. por R$ 7.400 mil.",
+    "",
+    "9. Contas a pagar",
+    "As contas a pagar a fornecedores vencem em até 45 dias."
+   ],
+   [
+    "22. Remuneração dos administradores",
+    "",
+    "                                 2021      2020",
+    "Remuneração fixa                 4.100     3.800",
+    "Remuneração variável             1.250     1.100",
+    "",
+    "23. Eventos subsequentes",
+    "Não houve eventos subsequentes relevantes."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "controladora Exemplo Química S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "comprou matéria-prima"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "pessoal_chave",
+    "pagina": 2,
+    "contem": "Remuneração fixa"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

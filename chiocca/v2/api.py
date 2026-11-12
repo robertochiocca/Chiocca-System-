@@ -49,7 +49,7 @@ from chiocca.v2.lacre import (
     garantir_data_referencia,
     garantir_liberado,
 )
-from chiocca.v2.linhagem import MOTOR_V1, Localizador
+from chiocca.v2.linhagem import Localizador
 from chiocca.v2.na_data import _meta, exercicio_na_data
 
 PREFIXO = "/api/v1"
@@ -200,7 +200,7 @@ def criar_app(
                 "armazem": {"exercicios": manifesto.get("exercicios", []), "linhas": manifesto.get("linhas", {})},
                 "modo_demonstracao": demonstracao,
                 "empresas_na_demonstracao": len(permitidas) if demonstracao else None,
-                "motor": {"v1": MOTOR_V1, "v2": investigacao.MOTOR_V2}, "aviso": investigacao.AVISO}  # fmt: skip
+                "motor": investigacao.motor(), "aviso": investigacao.AVISO}  # fmt: skip
 
     @app.get(f"{PREFIXO}/empresas", response_model=modelos.BuscaEmpresas)
     def buscar_empresas(

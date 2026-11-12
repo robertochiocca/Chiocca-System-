@@ -2,14 +2,18 @@
 // detalhes abertos), o menu do celular e "Como o motor foi testado", no computador e no celular, em PT e EN, nos temas
 // claro e escuro. Usa o site estático exportado (npm run build:estatico) com os dados de teste do teste de tela (os
 // exemplos de docs/exemplos/). No CI, a pasta capturas/ vira artefato do job do web.
-import { mkdirSync, rmSync } from "node:fs";
+// Com --readme (npm run capturas -- --readme), copia também as imagens do README: o topo da investigação da Americanas
+// (exercício 2021, em 31/12/2024), no computador e no celular, tema claro, em PT (seção em português) e em EN (seção em
+// inglês), para docs/imagens/demonstracao-<aparelho>-<língua>.png.
+import { copyFileSync, mkdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { abrirTudo } from "./comum.mjs";
 import { subir } from "./servidor.mjs";
 
-const destino = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "capturas");
+const web = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+const destino = join(web, "capturas");
 rmSync(destino, { recursive: true, force: true });
 mkdirSync(destino, { recursive: true });
 
@@ -80,3 +84,13 @@ for (const [aparelho, opcoes] of Object.entries(APARELHOS)) {
 await navegador.close();
 await servidor.fechar();
 console.log(`${n} capturas em ${destino}`);
+if (process.argv.includes("--readme")) {
+  const imagens = join(web, "..", "docs", "imagens");
+  for (const aparelho of Object.keys(APARELHOS)) {
+    for (const idioma of ["pt", "en"]) {
+      const alvo = join(imagens, `demonstracao-${aparelho}-${idioma}.png`);
+      copyFileSync(join(destino, `investigacao-topo_${aparelho}_${idioma}_claro.png`), alvo);
+      console.log(`README: ${alvo}`);
+    }
+  }
+}

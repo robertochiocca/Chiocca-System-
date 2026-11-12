@@ -90,6 +90,13 @@ export function montarDados(raiz) {
   };
   grava(raiz, "indice.json", { ...demonstracao, empresas: [americanas, ...demonstracao.empresas] });
   cpSync(join(web, "tests", "contrato", "como_testado.json"), join(raiz, "demo", "como-o-motor-foi-testado.json"));
+  // Fase F1: uma investigação com a seção de leitura de documentos (a da Americanas em 31/12/2024 com a seção gerada
+  // pelo Python a partir de documentos fictícios, tests/test_v2_leitor.py), num código à parte, fora do índice.
+  for (const lang of ["pt", "en"]) {
+    const inv = JSON.parse(readFileSync(join(exemplos, `americanas_2021_em_2024-12-31_${lang}.json`), "utf-8"));
+    inv.leitura_documental = contrato(`leitura_documental_${lang}`);
+    grava(raiz, `investigacoes/${INV_LEITURA_CD}/2021/2024-12-31/${lang}.json`, inv);
+  }
   // a investigação da fixture (resposta da API guardada, só em PT): M-score com componentes não calculáveis
   const inv = contrato("investigacao");
   grava(raiz, `investigacoes/${inv.empresa.cd_cvm}/2020/${inv.data_referencia}/pt.json`, inv);
@@ -97,6 +104,8 @@ export function montarDados(raiz) {
 }
 
 export const INV_FIXTURE = "/investigacao/?cd=100&ex=2020&data=2022-04-30";
+const INV_LEITURA_CD = "777";
+export const INV_LEITURA = `/investigacao/?cd=${INV_LEITURA_CD}&ex=2021&data=2024-12-31`;
 
 /** Serve uma pasta (o site exportado) em http://127.0.0.1:<porta livre>, debaixo de `prefixo` (o NEXT_PUBLIC_BASE_PATH
  * do build, por exemplo "/Chiocca-System-", como no GitHub Pages). */

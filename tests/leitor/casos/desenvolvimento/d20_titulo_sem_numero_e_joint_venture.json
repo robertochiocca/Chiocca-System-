@@ -1,0 +1,48 @@
+{
+ "id": "d20_titulo_sem_numero_e_joint_venture",
+ "descricao": "Título sem número; joint venture, coligada e fundação de previdência.",
+ "notas": {
+  "paginas": [
+   [
+    "Transações com partes relacionadas",
+    "A Companhia participa da joint venture Exemplo Gás S.A., com controle conjunto,",
+    "à qual forneceu serviços de engenharia no montante de R$ 3.100 mil.",
+    "",
+    "A coligada Exemplo Química S.A. comprou insumos da Companhia por R$ 950 mil.",
+    "",
+    "A Companhia contribuiu com R$ 1.200 mil para a fundação de previdência complementar",
+    "dos empregados, que é outra parte relacionada."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "joint_ventures",
+    "pagina": 1,
+    "contem": "joint venture Exemplo Gás S.A."
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "A coligada Exemplo Química S.A."
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "outras_partes",
+    "pagina": 1,
+    "contem": "fundação de previdência complementar"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "no montante de R$ 3.100 mil"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

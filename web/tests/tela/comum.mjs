@@ -9,12 +9,13 @@ export async function abrirTudo(p) {
   await p.waitForFunction(() => !document.querySelector("main button[aria-expanded='false']"));
 }
 
-/** Texto da tela fora de links e de trechos em fonte de código (.mono), com tudo aberto. */
+/** Texto da tela fora de links, de trechos em fonte de código (.mono) e dos trechos copiados dos documentos (Fase F1:
+ * dado literal, em português, fica como veio), com tudo aberto. */
 export async function textoDaTela(p) {
   await abrirTudo(p);
   return p.evaluate(() => {
     const copia = document.body.cloneNode(true);
-    copia.querySelectorAll("a, .mono, script, style, template, svg").forEach((n) => n.remove());
+    copia.querySelectorAll("a, .mono, script, style, template, svg, blockquote[lang='pt'], td[lang='pt']").forEach((n) => n.remove());
     copia.querySelectorAll("*").forEach((n) => n.append(" ")); // separa o texto de elementos vizinhos
     return copia.textContent.replace(/\s+/g, " ");
   });
@@ -43,4 +44,11 @@ const HIFEN_COMO_SINAL = /(?<![\w.,\-\u2212/])-(?=\d)/g;
 
 export function hifensComoSinal(texto) {
   return [...texto.matchAll(HIFEN_COMO_SINAL)].map((m) => texto.slice(Math.max(0, m.index - 25), m.index + 8));
+}
+
+// Frase que termina num nome com ponto ("AMERICANAS S.A.") não ganha outro ponto: ".." sem ser reticências.
+const PONTO_DUPLO = /[^.]\.\.(?!\.)/g;
+
+export function pontosDuplos(texto) {
+  return [...texto.matchAll(PONTO_DUPLO)].map((m) => texto.slice(Math.max(0, m.index - 25), m.index + 4));
 }

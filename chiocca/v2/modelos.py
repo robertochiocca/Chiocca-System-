@@ -269,6 +269,106 @@ class ParecerEAuditor(Modelo):
     rodizio: Rodizio | None = None
 
 
+Verificacao = Literal["partes_relacionadas", "campo_cpc05_18", "condicoes_de_mercado", "risco_sacado", "parecer"]
+
+
+class TrechoLido(Modelo):
+    """Trecho copiado do documento (Fase F1): mostrado com a conferência literal, ou omitido por nome de pessoa
+    física ("trecho omitido; ver página N do documento")."""
+
+    verificacao: Verificacao
+    rotulo: str | None
+    pagina: int | None
+    texto: str | None
+    omitido: bool
+    aviso_omissao: str | None
+    conferido: Literal[True]  # trecho que não confere com o texto da página não sai
+    negacao: bool | None
+    cortado: bool
+    idioma_original: Literal["pt"]
+
+    @model_validator(mode="after")
+    def _omissao(self) -> TrechoLido:
+        if self.omitido != (self.texto is None) or self.omitido != (self.aviso_omissao is not None):
+            raise ValueError("trecho omitido sem aviso, ou mostrado sem texto")
+        return self
+
+
+class NotaLida(Modelo):
+    titulo: str
+    paginas: list[int]
+
+
+class PartesRelacionadasLidas(Modelo):
+    status: Literal["lido", "nao_lido"]
+    motivo: str | None
+    nota: NotaLida | None
+    colunas: list[Literal["controladora", "consolidado"]]
+    trechos: list[TrechoLido]
+    campos_cpc05_18: list[TrechoLido]
+    condicoes_de_mercado: list[TrechoLido]
+    nota_condicoes: str
+
+
+class RiscoSacadoLido(Modelo):
+    status: Literal["lido", "nao_lido"]
+    motivo: str | None = None
+    encontrado: bool | None
+    termos: list[str]
+    trechos: list[TrechoLido]
+    nota: str | None
+
+
+class RelatorioLido(Modelo):
+    status: Literal["lido", "nao_lido"]
+    motivo: str | None = None
+    titulo: str | None
+    tipo: Literal["sem_ressalva", "com_ressalva", "adversa", "abstencao"] | None
+    trechos: list[TrechoLido]
+
+
+class LinhaDoFormulario(Modelo):
+    parte: str
+    parte_omitida: bool
+    tipo_pessoa: str | None
+    relacao: str | None
+    objeto: str | None
+    garantia: str | None
+    natureza: str | None
+    duracao: str | None
+    taxa_juros: str | None
+    data_transacao: str | None
+    montante: str | None
+    saldo: str | None
+    linha_arquivo: int | None = None
+
+
+class FormularioLido(Modelo):
+    status: Literal["disponivel", "nao_disponivel_na_data", "sem_formulario", "sem_linhas"]
+    motivo: str | None
+    ano_formulario: int | None = None
+    documento: dict[str, Any] | None = None
+    linhas: list[LinhaDoFormulario]
+
+
+class LeituraDocumental(Modelo):
+    """Seção factual da Fase F1: trechos das notas explicativas e do relatório do auditor e a tabela do Formulário de
+    Referência. Não é família de sinais: sem alerta, nota nem ordenação. Só entra na investigação se o leitor passar
+    nas quatro metas do pré-registro (docs/pre-registro-leitor.md)."""
+
+    natureza: Literal["trecho_literal"]
+    gera_alerta: Literal[False]
+    leitor: str
+    extrator: str | None
+    nota: str
+    documento: dict[str, Any] | None = None
+    notas_explicativas: dict[str, Any]
+    partes_relacionadas: PartesRelacionadasLidas
+    risco_sacado: RiscoSacadoLido
+    relatorio_do_auditor: RelatorioLido
+    formulario_de_referencia: FormularioLido
+
+
 class ComoOMotorFoiTestado(Modelo):
     documento: str
     acertados: int
@@ -291,6 +391,21 @@ class Evidencia(Modelo):
 class Motor(Modelo):
     v1: str
     v2: str
+    leitor: str | None = None  # Fase F1: o leitor congelado que gera a seção de trechos, quando ela está presente
+
+
+class ComoOLeitorFoiTestado(Modelo):
+    """A medida única do leitor congelado nos casos guardados, como saiu (docs/leitor_medida.json)."""
+
+    documento: str
+    leitor: str
+    commit: str
+    casos: int
+    precisao: float
+    cobertura: float
+    trechos_mostrados: int
+    trechos_conferidos: int
+    nomes_vazados: int
 
 
 class Investigacao(ComData):
@@ -302,6 +417,9 @@ class Investigacao(ComData):
     o_que_se_sabia: OQueSeSabia
     qualidade_dos_dados: QualidadeDosDados
     parecer_e_auditor: ParecerEAuditor | None
+    leitura_documental: LeituraDocumental | None = None  # Fase F1: só com o leitor aprovado nos casos guardados
+    como_o_leitor_foi_testado: ComoOLeitorFoiTestado | None = None  # junto com a seção
+    limites_da_leitura: list[str] | None = None  # junto com a seção
     como_o_motor_foi_testado: ComoOMotorFoiTestado
     limites: list[str]
     limitacoes: list[str | None]

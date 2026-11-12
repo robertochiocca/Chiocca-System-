@@ -1,0 +1,50 @@
+{
+ "id": "g08_risco_sacado_frase_afirmativa_com_nao",
+ "descricao": "Menções afirmativas a risco sacado na política (página 1) e na nota de fornecedores (página 2). A frase da página 2 tem 'não', mas afirma que as operações existem: a marca de frase negativa é falsa. Sem nota de partes relacionadas.",
+ "notas": {
+  "paginas": [
+   [
+    "2. Resumo das principais práticas contábeis",
+    "2.9 Fornecedores",
+    "As contas a pagar a fornecedores incluem os valores de operações de risco sacado,",
+    "apresentados separadamente na nota 15.",
+    "",
+    "2.10 Provisões",
+    "As provisões são reconhecidas quando há obrigação presente resultante de evento passado."
+   ],
+   [
+    "15. Fornecedores",
+    "                                                   2021          2020",
+    "Fornecedores nacionais                            92.400        81.300",
+    "Fornecedores estrangeiros                         14.800        12.100",
+    "Fornecedores - convênio (risco sacado)            27.600        19.900",
+    "                                                 134.800       113.300",
+    "",
+    "A Companhia mantém convênios com instituições financeiras para operações de risco sacado,",
+    "que não alteram os prazos, os preços e as condições negociados com os fornecedores.",
+    "",
+    "16. Empréstimos e financiamentos",
+    "Os empréstimos estão registrados pelo custo amortizado."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 1,
+    "negacao": false,
+    "contem": "operações de risco sacado"
+   },
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 2,
+    "negacao": false,
+    "contem": "convênios com instituições financeiras para operações de risco sacado"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}

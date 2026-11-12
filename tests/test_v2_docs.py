@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import posixpath
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -18,6 +20,7 @@ PARES = [
     ("docs/motor-de-confianca.md", "docs/en/trust-engine.md"),
     ("docs/referencias.md", "docs/en/references.md"),
     ("docs/armazenamento-temporal.md", "docs/en/temporal-storage.md"),
+    ("docs/pre-registro-leitor.md", "docs/en/reader-preregistration.md"),
 ]
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
 AVISO_EN = "Statistical signal based on public financial statements. Not an accusation, not investment advice."
@@ -125,8 +128,37 @@ def test_readme_demonstracao_com_o_numero_de_companhias_do_modo_demonstracao() -
     n = len(empresas_da_demonstracao())
     pt = readme.split("### Demonstração", 1)[1].split("\n### ", 1)[0]
     en = readme.split("### Demo\n", 1)[1].split("\n### ", 1)[0]
-    for secao, companhias in ((pt, f"as {n} companhias do gabarito"), (en, f"the {n} ground-truth companies")):
+    secoes = ((pt, f"as {n} companhias do gabarito", "pt"), (en, f"the {n} ground-truth companies", "en"))
+    for secao, companhias, lingua in secoes:
         assert "https://robertochiocca.github.io/Chiocca-System-/" in secao and companhias in secao
-        for imagem in re.findall(r'src="(docs/imagens/[^"]+)"', secao):
-            assert (RAIZ / imagem).exists()
-        assert len(re.findall(r'src="docs/imagens/', secao)) == 2  # computador e celular
+        # as capturas de npm run capturas -- --readme, na língua da seção: computador e celular
+        assert re.findall(r'src="(docs/imagens/[^"]+)"', secao) == [
+            f"docs/imagens/demonstracao-computador-{lingua}.png",
+            f"docs/imagens/demonstracao-celular-{lingua}.png",
+        ]
+
+
+def _imagens_citadas(md: str) -> list[str]:
+    """Imagens citadas num Markdown: ![alt](caminho) e <img src="caminho">."""
+    return re.findall(r"!\[[^\]]*\]\(\s*<?([^)\s>]+)", md) + re.findall(r"<img\b[^>]*\bsrc=[\"']([^\"']+)", md)
+
+
+def test_imagens_citadas_nos_readmes_existem_no_repositorio() -> None:
+    """Toda imagem citada num README do repositório é um arquivo versionado (não basta existir no disco)."""
+    versionados = set(subprocess.run(["git", "ls-files", "-z"], cwd=RAIZ, capture_output=True, check=True,
+                                     text=True).stdout.split("\0"))  # fmt: skip
+    readmes = sorted(p for p in versionados if re.search(r"(^|/)readme[^/]*\.md$", p, re.IGNORECASE))
+    assert "README.md" in readmes
+    citadas = []
+    for readme in readmes:
+        for alvo in _imagens_citadas((RAIZ / readme).read_text(encoding="utf-8")):
+            assert not re.match(r"^[a-z]+:", alvo, re.IGNORECASE), f"{readme}: imagem fora do repositório: {alvo}"
+            caminho = posixpath.normpath(posixpath.join(posixpath.dirname(readme), alvo.split("#")[0]))
+            assert caminho in versionados, f"{readme}: {alvo} não está no repositório"
+            citadas.append(caminho)
+    assert len(citadas) >= 4  # as quatro do README: computador e celular, em PT e EN
+
+
+def test_imagens_citadas_reconhece_markdown_e_html() -> None:
+    md = '![a](docs/x.png "título") texto <img width="9" src="docs/y.png" alt="b"> e [link](docs/z.md)'
+    assert _imagens_citadas(md) == ["docs/x.png", "docs/y.png"]

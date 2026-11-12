@@ -201,6 +201,64 @@ export interface Troca {
   saida: { nota: string; compativel_com_rodizio: boolean } | null;
 }
 
+export interface TrechoLido {
+  verificacao: "partes_relacionadas" | "campo_cpc05_18" | "condicoes_de_mercado" | "risco_sacado" | "parecer";
+  rotulo: string | null;
+  pagina: number | null;
+  texto: string | null;
+  omitido: boolean;
+  aviso_omissao: string | null;
+  conferido: true;
+  negacao: boolean | null;
+  cortado: boolean;
+  idioma_original: "pt";
+}
+
+export interface LinhaDoFormulario {
+  parte: string;
+  parte_omitida: boolean;
+  tipo_pessoa: string | null;
+  relacao: string | null;
+  objeto: string | null;
+  garantia: string | null;
+  natureza: string | null;
+  duracao: string | null;
+  taxa_juros: string | null;
+  data_transacao: string | null;
+  montante: string | null;
+  saldo: string | null;
+  linha_arquivo?: number | null;
+}
+
+export interface LeituraDocumental {
+  natureza: "trecho_literal";
+  gera_alerta: false;
+  leitor: string;
+  extrator: string | null;
+  nota: string;
+  documento?: { tipo: string; num_doc: string | null; versao: number | null; dt_receb: string | null; origem: string } | null;
+  notas_explicativas: { status: string; paginas: number };
+  partes_relacionadas: {
+    status: "lido" | "nao_lido";
+    motivo: string | null;
+    nota: { titulo: string; paginas: number[] } | null;
+    colunas: string[];
+    trechos: TrechoLido[];
+    campos_cpc05_18: TrechoLido[];
+    condicoes_de_mercado: TrechoLido[];
+    nota_condicoes: string;
+  };
+  risco_sacado: { status: "lido" | "nao_lido"; motivo?: string | null; encontrado: boolean | null; termos: string[]; trechos: TrechoLido[]; nota: string | null };
+  relatorio_do_auditor: { status: "lido" | "nao_lido"; motivo?: string | null; titulo: string | null; tipo: string | null; trechos: TrechoLido[] };
+  formulario_de_referencia: {
+    status: "disponivel" | "nao_disponivel_na_data" | "sem_formulario" | "sem_linhas";
+    motivo: string | null;
+    ano_formulario?: number | null;
+    documento?: { versao?: number; dt_receb?: string; linhagem?: string; arquivo?: string } | null;
+    linhas: LinhaDoFormulario[];
+  };
+}
+
 export interface Investigacao {
   empresa: Empresa;
   data_referencia: string;
@@ -234,18 +292,31 @@ export interface Investigacao {
     trocas_de_auditor?: Troca[];
     rodizio?: { nota: string | null; norma: string; fonte: string };
   } | null;
+  leitura_documental?: LeituraDocumental | null;
+  como_o_leitor_foi_testado?: {
+    documento: string;
+    leitor: string;
+    commit: string;
+    casos: number;
+    precisao: number;
+    cobertura: number;
+    trechos_mostrados: number;
+    trechos_conferidos: number;
+    nomes_vazados: number;
+  } | null;
+  limites_da_leitura?: string[] | null;
   como_o_motor_foi_testado: { documento: string; acertados: number; acertaveis: number; taxa_de_alerta_nao_financeiras?: number };
   limites: string[];
   limitacoes: (string | null)[];
   evidencias: Record<string, Evidencia>;
-  motor: { v1: string; v2: string };
+  motor: { v1: string; v2: string; leitor?: string | null };
   informacao_de_hoje: InformacaoDeHoje;
   gerado_em: string;
   aviso: string;
 }
 
 export interface ComoTestado {
-  motor: { v1: string; v2: string };
+  motor: { v1: string; v2: string; leitor?: string | null };
   pre_registro: { assinatura: string; emendas: number };
   dados: Record<string, number>;
   acerto: Record<string, number>;

@@ -7,8 +7,13 @@ O manifesto versionado (data/manifesto_brutos.csv) guarda URL, tamanho, SHA256 e
 arquivo. A CVM regera os arquivos (docs/reconhecimento.md, 1.1): um download novo pode ter outro hash, e por
 isso o manifesto só muda quando `baixar` roda de novo, e o commit registra a troca.
 
+Formulário de Referência (Fase F1, 11/11/2026): os arquivos de 2010 a 2024 (o de 2024 traz o exercício de 2023; o de
+2025 já é do exercício lacrado) entram por um comando próprio, que só acrescenta as linhas deles ao manifesto e não
+baixa de novo nem troca as linhas dos outros arquivos (a base do invariante não muda).
+
 Uso:
   python -m chiocca.dados baixar      # baixa tudo e reescreve o manifesto
+  python -m chiocca.dados baixar-fre  # baixa só o Formulário de Referência de 2010 a 2024 e acrescenta ao manifesto
   python -m chiocca.dados verificar   # confere os arquivos locais contra o manifesto (sem rede)
 """
 
@@ -45,6 +50,10 @@ def urls() -> list[str]:
     )
 
 
+def urls_fre() -> list[str]:
+    return [f"{BASE}/DOC/FRE/DADOS/fre_cia_aberta_{a}.zip" for a in range(2010, 2025)]
+
+
 def sha256(caminho: Path) -> str:
     h = hashlib.sha256()
     with caminho.open("rb") as f:
@@ -70,9 +79,43 @@ def _baixa(url: str) -> bytes:
     raise RuntimeError(url)
 
 
+def _le_manifesto() -> list[dict[str, str]]:
+    if not MANIFESTO.exists():
+        return []
+    with MANIFESTO.open(encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def _grava_manifesto(linhas: list[dict[str, object]]) -> None:
+    with MANIFESTO.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["arquivo", "url", "bytes", "sha256", "baixado_em_utc"], lineterminator="\n")
+        w.writeheader()
+        w.writerows(linhas)
+
+
+def baixar_fre() -> None:
+    """Baixa só o Formulário de Referência (2010 a 2024) e troca ou acrescenta as linhas dele no manifesto; as linhas
+    dos outros arquivos ficam como estão."""
+    BRUTOS.mkdir(parents=True, exist_ok=True)
+    novas: dict[str, dict[str, object]] = {}
+    for url in urls_fre():
+        nome = url.rsplit("/", 1)[1]
+        dados = _baixa(url)
+        (BRUTOS / nome).write_bytes(dados)
+        quando = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        novas[nome] = {"arquivo": nome, "url": url, "bytes": len(dados), "sha256": hashlib.sha256(dados).hexdigest(),
+                       "baixado_em_utc": quando}  # fmt: skip
+        print(nome, len(dados))
+        time.sleep(1)
+    linhas: list[dict[str, object]] = [dict(x) for x in _le_manifesto() if x["arquivo"] not in novas]
+    _grava_manifesto(linhas + list(novas.values()))
+
+
 def baixar() -> None:
     BRUTOS.mkdir(parents=True, exist_ok=True)
-    linhas = []
+    proprios = {u.rsplit("/", 1)[1] for u in urls()}
+    outros: list[dict[str, object]] = [dict(x) for x in _le_manifesto() if x["arquivo"] not in proprios]
+    linhas: list[dict[str, object]] = []
     for url in urls():
         nome = url.rsplit("/", 1)[1]
         dados = _baixa(url)
@@ -88,10 +131,7 @@ def baixar() -> None:
             }
         )
         print(nome, len(dados))
-    with MANIFESTO.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(linhas[0]), lineterminator="\n")
-        w.writeheader()
-        w.writerows(linhas)
+    _grava_manifesto(linhas + outros)  # as linhas do Formulário de Referência (baixar-fre) ficam
 
 
 def verificar(pasta: Path = BRUTOS, manifesto: Path = MANIFESTO) -> list[str]:
@@ -110,6 +150,8 @@ def verificar(pasta: Path = BRUTOS, manifesto: Path = MANIFESTO) -> list[str]:
 if __name__ == "__main__":
     if sys.argv[1:] == ["baixar"]:
         baixar()
+    elif sys.argv[1:] == ["baixar-fre"]:
+        baixar_fre()
     elif sys.argv[1:] == ["verificar"]:
         p = verificar()
         print("\n".join(p) if p else "todos os arquivos batem com o manifesto")

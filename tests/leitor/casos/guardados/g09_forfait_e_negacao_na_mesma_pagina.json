@@ -1,0 +1,41 @@
+{
+ "id": "g09_forfait_e_negacao_na_mesma_pagina",
+ "descricao": "Na mesma página, menção afirmativa (linha da tabela e frase sobre forfait) e menção negativa (a controlada não realiza risco sacado): duas unidades, uma com cada marca. Sem nota de partes relacionadas.",
+ "notas": {
+  "paginas": [
+   [
+    "13. Fornecedores",
+    "                                         Controladora            Consolidado",
+    "                                        2021       2020        2021       2020",
+    "Fornecedores de mercadorias           210.300    188.700     241.900    215.400",
+    "Fornecedores – forfait                  38.200     31.600      38.200     31.600",
+    "                                       248.500    220.300     280.100    247.000",
+    "",
+    "As operações de forfait são contratadas apenas pela Companhia.",
+    "A controlada Exemplo Atacado Ltda. não realiza operações de risco sacado.",
+    "",
+    "14. Obrigações trabalhistas",
+    "Referem-se a salários, férias e encargos sociais a pagar."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 1,
+    "negacao": false,
+    "contem": "forfait"
+   },
+   {
+    "verificacao": "risco_sacado",
+    "pagina": 1,
+    "negacao": true,
+    "contem": "não realiza operações de risco sacado"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}
