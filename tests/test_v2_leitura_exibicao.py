@@ -75,8 +75,7 @@ def test_pdf_da_secao(lang: str) -> None:
     assert t["titulo"] in ls
     assert ("# Trechos dos documentos (copiados; não gera alerta)" if lang == "pt"
             else "# Document excerpts (copied; no alert)") in ls  # fmt: skip
-    n = sum(x["omitido"] for x in inv["leitura_documental"]["partes_relacionadas"]["trechos"])
-    assert f"- {t['omitidos'].format(p=40)}{t['n_trechos'].format(n=n)}" in ls
+    assert f"- {t['omitidos'].format(p=40)}" in ls and not any(re.search(r"\(\d+ (trechos|excerpts)\)", x) for x in ls)
     rotulos = "; ".join(pdf_investigacao.ROTULOS_LEITURA[lang][r] for r in ("montante", "saldos"))
     fim = ")" if lang == "pt" else ", original excerpt in Portuguese)"
     assert f"- [{rotulos}] “2021 2020 2021 2020” (p. 40{fim}" in ls
@@ -120,8 +119,7 @@ def test_textos_iguais_na_tela_e_no_pdf() -> None:
         t = pdf_investigacao.LEITURA[lang]
         for chave_ts, chave_pdf in (("sec_trechos", "titulo"), ("leitura_linhagem", "linhagem"),
                                     ("leitura_fre_doc", "fre_doc"), ("leitura_omitidos", "omitidos"),
-                                    ("leitura_omitidos_sem_pagina", "omitidos_sem_pagina"),
-                                    ("leitura_n_trechos", "n_trechos")):  # fmt: skip
+                                    ("leitura_omitidos_sem_pagina", "omitidos_sem_pagina")):  # fmt: skip
             valores = re.findall(rf'{chave_ts}: "([^"]+)"', ts)
             assert valores[k] == t[chave_pdf].removeprefix("# "), chave_ts
 

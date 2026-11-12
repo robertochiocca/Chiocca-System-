@@ -1,8 +1,9 @@
 // Trechos da seção "Trechos dos documentos" (Fase F1) agrupados para mostrar, do mesmo jeito que o PDF
 // (chiocca/v2/leitura_exibicao.py, função agrupa). Só exibição: o JSON continua com um item por trecho.
 // - o mesmo texto da mesma página (e a mesma marca de menção negativa) aparece uma vez, com os rótulos juntos;
-// - os omitidos da mesma página viram uma entrada só, com n = quantos itens omitidos o JSON tem nessa página (um trecho
-//   omitido com dois rótulos é um item por rótulo: o texto omitido não fica no JSON).
+// - os omitidos da mesma página viram uma entrada só, mostrada sem contagem; n = quantos itens omitidos o JSON tem nessa
+//   página serve só aos testes (um trecho omitido com dois rótulos é um item por rótulo: o texto omitido não fica no
+//   JSON, e a contagem poderia contar o mesmo trecho duas vezes).
 
 /** @param {Array<{omitido: boolean, pagina: number|null, texto: string|null, negacao?: boolean|null, cortado?: boolean, rotulo?: string|null}>} trechos */
 export function agrupaTrechos(trechos) {

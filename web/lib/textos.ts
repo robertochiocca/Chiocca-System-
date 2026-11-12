@@ -252,7 +252,6 @@ export const TEXTOS = {
     leitura_original: "",
     leitura_omitidos: "Trecho omitido; ver página {p} do documento",
     leitura_omitidos_sem_pagina: "Trecho omitido; ver o relatório do auditor no documento",
-    leitura_n_trechos: " ({n} trechos)",
     leitura_testado:
       "Como o leitor foi testado: {n} casos guardados, medida única com o leitor congelado ({c}): precisão {p}, cobertura {cob}, conferência literal em {a} de {b} trechos, {nomes}",
     leitura_sem_nomes: "nenhum nome de pessoa física",
@@ -574,7 +573,6 @@ export const TEXTOS = {
     leitura_original: "original excerpt in Portuguese",
     leitura_omitidos: "Excerpt omitted; see page {p} of the document",
     leitura_omitidos_sem_pagina: "Excerpt omitted; see the auditor's report in the document",
-    leitura_n_trechos: " ({n} excerpts)",
     leitura_testado:
       "How the reader was tested: {n} held-out cases, a single measurement with the frozen reader ({c}): precision {p}, coverage {cob}, literal check on {a} of {b} excerpts, {nomes}",
     leitura_sem_nomes: "no natural-person name",

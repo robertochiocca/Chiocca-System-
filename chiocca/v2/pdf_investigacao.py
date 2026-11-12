@@ -332,7 +332,7 @@ LEITURA: dict[str, dict[str, Any]] = {
            "tipo": "Tipo de opinião: {t}", "formulario": "Formulário de Referência", "pagina": "p. {p}",
            "negativa": "menção negativa", "cortado": "cortado no fim da frase", "original": "",
            "omitidos": "Trecho omitido; ver página {p} do documento", "omitidos_sem_pagina": "Trecho omitido; ver o "
-           "relatório do auditor no documento", "n_trechos": " ({n} trechos)",
+           "relatório do auditor no documento",
            "testado": "Como o leitor foi testado: {n} casos guardados, medida única com o leitor congelado ({c}): "
                       "precisão {p}, cobertura {cob}, conferência literal em {a} de {b} trechos, {nomes} ({doc}).",
            "sem_nomes": "nenhum nome de pessoa física", "com_nomes": "{n} nomes de pessoa física",
@@ -350,7 +350,7 @@ LEITURA: dict[str, dict[str, Any]] = {
            "negativa": "negative mention", "cortado": "cut at the end of a sentence",
            "original": "original excerpt in Portuguese",
            "omitidos": "Excerpt omitted; see page {p} of the document", "omitidos_sem_pagina": "Excerpt omitted; see "
-           "the auditor's report in the document", "n_trechos": " ({n} excerpts)",
+           "the auditor's report in the document",
            "testado": "How the reader was tested: {n} held-out cases, a single measurement with the frozen reader ({c}): "
                       "precision {p}, coverage {cob}, literal check on {a} of {b} excerpts, {nomes} ({doc}).",
            "sem_nomes": "no natural-person name", "com_nomes": "{n} natural-person names",
@@ -393,12 +393,13 @@ def frase(x: str) -> str:
 
 def _trechos(xs: list[dict[str, Any]], t: dict[str, Any], lang: str) -> list[str]:
     """Os trechos de um bloco, agrupados para mostrar (chiocca/v2/leitura_exibicao.py): rótulos juntos no mesmo trecho;
-    omitidos da mesma página numa linha só, com a contagem."""
+    omitidos da mesma página numa linha só, sem contagem (um trecho omitido com dois rótulos é um item por rótulo no
+    JSON, e a contagem poderia contá-lo duas vezes)."""
     out = []
     for g in leitura_exibicao.agrupa(xs):
         if g["omitido"]:
             linha = t["omitidos"].format(p=g["pagina"]) if g["pagina"] is not None else t["omitidos_sem_pagina"]
-            out.append(f"- {linha}" + (t["n_trechos"].format(n=inteiro(g["n"], lang)) if g["n"] > 1 else ""))
+            out.append(f"- {linha}")
             continue
         onde = [t["pagina"].format(p=g["pagina"])] if g["pagina"] is not None else []
         marcas = (onde + ([t["negativa"]] if g["negacao"] else []) + ([t["cortado"]] if g["cortado"] else [])

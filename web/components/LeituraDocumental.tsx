@@ -3,8 +3,8 @@
 // Seção "Trechos dos documentos (copiados; não gera alerta)" da investigação (Fase F1): trechos copiados das notas
 // explicativas e do relatório do auditor, com a página, e a tabela do Formulário de Referência. É só fato: nenhum selo,
 // alerta, nota ou ordenação. Exibição (decisões de 11/11/2026, depois da medida): trecho com mais de um rótulo aparece
-// uma vez, com os rótulos juntos; os omitidos da mesma página (nome de pessoa física) viram uma linha só, com a
-// contagem (lib/trechos.mjs, o mesmo agrupamento do PDF); o JSON continua com um item por trecho. Na interface em
+// uma vez, com os rótulos juntos; os omitidos da mesma página (nome de pessoa física) viram uma linha só, sem contagem
+// (lib/trechos.mjs, o mesmo agrupamento do PDF); o JSON continua com um item por trecho. Na interface em
 // inglês, os trechos ficam em português, marcados como "original excerpt in Portuguese". Só aparece quando a
 // investigação traz a seção (o leitor só entrou depois de passar nas metas do pré-registro, docs/pre-registro-leitor.md).
 import { data as fdata, decimal, inteiro } from "@/lib/formato";
@@ -22,7 +22,7 @@ function Trecho({ g }: { g: TrechoAgrupado }) {
   const { idioma, t } = useIdioma();
   if (g.omitido) {
     const linha = g.pagina !== null ? fmt(t.leitura_omitidos, { p: g.pagina }) : t.leitura_omitidos_sem_pagina;
-    return <p className="trecho-omitido">{linha + (g.n > 1 ? fmt(t.leitura_n_trechos, { n: inteiro(g.n, idioma) }) : "")}</p>;
+    return <p className="trecho-omitido">{linha}</p>;
   }
   const onde = g.pagina !== null ? fmt(t.leitura_pagina, { p: g.pagina }) : null;
   const rotulos = g.rotulos.map((r) => t.rotulos_leitura[r] ?? r).join("; ");
