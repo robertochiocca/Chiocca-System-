@@ -65,6 +65,38 @@ export function validaLeitura(l) {
   return problemas;
 }
 
+// Fase F2a: fatos relevantes e comunicados ao mercado (IPE). Só metadados até a data; nada depois de 31/12/2024;
+// assunto omitido com o texto de omissão; cada item com a fonte (arquivo, ano, SHA-256); ordem fixa (fatos relevantes
+// primeiro, da entrega mais recente para a mais antiga); nenhum campo de alerta, nota ou ordenação.
+const CATEGORIAS_IPE = ["fato_relevante", "comunicado_ao_mercado"];
+
+export function validaFatos(fc, dataReferencia) {
+  const problemas = [];
+  if (!tem(fc, ["origem", "conjunto", "nota", "contagem", "gera_alerta", "itens"], "fatos_e_comunicados", problemas)) return problemas;
+  if (fc.gera_alerta !== false) problemas.push("fatos_e_comunicados: gera alerta");
+  for (const proibido of ["alerta_v1", "nota_final", "escore", "percentil", "ranking", "destaque"]) {
+    if (JSON.stringify(fc).includes(`"${proibido}"`)) problemas.push(`fatos_e_comunicados: campo de sinal ${proibido}`);
+  }
+  const limite = dataReferencia < "2024-12-31" ? dataReferencia : "2024-12-31";
+  let anterior = null;
+  for (const x of fc.itens) {
+    if (!CATEGORIAS_IPE.includes(x.categoria)) problemas.push(`fatos_e_comunicados: categoria ${x.categoria}`);
+    if (!(x.data_entrega <= limite)) problemas.push("fatos_e_comunicados: entregue depois da data");
+    if (x.assunto_omitido && !/assunto omitido|subject omitted/.test(x.assunto)) problemas.push("fatos_e_comunicados: assunto omitido com texto");
+    const f = x.fonte ?? {};
+    if (!/^ipe_cia_aberta_\d{4}\.zip$/.test(f.arquivo ?? "") || !/^[0-9a-f]{64}$/.test(f.sha256 ?? "") || String(f.ano) !== x.data_entrega.slice(0, 4)) {
+      problemas.push("fatos_e_comunicados: item sem fonte");
+    }
+    const posicao = [CATEGORIAS_IPE.indexOf(x.categoria), x.data_entrega];
+    if (anterior && (posicao[0] < anterior[0] || (posicao[0] === anterior[0] && posicao[1] > anterior[1]))) problemas.push("fatos_e_comunicados: fora da ordem");
+    anterior = posicao;
+  }
+  for (const c of CATEGORIAS_IPE) {
+    if (fc.contagem[c] !== fc.itens.filter((x) => x.categoria === c).length) problemas.push(`fatos_e_comunicados: contagem de ${c}`);
+  }
+  return problemas;
+}
+
 export function validaInvestigacao(inv) {
   const problemas = [];
   if (!tem(inv, ["empresa", "data_referencia", "idioma", "exercicios", "achados", "mudancas", "parecer_e_auditor",
@@ -77,6 +109,7 @@ export function validaInvestigacao(inv) {
   if (inv.data_referencia < "2011-04-30" || inv.data_referencia > "2024-12-31") problemas.push("data fora do intervalo");
   for (const f of Object.keys(inv.achados)) if (!FAMILIAS.includes(f)) problemas.push(`família desconhecida ${f}`);
   if (inv.leitura_documental) problemas.push(...validaLeitura(inv.leitura_documental));
+  if (inv.o_que_se_sabia?.fatos_e_comunicados) problemas.push(...validaFatos(inv.o_que_se_sabia.fatos_e_comunicados, inv.data_referencia));
   for (const lista of Object.values(inv.achados)) {
     for (const a of lista) {
       tem(a, ["sinal", "rotulo", "valor", "unidade", "regra", "alerta_v1", "linhagem"], `achado ${a.sinal}`, problemas);

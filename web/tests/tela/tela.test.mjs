@@ -405,6 +405,33 @@ for (const idioma of ["pt", "en"]) {
     await contexto.close();
   });
 
+  test(`fatos relevantes e comunicados (Fase F2a): contagem, listas recolhidas, fatos relevantes primeiro, link e nada depois da data (${idioma})`, async () => {
+    const { p, contexto } = await pagina(idioma);
+    const inv = JSON.parse(readFileSync(join(RAIZ, "docs", "exemplos", `americanas_2021_em_2024-12-31_${idioma}.json`), "utf-8"));
+    const fc = inv.o_que_se_sabia.fatos_e_comunicados;
+    await abrir(p, INV_2024, "#mudancas");
+    const bloco = p.locator(".fatos-e-comunicados");
+    assert.equal(await texto(bloco.locator("h4")), pt ? "Fatos relevantes e comunicados ao mercado" : "Material facts and market notices");
+    const n = (x) => x.toLocaleString(pt ? "pt-BR" : "en-US");
+    assert.deepEqual(await bloco.locator("summary").allInnerTexts(),
+      pt ? [`Fatos relevantes (${n(fc.contagem.fato_relevante)})`, `Comunicados ao mercado (${n(fc.contagem.comunicado_ao_mercado)})`]
+        : [`Material facts (${n(fc.contagem.fato_relevante)})`, `Market notices (${n(fc.contagem.comunicado_ao_mercado)})`]);
+    // recolhidas: a tabela só é montada quando a lista é aberta
+    assert.equal(await bloco.locator(".tabela-ipe").count(), 0);
+    await bloco.locator("summary").first().click();
+    const linhas = bloco.locator(".tabela-ipe tbody tr");
+    await linhas.first().waitFor();
+    assert.equal(await linhas.count(), fc.contagem.fato_relevante);
+    const fatos = fc.itens.filter((x) => x.categoria === "fato_relevante");
+    assert.equal(await texto(linhas.first().locator("td").nth(0)), pt ? fatos[0].data_entrega.split("-").reverse().join("/") : fatos[0].data_entrega);
+    const links = await bloco.locator(".tabela-ipe a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+    assert.ok(links.length > 0 && links.every((h) => h.startsWith("https://www.rad.cvm.gov.br/")));
+    assert.ok(fc.itens.every((x) => x.data_entrega <= inv.data_referencia));
+    const omitidos = await bloco.locator(".tabela-ipe td.trecho-omitido").allInnerTexts();
+    assert.ok(omitidos.every((x) => (pt ? /^assunto omitido \(possível nome de pessoa\); ver o documento na CVM/ : /^subject omitted \(possible person's name\); see the document at the CVM/).test(x)));
+    await contexto.close();
+  });
+
   test(`investigação na época: sem DFP seguinte, o link para o que se soube depois (${idioma})`, async () => {
     const { p, contexto } = await pagina(idioma);
     await abrir(p, INV_2022, "#mudancas");

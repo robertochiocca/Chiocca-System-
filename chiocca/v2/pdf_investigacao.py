@@ -7,6 +7,7 @@ da página (`chiocca.v2.pdf_simples`, gerador sem dependência e determinístico
 from __future__ import annotations
 
 import re
+from datetime import date, timedelta
 from typing import Any
 
 from chiocca.formato import data
@@ -257,6 +258,8 @@ def linhas(inv: dict[str, Any]) -> list[str]:
         for x in sabia.get("documentos", [])
     ]
     out.append(sabia.get("nota", ""))
+    if sabia.get("fatos_e_comunicados"):  # Fase F2a
+        out += _fatos(sabia["fatos_e_comunicados"], inv["data_referencia"], lang)
     confs = [c for c in inv.get("qualidade_dos_dados", {}).get("conferencias", []) if c["resultado"] != "nao_aplicavel"]
     falhas = [c for c in confs if c["resultado"] == "falhou"]
     out += [
@@ -408,6 +411,53 @@ def _trechos(xs: list[dict[str, Any]], t: dict[str, Any], lang: str) -> list[str
         prefixo = f"[{rotulos}] " if rotulos else ""
         out.append(f"- {prefixo}“{g['texto']}”" + (f" ({', '.join(marcas)})" if marcas else ""))
     return out
+
+
+FATOS: dict[str, dict[str, str]] = {
+    "pt": {"resumo": "Fatos relevantes e comunicados ao mercado entregues até a data (dados abertos do IPE, desde 2010): "
+                     "{f} fatos relevantes e {c} comunicados ao mercado.",
+           "janela": "Fatos relevantes entregues nos 24 meses antes da data (de {a} a {b}):",
+           "sem_janela": "Nenhum fato relevante entregue nos 24 meses antes da data (de {a} a {b}).",
+           "versao": " (versão {v})",
+           "resto": "Os fatos relevantes mais antigos, os comunicados ao mercado e o link de cada documento estão no JSON "
+                    "e na tela."},
+    "en": {"resumo": "Material facts and market notices filed by the date (IPE open data, since 2010): {f} material "
+                     "facts and {c} market notices.",
+           "janela": "Material facts filed in the 24 months before the date (from {a} to {b}):",
+           "sem_janela": "No material fact filed in the 24 months before the date (from {a} to {b}).",
+           "versao": " (version {v})",
+           "resto": "Older material facts, the market notices and the link to each document are in the JSON and on "
+                    "screen."},
+}  # fmt: skip
+
+
+def inicio_da_janela(d: date) -> date:
+    """O primeiro dia dos 24 meses antes da data: 31/12/2024 → 01/01/2023."""
+    try:
+        antes = d.replace(year=d.year - 2)
+    except ValueError:  # 29 de fevereiro
+        antes = d.replace(year=d.year - 2, day=28)
+    return antes + timedelta(days=1)
+
+
+def _fatos(fc: dict[str, Any], data_referencia: str, lang: str) -> list[str]:
+    """No PDF: a contagem por categoria, os fatos relevantes dos 24 meses antes da data e o resto no JSON e na tela."""
+    t = FATOS[lang]
+    if not fc["itens"]:
+        return [fc["motivo"] or "", fc["nota"]]
+    d = date.fromisoformat(data_referencia)
+    a = inicio_da_janela(d)
+    out = [t["resumo"].format(f=inteiro(fc["contagem"]["fato_relevante"], lang),
+                              c=inteiro(fc["contagem"]["comunicado_ao_mercado"], lang))]  # fmt: skip
+    janela = [x for x in fc["itens"] if x["categoria"] == "fato_relevante" and x["data_entrega"] >= a.isoformat()]
+    datas = {"a": data(a.isoformat(), lang), "b": data(d.isoformat(), lang)}
+    if janela:
+        out.append(t["janela"].format(**datas))
+        out += [f"- {data(x['data_entrega'], lang)}: {x['assunto']}" + (t["versao"].format(v=x["versao"]) if (x["versao"] or 1) > 1 else "")
+                for x in janela]  # fmt: skip
+    else:
+        out.append(t["sem_janela"].format(**datas))
+    return out + [t["resto"], fc["nota"]]
 
 
 def _testado(mt: dict[str, Any], t: dict[str, Any], lang: str) -> str:

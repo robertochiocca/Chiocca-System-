@@ -199,9 +199,46 @@ class DocumentoConhecido(Modelo):
     num_doc: str | None
 
 
+class FonteIPE(Modelo):
+    """Linhagem de cada item da lista: o arquivo dos dados abertos do IPE, o ano e o SHA-256 do arquivo."""
+
+    arquivo: str
+    ano: int
+    sha256: str
+
+
+class ItemIPE(Modelo):
+    categoria: Literal["fato_relevante", "comunicado_ao_mercado"]
+    categoria_cvm: str
+    data_entrega: str
+    assunto: str
+    assunto_omitido: bool
+    link: str | None
+    id_documento: str
+    protocolo: str | None
+    versao: int | None
+    fonte: FonteIPE
+
+
+class FatosEComunicados(Modelo):
+    """Fase F2a: fatos relevantes e comunicados ao mercado entregues até a data (só metadados do IPE; o conteúdo dos
+    documentos não é baixado, lido nem resumido). Não é família de sinais: sem alerta, nota nem ordem por assunto."""
+
+    origem: Literal["dados_abertos"]
+    conjunto: Literal["IPE"]
+    desde: str
+    ate: str
+    nota: str
+    motivo: str | None
+    contagem: dict[str, int]
+    gera_alerta: Literal[False]
+    itens: list[ItemIPE]
+
+
 class OQueSeSabia(Modelo):
     documentos: list[DocumentoConhecido]
     nota: str
+    fatos_e_comunicados: FatosEComunicados | None = None
 
 
 class Conferencia(Modelo):

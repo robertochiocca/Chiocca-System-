@@ -29,7 +29,7 @@ from chiocca import base, variaveis
 from chiocca.sinais.mscore import COEFICIENTES
 from chiocca.sinais.resultado import Resultado as ResultadoV1
 from chiocca.sinais_amostra import CORTE_M, PERCENTIL, SPREAD_PP
-from chiocca.v2 import comparativo, confianca, contexto, leitura_exibicao, limites
+from chiocca.v2 import comparativo, confianca, contexto, ipe, leitura_exibicao, limites
 from chiocca.v2 import conferencias as cf
 from chiocca.v2.armazem import capitalizacao
 from chiocca.v2.exibicao import decimal, textos_com_sinal_de_menos
@@ -123,7 +123,7 @@ TEXTOS = {
         "parecer_enet": "a seção de pareceres dos dados abertos é só da última versão da DFP; a versão usada veio do ENET",
         "parecer_ausente": "a versão usada não tem a seção de pareceres nos dados abertos",
         "sem_trecho": "não foi achado trecho de opinião no texto",
-        "o_que_se_sabia_nota": "DFP e FCA entregues à CVM até a data de referência; ITR e fatos relevantes entram em fases seguintes.",
+        "o_que_se_sabia_nota": "DFP e FCA entregues à CVM até a data de referência; ITR entra numa fase seguinte.",
         "rodizio_prazo": "A firma que saiu auditou {n} exercícios sociais consecutivos ({a} a {b}), pelas datas de início e fim no FCA.",
         "rodizio_compativel": "A troca coincide com o fim do prazo de {n} exercícios e é compatível com o rodízio ({art} da {norma}, vigente quando a firma nova começou).",
         "rodizio_sem_prazo": "O FCA não traz as datas necessárias para contar os exercícios da firma que saiu.",
@@ -147,7 +147,7 @@ TEXTOS = {
         "parecer_enet": "the open-data opinions section is only for the latest DFP version; the version used came from ENET",
         "parecer_ausente": "the version used has no opinions section in open data",
         "sem_trecho": "no opinion excerpt was found in the text",
-        "o_que_se_sabia_nota": "DFP and FCA filed with the CVM by the reference date; ITR and material facts come in later phases.",
+        "o_que_se_sabia_nota": "DFP and FCA filed with the CVM by the reference date; ITR comes in a later phase.",
         "rodizio_prazo": "The outgoing firm audited {n} consecutive fiscal years ({a} to {b}), by the start and end dates in the FCA.",
         "rodizio_compativel": "The change coincides with the end of the {n}-fiscal-year term and is compatible with the rotation rule ({art} of {norma}, in force when the new firm started).",
         "rodizio_sem_prazo": "The FCA does not have the dates needed to count the outgoing firm's fiscal years.",
@@ -688,7 +688,9 @@ def _fecha(out: dict[str, Any], e: Any, lang: str, gerado_em: str, d: date, font
     docs += [{"tipo": "FCA", "exercicio": exercicio, "versao": int(x.versao), "dt_receb": str(x.dt_receb), "num_doc": None}
              for x in fca[(fca.cd_cvm == cd_cvm) & (fca.dt_receb <= d)].itertuples(index=False)]  # fmt: skip
     out["o_que_se_sabia"] = {"documentos": sorted(docs, key=lambda x: (x["dt_receb"], x["tipo"], x["exercicio"])),
-                             "nota": t["o_que_se_sabia_nota"]}  # fmt: skip
+                             "nota": t["o_que_se_sabia_nota"],
+                             # Fase F2a: fatos relevantes e comunicados ao mercado (IPE) entregues até a data
+                             "fatos_e_comunicados": ipe.lista(cd_cvm, d, lang)}  # fmt: skip
     out["qualidade_dos_dados"] = {"conferencias": [
         {"id": c.id, "tipo": c.tipo, "nome": _m(c.nome, lang), "coluna": c.coluna, "resultado": c.resultado,
          "motivo": _m(c.motivo, lang)} for c in conferencias]}  # fmt: skip
