@@ -98,7 +98,7 @@ def test_pdf_da_secao(lang: str) -> None:
 def test_pdf_sem_delta_e_sem_ponto_duplo(lang: str, data: str) -> None:
     ls = pdf_investigacao.linhas(_inv(lang, data))
     assert [x for x in ls if "Δ" in x and "“" not in x] == []
-    assert [x for x in ls if re.search(r"(?<!\.)\.\.$", x) and "“" not in x] == []
+    assert [x for x in ls if re.search(r"(?<!\.)\.\.(?=\s|$)", x) and "“" not in x] == []
     assert ("Variação do ROA: " if lang == "pt" else "Change in ROA: ") in "\n".join(ls)
     if data == "2024-12-31":  # em 30/04/2022 o nome ainda era AMERICANAS S.A.
         assert ("Antes de 2023, a companhia se chamava AMERICANAS S.A." if lang == "pt"
@@ -124,3 +124,13 @@ def test_textos_iguais_na_tela_e_no_pdf() -> None:
                                     ("leitura_n_trechos", "n_trechos")):  # fmt: skip
             valores = re.findall(rf'{chave_ts}: "([^"]+)"', ts)
             assert valores[k] == t[chave_pdf].removeprefix("# "), chave_ts
+
+
+def test_sem_ponto_duplo_no_meio_e_no_fim_da_linha() -> None:
+    linhas = ["- 2011: — -> Ernst & Young Auditores Independentes S.S.. A firma que saiu.",
+              "Antes de 2023, a companhia se chamava AMERICANAS S.A..", "Reticências... ficam.",
+              "- [saldos] “Trecho literal S.A.. fica como veio” (p. 1)"]  # fmt: skip
+    assert pdf_investigacao._sem_ponto_duplo(linhas) == [
+        "- 2011: — -> Ernst & Young Auditores Independentes S.S. A firma que saiu.",
+        "Antes de 2023, a companhia se chamava AMERICANAS S.A.", "Reticências... ficam.",
+        "- [saldos] “Trecho literal S.A.. fica como veio” (p. 1)"]  # fmt: skip

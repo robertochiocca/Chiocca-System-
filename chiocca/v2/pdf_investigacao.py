@@ -308,7 +308,7 @@ def linhas(inv: dict[str, Any]) -> list[str]:
 
 
 _DELTA = re.compile(r"\s*\(Δ[A-Z_]+\)")
-_PONTO_DUPLO = re.compile(r"(?<!\.)\.\.$")
+_PONTO_DUPLO = re.compile(r"(?<!\.)\.\.(?=\s|$)")
 
 
 def _sem_delta(linhas: list[str]) -> list[str]:
@@ -319,7 +319,8 @@ def _sem_delta(linhas: list[str]) -> list[str]:
 
 
 def _sem_ponto_duplo(linhas: list[str]) -> list[str]:
-    """Frase que termina num nome com ponto ("AMERICANAS S.A.") não ganha outro ponto."""
+    """Frase que termina num nome com ponto ("AMERICANAS S.A.", "Auditores Independentes S.S.") não ganha outro ponto,
+    no fim da linha ou no meio dela."""
     return [x if "“" in x else _PONTO_DUPLO.sub(".", x) for x in linhas]
 
 

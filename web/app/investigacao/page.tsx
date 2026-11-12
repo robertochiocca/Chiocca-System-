@@ -17,6 +17,7 @@ import { api, FalhaApi, MODO_ESTATICO } from "@/lib/api";
 import { data as fdata, inteiro, milhoes } from "@/lib/formato";
 import { useIdioma } from "@/lib/idioma";
 import { DATA_MAXIMA, dataValida, exercicioValido, ULTIMO_EXERCICIO_LIBERADO } from "@/lib/limites.mjs";
+import { comPonto } from "@/lib/trechos.mjs";
 import { fmt, type Textos } from "@/lib/textos";
 import type { Achado, ComoTestado, Demonstracao, Diferenca, Investigacao } from "@/lib/tipos";
 
@@ -188,8 +189,8 @@ function Pagina() {
                   <ul>
                     {pa.trocas_de_auditor.map((x, i) => (
                       <li key={i}>
-                        {x.ano_fca}: {x.de ?? "—"} → {x.para ?? "—"}
-                        {x.transicao_fca ? ` (${fmt(t.transicao, { x: x.transicao_fca })})` : ""}. {x.saida?.nota}
+                        {comPonto(`${x.ano_fca}: ${x.de ?? "—"} → ${x.para ?? "—"}${x.transicao_fca ? ` (${fmt(t.transicao, { x: x.transicao_fca })})` : ""}`)}{" "}
+                        {x.saida?.nota}
                       </li>
                     ))}
                   </ul>
