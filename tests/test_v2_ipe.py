@@ -194,6 +194,24 @@ def test_assuntos_omitidos_e_vazios_na_documentacao() -> None:
         assert br(n[k]) in pt and f"{n[k]:,}" in en, k
 
 
+def test_entidade_html_so_na_exibicao(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Alguns assuntos dos dados abertos trazem "&" como entidade de HTML: a regra decide sobre o texto original, e só a
+    exibição do assunto mostrado troca "&amp;" e "&amp" por "&". A contagem dos afetados está na documentação."""
+    assert ipe.assunto("Contratação Rothschild &amp Co", "pt") == ("Contratação Rothschild & Co", False, False)
+    assert ipe.assunto("Retirada do Rating S&ampP", "pt")[0] == "Retirada do Rating S&P"
+    assert ipe.texto_exibido("Fusão A &amp; B") == "Fusão A & B" and ipe.texto_exibido("sem entidade") == "sem entidade"
+    vistos: list[str] = []
+    monkeypatch.setattr(ipe, "regra_de_omissao", lambda t: vistos.append(t))
+    ipe.assunto("Petrobras assina contrato de E&ampP", "pt")
+    assert vistos == ["Petrobras assina contrato de E&ampP"]  # a regra recebe o original
+    n = json.loads(ipe.NUMEROS.read_text(encoding="utf-8"))
+    k = n["mostrados_com_entidade_html"]
+    assert k == sum(x["mostrados_com_entidade_html"] for x in n["por_categoria"].values()) and k > 0
+    pt = (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")
+    en = (base.RAIZ / "docs" / "en" / "contracts.md").read_text(encoding="utf-8")
+    assert f"isso muda {k:,} assuntos mostrados".replace(",", ".") in pt and f"this changes {k:,} shown subjects" in en
+
+
 def test_regra_do_assunto_em_uso() -> None:
     """Nomes inventados. Desde 13/11/2026, a lista usa a regra própria do assunto (assunto-ipe-1), aprovada na medida
     da emenda 1 do pré-registro do leitor e na auditoria de 400 assuntos reais (docs/assunto_auditoria.json); as

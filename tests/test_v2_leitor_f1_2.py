@@ -404,6 +404,9 @@ def test_medida_publicada_igual_a_saida_da_avaliacao() -> None:
     t2, t1 = medida["leitor"]["f1_2"]["totais"], medida["leitor"]["f1_1"]["totais"]
     exatas = [f"{t['corretas'] / t['unidades']:.4f}" for t in (t2, t1)]  # a precisão sem arredondar, também publicada
     assert f"{exatas[0]} against {exatas[1]}" in en and f"{exatas[0]} contra {exatas[1]}".replace(".", ",") in pt
+    sem_item = {t["unidades"] - t["corretas"] for t in (t2, t1)}  # o empate a três casas, contado em unidades
+    assert len(sem_item) == 1 and f"as duas versões com {sem_item.pop()} unidades sem item" in pt
+    assert "both versions with 3 units without an item" in en
     for nome in ("regra_nova", "regras_de_hoje"):
         a = medida["assunto"][nome]
         oi = f"{a['omissao_indevida']:.3f}"

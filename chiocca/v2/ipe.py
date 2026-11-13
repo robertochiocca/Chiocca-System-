@@ -205,15 +205,23 @@ def regra_de_omissao_f2a(texto: str) -> str | None:
     return None
 
 
+def texto_exibido(texto: str) -> str:
+    """O assunto mostrado como vai para a tela: alguns assuntos dos dados abertos trazem "&" escrito como entidade de
+    HTML ("Rothschild &amp Co", "S&ampP"); só a exibição troca "&amp;" e "&amp" por "&" (decisão de 13/11/2026, antes de
+    publicar). A regra do assunto decide sobre o texto original, e o agrupamento compara o original."""
+    return texto.replace("&amp;", "&").replace("&amp", "&")
+
+
 def assunto(texto: str, lang: str) -> tuple[str, bool, bool]:
     """O assunto como vai para a tela: (texto, omitido, vazio). Vazio nos dados abertos vira um aviso; com possível
-    nome de pessoa (pelas regras acima), omitido."""
+    nome de pessoa (pelas regras acima, sobre o texto original), omitido; mostrado, com o "&" da entidade de HTML
+    trocado (texto_exibido)."""
     t = texto.strip()
     if not t:
         return TEXTOS[lang]["vazio"], False, True
     if regra_de_omissao(t):
         return TEXTOS[lang]["omitido"], True, False
-    return t, False, False
+    return texto_exibido(t), False, False
 
 
 def protocolo_base(protocolo: str) -> str | None:
@@ -314,7 +322,9 @@ def _contagem(assuntos: list[str], regra: Any, motivos: tuple[str, ...]) -> dict
     return {"documentos": len(assuntos), "assuntos_vazios": regras.count("vazio"),
             "assuntos_omitidos": sum(r not in (None, "vazio") for r in regras),
             **{f"omitidos_{m}": regras.count(m) for m in motivos},
-            "assuntos_mostrados": regras.count(None)}  # fmt: skip
+            "assuntos_mostrados": regras.count(None),
+            "mostrados_com_entidade_html": sum(r is None and texto_exibido(a) != a
+                                               for a, r in zip(assuntos, regras, strict=True))}  # fmt: skip
 
 
 def contar(brutos: Path | None = None) -> dict[str, Any]:
@@ -340,7 +350,8 @@ def contar(brutos: Path | None = None) -> dict[str, Any]:
 
     return {"gerado_por": "python -m chiocca.v2.ipe", "o_que_e": "assuntos dos fatos relevantes e comunicados ao "
             "mercado dos dados abertos do IPE de 2010 a 2024, um por documento entregue (pelo link do ENET): vazios, "
-            "omitidos pela regra própria do assunto (assunto-ipe-1, em uso desde 13/11/2026), por motivo, e mostrados; "
+            "omitidos pela regra própria do assunto (assunto-ipe-1, em uso desde 13/11/2026), por motivo, e mostrados "
+            "(mostrados_com_entidade_html: os que a tela mostra com '&amp' trocado por '&'); "
             "em regras_f2a, as mesmas contas com as regras de 12/11/2026 que ela substituiu (detector de nomes do "
             "leitor, todo em maiúsculas e palavra com inicial maiúscula no meio da frase fora das exceções)",
             "regra": regra_do_assunto.VERSAO, "arquivos": arquivos, **total(por_categoria),
