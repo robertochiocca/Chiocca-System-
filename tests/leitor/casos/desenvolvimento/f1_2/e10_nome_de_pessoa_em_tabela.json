@@ -1,0 +1,54 @@
+{
+ "id": "e10_nome_de_pessoa_em_tabela",
+ "descricao": "Tabela de mútuos com um diretor (nome inventado) numa linha e companhias nas outras; o trecho com o nome sai omitido. Cabeçalho com título de coluna e anos em duas linhas.",
+ "notas": {
+  "paginas": [
+   [
+    "15. Partes relacionadas",
+    "Empréstimos a partes relacionadas",
+    "",
+    "                                               Controladora",
+    "                                           2021              2020",
+    "Exemplo Agropecuária Ltda. (controlada)    6.300             5.900",
+    "Diretor Teodomiro Vasconcelhos Brum          480               450",
+    "Total                                      6.780             6.350",
+    "",
+    "O empréstimo ao diretor foi aprovado pelo Conselho de Administração, com juros de 1% ao mês e",
+    "vencimento em 2024.",
+    "",
+    "16. Estoques",
+    "Os estoques são avaliados pelo custo médio."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "Exemplo Agropecuária Ltda. (controlada)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "pessoal_chave",
+    "pagina": 1,
+    "contem": "Conselho de Administração"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "juros de 1% ao mês"
+   }
+  ],
+  "nomes_proibidos": [
+   "Teodomiro Vasconcelhos Brum",
+   "Vasconcelhos Brum"
+  ],
+  "trechos_que_nao_devem_aparecer": [
+   "2021 2020"
+  ]
+ }
+}

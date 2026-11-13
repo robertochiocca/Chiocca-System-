@@ -1,0 +1,65 @@
+{
+ "id": "e08_ativo_circulante_nao_circulante_datas",
+ "descricao": "Saldos com títulos de coluna 'Ativo circulante' e 'Ativo não circulante' numa linha, datas na outra, valor zerado com traço, total; rodapé (i) e (ii) com taxa, prazo e garantia.",
+ "notas": {
+  "paginas": [
+   [
+    "22. PARTES RELACIONADAS",
+    "Saldos com partes relacionadas",
+    "",
+    "                                      Ativo circulante         Ativo não circulante",
+    "                                   31/12/2021   31/12/2020    31/12/2021   31/12/2020",
+    "Exemplo Mineração Ltda. (i)            3.400        2.950        41.000       38.500",
+    "Exemplo Transportes S.A. (ii)          1.120          980             -            -",
+    "Total                                  4.520        3.930        41.000       38.500",
+    "",
+    "(i) Controlada. Mútuo com juros de 110% do CDI, vencimento em 2026, garantido por",
+    "nota promissória.",
+    "(ii) Coligada. Fretes a receber, com prazo médio de 45 dias.",
+    "",
+    "23. PROVISÕES PARA RISCOS",
+    "A Companhia é parte em processos trabalhistas e cíveis."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "Controlada. Mútuo"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "Coligada. Fretes a receber"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "Saldos com partes relacionadas"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "juros de 110% do CDI"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "garantias",
+    "pagina": 1,
+    "contem": "garantido por"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Ativo circulante Ativo não circulante",
+   "31/12/2021 31/12/2020 31/12/2021 31/12/2020"
+  ]
+ }
+}

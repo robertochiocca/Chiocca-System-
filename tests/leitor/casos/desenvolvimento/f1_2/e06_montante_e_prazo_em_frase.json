@@ -1,0 +1,63 @@
+{
+ "id": "e06_montante_e_prazo_em_frase",
+ "descricao": "Montante e prazo escritos em frase, sem tabela: 'somou R$ ... no exercício', 'atingiu R$ ...', 'vence em 2030', 'pode ser prorrogado'. Coligada, controlada e controlada em conjunto.",
+ "notas": {
+  "paginas": [
+   [
+    "Nota 20 – Transações com partes relacionadas",
+    "O rateio de custos administrativos com a controlada Exemplo Serviços Compartilhados Ltda. somou",
+    "R$ 7.350 no exercício (R$ 6.900 em 2020).",
+    "",
+    "O arrendamento da sede, firmado com a coligada Exemplo Imóveis S.A., vence em 2030 e pode ser",
+    "prorrogado por mais dez anos.",
+    "",
+    "Em 2021, a energia adquirida da Exemplo Eólica S.A., controlada em conjunto, atingiu R$ 18.900.",
+    "",
+    "Nota 21 – Provisões",
+    "As provisões são revisadas a cada trimestre."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "controlada Exemplo Serviços Compartilhados Ltda."
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "coligada Exemplo Imóveis S.A."
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "joint_ventures",
+    "pagina": 1,
+    "contem": "controlada em conjunto"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "R$ 7.350 no exercício"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "atingiu R$ 18.900"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "vence em 2030"
+   }
+  ],
+  "nomes_proibidos": []
+ }
+}
