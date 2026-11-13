@@ -2723,8 +2723,8 @@
      "categoria": "fato_relevante",
      "categoria_cvm": "Fato Relevante",
      "data_entrega": "2011-08-12",
-     "assunto": "assunto omitido (possível nome de pessoa); ver o documento na CVM",
-     "assunto_omitido": true,
+     "assunto": "Acordo de Intenção para futuro acordo de venda e compra das ações possuídas da Springer Carrier Ltda",
+     "assunto_omitido": false,
      "assunto_vazio": false,
      "link": "https://www.rad.cvm.gov.br/ENET/frmDownloadDocumento.aspx?Tela=ext&descTipo=IPE&CodigoInstituicao=1&numProtocolo=301665&numSequencia=0&numVersao=0",
      "link_pode_nao_abrir": true,
@@ -3499,7 +3499,7 @@
  "leitura_documental": {
   "natureza": "trecho_literal",
   "gera_alerta": false,
-  "leitor": "leitor-f1-1",
+  "leitor": "leitor-f1-2",
   "extrator": "pypdf 6.21.4 (modo layout)",
   "nota": "Trechos copiados dos documentos, com a página, e a tabela do Formulário de Referência. Não é família de sinais: não gera alerta, nota nem ordenação. Ausência de menção não prova ausência.",
   "documento": {
@@ -3593,19 +3593,19 @@
   }
  },
  "como_o_leitor_foi_testado": {
-  "documento": "docs/leitor_medida.json",
-  "leitor": "leitor-f1-1",
-  "commit": "c99c953",
-  "casos": 20,
-  "precisao": 0.962,
-  "cobertura": 0.962,
-  "trechos_mostrados": 132,
-  "trechos_conferidos": 132,
+  "documento": "docs/leitor_medida_f1_2.json",
+  "leitor": "leitor-f1-2",
+  "commit": "dd688da",
+  "casos": 22,
+  "precisao": 0.973,
+  "cobertura": 0.915,
+  "trechos_mostrados": 146,
+  "trechos_conferidos": 146,
   "nomes_vazados": 0
  },
  "limites_da_leitura": [
   "Em documentos reais, cerca de 22% dos trechos saem omitidos pelo detector de nomes, inclusive nomes de empresas fora do cadastro.",
-  "Em tabelas, linhas de cabeçalho (anos, títulos de coluna) podem sair como trecho; os casos guardados não tinham tabelas com cabeçalho em várias linhas."
+  "Em tabelas, uma linha de cabeçalho (anos, títulos de coluna) ainda pode sair como trecho: na medida do leitor, 1 de 19 textos de cabeçalho dos casos guardados saíram como trecho."
  ],
  "como_o_motor_foi_testado": {
   "documento": "docs/resumo.md",
@@ -4501,7 +4501,7 @@
  "motor": {
   "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
   "v2": "chiocca.v2 (produto, fases B a F1)",
-  "leitor": "leitor-f1-1 (commit c99c953)"
+  "leitor": "leitor-f1-2 (commit dd688da)"
  },
  "informacao_de_hoje": {
   "titulo": "Informação de hoje (fora da data de referência)",

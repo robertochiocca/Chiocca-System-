@@ -1067,7 +1067,7 @@
  "leitura_documental": {
   "natureza": "trecho_literal",
   "gera_alerta": false,
-  "leitor": "leitor-f1-1",
+  "leitor": "leitor-f1-2",
   "extrator": "pypdf 6.21.4 (modo layout)",
   "nota": "Excerpts copied from the documents, with the page, and the Reference Form table. It is not a signal family: it generates no alert, score or ranking. Absence of mention does not prove absence.",
   "documento": {
@@ -1167,30 +1167,6 @@
      "negacao": null,
      "cortado": false,
      "idioma_original": "pt"
-    },
-    {
-     "verificacao": "partes_relacionadas",
-     "rotulo": "controladora",
-     "pagina": 9,
-     "texto": "2012 2011",
-     "omitido": false,
-     "aviso_omissao": null,
-     "conferido": true,
-     "negacao": null,
-     "cortado": false,
-     "idioma_original": "pt"
-    },
-    {
-     "verificacao": "partes_relacionadas",
-     "rotulo": "controladora",
-     "pagina": 9,
-     "texto": "Salários e demais benefícios de curto prazo 58.933 Total 58.933",
-     "omitido": false,
-     "aviso_omissao": null,
-     "conferido": true,
-     "negacao": null,
-     "cortado": false,
-     "idioma_original": "pt"
     }
    ],
    "campos_cpc05_18": [
@@ -1211,18 +1187,6 @@
      "rotulo": "saldos",
      "pagina": 9,
      "texto": "TMAR 100.236 6.944.528",
-     "omitido": false,
-     "aviso_omissao": null,
-     "conferido": true,
-     "negacao": null,
-     "cortado": false,
-     "idioma_original": "pt"
-    },
-    {
-     "verificacao": "campo_cpc05_18",
-     "rotulo": "saldos",
-     "pagina": 9,
-     "texto": "2012 2011",
      "omitido": false,
      "aviso_omissao": null,
      "conferido": true,
@@ -1391,19 +1355,19 @@
   }
  },
  "como_o_leitor_foi_testado": {
-  "documento": "docs/leitor_medida.json",
-  "leitor": "leitor-f1-1",
-  "commit": "c99c953",
-  "casos": 20,
-  "precisao": 0.962,
-  "cobertura": 0.962,
-  "trechos_mostrados": 132,
-  "trechos_conferidos": 132,
+  "documento": "docs/leitor_medida_f1_2.json",
+  "leitor": "leitor-f1-2",
+  "commit": "dd688da",
+  "casos": 22,
+  "precisao": 0.973,
+  "cobertura": 0.915,
+  "trechos_mostrados": 146,
+  "trechos_conferidos": 146,
   "nomes_vazados": 0
  },
  "limites_da_leitura": [
   "In real documents, about 22% of the excerpts come out omitted by the name detector, including names of companies outside the registry.",
-  "In tables, header lines (years, column titles) may come out as excerpts; the held-out cases had no tables with multi-line headers."
+  "In tables, a header line (years, column titles) may still come out as an excerpt: in the reader's measurement, 1 of 19 header texts of the held-out cases came out as excerpts."
  ],
  "como_o_motor_foi_testado": {
   "documento": "docs/summary.md",
@@ -2253,7 +2217,7 @@
  "motor": {
   "v1": "motor v1 (estudo 1), branch estudo-1-final, commit 8c9a823",
   "v2": "chiocca.v2 (produto, fases B a F1)",
-  "leitor": "leitor-f1-1 (commit c99c953)"
+  "leitor": "leitor-f1-2 (commit dd688da)"
  },
  "informacao_de_hoje": {
   "titulo": "Today's information (outside the reference date)",
