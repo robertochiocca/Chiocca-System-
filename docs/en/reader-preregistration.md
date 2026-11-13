@@ -188,4 +188,4 @@ One JSON file per set, in UTF-8, with a name starting with `assuntos_` (for exam
 6. **Real-data audit of the subject rule, before switching it on.** If the rule meets both targets on the held-out cases, 400 subjects from 2010 to 2024 that the new rule shows and today's rules omit are drawn (seed 20261113). The agent reads all 400. If any has a natural-person name, the rule does not come in and today's rules stay. The counts are reported without writing the names.
 7. **`leitor-f1-1` comparison on the new cases.** The old evaluator rejects the new `esperado` field. `leitor-f1-1` is measured with the new evaluator, which calls the `leitor-f1-1` reader unchanged, and the report says how it was done.
 
-- Hash of the commit of these decisions: recorded here in the next commit, without changing any rule above.
+- Hash of the commit of these decisions: `c7232b6e751bb0e6e5675e606873869a7be0583c` (recorded in the next commit, without changing any rule above).

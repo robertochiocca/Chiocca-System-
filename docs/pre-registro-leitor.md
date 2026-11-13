@@ -188,4 +188,4 @@ Um arquivo JSON por conjunto, em UTF-8, com nome começando por `assuntos_` (por
 6. **Auditoria em dados reais da regra do assunto, antes de ligar.** Se a regra atingir as duas metas nos casos guardados, sorteiam-se (semente 20261113) 400 assuntos de 2010 a 2024 que a regra nova mostra e as regras de hoje omitem. O agente lê os 400. Se algum tiver nome de pessoa física, a regra não entra e ficam as regras de hoje. As contagens são relatadas sem escrever os nomes.
 7. **Comparação da `leitor-f1-1` nos casos novos.** O avaliador antigo rejeita o campo novo de `esperado`. A `leitor-f1-1` é medida com o avaliador novo, que chama o leitor da `leitor-f1-1` sem mudança, e o relatório diz como foi feito.
 
-- Hash do commit destas decisões: anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+- Hash do commit destas decisões: `c7232b6e751bb0e6e5675e606873869a7be0583c` (anotado no commit seguinte, sem mudar nenhuma regra acima).
