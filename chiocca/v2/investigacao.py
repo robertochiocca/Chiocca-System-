@@ -31,10 +31,10 @@ from chiocca.sinais.resultado import Resultado as ResultadoV1
 from chiocca.sinais_amostra import CORTE_M, PERCENTIL, SPREAD_PP
 from chiocca.v2 import comparativo, confianca, contexto, ipe, leitura_exibicao, limites
 from chiocca.v2 import conferencias as cf
+from chiocca.v2 import leitura_secao as leitor_secao  # a seção com o leitor em uso (leitor-f1-2)
 from chiocca.v2.armazem import capitalizacao
 from chiocca.v2.exibicao import decimal, textos_com_sinal_de_menos
 from chiocca.v2.lacre import ULTIMO_EXERCICIO_LIBERADO, garantir_data_referencia, garantir_liberado
-from chiocca.v2.leitor import secao as leitor_secao
 from chiocca.v2.linhagem import (
     FORMULAS,
     LIMITACOES,

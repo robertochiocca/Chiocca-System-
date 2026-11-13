@@ -82,14 +82,20 @@ def test_registro_cobre_tudo_o_que_a_f1_2_importa() -> None:
     assert "chiocca/v2/ipe.py" in congelado["comparacao_ate_a_medida"]
 
 
-def test_f1_1_continua_como_estava() -> None:
-    """Decisão 2 de 10.7: os arquivos da f1-1 não mudam (o teste da f1-1 confere os hashes); a f1-2 é outro pacote, e a
-    versão da seção continua a da f1-1."""
-    from chiocca.v2 import leitura_exibicao
+def test_secao_usa_a_f1_2_porque_o_criterio_de_troca_saiu_verdadeiro() -> None:
+    """Decisões 2 e 3 de 10.7: os arquivos da f1-1 não mudam (o teste da f1-1 confere os hashes); a seção usa a f1-2 só
+    porque, na medida única nos casos guardados novos, o critério de troca saiu verdadeiro."""
+    from chiocca.v2 import investigacao, leitura_exibicao, leitura_secao
     from chiocca.v2.leitor import VERSAO as VERSAO_F1_1
+    from chiocca.v2.leitor import secao as secao_f1_1
 
+    medida = _json(MEDIDA)
     assert VERSAO == "leitor-f1-2" and VERSAO_F1_1 == "leitor-f1-1"
-    assert leitura_exibicao.versao().startswith("leitor-f1-1")
+    assert medida["criterio_de_troca"] == {"quatro_metas_f1_2": True, "precisao_f1_2_pelo_menos_f1_1": True,
+                                           "cabecalhos_f1_2_nao_mais_que_f1_1": True, "troca": True}  # fmt: skip
+    assert leitura_secao.LEITOR == medida["leitor_novo"] == VERSAO and leitura_secao.LIGADO is secao_f1_1.LIGADO
+    assert investigacao.leitor_secao is leitura_secao
+    assert leitura_exibicao.versao() == f"leitor-f1-2 (commit {medida['commit'][:7]})"
 
 
 # ---- os quatro ajustes ----
@@ -238,8 +244,11 @@ def test_casos_de_desenvolvimento_da_f1_2() -> None:
 def test_resultado_de_desenvolvimento_da_f1_2_igual_ao_publicado() -> None:
     """O resultado nos casos de desenvolvimento novos (informativo, não é a medida) é o de
     docs/leitor_desenvolvimento_f1_2.json; conferência literal em 100% e zero nome vazado nas duas versões."""
-    r = avaliacao.avaliar(NOVOS)
     publicado = _json(DESENVOLVIMENTO)
+    with pytest.MonkeyPatch.context() as mp:
+        # o resultado publicado foi feito antes da troca de 13/11/2026: as "regras de hoje" eram as de 12/11/2026
+        mp.setattr(ipe, "regra_de_omissao", ipe.regra_de_omissao_f2a)
+        r = avaliacao.avaliar(NOVOS)
     for nome in ("f1_2", "f1_1"):
         assert r["leitor"][nome]["totais"] == publicado["leitor"][nome]["totais"]
         t = r["leitor"][nome]["totais"]
@@ -356,11 +365,71 @@ def test_regra_do_assunto_mostra_assunto_sem_nome(texto: str) -> None:
     assert assunto.regra(texto) == "mostrado"
 
 
-def test_regra_do_assunto_vazio_e_regras_de_hoje_inalteradas() -> None:
+def test_regra_do_assunto_vazio_e_regra_em_uso_no_ipe() -> None:
     assert assunto.regra("   ") == "vazio"
-    # as regras de hoje continuam as do IPE (a regra nova só entra medida e auditada, 10.3 e 10.7)
-    assert ipe.regra_de_omissao("Renúncia do Diretor Quirino Albermaz")
-    assert ipe.regra_de_omissao("AUMENTO DE CAPITAL APROVADO")
+    # desde 13/11/2026 a lista do IPE usa a regra nova (medida e auditada, 10.3 e 10.7); as de 12/11 ficam guardadas
+    for texto in ("Renúncia do Diretor Quirino Albermaz", "AUMENTO DE CAPITAL APROVADO", "Brandacci deixa a diretoria"):
+        assert ipe.regra_de_omissao(texto) == assunto.motivo(texto)
+    assert ipe.regra_de_omissao_f2a("AUMENTO DE CAPITAL APROVADO") and not ipe.regra_de_omissao(
+        "AUMENTO DE CAPITAL APROVADO"
+    )
+
+
+def test_medida_publicada_igual_a_saida_da_avaliacao() -> None:
+    """A saída da medida única (docs/leitor_medida_f1_2.json), como saiu: feita no commit do congelamento (o hash
+    anotado em 10.8), com o SHA-256 de cada caso guardado igual ao do arquivo no repositório, e os números nos
+    contratos (PT e EN)."""
+    medida = _json(MEDIDA)
+    pre = (base.RAIZ / "docs" / "pre-registro-leitor.md").read_text(encoding="utf-8")
+    assert medida["commit"] == "dd688dadf9a1f0bc43b4ba1d02fd2f5ad0c0d0db" and f"`{medida['commit']}`" in pre
+    pasta = CASOS / "guardados_f1_2"
+    leitor = {
+        hashlib.sha256(a.read_bytes()).hexdigest() for a in pasta.glob("*.json") if not a.name.startswith("assuntos_")
+    }
+    de_assunto = {hashlib.sha256(a.read_bytes()).hexdigest() for a in pasta.glob("assuntos_*.json")}
+    assert {c["sha256"] for c in medida["casos"]} == leitor and len(leitor) == 22
+    assert {c["sha256"] for c in medida["assuntos"]} == de_assunto and len(de_assunto) == 4
+    saida = (base.RAIZ / "docs" / "leitor_medida_f1_2_saida.txt").read_text(encoding="utf-8")
+    assert saida.startswith(f"commit {medida['commit']}") and "leitor-f1-2 substitui a leitor-f1-1" in saida
+    pt = (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")
+    en = (base.RAIZ / "docs" / "en" / "contracts.md").read_text(encoding="utf-8")
+    for nome in ("f1_2", "f1_1"):
+        t = medida["leitor"][nome]["totais"]
+        assert f"precisão de {t['precisao']:.3f} ({t['corretas']} de {t['unidades']} unidades)".replace(".", ",") in pt
+        assert f"precision of {t['precisao']:.3f} ({t['corretas']} of {t['unidades']} units)" in en
+        assert f"cobertura de {t['cobertura']:.3f} ({t['encontrados']} de {t['itens']} itens)".replace(".", ",") in pt
+        assert f"coverage of {t['cobertura']:.3f} ({t['encontrados']} of {t['itens']} items)" in en
+        assert f"{t['cabecalhos_que_saem']} de {t['cabecalhos_listados']} textos de cabeçalho" in pt
+        assert f"{t['cabecalhos_que_saem']} of {t['cabecalhos_listados']} header texts" in en
+    t2, t1 = medida["leitor"]["f1_2"]["totais"], medida["leitor"]["f1_1"]["totais"]
+    exatas = [f"{t['corretas'] / t['unidades']:.4f}" for t in (t2, t1)]  # a precisão sem arredondar, também publicada
+    assert f"{exatas[0]} against {exatas[1]}" in en and f"{exatas[0]} contra {exatas[1]}".replace(".", ",") in pt
+    for nome in ("regra_nova", "regras_de_hoje"):
+        a = medida["assunto"][nome]
+        oi = f"{a['omissao_indevida']:.3f}"
+        assert (
+            f"omissão indevida de {oi.replace('.', ',')} ({a['omitidos_indevidamente']} de {a['esperados_mostrado']})"
+            in pt
+        )
+        assert f"undue omission of {oi} ({a['omitidos_indevidamente']} of {a['esperados_mostrado']})" in en
+
+
+@pytest.mark.skipif(not ipe.arquivo(2010, None).exists(), reason="sem os arquivos do IPE (data/brutos, fora do git)")
+def test_auditoria_do_assunto_reproduz_a_amostra() -> None:
+    """10.7, item 6: a população e a amostra de 400 (semente 20261113) dão os mesmos hashes de
+    docs/assunto_auditoria.json, que não guarda nenhum texto."""
+    from chiocca.v2 import auditoria_assunto
+
+    reg = _json(base.RAIZ / "docs" / "assunto_auditoria.json")
+    textos, documentos, _ = auditoria_assunto.populacao()
+    amostra = auditoria_assunto.amostra(textos)
+    assert (documentos, len(textos), len(amostra)) == (reg["documentos"], reg["textos_distintos"], reg["amostra"])
+    assert (
+        auditoria_assunto._sha(textos) == reg["sha256_populacao"]
+        and auditoria_assunto._sha(amostra) == reg["sha256_amostra"]
+    )
+    assert reg["semente"] == auditoria_assunto.SEMENTE and reg["leitura"]["com_nome_de_pessoa_fisica"] == 0
+    assert not any(t in json.dumps(reg, ensure_ascii=False) for t in amostra)
 
 
 def test_listas_de_palavras_sem_nome_de_pessoa_e_com_origem() -> None:

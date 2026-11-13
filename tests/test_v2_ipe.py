@@ -1,8 +1,8 @@
 """Fatos relevantes e comunicados ao mercado (Fase F2a): só metadados do IPE até a data, nunca depois de 31/12/2024,
-um item por documento entregue, o assunto pelo detector de nomes do leitor e pelas regras que só omitem mais
-(maiúsculas e palavra maiúscula no meio da frase), o assunto vazio com aviso, as versões e os repetidos numa linha só,
-o aviso dos links antigos, ordem fixa que não depende do assunto, linhagem de cada item, a exibição no PDF (24
-meses) e os números da documentação."""
+um item por documento entregue, o assunto pela regra própria do assunto (em uso desde 13/11/2026, medida e auditada
+na F2b; as regras de 12/11/2026 ficam só para reproduzir as comparações), o assunto vazio com aviso, as versões e os
+repetidos numa linha só, o aviso dos links antigos, ordem fixa que não depende do assunto, linhagem de cada item, a
+exibição no PDF (24 meses) e os números da documentação."""
 
 from __future__ import annotations
 
@@ -172,45 +172,51 @@ def test_pdf_sem_fato_relevante_na_janela(brutos: Path) -> None:
 
 def test_assuntos_omitidos_e_vazios_na_documentacao() -> None:
     n = json.loads(ipe.NUMEROS.read_text(encoding="utf-8"))
-    for k in ("documentos", "assuntos_vazios", "assuntos_omitidos", "omitidos_pelo_detector", "omitidos_por_maiusculas",
-              "omitidos_por_palavra_maiuscula", "assuntos_mostrados"):  # fmt: skip
+    motivos = [f"omitidos_{m}" for m in ipe.MOTIVOS]
+    for k in ("documentos", "assuntos_vazios", "assuntos_omitidos", *motivos, "assuntos_mostrados"):
         assert n[k] == sum(x[k] for x in n["por_categoria"].values()), k
     assert n["documentos"] == n["assuntos_vazios"] + n["assuntos_omitidos"] + n["assuntos_mostrados"]
-    assert n["assuntos_omitidos"] == (n["omitidos_pelo_detector"] + n["omitidos_por_maiusculas"]
-                                      + n["omitidos_por_palavra_maiuscula"])  # fmt: skip
+    assert n["assuntos_omitidos"] == sum(n[k] for k in motivos) and n["regra"] == "assunto-ipe-1"
+    f2a = n["regras_f2a"]
+    assert f2a["documentos"] == f2a["assuntos_vazios"] + f2a["assuntos_omitidos"] + f2a["assuntos_mostrados"]
+    assert f2a["assuntos_vazios"] == n["assuntos_vazios"]
     pt = (base.RAIZ / "docs" / "contratos.md").read_text(encoding="utf-8")
     en = (base.RAIZ / "docs" / "en" / "contracts.md").read_text(encoding="utf-8")
 
     def br(x: int) -> str:
         return f"{x:,}".replace(",", ".")
 
-    pct = f"{100 * n['assuntos_omitidos'] / n['documentos']:.1f}"
-    assert f"{br(n['assuntos_omitidos'])} de {br(n['documentos'])} assuntos ({pct.replace('.', ',')}%)" in pt
-    assert f"{n['assuntos_omitidos']:,} of {n['documentos']:,} subjects ({pct}%)" in en
-    for k in ("assuntos_vazios", "omitidos_pelo_detector", "omitidos_por_maiusculas", "omitidos_por_palavra_maiuscula"):
+    for x in (n, f2a):
+        pct = f"{100 * x['assuntos_omitidos'] / x['documentos']:.1f}"
+        assert f"{br(x['assuntos_omitidos'])} de {br(x['documentos'])} assuntos ({pct.replace('.', ',')}%)" in pt
+        assert f"{x['assuntos_omitidos']:,} of {x['documentos']:,} subjects ({pct}%)" in en
+    for k in ("assuntos_vazios", "assuntos_mostrados", *motivos):
         assert br(n[k]) in pt and f"{n[k]:,}" in en, k
 
 
-def test_regras_do_assunto_so_omitem_mais() -> None:
-    """Nomes inventados. O detector marca nome todo em maiúsculas com duas palavras ou mais; as regras de 12/11/2026
-    omitem também o assunto todo em maiúsculas e o que tem palavra com inicial maiúscula no meio da frase (um
-    sobrenome sozinho escapa da regra de duas palavras do detector)."""
-    from chiocca.v2.leitor import nomes
+def test_regra_do_assunto_em_uso() -> None:
+    """Nomes inventados. Desde 13/11/2026, a lista usa a regra própria do assunto (assunto-ipe-1), aprovada na medida
+    da emenda 1 do pré-registro do leitor e na auditoria de 400 assuntos reais (docs/assunto_auditoria.json); as
+    regras de 12/11/2026 (detector, maiúsculas e palavra maiúscula no meio) ficam em regra_de_omissao_f2a."""
+    from chiocca.v2.leitor_f1_2 import assunto
 
-    assert nomes.tem_nome_de_pessoa("RENÚNCIA DO DIRETOR FULANO DE TAL")
-    assert ipe.regra_de_omissao("RENÚNCIA DO DIRETOR FULANO DE TAL") == "detector"
-    assert not nomes.tem_nome_de_pessoa("BARBOSA") and ipe.regra_de_omissao("BARBOSA") == "maiusculas"
-    assert not nomes.tem_nome_de_pessoa("Renúncia do diretor Barbosa")
-    assert ipe.regra_de_omissao("Renúncia do diretor Barbosa") == "palavra_maiuscula"
-    assert not nomes.tem_nome_de_pessoa("Renúncia: BARBOSA") and ipe.regra_de_omissao("Renúncia: BARBOSA") is not None
-    assert ipe.regra_de_omissao("Aumento de capital aprovado") is None
-    assert ipe.regra_de_omissao("Resultados do trimestre em São Paulo") is None  # lugar está nas exceções
-    inventados = ("RENÚNCIA DO DIRETOR FULANO DE TAL", "BARBOSA", "Renúncia do diretor Barbosa", "Eleição do Sr. X")
-    for texto in inventados:
+    exemplos = ("RENÚNCIA DO DIRETOR FULANO DE TAL", "BARBOSA", "Renúncia do diretor Barbosa", "Renúncia: BARBOSA",
+                "Eleição do Sr. X", "Brandacci deixa a diretoria", "Aumento de capital aprovado",
+                "AUMENTO DE CAPITAL APROVADO", "Petrobras sobre venda da refinaria RLAM")  # fmt: skip
+    for texto in exemplos:
+        assert ipe.regra_de_omissao(texto) == assunto.motivo(texto)
+    for texto in exemplos[:6]:  # com nome inventado: omitidos (a primeira palavra também conta, ao contrário de 12/11)
         mostrado, omitido, vazio = ipe.assunto(texto, "pt")
         assert omitido and not vazio and "Fulano" not in mostrado and "Barbosa" not in mostrado.title()
+        assert "Brandacci" not in mostrado
+    for texto in exemplos[6:]:  # sem nome: aparecem, inclusive todo em maiúsculas e com nome de companhia
+        assert ipe.assunto(texto, "pt") == (texto, False, False)
+    assert ipe.regra_de_omissao_f2a("Brandacci deixa a diretoria") is None  # a brecha da primeira palavra em 12/11
+    assert ipe.regra_de_omissao_f2a("AUMENTO DE CAPITAL APROVADO") is not None
     assert ipe.assunto("  ", "pt") == ("sem assunto nos dados abertos; ver o documento na CVM", False, True)
     assert ipe.assunto("", "en") == ("no subject in the open data; see the document at the CVM", False, True)
+    auditoria = json.loads((base.RAIZ / "docs" / "assunto_auditoria.json").read_text(encoding="utf-8"))
+    assert auditoria["leitura"]["lidos"] == 400 and auditoria["leitura"]["com_nome_de_pessoa_fisica"] == 0
 
 
 def _proto(seq: int, versao: int) -> str:

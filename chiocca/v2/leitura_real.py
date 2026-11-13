@@ -1,9 +1,10 @@
-"""Omissões do leitor F1 em documentos reais: a parte dos trechos que sai omitida pelo detector de nomes de pessoa
+"""Omissões do leitor em uso em documentos reais: a parte dos trechos que sai omitida pelo detector de nomes de pessoa
 física, nos documentos do ENET pré-baixados para a demonstração (data/cache/enet_documentos/, fora do git).
 
     python -m chiocca.v2.leitura_real   # grava docs/leitor_documentos_reais.json
 
-Roda o leitor congelado (chiocca.v2.leitor.ler, sem mudar nada nele) em cada documento do cache: as notas explicativas
+Roda o leitor em uso na seção (a leitor-f1-2 desde 13/11/2026, chiocca.v2.leitor_f1_2.ler, congelada, sem mudar nada
+nela) em cada documento do cache: as notas explicativas
 (PDF) e o relatório do auditor. Conta os trechos de todas as verificações (partes relacionadas, campos do item 18,
 condições de mercado, risco sacado e relatório do auditor) e quantos saem omitidos. O número entra num dos limites da
 seção (chiocca/v2/leitura_exibicao.py) e na documentação; um teste confere os textos com o JSON. Não é medida do
@@ -18,10 +19,11 @@ from pathlib import Path
 from typing import Any
 
 from chiocca import base
-from chiocca.v2.leitor import enet_documentos, ler
+from chiocca.v2.leitor import enet_documentos
+from chiocca.v2.leitor_f1_2 import ler
 
 DESTINO = base.RAIZ / "docs" / "leitor_documentos_reais.json"
-CONGELADO = base.RAIZ / "docs" / "leitor_congelado.json"
+MEDIDA = base.RAIZ / "docs" / "leitor_medida_f1_2.json"  # o leitor e o commit do congelamento medido
 
 
 def trechos_da_leitura(ld: dict[str, Any]) -> list[dict[str, Any]]:
@@ -43,13 +45,13 @@ def contar(pasta: Path = enet_documentos.CACHE) -> dict[str, Any]:
                         "omitidos_notas": sum(x["omitido"] for x in notas_ts)})  # fmt: skip
     trechos = sum(x["trechos"] for x in por_doc)
     omitidos = sum(x["omitidos"] for x in por_doc)
-    congelado = json.loads(CONGELADO.read_text(encoding="utf-8"))
+    medida = json.loads(MEDIDA.read_text(encoding="utf-8"))
     return {
         "o_que_e": "trechos omitidos pelo detector de nomes nos documentos reais da demonstração (sem gabarito; não é "
         "a medida do pré-registro)",
         "gerado_por": "python -m chiocca.v2.leitura_real",
-        "leitor": congelado["leitor"],
-        "commit": congelado["commit"],
+        "leitor": medida["leitor_novo"],
+        "commit": medida["commit"],
         "fonte": "data/cache/enet_documentos/ (notas explicativas e relatório do auditor da DFP de cada investigação "
         "da demonstração)",
         "documentos": len(por_doc),

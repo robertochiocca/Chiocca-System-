@@ -5,7 +5,8 @@ seção 10.7, item 6).
 
 População: os assuntos dos fatos relevantes e comunicados ao mercado dos dados abertos do IPE de 2010 a 2024, um por
 documento entregue (como em chiocca.v2.ipe.contar), não vazios, que a regra nova (chiocca.v2.leitor_f1_2.assunto,
-congelada) mostra e as regras de hoje (chiocca.v2.ipe.regra_de_omissao) omitem. Como a regra só olha o texto, a
+congelada) mostra e as regras de hoje omitem (as de 12/11/2026: chiocca.v2.ipe.regra_de_omissao até a troca de
+13/11/2026, e chiocca.v2.ipe.regra_de_omissao_f2a depois dela, o mesmo código). Como a regra só olha o texto, a
 unidade do sorteio é o texto distinto: 400 textos, sorteados com random.Random(20261113).sample sobre a lista em ordem.
 
 A amostra (os textos) vai para o arquivo dado, fora do git, para ser lida; no repositório fica só
@@ -43,7 +44,7 @@ def populacao(brutos: Path | None = None) -> tuple[list[str], int, list[dict[str
         arquivos.append(ipe._fonte(ano, p))
         for r in tab.itertuples(index=False):
             docs.setdefault(r.id_documento, r.Assunto.strip())
-    escolhidos = [t for t in docs.values() if t and assunto.regra(t) == "mostrado" and ipe.regra_de_omissao(t)]
+    escolhidos = [t for t in docs.values() if t and assunto.regra(t) == "mostrado" and ipe.regra_de_omissao_f2a(t)]
     return sorted(set(escolhidos)), len(escolhidos), arquivos
 
 
