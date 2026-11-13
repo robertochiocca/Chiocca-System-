@@ -74,6 +74,11 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
   - *F2b, só depois da resposta à F2a:* o `leitor-f1-2` (o "conjunto adversarial ampliado, medido de novo"), com emenda ao pré-registro antes de qualquer código, as mesmas metas, casos de desenvolvimento novos com tabelas no formato real, congelamento com hash e casos guardados novos escritos por Roberto depois do congelamento; se a `leitor-f1-2` falhar, a seção continua com a `leitor-f1-1`. Os 20 casos guardados da `leitor-f1-1` já são públicos: medir a nova versão neles é só informativo.
   - *Decisões:* nomes de pessoa física viram "trecho omitido; ver página N do documento", com o detector errando para o lado de omitir; do Formulário de Referência, só a última versão entregue até a data; LLM fora da Fase F (no roadmap); acesso ao ENET uma requisição por vez, com intervalo, tentativas, integridade e cache fora do git.
 
+## Manutenção do CI
+
+- *13/11/2026:* o job `auditoria-python` ficou vermelho do commit `dd688da` em diante: o pip-audit acusou uma vulnerabilidade nova em `opentelemetry-api` (CVE-2026-126360). Com a autorização de Roberto, a versão passou para a corrigida no `requirements-lock.txt`, sem mudar nenhuma outra. Daqui em diante, cada relatório traz o estado do CI no último commit enviado, job por job, e não só os testes locais.
+- *Sem urgência:* os avisos de Node.js 20 nas actions (`actions/checkout`, `actions/setup-python`, `actions/setup-node` e `actions/upload-artifact`) pedem atualizar as versões das actions.
+
 ## Perguntas e decisões
 
 1. **Data de referência máxima e mínima.** Proposta: máxima em 31/12/2024 e mínima em 30/04/2011, a primeira data de corte com DFP de 2010.

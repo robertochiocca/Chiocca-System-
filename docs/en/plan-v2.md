@@ -74,6 +74,11 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
   - *F2b, only after the reply to F2a:* `leitor-f1-2` (the "expanded adversarial set, measured again"), with an amendment to the pre-registration before any code, the same targets, new development cases with tables in the real format, a freeze with hash and new held-out cases written by Roberto after the freeze; if `leitor-f1-2` fails, the section keeps `leitor-f1-1`. The 20 held-out cases of `leitor-f1-1` are now public: measuring the new version on them is informative only.
   - *Decisions:* natural-person names become "trecho omitido; ver página N do documento" ("excerpt omitted; see page N of the document"), with the detector erring on the side of omitting; from the Reference Form, only the last version filed by the date; LLM outside Phase F (on the roadmap); ENET access one request at a time, with interval, retries, integrity and a cache outside git.
 
+## CI maintenance
+
+- *2026-11-13:* the `auditoria-python` job was red from commit `dd688da` on: pip-audit flagged a new vulnerability in `opentelemetry-api` (CVE-2026-126360). With Roberto's authorization, the version moved to the fixed one in `requirements-lock.txt`, with no other version changed. From now on, every report brings the CI state on the last pushed commit, job by job, and not only the local tests.
+- *No urgency:* the Node.js 20 warnings in the actions (`actions/checkout`, `actions/setup-python`, `actions/setup-node` and `actions/upload-artifact`) call for updating the action versions.
+
 ## Questions and decisions
 
 1. **Maximum and minimum reference date.** Proposal: maximum 2024-12-31 and minimum 2011-04-30, the first cut-off date with 2010 DFPs.
