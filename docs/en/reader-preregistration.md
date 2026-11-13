@@ -176,3 +176,4 @@ One JSON file per set, in UTF-8, with a name starting with `assuntos_` (for exam
 
 - Date: 2026-11-13.
 - Commit: the one that introduces this section. The hash is recorded here in the next commit, without changing any rule above.
+- Amendment commit hash: `2fcdbc18752b693510c76cda12acd4f53af055ee`.

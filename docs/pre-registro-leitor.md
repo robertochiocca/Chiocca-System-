@@ -176,3 +176,4 @@ Um arquivo JSON por conjunto, em UTF-8, com nome começando por `assuntos_` (por
 
 - Data: 13/11/2026.
 - Commit: o que introduz esta seção. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+- Hash do commit da emenda: `2fcdbc18752b693510c76cda12acd4f53af055ee`.
