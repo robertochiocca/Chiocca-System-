@@ -177,3 +177,15 @@ Um arquivo JSON por conjunto, em UTF-8, com nome começando por `assuntos_` (por
 - Data: 13/11/2026.
 - Commit: o que introduz esta seção. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
 - Hash do commit da emenda: `2fcdbc18752b693510c76cda12acd4f53af055ee`.
+
+### 10.7 Decisões de Roberto sobre a emenda (13/11/2026, antes de qualquer código)
+
+1. Os três acréscimos informativos de 10.2 e 10.3 ficam.
+2. **Desenvolvimento ao lado, não por cima.** Os arquivos congelados da `leitor-f1-1` não mudam: a `leitor-f1-2` é feita ao lado (um módulo próprio ou uma versão selecionável), e o teste de hashes da `leitor-f1-1` continua valendo. Até a medida aprovar a `leitor-f1-2`, a seção, os exemplos e a demonstração continuam com a `leitor-f1-1`. O mesmo vale para o assunto: até a regra nova ser aprovada, ficam as regras conservadoras de hoje.
+3. **Critério de troca da `leitor-f1-2`.** Além das quatro metas, a `leitor-f1-2` só substitui a `leitor-f1-1` se, nos mesmos casos guardados novos: (a) a precisão da `leitor-f1-2` for pelo menos a da `leitor-f1-1`; (b) o número de textos de `trechos_que_nao_devem_aparecer` que saem como trecho na `leitor-f1-2` não for maior que na `leitor-f1-1`. Senão, fica a `leitor-f1-1`, e o resultado vai para o relatório como saiu.
+4. **Definição.** Um texto de `trechos_que_nao_devem_aparecer` "sai como trecho" quando está contido, sem diferença de espaços, no texto de algum trecho mostrado.
+5. **Detector de nomes.** Um teste roda o detector da `leitor-f1-2` e o da `leitor-f1-1` sobre todos os casos públicos (os de desenvolvimento e os 20 guardados antigos) e sobre os trechos reais dos 96 documentos da demonstração. O teste falha se algum trecho omitido pela `leitor-f1-1` deixar de ser omitido.
+6. **Auditoria em dados reais da regra do assunto, antes de ligar.** Se a regra atingir as duas metas nos casos guardados, sorteiam-se (semente 20261113) 400 assuntos de 2010 a 2024 que a regra nova mostra e as regras de hoje omitem. O agente lê os 400. Se algum tiver nome de pessoa física, a regra não entra e ficam as regras de hoje. As contagens são relatadas sem escrever os nomes.
+7. **Comparação da `leitor-f1-1` nos casos novos.** O avaliador antigo rejeita o campo novo de `esperado`. A `leitor-f1-1` é medida com o avaliador novo, que chama o leitor da `leitor-f1-1` sem mudança, e o relatório diz como foi feito.
+
+- Hash do commit destas decisões: anotado aqui no commit seguinte, sem mudar nenhuma regra acima.

@@ -177,3 +177,15 @@ One JSON file per set, in UTF-8, with a name starting with `assuntos_` (for exam
 - Date: 2026-11-13.
 - Commit: the one that introduces this section. The hash is recorded here in the next commit, without changing any rule above.
 - Amendment commit hash: `2fcdbc18752b693510c76cda12acd4f53af055ee`.
+
+### 10.7 Roberto's decisions on the amendment (2026-11-13, before any code)
+
+1. The three informative additions of 10.2 and 10.3 stay.
+2. **Development alongside, not on top.** The frozen `leitor-f1-1` files do not change: `leitor-f1-2` is built alongside (a module of its own or a selectable version), and the `leitor-f1-1` hash test still applies. Until the measurement approves `leitor-f1-2`, the section, the examples and the demo keep `leitor-f1-1`. The same holds for the subject: until the new rule is approved, today's conservative rules stay.
+3. **Replacement criterion for `leitor-f1-2`.** Besides the four targets, `leitor-f1-2` only replaces `leitor-f1-1` if, on the same new held-out cases: (a) the precision of `leitor-f1-2` is at least that of `leitor-f1-1`; (b) the number of `trechos_que_nao_devem_aparecer` texts that come out as excerpts in `leitor-f1-2` is not larger than in `leitor-f1-1`. Otherwise `leitor-f1-1` stays, and the result goes into the report as it came out.
+4. **Definition.** A `trechos_que_nao_devem_aparecer` text "comes out as an excerpt" when it is contained, ignoring whitespace differences, in the text of some shown excerpt.
+5. **Name detector.** A test runs the `leitor-f1-2` detector and the `leitor-f1-1` detector over all public cases (the development ones and the 20 old held-out ones) and over the real excerpts of the 96 demo documents. The test fails if any excerpt omitted by `leitor-f1-1` stops being omitted.
+6. **Real-data audit of the subject rule, before switching it on.** If the rule meets both targets on the held-out cases, 400 subjects from 2010 to 2024 that the new rule shows and today's rules omit are drawn (seed 20261113). The agent reads all 400. If any has a natural-person name, the rule does not come in and today's rules stay. The counts are reported without writing the names.
+7. **`leitor-f1-1` comparison on the new cases.** The old evaluator rejects the new `esperado` field. `leitor-f1-1` is measured with the new evaluator, which calls the `leitor-f1-1` reader unchanged, and the report says how it was done.
+
+- Hash of the commit of these decisions: recorded here in the next commit, without changing any rule above.
