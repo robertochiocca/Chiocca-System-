@@ -259,6 +259,34 @@ export interface LeituraDocumental {
   };
 }
 
+export interface ItemIPE {
+  categoria: "fato_relevante" | "comunicado_ao_mercado";
+  categoria_cvm: string;
+  data_entrega: string;
+  assunto: string;
+  assunto_omitido: boolean;
+  assunto_vazio: boolean;
+  link: string | null;
+  link_pode_nao_abrir: boolean;
+  id_documento: string;
+  protocolo: string | null;
+  versao: number | null;
+  grupo: number;
+  fonte: { arquivo: string; ano: number; sha256: string };
+}
+
+export interface FatosEComunicados {
+  origem: "dados_abertos";
+  conjunto: "IPE";
+  desde: string;
+  ate: string;
+  nota: string;
+  motivo: string | null;
+  contagem: Record<string, number>;
+  gera_alerta: false;
+  itens: ItemIPE[];
+}
+
 export interface Investigacao {
   empresa: Empresa;
   data_referencia: string;
@@ -284,7 +312,11 @@ export interface Investigacao {
     tolerancia_comparativo: number;
     materialidade_comparativo: { limite: number | null; texto: string };
   };
-  o_que_se_sabia: { documentos: { tipo: string; exercicio: number; versao: number; dt_receb: string }[]; nota: string };
+  o_que_se_sabia: {
+    documentos: { tipo: string; exercicio: number; versao: number; dt_receb: string }[];
+    nota: string;
+    fatos_e_comunicados?: FatosEComunicados | null;
+  };
   qualidade_dos_dados: { conferencias: { id: string; nome: string | null; coluna: string | null; resultado: string; motivo: string | null }[] };
   parecer_e_auditor: {
     relatorio_do_auditor: { tipo?: string[]; trecho?: string | null; motivo?: string | null };
@@ -311,7 +343,7 @@ export interface Investigacao {
   evidencias: Record<string, Evidencia>;
   motor: { v1: string; v2: string; leitor?: string | null };
   informacao_de_hoje: InformacaoDeHoje;
-  gerado_em: string;
+  gerado_em: string | null;
   aviso: string;
 }
 

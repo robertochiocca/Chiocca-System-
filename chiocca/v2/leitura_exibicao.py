@@ -3,8 +3,8 @@
 Só exibição: o JSON da investigação continua com um item por trecho, como o leitor congelado (leitor-f1-1) entrega;
 nenhum trecho sai, entra ou muda de rótulo. Decisões de 11/11/2026, depois da medida:
 - trecho mostrado com mais de um rótulo aparece uma vez, com os rótulos juntos;
-- os trechos omitidos da mesma página viram uma linha só, com a contagem (no relatório do auditor, que não tem página,
-  idem);
+- os trechos omitidos da mesma página viram uma linha só, sem contagem (no relatório do auditor, que não tem página,
+  idem); a contagem saiu em 12/11/2026, porque podia contar o mesmo trecho duas vezes;
 - a investigação traz "Como o leitor foi testado" (da saída da medida, docs/leitor_medida.json), a versão do leitor
   (docs/leitor_congelado.json) e os limites da seção (o número dos documentos reais vem de
   docs/leitor_documentos_reais.json, gerado por python -m chiocca.v2.leitura_real).

@@ -14,6 +14,7 @@ import {
   validaDistribuicao,
   validaEmpresa,
   validaErro,
+  validaFatos,
   validaInvestigacao,
   validaLeitura,
   validaSaude,
@@ -115,4 +116,40 @@ test("seção de leitura de documentos (Fase F1): a gerada pelo Python segue o c
   const comPercentil = base();
   comPercentil.percentil = 50;
   assert.ok(validaLeitura(comPercentil).length > 0, "campo de sinal");
+});
+
+test("fatos relevantes e comunicados (Fase F2a): o exemplo segue o contrato; alerta, data depois, assunto, fonte e ordem não", () => {
+  for (const nome of ["americanas_2021_em_2024-12-31_pt", "americanas_2021_em_2022-04-30_en"]) {
+    const inv = JSON.parse(readFileSync(join(exemplos, `${nome}.json`), "utf-8"));
+    const fc = inv.o_que_se_sabia.fatos_e_comunicados;
+    assert.ok(fc.itens.length > 0, nome);
+    assert.deepEqual(validaFatos(fc, inv.data_referencia), [], nome);
+  }
+  const base = () => JSON.parse(readFileSync(join(exemplos, "americanas_2021_em_2024-12-31_pt.json"), "utf-8")).o_que_se_sabia.fatos_e_comunicados;
+  const D = "2024-12-31";
+  const alerta = base();
+  alerta.gera_alerta = true;
+  assert.ok(validaFatos(alerta, D).length > 0, "alerta");
+  const depois = base();
+  assert.ok(validaFatos(depois, "2022-04-30").length > 0, "entregue depois da data");
+  const omitido = base();
+  const i = omitido.itens.findIndex((x) => x.assunto_omitido);
+  omitido.itens[i].assunto = "Renúncia de um diretor";
+  assert.ok(validaFatos(omitido, D).length > 0, "assunto omitido com texto");
+  const semFonte = base();
+  semFonte.itens[0].fonte = { arquivo: "outro.zip", ano: 2024, sha256: "x" };
+  assert.ok(validaFatos(semFonte, D).length > 0, "sem fonte");
+  const ordem = base();
+  ordem.itens.reverse();
+  assert.ok(validaFatos(ordem, D).length > 0, "fora da ordem");
+  const escore = base();
+  escore.itens[0].escore = 1;
+  assert.ok(validaFatos(escore, D).length > 0, "campo de sinal");
+  const vazio = base();
+  const v = vazio.itens.findIndex((x) => x.assunto_vazio);
+  vazio.itens[v].assunto = "";
+  assert.ok(validaFatos(vazio, D).length > 0, "assunto vazio sem aviso");
+  const semGrupo = base();
+  delete semGrupo.itens[0].grupo;
+  assert.ok(validaFatos(semGrupo, D).length > 0, "sem grupo");
 });

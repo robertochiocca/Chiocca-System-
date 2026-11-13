@@ -30,4 +30,6 @@ Commits inspected in Phase A (details in [`docs/en/inventory.md`](inventory.md))
 
 **Held-out cases of the F1 reader** (`tests/leitor/casos/guardados/`): written by Roberto with Claude (claude.ai), outside this environment and without access to the reader's detection code (for the format and conventions, the pre-registration, `avaliacao.py`, `pdf_simples.py` and the development cases were read). The reader and the cases were written by instances of the same model, in separate environments: the separation is of information, not of author.
 
+**Phase F2a.** No file came from another project: the IPE list (`chiocca/v2/ipe.py`) and the monitor (`chiocca/v2/monitor.py`, with the reading of a single file from inside the remote zip by byte ranges) were written here; the name detector is the F1 reader's, unchanged.
+
 **Phase F1.** No file came from another project. The adversarial-set evaluator (`chiocca/v2/leitor/avaliacao.py`) follows DireitoAberto's idea (hand-written declarative ground truth and checking of every citation), rewritten for Chiocca System, with no copied code. pypdf is an installed dependency, pinned in `pyproject.toml` and `requirements-lock.txt`, not copied code.

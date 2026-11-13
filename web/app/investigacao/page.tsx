@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import CabecalhoEmpresa from "@/components/CabecalhoEmpresa";
+import FatosEComunicados from "@/components/FatosEComunicados";
 import LeituraDocumental from "@/components/LeituraDocumental";
 import InformacaoDeHoje from "@/components/InformacaoDeHoje";
 import Resumo from "@/components/Resumo";
@@ -258,6 +259,7 @@ function Pagina() {
               <p className="discreto">
                 <TextoComLinks texto={inv.o_que_se_sabia.nota} />
               </p>
+              {inv.o_que_se_sabia.fatos_e_comunicados && <FatosEComunicados fc={inv.o_que_se_sabia.fatos_e_comunicados} />}
             </div>
           </Secao>
 

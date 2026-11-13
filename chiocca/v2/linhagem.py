@@ -84,7 +84,7 @@ class Linhagem:
     limitacoes: tuple[Motivo, ...]
     motor: str
     codigo: str
-    calculado_em: str
+    calculado_em: str | None  # nulo na demonstração estática (sem carimbo; a data fica no manifesto)
 
 
 @dataclass
@@ -274,7 +274,7 @@ def ficha_v1(
     contas: pd.DataFrame,
     doc: Documento,
     grupo: str,
-    calculado_em: str,
+    calculado_em: str | None,
     cdi_medio: float | None = None,
     localizador: Localizador | None = None,
     repetidas_iguais: int = 0,
@@ -361,7 +361,7 @@ def _ids_variavel(var: str, col: str, contas: pd.DataFrame, leitura: variaveis.L
 
 
 def _montar(sinal: str, r: ResultadoV1, valores: tuple[tuple[str, str, float | None], ...], ids: tuple[str, ...],
-            transf: tuple[Motivo, ...], calculado_em: str) -> Linhagem:  # fmt: skip
+            transf: tuple[Motivo, ...], calculado_em: str | None) -> Linhagem:  # fmt: skip
     pt, en = ROTULOS[sinal]
     fpt, fen = FORMULAS[sinal]
     return Linhagem(sinal, Motivo(pt, en), r.valor, r.motivo, Motivo(fpt, fen), valores, ids, transf, PREMISSAS,

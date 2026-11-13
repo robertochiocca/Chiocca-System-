@@ -82,6 +82,30 @@ def test_arquivos_estaticos_iguais_a_saida_da_api(
     assert "notas" not in texto  # as notas do gabarito citam pessoas e não saem
 
 
+def test_duas_geracoes_do_mesmo_conteudo_dao_os_mesmos_bytes(
+    mundo_c1: tuple[Fontes, armazem.FontesArmazem],  # noqa: F811
+    sem_rede: None,  # noqa: F811
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Sem carimbo de hora nas investigações da demonstração (decisão de 12/11/2026): a data e o commit ficam só no
+    manifesto, e o arquivo que não mudou de conteúdo sai com os mesmos bytes (o gh-pages só recebe o que mudou)."""
+    _, arm = mundo_c1
+    monkeypatch.setattr(api, "empresas_da_demonstracao", lambda: {"100"})
+    monkeypatch.setattr(demonstracao, "gabarito", _gabarito_da_fixture)
+    a, b = tmp_path / "a", tmp_path / "b"
+    ma = demonstracao_estatica.gerar(a, fabrica=lambda: arm)
+    demonstracao_estatica.gerar(b, fabrica=lambda: arm)
+    arquivos = sorted(x.relative_to(a) for x in a.rglob("*.*") if x.name != "manifesto.json")
+    assert arquivos == sorted(x.relative_to(b) for x in b.rglob("*.*") if x.name != "manifesto.json")
+    assert [x for x in arquivos if (a / x).read_bytes() != (b / x).read_bytes()] == []
+    assert ma["gerado_em"] and "commit" in ma
+    inv = json.loads((a / "investigacoes/100/2021/2024-12-31/pt.json").read_text(encoding="utf-8"))
+    assert inv["gerado_em"] is None
+    assert all(x["linhagem"].get("calculado_em") is None for x in inv["achados"]["possivel_manipulacao"])
+    assert "demo/manifesto.json" in "\n".join(pdf_investigacao.linhas(inv))
+
+
 def test_rotulos_das_datas() -> None:
     casos = [{"periodo_afetado": [2015, 2016], "data_publica": "2018-03-01"}]
     ex = {"2015-04-30": 2014, "2016-04-30": 2015, "2017-04-30": 2016}

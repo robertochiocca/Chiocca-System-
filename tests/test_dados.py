@@ -34,5 +34,6 @@ def test_verificar_acusa_arquivo_alterado_e_faltante(tmp_path: Path) -> None:
 def test_manifesto_versionado_cobre_todos_os_anos() -> None:
     with dados.MANIFESTO.open(encoding="utf-8", newline="") as f:
         nomes = {linha["arquivo"] for linha in csv.DictReader(f)}
-    esperados = {u.rsplit("/", 1)[1] for u in dados.urls() + dados.urls_fre()}  # FRE: Fase F1, 2010 a 2024
+    # FRE: Fase F1, 2010 a 2024; IPE (só metadados): Fase F2a, 2010 a 2024
+    esperados = {u.rsplit("/", 1)[1] for u in dados.urls() + dados.urls_fre() + dados.urls_ipe()}
     assert nomes == esperados

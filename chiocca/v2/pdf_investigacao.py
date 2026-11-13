@@ -7,6 +7,7 @@ da página (`chiocca.v2.pdf_simples`, gerador sem dependência e determinístico
 from __future__ import annotations
 
 import re
+from datetime import date, timedelta
 from typing import Any
 
 from chiocca.formato import data
@@ -56,6 +57,7 @@ T: dict[str, dict[str, Any]] = {
         "testado_txt": "No estudo 1, o motor v1 acertou {a} de {n} casos acertáveis, com {x} alarmes por acerto no período inteiro e taxa de alerta de {t} nas empresa-anos não financeiras avaliadas ({doc}).",
         "limites": "# Limites", "limitacoes": "# Limitações", "motor": "# Motor",
         "motor_txt": "{m}. Gerado em {g}.", "pagina": "Página {i} de {n}",
+        "motor_sem_data": "{m}. A data da geração está no manifesto da demonstração (demo/manifesto.json).",
         "evidencias": "Evidências no JSON: {n} linhas da DFP, cada uma com documento, versão, data de entrega, conta e localização.",
         "codigos": {"nao_financeira": "não financeira", "financeira": "financeira", "dados_abertos": "dados abertos", "enet": "ENET",
                     "DFC_MI": "DFC (método indireto)", "DFC_MD": "DFC (método direto)",
@@ -103,6 +105,7 @@ T: dict[str, dict[str, Any]] = {
         "testado_txt": "In study 1, engine v1 detected {a} of {n} detectable cases, with {x} false alarms per detected case over the whole period and an alert rate of {t} among evaluated non-financial company-years ({doc}).",
         "limites": "# Limits", "limitacoes": "# Limitations", "motor": "# Engine",
         "motor_txt": "{m}. Generated at {g}.", "pagina": "Page {i} of {n}",
+        "motor_sem_data": "{m}. The generation date is in the demo manifest (demo/manifesto.json).",
         "evidencias": "Evidence in the JSON: {n} DFP lines, each with document, version, filing date, account and location.",
         "codigos": {"nao_financeira": "non-financial", "financeira": "financial", "dados_abertos": "open data", "enet": "ENET",
                     "DFC_MI": "DFC (indirect method)", "DFC_MD": "DFC (direct method)",
@@ -257,6 +260,8 @@ def linhas(inv: dict[str, Any]) -> list[str]:
         for x in sabia.get("documentos", [])
     ]
     out.append(sabia.get("nota", ""))
+    if sabia.get("fatos_e_comunicados"):  # Fase F2a
+        out += _fatos(sabia["fatos_e_comunicados"], inv["data_referencia"], lang)
     confs = [c for c in inv.get("qualidade_dos_dados", {}).get("conferencias", []) if c["resultado"] != "nao_aplicavel"]
     falhas = [c for c in confs if c["resultado"] == "falhou"]
     out += [
@@ -293,7 +298,10 @@ def linhas(inv: dict[str, Any]) -> list[str]:
     out += ["", t["limitacoes"]] + [f"- {x}" for x in inv.get("limitacoes", [])]
     out += ["", t["evidencias"].format(n=inteiro(len(inv.get("evidencias", {})), lang))]
     motor = "; ".join(x for x in (inv["motor"]["v1"], inv["motor"]["v2"], inv["motor"].get("leitor")) if x)
-    out += ["", t["motor"], t["motor_txt"].format(m=motor, g=inv["gerado_em"])]
+    if inv.get("gerado_em"):
+        out += ["", t["motor"], t["motor_txt"].format(m=motor, g=inv["gerado_em"])]
+    else:  # demonstração estática: sem carimbo no arquivo
+        out += ["", t["motor"], t["motor_sem_data"].format(m=motor)]
     hoje = inv.get("informacao_de_hoje")
     if hoje:  # fora da visão "como era": seção separada no fim
         out += ["", f"# {hoje['titulo']}", t["hoje"].format(s=hoje["situacao_cadastro"] or "—", f=hoje["fonte"])]
@@ -332,7 +340,7 @@ LEITURA: dict[str, dict[str, Any]] = {
            "tipo": "Tipo de opinião: {t}", "formulario": "Formulário de Referência", "pagina": "p. {p}",
            "negativa": "menção negativa", "cortado": "cortado no fim da frase", "original": "",
            "omitidos": "Trecho omitido; ver página {p} do documento", "omitidos_sem_pagina": "Trecho omitido; ver o "
-           "relatório do auditor no documento", "n_trechos": " ({n} trechos)",
+           "relatório do auditor no documento",
            "testado": "Como o leitor foi testado: {n} casos guardados, medida única com o leitor congelado ({c}): "
                       "precisão {p}, cobertura {cob}, conferência literal em {a} de {b} trechos, {nomes} ({doc}).",
            "sem_nomes": "nenhum nome de pessoa física", "com_nomes": "{n} nomes de pessoa física",
@@ -350,7 +358,7 @@ LEITURA: dict[str, dict[str, Any]] = {
            "negativa": "negative mention", "cortado": "cut at the end of a sentence",
            "original": "original excerpt in Portuguese",
            "omitidos": "Excerpt omitted; see page {p} of the document", "omitidos_sem_pagina": "Excerpt omitted; see "
-           "the auditor's report in the document", "n_trechos": " ({n} excerpts)",
+           "the auditor's report in the document",
            "testado": "How the reader was tested: {n} held-out cases, a single measurement with the frozen reader ({c}): "
                       "precision {p}, coverage {cob}, literal check on {a} of {b} excerpts, {nomes} ({doc}).",
            "sem_nomes": "no natural-person name", "com_nomes": "{n} natural-person names",
@@ -393,12 +401,13 @@ def frase(x: str) -> str:
 
 def _trechos(xs: list[dict[str, Any]], t: dict[str, Any], lang: str) -> list[str]:
     """Os trechos de um bloco, agrupados para mostrar (chiocca/v2/leitura_exibicao.py): rótulos juntos no mesmo trecho;
-    omitidos da mesma página numa linha só, com a contagem."""
+    omitidos da mesma página numa linha só, sem contagem (um trecho omitido com dois rótulos é um item por rótulo no
+    JSON, e a contagem poderia contá-lo duas vezes)."""
     out = []
     for g in leitura_exibicao.agrupa(xs):
         if g["omitido"]:
             linha = t["omitidos"].format(p=g["pagina"]) if g["pagina"] is not None else t["omitidos_sem_pagina"]
-            out.append(f"- {linha}" + (t["n_trechos"].format(n=inteiro(g["n"], lang)) if g["n"] > 1 else ""))
+            out.append(f"- {linha}")
             continue
         onde = [t["pagina"].format(p=g["pagina"])] if g["pagina"] is not None else []
         marcas = (onde + ([t["negativa"]] if g["negacao"] else []) + ([t["cortado"]] if g["cortado"] else [])
@@ -407,6 +416,81 @@ def _trechos(xs: list[dict[str, Any]], t: dict[str, Any], lang: str) -> list[str
         prefixo = f"[{rotulos}] " if rotulos else ""
         out.append(f"- {prefixo}“{g['texto']}”" + (f" ({', '.join(marcas)})" if marcas else ""))
     return out
+
+
+FATOS: dict[str, dict[str, str]] = {
+    "pt": {"resumo": "Fatos relevantes e comunicados ao mercado entregues até a data (dados abertos do IPE, desde 2010): "
+                     "{f} documentos de fato relevante e {c} documentos de comunicado ao mercado.",
+           "janela": "Fatos relevantes entregues nos 24 meses antes da data (de {a} a {b}):",
+           "sem_janela": "Nenhum fato relevante entregue nos 24 meses antes da data (de {a} a {b}).",
+           "versao": "versão {v}", "versoes": "versões {v}", "documentos": "{n} documentos", "e": " e ",
+           "resto": "Os fatos relevantes mais antigos, os comunicados ao mercado e o link de cada documento estão no JSON "
+                    "e na tela."},
+    "en": {"resumo": "Material facts and market notices filed by the date (IPE open data, since 2010): {f} material "
+                     "fact documents and {c} market notice documents.",
+           "janela": "Material facts filed in the 24 months before the date (from {a} to {b}):",
+           "sem_janela": "No material fact filed in the 24 months before the date (from {a} to {b}).",
+           "versao": "version {v}", "versoes": "versions {v}", "documentos": "{n} documents", "e": " and ",
+           "resto": "Older material facts, the market notices and the link to each document are in the JSON and on "
+                    "screen."},
+}  # fmt: skip
+
+
+def linhas_ipe(itens: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    """Os itens do mesmo grupo numa linha só, na posição do primeiro (como web/lib/ipe.mjs)."""
+    ordem: list[int] = []
+    por: dict[int, list[dict[str, Any]]] = {}
+    for x in itens:
+        if x["grupo"] not in por:
+            por[x["grupo"]] = []
+            ordem.append(x["grupo"])
+        por[x["grupo"]].append(x)
+    return [por[g] for g in ordem]
+
+
+def marca_ipe(grupo: list[dict[str, Any]], t: dict[str, str]) -> str | None:
+    """ "versão 2"; "versões 1 e 2"; ou "3 documentos" (com as versões, se houver mais de uma)."""
+    vs: list[int] = []
+    for x in reversed(grupo):  # em ordem de entrega, como na tela (web/lib/ipe.mjs)
+        if x["versao"] is not None and x["versao"] not in vs:
+            vs.append(x["versao"])
+    lista = str(vs[0]) if len(vs) == 1 else (", ".join(map(str, vs[:-1])) + t["e"] + str(vs[-1]) if vs else "")
+    if len(grupo) == 1:
+        return t["versao"].format(v=grupo[0]["versao"]) if (grupo[0]["versao"] or 1) > 1 else None
+    if len(vs) == len(grupo):
+        return t["versoes"].format(v=lista)
+    docs = t["documentos"].format(n=len(grupo))
+    return f"{docs}, {t['versoes'].format(v=lista)}" if len(vs) > 1 else docs
+
+
+def inicio_da_janela(d: date) -> date:
+    """O primeiro dia dos 24 meses antes da data: 31/12/2024 → 01/01/2023."""
+    try:
+        antes = d.replace(year=d.year - 2)
+    except ValueError:  # 29 de fevereiro
+        antes = d.replace(year=d.year - 2, day=28)
+    return antes + timedelta(days=1)
+
+
+def _fatos(fc: dict[str, Any], data_referencia: str, lang: str) -> list[str]:
+    """No PDF: a contagem por categoria, os fatos relevantes dos 24 meses antes da data e o resto no JSON e na tela."""
+    t = FATOS[lang]
+    if not fc["itens"]:
+        return [fc["motivo"] or "", fc["nota"]]
+    d = date.fromisoformat(data_referencia)
+    a = inicio_da_janela(d)
+    out = [t["resumo"].format(f=inteiro(fc["contagem"]["fato_relevante"], lang),
+                              c=inteiro(fc["contagem"]["comunicado_ao_mercado"], lang))]  # fmt: skip
+    janela = [x for x in fc["itens"] if x["categoria"] == "fato_relevante" and x["data_entrega"] >= a.isoformat()]
+    datas = {"a": data(a.isoformat(), lang), "b": data(d.isoformat(), lang)}
+    if janela:
+        out.append(t["janela"].format(**datas))
+        for g in linhas_ipe(janela):
+            marca = marca_ipe(g, t)
+            out.append(f"- {data(g[0]['data_entrega'], lang)}: {g[0]['assunto']}" + (f" ({marca})" if marca else ""))
+    else:
+        out.append(t["sem_janela"].format(**datas))
+    return out + [t["resto"], fc["nota"]]
 
 
 def _testado(mt: dict[str, Any], t: dict[str, Any], lang: str) -> str:

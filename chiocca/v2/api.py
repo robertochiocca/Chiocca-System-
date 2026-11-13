@@ -117,6 +117,7 @@ def criar_app(
     fontes_fabrica: Callable[[], Any] | None = None,
     localizador: Localizador | None = None,
     modo_demonstracao: bool | None = None,
+    carimbo: bool = True,
 ) -> FastAPI:
     """`fontes_fabrica` devolve as fontes (o armazém); nos testes, o armazém montado da fixture, sem rede."""
     estado: dict[str, Any] = {}
@@ -187,7 +188,8 @@ def criar_app(
         _permitida(cd_cvm)
         _existe(cd_cvm, exercicio, d)
         inv = cache.pega((cd_cvm, exercicio, d.isoformat(), idioma),
-                         lambda: investigacao.gerar(fontes(), cd_cvm, exercicio, d, idioma, localizador))  # fmt: skip
+                         lambda: investigacao.gerar(fontes(), cd_cvm, exercicio, d, idioma, localizador,
+                                                    carimbo=carimbo))  # fmt: skip
         return modelos.Investigacao.model_validate(inv).model_dump(mode="json", exclude_unset=True)
 
     @app.get(f"{PREFIXO}/saude", response_model=modelos.Saude)

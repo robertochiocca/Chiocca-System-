@@ -11,9 +11,15 @@ Formulário de Referência (Fase F1, 11/11/2026): os arquivos de 2010 a 2024 (o 
 2025 já é do exercício lacrado) entram por um comando próprio, que só acrescenta as linhas deles ao manifesto e não
 baixa de novo nem troca as linhas dos outros arquivos (a base do invariante não muda).
 
+Fatos relevantes e comunicados (Fase F2a, 12/11/2026): os índices do IPE de 2010 a 2024 (só metadados de cada
+documento entregue no ano: data de entrega, categoria, assunto, protocolo e link; o conteúdo dos documentos não é
+baixado) entram por um comando próprio, como o Formulário de Referência. O de 2025 em diante não é baixado aqui: só o
+monitor (chiocca.v2.monitor) olha os metadados, sem guardar o assunto.
+
 Uso:
   python -m chiocca.dados baixar      # baixa tudo e reescreve o manifesto
   python -m chiocca.dados baixar-fre  # baixa só o Formulário de Referência de 2010 a 2024 e acrescenta ao manifesto
+  python -m chiocca.dados baixar-ipe  # baixa só os índices do IPE de 2010 a 2024 e acrescenta ao manifesto
   python -m chiocca.dados verificar   # confere os arquivos locais contra o manifesto (sem rede)
 """
 
@@ -52,6 +58,10 @@ def urls() -> list[str]:
 
 def urls_fre() -> list[str]:
     return [f"{BASE}/DOC/FRE/DADOS/fre_cia_aberta_{a}.zip" for a in range(2010, 2025)]
+
+
+def urls_ipe() -> list[str]:
+    return [f"{BASE}/DOC/IPE/DADOS/ipe_cia_aberta_{a}.zip" for a in range(2010, 2025)]
 
 
 def sha256(caminho: Path) -> str:
@@ -93,12 +103,12 @@ def _grava_manifesto(linhas: list[dict[str, object]]) -> None:
         w.writerows(linhas)
 
 
-def baixar_fre() -> None:
-    """Baixa só o Formulário de Referência (2010 a 2024) e troca ou acrescenta as linhas dele no manifesto; as linhas
-    dos outros arquivos ficam como estão."""
+def baixar_fre(lista: list[str] | None = None) -> None:
+    """Baixa só o Formulário de Referência (2010 a 2024), ou os arquivos da lista dada, e troca ou acrescenta as linhas
+    deles no manifesto; as linhas dos outros arquivos ficam como estão."""
     BRUTOS.mkdir(parents=True, exist_ok=True)
     novas: dict[str, dict[str, object]] = {}
-    for url in urls_fre():
+    for url in lista if lista is not None else urls_fre():
         nome = url.rsplit("/", 1)[1]
         dados = _baixa(url)
         (BRUTOS / nome).write_bytes(dados)
@@ -152,6 +162,8 @@ if __name__ == "__main__":
         baixar()
     elif sys.argv[1:] == ["baixar-fre"]:
         baixar_fre()
+    elif sys.argv[1:] == ["baixar-ipe"]:
+        baixar_fre(urls_ipe())  # mesmo caminho: só acrescenta ou troca as linhas do IPE no manifesto
     elif sys.argv[1:] == ["verificar"]:
         p = verificar()
         print("\n".join(p) if p else "todos os arquivos batem com o manifesto")

@@ -30,4 +30,6 @@ Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.m
 
 **Casos guardados do leitor F1** (`tests/leitor/casos/guardados/`): escritos por Roberto com o Claude (claude.ai), fora deste ambiente e sem acesso ao código de detecção do leitor (para o formato e as convenções, foram lidos o pré-registro, `avaliacao.py`, `pdf_simples.py` e os casos de desenvolvimento). O leitor e os casos foram escritos por instâncias do mesmo modelo, em ambientes separados: a separação é de informação, não de autor.
 
+**Fase F2a.** Nenhum arquivo veio de outro projeto: a lista do IPE (`chiocca/v2/ipe.py`) e o monitor (`chiocca/v2/monitor.py`, com a leitura de um só arquivo de dentro do zip remoto por faixas de bytes) foram escritos aqui; o detector de nomes é o do leitor F1, sem mudança.
+
 **Fase F1.** Nenhum arquivo veio de outro projeto. O avaliador do conjunto adversarial (`chiocca/v2/leitor/avaliacao.py`) segue a ideia do DireitoAberto (gabarito declarativo escrito à mão e conferência de toda citação), reescrita para o Chiocca System, sem código copiado. O pypdf é dependência instalada, fixada no `pyproject.toml` e no `requirements-lock.txt`, não código copiado.
