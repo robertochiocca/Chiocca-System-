@@ -189,3 +189,12 @@ Um arquivo JSON por conjunto, em UTF-8, com nome começando por `assuntos_` (por
 7. **Comparação da `leitor-f1-1` nos casos novos.** O avaliador antigo rejeita o campo novo de `esperado`. A `leitor-f1-1` é medida com o avaliador novo, que chama o leitor da `leitor-f1-1` sem mudança, e o relatório diz como foi feito.
 
 - Hash do commit destas decisões: `c7232b6e751bb0e6e5675e606873869a7be0583c` (anotado no commit seguinte, sem mudar nenhuma regra acima).
+
+### 10.8 Notas de procedimento (antes da medida)
+
+Registradas em 13/11/2026, depois do congelamento e antes da medida, com a resposta de Roberto da mesma data. Nenhuma definição nem meta de 10.1 a 10.7 muda.
+
+1. **Comando da medida.** A medida usa `python -m chiocca.v2.leitor_f1_2.avaliar <pasta dos casos> --saida <arquivo>`, e não o comando citado em 10.5, item 5. O comando muda porque o da `leitor-f1-1` (`chiocca/v2/leitor/avaliar.py`) é arquivo congelado dela (10.7, item 2). O avaliador novo aplica as mesmas definições, lê também os arquivos `assuntos_` e mede ao lado a `leitor-f1-1` sem mudança (10.7, item 7).
+2. **Congelamento.** A `leitor-f1-2` e a regra do assunto foram congeladas no commit `dd688dadf9a1f0bc43b4ba1d02fd2f5ad0c0d0db`, com o SHA-256 de cada arquivo em `docs/leitor_congelado_f1_2.json` e o teste que acusa mudança (`tests/test_v2_leitor_f1_2.py`). A medida roda numa cópia de trabalho nesse commit.
+3. **Primeira palavra nas regras de hoje.** As regras conservadoras de hoje (`chiocca/v2/ipe.py`) não olham a primeira palavra do assunto. Elas não mudam antes da medida, porque o arquivo está no registro do congelamento. Se a regra nova for aprovada (metas e auditoria), ela substitui as de hoje; se não for, aplica-se logo depois da medida um ajuste que só omite mais.
+4. **Casos guardados novos.** Ficam em `tests/leitor/casos/guardados_f1_2/`: 22 casos do leitor e 4 arquivos de assunto, com 335 assuntos. Foram escritos por Roberto com o Claude (claude.ai), fora deste ambiente, depois do congelamento e sem acesso ao código de detecção nem às listas de palavras. O SHA-256 de cada arquivo foi conferido com a lista de Roberto antes da medida.

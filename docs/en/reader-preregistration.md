@@ -189,3 +189,12 @@ One JSON file per set, in UTF-8, with a name starting with `assuntos_` (for exam
 7. **`leitor-f1-1` comparison on the new cases.** The old evaluator rejects the new `esperado` field. `leitor-f1-1` is measured with the new evaluator, which calls the `leitor-f1-1` reader unchanged, and the report says how it was done.
 
 - Hash of the commit of these decisions: `c7232b6e751bb0e6e5675e606873869a7be0583c` (recorded in the next commit, without changing any rule above).
+
+### 10.8 Procedure notes (before the measurement)
+
+Recorded on 2026-11-13, after the freeze and before the measurement, with Roberto's reply of the same date. No definition or target in 10.1 to 10.7 changes.
+
+1. **Measurement command.** The measurement uses `python -m chiocca.v2.leitor_f1_2.avaliar <cases folder> --saida <file>`, not the command named in 10.5, item 5. The command changes because the `leitor-f1-1` one (`chiocca/v2/leitor/avaliar.py`) is one of its frozen files (10.7, item 2). The new evaluator applies the same definitions, also reads the `assuntos_` files and measures `leitor-f1-1` unchanged alongside (10.7, item 7).
+2. **Freeze.** `leitor-f1-2` and the subject rule were frozen at commit `dd688dadf9a1f0bc43b4ba1d02fd2f5ad0c0d0db`, with the SHA-256 of each file in `docs/leitor_congelado_f1_2.json` and the test that flags a change (`tests/test_v2_leitor_f1_2.py`). The measurement runs in a working copy at that commit.
+3. **First word in today's rules.** Today's conservative rules (`chiocca/v2/ipe.py`) do not look at the first word of the subject. They do not change before the measurement, because the file is in the freeze record. If the new rule is approved (targets and audit), it replaces today's; if not, an adjustment that only omits more is applied right after the measurement.
+4. **New held-out cases.** They are in `tests/leitor/casos/guardados_f1_2/`: 22 reader cases and 4 subject files, with 335 subjects. They were written by Roberto with Claude (claude.ai), outside this environment, after the freeze and without access to the detection code or the word lists. The SHA-256 of each file was checked against Roberto's list before the measurement.
