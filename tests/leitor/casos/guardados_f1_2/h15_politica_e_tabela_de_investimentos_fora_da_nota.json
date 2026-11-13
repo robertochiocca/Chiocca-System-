@@ -1,0 +1,64 @@
+{
+ "id": "h15_politica_e_tabela_de_investimentos_fora_da_nota",
+ "descricao": "A política contábil e a tabela de investimentos (com controlada, joint venture e coligada entre parênteses) estão fora da nota de partes relacionadas e não contam. A nota 25, na página 2, é a de partes relacionadas.",
+ "notas": {
+  "paginas": [
+   [
+    "2. Políticas contábeis",
+    "2.12 Transações com partes relacionadas",
+    "As transações com controladas, coligadas, joint ventures e pessoal-chave são registradas pelo",
+    "valor contratado e divulgadas na nota 25.",
+    "",
+    "10. Investimentos",
+    "                                             Participação       2021          2020",
+    "Exemplo Celulose Ltda. (controlada)               100%       820.400       761.300",
+    "Exemplo Biogás S.A. (joint venture)                50%        44.100        39.800",
+    "Exemplo Logística Portuária S.A. (coligada)        30%        18.700        17.200",
+    "Total                                                        883.200       818.300"
+   ],
+   [
+    "25. Partes relacionadas",
+    "A Companhia vendeu cavacos de madeira à joint venture Exemplo Biogás S.A., no total de R$ 2.180",
+    "no exercício (R$ 1.940 em 2020). Os saldos a receber da joint venture, de R$ 240, vencem em 30",
+    "dias.",
+    "",
+    "26. Patrimônio líquido",
+    "O capital social é de R$ 2.400.000."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "joint_ventures",
+    "pagina": 2,
+    "contem": "joint venture Exemplo Biogás S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 2,
+    "contem": "no total de R$ 2.180"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 2,
+    "contem": "Os saldos a receber da joint venture"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 2,
+    "contem": "vencem em 30"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Participação 2021 2020"
+  ]
+ }
+}

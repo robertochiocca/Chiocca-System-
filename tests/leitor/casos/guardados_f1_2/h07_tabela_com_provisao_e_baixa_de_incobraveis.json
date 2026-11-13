@@ -1,0 +1,74 @@
+{
+ "id": "h07_tabela_com_provisao_e_baixa_de_incobraveis",
+ "descricao": "Contas a receber de partes relacionadas com a provisão para créditos de liquidação duvidosa numa linha da tabela e a movimentação da provisão com a baixa de créditos incobráveis.",
+ "notas": {
+  "paginas": [
+   [
+    "9. Partes relacionadas",
+    "9.1 Contas a receber de partes relacionadas",
+    "                                                     Dez/2021        Dez/2020",
+    "Exemplo Varejo Online S.A. (coligada)                 15.400          12.900",
+    "Exemplo Franquias Ltda. (controlada)                   3.200           2.750",
+    "(-) Provisão para créditos de liquidação duvidosa     (2.100)         (1.400)",
+    "Total                                                 16.500          14.250",
+    "",
+    "Movimentação da provisão",
+    "Saldo inicial                                         (1.400)",
+    "Constituição                                            (900)",
+    "Baixa de créditos incobráveis                            200",
+    "Saldo final                                           (2.100)",
+    "",
+    "Os recebíveis da coligada têm prazo de 30 dias; os vencidos há mais de 360 dias foram",
+    "baixados no exercício.",
+    "",
+    "10. Imobilizado",
+    "O imobilizado está registrado ao custo."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "(coligada)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "(controlada)"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "provisao_pcld",
+    "pagina": 1,
+    "contem": "Provisão para créditos de liquidação duvidosa"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "perdas_incobraveis",
+    "pagina": 1,
+    "contem": "Baixa de créditos incobráveis"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "têm prazo de 30 dias"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Dez/2021 Dez/2020"
+  ]
+ }
+}

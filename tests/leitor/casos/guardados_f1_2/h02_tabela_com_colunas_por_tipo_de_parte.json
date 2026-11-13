@@ -1,0 +1,70 @@
+{
+ "id": "h02_tabela_com_colunas_por_tipo_de_parte",
+ "descricao": "Tabela com uma coluna por tipo de parte (Controladas, Coligadas, Controladora); as partes são nomeadas na frase de baixo. Royalties de 2% da receita líquida.",
+ "notas": {
+  "paginas": [
+   [
+    "14. TRANSAÇÕES COM PARTES RELACIONADAS",
+    "Os saldos e transações com partes relacionadas, por tipo de parte, são os seguintes:",
+    "",
+    "                                   Controladas     Coligadas    Controladora        Total",
+    "Em 31 de dezembro de 2021",
+    "Contas a receber                         5.200           810               -        6.010",
+    "Contas a pagar                          (1.140)            -          (3.400)      (4.540)",
+    "Receita de serviços                     18.900         2.130               -       21.030",
+    "Despesa com royalties                        -             -          (9.750)      (9.750)",
+    "",
+    "A controladora é a Exemplo Participações S.A., que cobra royalties de 2% da receita líquida pelo",
+    "uso da marca. As controladas são a Exemplo Serviços Ltda. e a Exemplo Tecnologia Ltda., e a",
+    "coligada é a Exemplo Pagamentos S.A.",
+    "",
+    "15. IMPOSTO DE RENDA E CONTRIBUIÇÃO SOCIAL",
+    "A alíquota nominal é de 34%."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "A controladora é a Exemplo Participações S.A."
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "As controladas são"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "coligada é a Exemplo Pagamentos S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "2% da receita líquida"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Em 31 de dezembro de 2021"
+  ]
+ }
+}
