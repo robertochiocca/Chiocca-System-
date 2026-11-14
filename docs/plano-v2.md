@@ -78,6 +78,7 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 
 - *13/11/2026:* o job `auditoria-python` ficou vermelho do commit `dd688da` em diante: o pip-audit acusou uma vulnerabilidade nova em `opentelemetry-api` (CVE-2026-126360). Com a autorização de Roberto, a versão passou para a corrigida no `requirements-lock.txt`, sem mudar nenhuma outra. Daqui em diante, cada relatório traz o estado do CI no último commit enviado, job por job, e não só os testes locais.
 - *Sem urgência:* os avisos de Node.js 20 nas actions (`actions/checkout`, `actions/setup-python`, `actions/setup-node` e `actions/upload-artifact`) pedem atualizar as versões das actions.
+- *Próxima rodada, sem urgência (pedido de Roberto, 14/11/2026):* o teste de tela (`npm run test:tela`) serve hoje o site exportado sem o prefixo do GitHub Pages, e por isso roda num build sem prefixo, diferente do publicado. Tarefa: fazê-lo servir o site debaixo de `/Chiocca-System-/`, como a varredura já faz, para testar exatamente o que é publicado.
 
 ## Perguntas e decisões
 

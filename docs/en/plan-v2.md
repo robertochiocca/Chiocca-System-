@@ -78,6 +78,7 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
 
 - *2026-11-13:* the `auditoria-python` job was red from commit `dd688da` on: pip-audit flagged a new vulnerability in `opentelemetry-api` (CVE-2026-126360). With Roberto's authorization, the version moved to the fixed one in `requirements-lock.txt`, with no other version changed. From now on, every report brings the CI state on the last pushed commit, job by job, and not only the local tests.
 - *No urgency:* the Node.js 20 warnings in the actions (`actions/checkout`, `actions/setup-python`, `actions/setup-node` and `actions/upload-artifact`) call for updating the action versions.
+- *Next round, no urgency (Roberto's request, 2026-11-14):* the screen test (`npm run test:tela`) currently serves the exported site without the GitHub Pages prefix, so it runs on a build without the prefix, unlike the published one. Task: make it serve the site under `/Chiocca-System-/`, as the sweep already does, to test exactly what is published.
 
 ## Questions and decisions
 
