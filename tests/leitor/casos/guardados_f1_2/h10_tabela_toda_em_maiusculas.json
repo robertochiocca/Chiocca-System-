@@ -1,0 +1,62 @@
+{
+ "id": "h10_tabela_toda_em_maiusculas",
+ "descricao": "Nota e tabela inteiras em maiúsculas, com 'CONTROLADORA' e 'CONSOLIDADO' como títulos de coluna e a controladora de verdade numa linha, '(CONTROLADORA)'.",
+ "notas": {
+  "paginas": [
+   [
+    "NOTA 20 - PARTES RELACIONADAS",
+    "SALDOS E TRANSAÇÕES                         CONTROLADORA            CONSOLIDADO",
+    "                                          2021       2020        2021       2020",
+    "CONTAS A RECEBER",
+    "  EXEMPLO TRADING LTDA. (CONTROLADA)     3.880      3.410           -          -",
+    "CONTAS A PAGAR",
+    "  EXEMPLO HOLDING S.A. (CONTROLADORA)   (1.270)    (1.150)     (1.270)    (1.150)",
+    "RECEITAS DE VENDAS",
+    "  EXEMPLO TRADING LTDA. (CONTROLADA)    44.600     40.100           -          -",
+    "",
+    "AS VENDAS PARA A CONTROLADA SÃO REALIZADAS COM PRAZO DE 60 DIAS.",
+    "",
+    "NOTA 21 - PROVISÕES",
+    "AS PROVISÕES SÃO REVISADAS ANUALMENTE."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "(CONTROLADA)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "(CONTROLADORA)"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "PRAZO DE 60 DIAS"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "2021 2020 2021 2020"
+  ]
+ }
+}

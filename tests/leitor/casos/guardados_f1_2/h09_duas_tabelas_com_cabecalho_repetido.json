@@ -1,0 +1,65 @@
+{
+ "id": "h09_duas_tabelas_com_cabecalho_repetido",
+ "descricao": "Duas tabelas na mesma página, uma por exercício, com o mesmo cabeçalho (Ativo, Passivo, Receitas, Despesas). Controlada e joint venture. A nota seguinte (investimentos) fica na mesma página.",
+ "notas": {
+  "paginas": [
+   [
+    "11. Transações com partes relacionadas",
+    "Em 31 de dezembro de 2021:",
+    "                                         Ativo      Passivo     Receitas     Despesas",
+    "Exemplo Química Ltda. (controlada)       4.900           -        22.100            -",
+    "Exemplo Gás S.A. (joint venture)             -      (1.300)            -       (9.800)",
+    "Total                                    4.900      (1.300)       22.100       (9.800)",
+    "",
+    "Em 31 de dezembro de 2020:",
+    "                                         Ativo      Passivo     Receitas     Despesas",
+    "Exemplo Química Ltda. (controlada)       4.300           -        19.700            -",
+    "Exemplo Gás S.A. (joint venture)             -      (1.150)            -       (8.900)",
+    "Total                                    4.300      (1.150)       19.700       (8.900)",
+    "",
+    "As compras de gás natural da joint venture têm prazo de pagamento de 45 dias.",
+    "",
+    "12. Investimentos",
+    "Os investimentos em controladas e joint ventures são avaliados por equivalência patrimonial."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "(controlada)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "joint_ventures",
+    "pagina": 1,
+    "contem": "joint venture"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "prazo de pagamento de 45 dias"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Ativo Passivo Receitas Despesas"
+  ]
+ }
+}

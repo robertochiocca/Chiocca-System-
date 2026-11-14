@@ -11,7 +11,7 @@ dependencies = ["pandas==3.0.5", "numpy==2.5.3", "duckdb==2.0.0", "pyarrow==26.0
 dev = ["pytest", "ruff", "black", "mypy", "httpx==0.28.1"]  # httpx: o TestClient dos testes da API
 
 [tool.setuptools]
-packages = ["chiocca", "chiocca.sinais", "chiocca.v2", "chiocca.v2.leitor"]
+packages = ["chiocca", "chiocca.sinais", "chiocca.v2", "chiocca.v2.leitor", "chiocca.v2.leitor_f1_2"]
 
 [tool.black]
 line-length = 120
@@ -47,6 +47,10 @@ addopts = "-q"
 "chiocca/v2/leitor/formulario.py" = ["E501"]
 "chiocca/v2/leitor/ler.py" = ["E501"]
 "chiocca/v2/leitor/secao.py" = ["E501"]
+# Fase F2b: a leitor-f1-2 e a regra do assunto, ao lado da f1-1 (catálogos de expressões regulares e vocabulário)
+"chiocca/v2/leitor_f1_2/partes_relacionadas.py" = ["E501"]
+"chiocca/v2/leitor_f1_2/ler.py" = ["E501"]
+"chiocca/v2/leitor_f1_2/assunto.py" = ["E501"]
 "chiocca/v2/analises_pos_estudo_1.py" = ["E501"]  # catálogo de mensagens em prosa
 "chiocca/v2/analises_pos_estudo_1_dados.py" = ["E501"]  # agregações com dicionários longos
 "chiocca/v2/armazem.py" = ["E501"]  # SQL e montagem das tabelas

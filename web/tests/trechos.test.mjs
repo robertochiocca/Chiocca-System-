@@ -15,9 +15,11 @@ const pr = inv.leitura_documental.partes_relacionadas;
 
 test("rótulos juntos no mesmo trecho e omitidos da mesma página numa entrada só", () => {
   const campos = agrupaTrechos(pr.campos_cpc05_18);
-  const cabecalho = campos.find((g) => g.texto === "2021 2020 2021 2020");
-  assert.deepEqual(cabecalho.rotulos, ["montante", "saldos"]);
-  assert.equal(campos.filter((g) => g.texto === "2021 2020 2021 2020").length, 1);
+  const linha = "Lojas Americanas S.A. (i) - (111.604) 1.752 171.119";
+  assert.deepEqual(campos.find((g) => g.texto === linha).rotulos, ["montante", "saldos"]);
+  assert.equal(campos.filter((g) => g.texto === linha).length, 1);
+  // com a leitor-f1-2, as linhas de cabeçalho da tabela da página 40 não saem mais como trecho
+  assert.equal(campos.filter((g) => g.texto === "2021 2020 2021 2020").length, 0);
   const omitidos = campos.filter((g) => g.omitido);
   assert.deepEqual(omitidos.map((g) => [g.pagina, g.n]), [[40, pr.campos_cpc05_18.filter((x) => x.omitido).length]]);
   const categorias = agrupaTrechos(pr.trechos);

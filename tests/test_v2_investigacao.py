@@ -12,7 +12,7 @@ import pytest
 
 from chiocca.cvm import Fontes
 from chiocca.v2 import armazem, comparativo, exemplos, investigacao, limites, modelos, pdf_investigacao
-from chiocca.v2.leitor import secao as leitor_secao  # noqa: E402  (Fase F1: a seção só vem com o leitor ligado)
+from chiocca.v2 import leitura_secao as leitor_secao  # noqa: E402  (Fase F1: a seção só vem com o leitor ligado)
 from tests.test_base import mundo  # noqa: F401  (fixture)
 from tests.test_v2_armazem import mundo_c1  # noqa: F401  (fixture)
 

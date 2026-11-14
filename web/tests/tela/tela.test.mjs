@@ -378,13 +378,14 @@ for (const idioma of ["pt", "en"]) {
       pt ? ["Notas explicativas", "Relatório do auditor", "Formulário de Referência"] : ["Explanatory notes", "Auditor's report", "Reference Form"]);
     const tudo = await texto(secao);
     assert.match(tudo, pt ? /Ausência de menção não prova ausência\./ : /Absence of mention does not prove absence\./);
-    // como o leitor foi testado: os números da saída da medida (docs/leitor_medida.json)
-    const medida = JSON.parse(readFileSync(join(RAIZ, "docs", "leitor_medida.json"), "utf-8")).totais;
+    // como o leitor foi testado: os números da saída da medida do leitor em uso (leitor-f1-2, docs/leitor_medida_f1_2.json)
+    const saida = JSON.parse(readFileSync(join(RAIZ, "docs", "leitor_medida_f1_2.json"), "utf-8"));
+    const medida = saida.leitor.f1_2.totais;
     const dec = (x) => (pt ? x.toFixed(3).replace(".", ",") : x.toFixed(3));
-    const congelado = JSON.parse(readFileSync(join(RAIZ, "docs", "leitor_congelado.json"), "utf-8")).commit.slice(0, 7);
+    const congelado = saida.commit.slice(0, 7);
     assert.ok(tudo.includes(pt
-      ? `Como o leitor foi testado: ${medida.casos} casos guardados, medida única com o leitor congelado (${congelado}): precisão ${dec(medida.precisao)}, cobertura ${dec(medida.cobertura)}, conferência literal em ${medida.conferidos} de ${medida.trechos_mostrados} trechos, nenhum nome de pessoa física (docs/leitor_medida.json).`
-      : `How the reader was tested: ${medida.casos} held-out cases, a single measurement with the frozen reader (${congelado}): precision ${dec(medida.precisao)}, coverage ${dec(medida.cobertura)}, literal check on ${medida.conferidos} of ${medida.trechos_mostrados} excerpts, no natural-person name (docs/leitor_medida.json).`), "como o leitor foi testado");
+      ? `Como o leitor foi testado: ${medida.casos} casos guardados, medida única com o leitor congelado (${congelado}): precisão ${dec(medida.precisao)}, cobertura ${dec(medida.cobertura)}, conferência literal em ${medida.conferidos} de ${medida.trechos_mostrados} trechos, nenhum nome de pessoa física (docs/leitor_medida_f1_2.json).`
+      : `How the reader was tested: ${medida.casos} held-out cases, a single measurement with the frozen reader (${congelado}): precision ${dec(medida.precisao)}, coverage ${dec(medida.cobertura)}, literal check on ${medida.conferidos} of ${medida.trechos_mostrados} excerpts, no natural-person name (docs/leitor_medida_f1_2.json).`), "como o leitor foi testado");
     // trecho mostrado: literal, em português, com os rótulos e a página (e "trecho original" na interface em inglês)
     const primeiro = secao.locator("figure.trecho").first();
     assert.match(await texto(primeiro.locator("blockquote")), /A controladora prestou aval em empréstimos/);

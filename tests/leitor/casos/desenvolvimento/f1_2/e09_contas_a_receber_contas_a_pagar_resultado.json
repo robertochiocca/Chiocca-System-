@@ -1,0 +1,73 @@
+{
+ "id": "e09_contas_a_receber_contas_a_pagar_resultado",
+ "descricao": "Cabeçalho em várias linhas com 'Contas a receber', 'Contas a pagar' e 'Resultado', seguido de linha de datas; linhas de partes com nome de companhia, valores entre parênteses e total. 'Consolidado Controladora' na ordem invertida.",
+ "notas": {
+  "paginas": [
+   [
+    "Nota 12 - Partes relacionadas",
+    "",
+    "12.1 Saldos e transações com controladas e coligadas",
+    "",
+    "                                  Consolidado Controladora",
+    "                         Contas a receber   Contas a pagar        Resultado",
+    "                        31/12/21  31/12/20  31/12/21  31/12/20  31/12/21  31/12/20",
+    "Exemplo Têxtil Ltda.       2.310     2.040     (410)     (380)    6.900     6.150",
+    "Exemplo Química S.A.         860       790    (1.250)   (1.100)  (3.400)   (3.050)",
+    "Total                      3.170     2.830    (1.660)   (1.480)   3.500     3.100",
+    "",
+    "A Exemplo Têxtil Ltda. é controlada integral e a Exemplo Química S.A. é coligada. As vendas e",
+    "compras são feitas a preços de mercado, com prazo de 60 dias.",
+    "",
+    "Nota 13 - Intangível",
+    "O intangível compreende softwares."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "Saldos e transações com controladas"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "é coligada"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "Saldos e transações"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "As vendas e"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "prazo de 60 dias"
+   },
+   {
+    "verificacao": "condicoes_de_mercado",
+    "rotulo": null,
+    "pagina": 1,
+    "contem": "preços de mercado"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Consolidado Controladora",
+   "Contas a receber Contas a pagar Resultado",
+   "31/12/21 31/12/20 31/12/21 31/12/20 31/12/21 31/12/20"
+  ]
+ }
+}

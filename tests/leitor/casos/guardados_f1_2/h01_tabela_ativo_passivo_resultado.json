@@ -1,0 +1,77 @@
+{
+ "id": "h01_tabela_ativo_passivo_resultado",
+ "descricao": "Tabela com títulos de coluna (Controladora e Consolidado) numa linha e as datas na de baixo; grupos Ativo, Passivo e Resultado com subgrupos; cada parte com a categoria entre parênteses; prazo e vigência na frase de baixo.",
+ "notas": {
+  "paginas": [
+   [
+    "# Exemplo Bebidas S.A.",
+    "Notas explicativas às demonstrações financeiras individuais e consolidadas",
+    "em 31 de dezembro de 2021 (Em milhares de reais)",
+    "",
+    "19. Partes relacionadas",
+    "",
+    "19.1 Saldos e transações",
+    "",
+    "                                          Controladora                Consolidado",
+    "                                    31/12/2021   31/12/2020    31/12/2021   31/12/2020",
+    "Ativo",
+    "  Contas a receber",
+    "    Exemplo Lojas Ltda. (controlada)     6.840        5.910             -            -",
+    "    Exemplo Vidros S.A. (coligada)         420          380           420          380",
+    "Passivo",
+    "  Fornecedores",
+    "    Exemplo Vidros S.A. (coligada)      (2.950)      (2.610)       (2.950)      (2.610)",
+    "Resultado",
+    "  Venda de produtos",
+    "    Exemplo Lojas Ltda. (controlada)    58.300       51.700             -            -",
+    "  Compra de embalagens",
+    "    Exemplo Vidros S.A. (coligada)     (31.200)     (28.400)      (31.200)     (28.400)",
+    "",
+    "As vendas à controlada têm prazo médio de recebimento de 28 dias. As compras de embalagens da",
+    "coligada seguem contrato de fornecimento com vigência até dezembro de 2024.",
+    "",
+    "20. Patrimônio líquido",
+    "O capital social é de R$ 1.150.000."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "(controlada)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "(coligada)"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "prazo médio de recebimento de 28 dias"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Controladora Consolidado",
+   "31/12/2021 31/12/2020 31/12/2021 31/12/2020"
+  ]
+ }
+}

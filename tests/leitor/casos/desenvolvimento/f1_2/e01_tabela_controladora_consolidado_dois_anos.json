@@ -1,0 +1,71 @@
+{
+ "id": "e01_tabela_controladora_consolidado_dois_anos",
+ "descricao": "Tabela no formato real: títulos de coluna 'Controladora' e 'Consolidado' numa linha e os dois exercícios na de baixo, grupos 'Ativo circulante' e 'Passivo circulante', valores entre parênteses, linha de total e nota de rodapé (i) com o prazo e a taxa.",
+ "notas": {
+  "paginas": [
+   [
+    "18. Transações com partes relacionadas",
+    "",
+    "a) Saldos e transações",
+    "",
+    "                                         Controladora                 Consolidado",
+    "                                      2021          2020          2021          2020",
+    "Ativo circulante",
+    "  Contas a receber – controladas     8.450         7.120             -             -",
+    "  Mútuo – Exemplo Logística Ltda. (i)  15.000      12.000             -             -",
+    "Passivo circulante",
+    "  Fornecedores – coligada Exemplo Embalagens S.A.  (3.210)  (2.870)  (3.210)  (2.870)",
+    "Total líquido                         20.240        16.250        (3.210)       (2.870)",
+    "",
+    "Resultado",
+    "  Vendas para controladas            41.300        37.900             -             -",
+    "  Compras da coligada Exemplo Embalagens S.A.  (22.400)  (19.800)  (22.400)  (19.800)",
+    "",
+    "(i) Mútuo com a controlada Exemplo Logística Ltda., remunerado a 100% do CDI.",
+    "",
+    "19. Patrimônio líquido",
+    "O capital social subscrito e integralizado é de R$ 900.000."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "Contas a receber – controladas"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "coligada Exemplo Embalagens S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "Contas a receber – controladas 8.450"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "Vendas para controladas 41.300"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "remunerado a 100% do CDI"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Controladora Consolidado",
+   "2021 2020 2021 2020"
+  ]
+ }
+}

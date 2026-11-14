@@ -1,0 +1,64 @@
+{
+ "id": "h05_tabela_de_mutuos_com_taxa_e_vencimento",
+ "descricao": "Tabela de mútuos com colunas de texto (natureza, taxa, vencimento) e de valor; a controladora como credora; frases com a forma de pagamento e com o montante que 'somou R$ ... no exercício'.",
+ "notas": {
+  "paginas": [
+   [
+    "Nota 17 – Partes relacionadas",
+    "17.1 Mútuos com partes relacionadas",
+    "Os saldos dos mútuos com partes relacionadas são os seguintes:",
+    "",
+    "Parte                                Natureza  Taxa             Vencimento     2021      2020",
+    "Exemplo Mineração Ltda. (controlada) Credor    CDI + 1,8% a.a.  mar/2025     38.000    35.200",
+    "Exemplo Logística S.A. (controlada)  Credor    IPCA + 5% a.a.   dez/2026     12.400    11.000",
+    "Exemplo Holding S.A. (controladora)  Devedor   110% do CDI      jun/2024    (20.000)  (18.500)",
+    "Total                                                                       30.400    27.700",
+    "",
+    "Os mútuos são liquidados no vencimento, em parcela única, e os juros são pagos semestralmente.",
+    "A receita financeira líquida dos mútuos somou R$ 3.120 no exercício (R$ 2.640 em 2020).",
+    "",
+    "Nota 18 – Fornecedores",
+    "Os fornecedores são pagos em até 60 dias."
+   ]
+  ],
+  "sem_texto": false
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "(controlada)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "(controladora)"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "em parcela única"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "somou R$ 3.120 no exercício"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Parte Natureza Taxa Vencimento 2021 2020"
+  ]
+ }
+}

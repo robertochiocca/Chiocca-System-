@@ -14,8 +14,11 @@ Regras:
   linhas repetidas do mesmo documento contam uma vez, e de 2010 a 2014 o arquivo não traz o protocolo de entrega (o
   link traz). A reapresentação é outra entrega, com outro protocolo e a sua versão; os dados não ligam a reapresentação
   ao documento original, então cada entrega aparece, com a versão;
-- o assunto passa pelo detector de nomes do leitor (chiocca.v2.leitor.nomes, o mesmo código, sem mudança): se marcar,
-  vira "assunto omitido (possível nome de pessoa); ver o documento na CVM";
+- o assunto passa pela regra própria do assunto (chiocca.v2.leitor_f1_2.assunto, congelada no commit dd688da e
+  aprovada em 13/11/2026 na medida da emenda 1 do pré-registro do leitor e na auditoria de 400 assuntos reais): com
+  possível nome de pessoa, vira "assunto omitido (possível nome de pessoa); ver o documento na CVM". As regras de
+  12/11/2026 que ela substitui (detector de nomes do leitor, assunto todo em maiúsculas e palavra maiúscula fora do
+  começo) ficam em `regra_de_omissao_f2a`, só para reproduzir as comparações publicadas;
 - ordem fixa: fatos relevantes primeiro, depois comunicados; em cada grupo, da entrega mais recente para a mais
   antiga (empate pelo identificador do documento). Nenhuma palavra do assunto é destacada, contada ou usada para
   alerta, nota ou ordenação; a única contagem é a de documentos por categoria;
@@ -42,6 +45,7 @@ import pandas as pd
 from chiocca import base
 from chiocca.v2.lacre import DATA_REFERENCIA_MAXIMA
 from chiocca.v2.leitor import nomes
+from chiocca.v2.leitor_f1_2 import assunto as regra_do_assunto
 
 PRIMEIRO_ANO, ULTIMO_ANO = 2010, 2024  # o de 2025 em diante não entra (só o monitor olha os metadados)
 CATEGORIAS = {"Fato Relevante": "fato_relevante", "Comunicado ao Mercado": "comunicado_ao_mercado"}
@@ -182,9 +186,16 @@ def _palavra_maiuscula_no_meio(texto: str) -> bool:
 
 
 def regra_de_omissao(texto: str) -> str | None:
-    """Por que o assunto sai omitido, ou None se pode ser mostrado. Primeiro o detector de nomes do leitor (sem
-    mudança); depois as regras mais conservadoras de 12/11/2026, que só omitem mais: assunto todo em maiúsculas e
-    palavra com inicial maiúscula no meio da frase fora das exceções."""
+    """Por que o assunto sai omitido, ou None se pode ser mostrado: a regra própria do assunto (assunto-ipe-1), em uso
+    desde 13/11/2026. Motivos: tratamento_ou_cpf, iniciais, maiusculas, contexto_de_pessoa e nome_possivel."""
+    return regra_do_assunto.motivo(texto)
+
+
+def regra_de_omissao_f2a(texto: str) -> str | None:
+    """As regras de 12/11/2026, substituídas em 13/11/2026 pela regra própria do assunto; ficam só para reproduzir as
+    comparações publicadas. Primeiro o detector de nomes do leitor (sem mudança); depois as regras mais conservadoras,
+    que só omitem mais: assunto todo em maiúsculas e palavra com inicial maiúscula no meio da frase fora das
+    exceções."""
     if nomes.tem_nome_de_pessoa(texto):
         return "detector"
     if _maiusculas(texto):
@@ -194,15 +205,23 @@ def regra_de_omissao(texto: str) -> str | None:
     return None
 
 
+def texto_exibido(texto: str) -> str:
+    """O assunto mostrado como vai para a tela: alguns assuntos dos dados abertos trazem "&" escrito como entidade de
+    HTML ("Rothschild &amp Co", "S&ampP"); só a exibição troca "&amp;" e "&amp" por "&" (decisão de 13/11/2026, antes de
+    publicar). A regra do assunto decide sobre o texto original, e o agrupamento compara o original."""
+    return texto.replace("&amp;", "&").replace("&amp", "&")
+
+
 def assunto(texto: str, lang: str) -> tuple[str, bool, bool]:
     """O assunto como vai para a tela: (texto, omitido, vazio). Vazio nos dados abertos vira um aviso; com possível
-    nome de pessoa (pelas regras acima), omitido."""
+    nome de pessoa (pelas regras acima, sobre o texto original), omitido; mostrado, com o "&" da entidade de HTML
+    trocado (texto_exibido)."""
     t = texto.strip()
     if not t:
         return TEXTOS[lang]["vazio"], False, True
     if regra_de_omissao(t):
         return TEXTOS[lang]["omitido"], True, False
-    return t, False, False
+    return texto_exibido(t), False, False
 
 
 def protocolo_base(protocolo: str) -> str | None:
@@ -294,33 +313,50 @@ def lista(cd_cvm: str, data_referencia: date, lang: str, brutos: Path | None = N
 NUMEROS = base.RAIZ / "docs" / "ipe_numeros.json"
 
 
+MOTIVOS = ("tratamento_ou_cpf", "iniciais", "maiusculas", "contexto_de_pessoa", "nome_possivel")
+MOTIVOS_F2A = ("detector", "maiusculas", "palavra_maiuscula")
+
+
+def _contagem(assuntos: list[str], regra: Any, motivos: tuple[str, ...]) -> dict[str, int]:
+    regras = [regra(a) if a else "vazio" for a in assuntos]
+    return {"documentos": len(assuntos), "assuntos_vazios": regras.count("vazio"),
+            "assuntos_omitidos": sum(r not in (None, "vazio") for r in regras),
+            **{f"omitidos_{m}": regras.count(m) for m in motivos},
+            "assuntos_mostrados": regras.count(None),
+            "mostrados_com_entidade_html": sum(r is None and texto_exibido(a) != a
+                                               for a, r in zip(assuntos, regras, strict=True))}  # fmt: skip
+
+
 def contar(brutos: Path | None = None) -> dict[str, Any]:
-    """Quantos assuntos o detector de nomes omite, em todos os fatos relevantes e comunicados de 2010 a 2024 (um por
-    documento entregue), para a documentação: python -m chiocca.v2.ipe grava docs/ipe_numeros.json."""
+    """Quantos assuntos a regra do assunto omite, em todos os fatos relevantes e comunicados de 2010 a 2024 (um por
+    documento entregue), e quantos as regras de 12/11/2026 omitiam, para a documentação: python -m chiocca.v2.ipe grava
+    docs/ipe_numeros.json."""
     docs: dict[str, tuple[str, str]] = {}
     arquivos = []
     for ano, p, tab in _tabelas(brutos):
         arquivos.append(_fonte(ano, p))
         for r in tab.itertuples(index=False):
             docs.setdefault(r.id_documento, (r.Categoria, r.Assunto.strip()))
-    por_categoria = {}
+    por_categoria, f2a = {}, {}
     for nome, c in CATEGORIAS.items():
         assuntos = [x[1] for x in docs.values() if x[0] == nome]
-        regras = [regra_de_omissao(a) if a else "vazio" for a in assuntos]
-        por_categoria[c] = {"documentos": len(assuntos), "assuntos_vazios": regras.count("vazio"),
-                            "assuntos_omitidos": sum(r not in (None, "vazio") for r in regras),
-                            "omitidos_pelo_detector": regras.count("detector"),
-                            "omitidos_por_maiusculas": regras.count("maiusculas"),
-                            "omitidos_por_palavra_maiuscula": regras.count("palavra_maiuscula"),
-                            "assuntos_mostrados": regras.count(None)}  # fmt: skip
-    tot = {k: sum(x[k] for x in por_categoria.values()) for k in next(iter(por_categoria.values()))}
+        por_categoria[c] = _contagem(assuntos, regra_de_omissao, MOTIVOS)
+        f2a[c] = _contagem(assuntos, regra_de_omissao_f2a, MOTIVOS_F2A)
+
+    def total(grupos: dict[str, dict[str, int]]) -> dict[str, Any]:
+        tot: dict[str, Any] = {k: sum(x[k] for x in grupos.values()) for k in next(iter(grupos.values()))}
+        tot["fracao_omitidos"] = round(tot["assuntos_omitidos"] / tot["documentos"], 3) if tot["documentos"] else None
+        return tot
+
     return {"gerado_por": "python -m chiocca.v2.ipe", "o_que_e": "assuntos dos fatos relevantes e comunicados ao "
             "mercado dos dados abertos do IPE de 2010 a 2024, um por documento entregue (pelo link do ENET): vazios, "
-            "omitidos (pelo detector de nomes do leitor, sem mudança, e pelas regras mais conservadoras de 12/11/2026: "
-            "todo em maiúsculas e palavra com inicial maiúscula no meio da frase fora das exceções) e mostrados",
-            "arquivos": arquivos, **tot,
-            "fracao_omitidos": round(tot["assuntos_omitidos"] / tot["documentos"], 3) if tot["documentos"] else None,
-            "por_categoria": por_categoria}  # fmt: skip
+            "omitidos pela regra própria do assunto (assunto-ipe-1, em uso desde 13/11/2026), por motivo, e mostrados "
+            "(mostrados_com_entidade_html: os que a tela mostra com '&amp' trocado por '&'); "
+            "em regras_f2a, as mesmas contas com as regras de 12/11/2026 que ela substituiu (detector de nomes do "
+            "leitor, todo em maiúsculas e palavra com inicial maiúscula no meio da frase fora das exceções)",
+            "regra": regra_do_assunto.VERSAO, "arquivos": arquivos, **total(por_categoria),
+            "por_categoria": por_categoria,
+            "regras_f2a": {**total(f2a), "por_categoria": f2a}}  # fmt: skip
 
 
 if __name__ == "__main__":

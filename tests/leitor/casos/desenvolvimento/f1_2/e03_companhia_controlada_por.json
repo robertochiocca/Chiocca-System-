@@ -1,0 +1,58 @@
+{
+ "id": "e03_companhia_controlada_por",
+ "descricao": "'A Companhia é controlada pela Exemplo Participações S.A.': a parte é a controladora, não uma controlada. Taxa de licença à controladora, despesa que 'somou R$ ... no exercício' e saldos numa tabela de dois anos.",
+ "notas": {
+  "paginas": [
+   [
+    "10. PARTES RELACIONADAS",
+    "",
+    "A Companhia é controlada pela Exemplo Participações S.A., que detém 61,4% das ações ordinárias.",
+    "A controladora final do grupo é a Exemplo Holding Internacional B.V., sediada nos Países Baixos.",
+    "",
+    "A Companhia paga à Exemplo Participações S.A. licença de uso de marca equivalente a 1,5% da",
+    "receita líquida. A licença somou R$ 6.200 no exercício (R$ 5.800 em 2020).",
+    "",
+    "Saldos com a controladora",
+    "                                          2021          2020",
+    "Licença de marca a pagar                (1.540)       (1.390)",
+    "Dividendos a pagar                      (8.300)       (7.600)",
+    "",
+    "11. EMPRÉSTIMOS E FINANCIAMENTOS",
+    "Os empréstimos estão demonstrados ao custo amortizado."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "A Companhia é controlada pela Exemplo Participações S.A."
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "somou R$ 6.200 no exercício"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "Dividendos a pagar"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "1,5% da"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "2021 2020"
+  ]
+ }
+}

@@ -1,7 +1,7 @@
 """Exibição da seção de trechos dos documentos (Fase F1, decisões de 11/11/2026 depois da medida): título, subseções,
 rótulos juntos, omitidos juntos por página, "Como o leitor foi testado", limites, texto do Formulário de Referência,
-linha do motor, sem Δ e sem ponto duplo no PDF. Só exibição: os trechos do JSON ficam como o leitor congelado os
-entrega."""
+linha do motor, sem Δ e sem ponto duplo no PDF. Só exibição: os trechos do JSON ficam como o leitor em uso (a
+leitor-f1-2 desde 13/11/2026) os entrega."""
 
 from __future__ import annotations
 
@@ -23,8 +23,10 @@ def _inv(lang: str = "pt", data: str = "2024-12-31") -> dict:
 def test_agrupa_rotulos_juntos_e_omitidos_por_pagina() -> None:
     pr = _inv()["leitura_documental"]["partes_relacionadas"]
     campos = leitura_exibicao.agrupa(pr["campos_cpc05_18"])
-    cabecalho = [g for g in campos if g["texto"] == "2021 2020 2021 2020"]
-    assert len(cabecalho) == 1 and cabecalho[0]["rotulos"] == ["montante", "saldos"]
+    juntos = [g for g in campos if g["texto"] == "Lojas Americanas S.A. (i) - (111.604) 1.752 171.119"]
+    assert len(juntos) == 1 and juntos[0]["rotulos"] == ["montante", "saldos"]
+    # com a leitor-f1-2, as linhas de cabeçalho da tabela da página 40 não saem mais como trecho
+    assert not any(g["texto"] in ("2021 2020 2021 2020", "A receber (a pagar) Receita (despesa)") for g in campos)
     omitidos = [(g["pagina"], g["n"]) for g in campos if g["omitido"]]
     assert omitidos == [(40, sum(x["omitido"] for x in pr["campos_cpc05_18"]))]
     # nada some: cada item do JSON está numa entrada
@@ -35,15 +37,21 @@ def test_agrupa_rotulos_juntos_e_omitidos_por_pagina() -> None:
 
 
 def test_como_foi_testado_igual_a_saida_da_medida() -> None:
+    """O leitor em uso é a leitor-f1-2 desde 13/11/2026: os números vêm da medida que a pôs na seção
+    (docs/leitor_medida_f1_2.json), e a versão, do leitor e do commit do congelamento medido."""
     medida = json.loads(leitura_exibicao.MEDIDA.read_text(encoding="utf-8"))
     congelado = json.loads(leitura_exibicao.CONGELADO.read_text(encoding="utf-8"))
     m = leitura_exibicao.como_foi_testado()
-    t = medida["totais"]
+    t = medida["leitor"]["f1_2"]["totais"]
     assert (m["casos"], m["precisao"], m["cobertura"], m["trechos_conferidos"], m["trechos_mostrados"],
             m["nomes_vazados"]) == (t["casos"], t["precisao"], t["cobertura"], t["conferidos"], t["trechos_mostrados"],
                                     t["nomes_vazados"])  # fmt: skip
-    assert m["commit"] == medida["commit"][:7] == congelado["commit"][:7]
-    assert leitura_exibicao.versao() == f"{congelado['leitor']} (commit {congelado['commit'][:7]})"
+    assert m["commit"] == medida["commit"][:7] == "dd688da" and m["leitor"] == congelado["leitor"] == "leitor-f1-2"
+    assert m["documento"] == "docs/leitor_medida_f1_2.json"
+    assert leitura_exibicao.versao() == f"{congelado['leitor']} (commit {medida['commit'][:7]})"
+    c, n = t["cabecalhos_que_saem"], t["cabecalhos_listados"]
+    assert f"{c} de {n} textos de cabeçalho" in leitura_exibicao.limites("pt")[1]
+    assert f"{c} of {n} header texts" in leitura_exibicao.limites("en")[1]
     for lang in ("pt", "en"):
         inv = _inv(lang)
         assert inv["como_o_leitor_foi_testado"] == m
@@ -78,18 +86,18 @@ def test_pdf_da_secao(lang: str) -> None:
     assert f"- {t['omitidos'].format(p=40)}" in ls and not any(re.search(r"\(\d+ (trechos|excerpts)\)", x) for x in ls)
     rotulos = "; ".join(pdf_investigacao.ROTULOS_LEITURA[lang][r] for r in ("montante", "saldos"))
     fim = ")" if lang == "pt" else ", original excerpt in Portuguese)"
-    assert f"- [{rotulos}] “2021 2020 2021 2020” (p. 40{fim}" in ls
+    assert f"- [{rotulos}] “Lojas Americanas S.A. (i) - (111.604) 1.752 171.119” (p. 40{fim}" in ls
     fre = ("O Formulário de Referência não traz transações com partes relacionadas na tabela. É a única versão "
            "disponível nos dados abertos; as versões anteriores não estão lá." if lang == "pt" else
            "The Reference Form lists no related-party transactions in the table. It is the only version available in "
            "the open data; earlier versions are not there.")  # fmt: skip
     assert fre in ls
-    assert any(x.startswith("Como o leitor foi testado: 20 casos guardados" if lang == "pt"
-                            else "How the reader was tested: 20 held-out cases") for x in ls)  # fmt: skip
+    assert any(x.startswith("Como o leitor foi testado: 22 casos guardados" if lang == "pt"
+                            else "How the reader was tested: 22 held-out cases") for x in ls)  # fmt: skip
     i = ls.index(t["limites"])
     assert ls[i + 1 : i + 3] == [f"- {x}" for x in inv["limites_da_leitura"]]
     motor = ls[ls.index("# Motor" if lang == "pt" else "# Engine") + 1]
-    assert "fases B a F1" in motor and "leitor-f1-1 (commit c99c953)" in motor
+    assert "fases B a F1" in motor and "leitor-f1-2 (commit dd688da)" in motor
 
 
 @pytest.mark.parametrize("data", ["2022-04-30", "2024-12-31"])

@@ -1,0 +1,50 @@
+{
+ "id": "e14_tabela_com_indexador_e_vencimento",
+ "descricao": "Tabela de mútuos com colunas de texto (indexador e vencimento) e de valor, cabeçalho em duas linhas, total; a controladora como credora numa linha; frase com 'vencem' e 'renovável'.",
+ "notas": {
+  "paginas": [
+   [
+    "17. Partes relacionadas – mútuos",
+    "",
+    "                               Indexador      Vencimento        2021          2020",
+    "                                                              Controladora e Consolidado",
+    "Exemplo Holding S.A. (controladora)  CDI + 2%   jun/2026     (45.000)      (40.000)",
+    "Exemplo Óleo Ltda. (controlada)      IPCA       dez/2025      12.000        10.500",
+    "Total                                                        (33.000)      (29.500)",
+    "",
+    "Os mútuos vencem em parcela única e o contrato com a controladora é renovável por igual período.",
+    "",
+    "18. Debêntures",
+    "As debêntures foram emitidas em 2019."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "Exemplo Holding S.A. (controladora)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "Exemplo Óleo Ltda. (controlada)"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "Os mútuos vencem em parcela única"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Indexador Vencimento 2021 2020",
+   "Controladora e Consolidado"
+  ]
+ }
+}

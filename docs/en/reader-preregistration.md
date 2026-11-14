@@ -101,3 +101,100 @@ Any kind of judgment, alert, score or ranking; proof of omission (absence of men
 - Date: 2026-11-11.
 - Commit: the one that introduces this file. The hash is noted here in the next commit, without changing any rule above.
 - Hash of the registration commit: `0e3eebc30a8dc26ded921ea0439a06cf34f207f5`.
+
+## 10. Amendment 1: leitor-f1-2 and the IPE subject rule (2026-11-13)
+
+Registered on 2026-11-13, before any code of `leitor-f1-2` or of the subject rule, with Roberto's request of the same date. Sections 1 to 9 still apply to `leitor-f1-1` and do not change; this amendment applies to the new attempt. Nothing below changes after measuring.
+
+### 10.1 What changes in the reader (`leitor-f1-2`)
+
+The four adjustments recorded in the plan, and only those:
+
+1. **Who controls the Company:** "the Company is controlled by X" and "the Company is jointly controlled by X and Y" become `controladora` and `controle_conjunto_ou_influencia`, not a mention of `controladas` or `joint_ventures`.
+2. **The Company itself:** "the Company, as parent company, ..." refers to the Company itself and does not count as `controladora` (CPC 05 item 19 a).
+3. **Amount and term in a sentence:** sentences such as "somou R$ … no exercício" and "as compras totalizaram R$ …" ("totalled R$ … in the year", "purchases totalled R$ …") count as `montante`, and "the contract expires in 2030" or "due in 30 days" as `termos_e_condicoes`.
+4. **Table headers:** header lines (years such as "2021 2020 2021 2020", column titles such as "Controladora Consolidado" or "A receber (a pagar) Receita (despesa)"), including multi-line ones, do not come out as excerpts.
+
+The natural-person name detector (section 7) does not become more permissive in `leitor-f1-2`: any change to it can only omit more.
+
+**New development cases**, written by the agent in `tests/leitor/casos/desenvolvimento/` (the current 28 remain), with tables in the real format of the notes: multi-line headers, parent-company and consolidated columns, two fiscal years, total lines, values in parentheses and footnotes (i), (ii). At least 12 new cases, at least 8 of them with a table.
+
+### 10.2 Reader targets and rule
+
+- The same four as in section 2, with the definitions of section 5: precision of at least 0.95; coverage of at least 0.80; literal check on 100% of the excerpts shown; zero natural-person names (a requirement).
+- If `leitor-f1-2` meets all four on the new held-out cases, it replaces `leitor-f1-1` in the excerpts section, in a commit that records the result, the frozen reader hash and each case's SHA-256. If it fails any of them, the section keeps `leitor-f1-1`, already approved, and the result goes into the report as it came out.
+- **Informative header measure:** each case may carry `esperado.trechos_que_nao_devem_aparecer` (for example, the table header lines). The number of these texts that come out as excerpts is counted. It is informative: it changes neither precision, coverage nor the rule.
+- **Informative comparison:** `leitor-f1-1` is also measured on the new held-out cases, for comparison only.
+
+### 10.3 Subject-specific rule for the IPE
+
+A new rule, only for the subject of material facts and notices (contracts section 9), frozen in the same commit as `leitor-f1-2` and measured on the same held-out cases, in files of its own (10.4). It may use the reader's name detector and subject-specific rules (for example, for acronyms, company names outside the registry, English titles and all-caps subjects). Two targets:
+
+1. **Zero person names (a requirement):** no subject marked `omitido` in the ground truth is shown, and no text of `nomes_proibidos` (ignoring case, accents and spaces) appears in a shown subject. A single case fails the rule.
+2. **Undue omission of at most 0.20:** subjects marked `mostrado` in the ground truth that the rule omits ÷ subjects marked `mostrado`. Proposed value 0.20 (at least 80% of name-free subjects shown): today's conservative rules omit 60.2% of all subjects from 2010 to 2024, and in the 2026-11-12 sample almost none of those omitted by the new rules had a name.
+
+- If the rule meets both, it replaces today's conservative rules (detector, all caps and capitalized word outside the start), in a commit that records the result. If it fails either, today's rules stay.
+- An empty subject keeps its notice and does not enter the counts.
+- **Informative comparison:** today's rules are also measured on the same subject cases.
+- The subject rule and `leitor-f1-2` are decided separately: each passes or fails on its own targets.
+
+### 10.4 Format of the subject cases
+
+One JSON file per set, in UTF-8, with a name starting with `assuntos_` (for example, `assuntos_a01.json`), in the same folder as the reader cases:
+
+```json
+{
+  "id": "a01",
+  "descricao": "free text; the rule does not read this field",
+  "assuntos": [
+    {"assunto": "Renúncia do Diretor Fulano Exemplar de Tal", "esperado": "omitido"},
+    {"assunto": "Renúncia do diretor Exemplar", "esperado": "omitido"},
+    {"assunto": "AUMENTO DE CAPITAL APROVADO", "esperado": "mostrado"},
+    {"assunto": "Petrobras sobre venda da refinaria RLAM", "esperado": "mostrado"},
+    {"assunto": "Resultados do 3T23 - Versão em inglês", "esperado": "mostrado", "categoria": "comunicado_ao_mercado"}
+  ],
+  "nomes_proibidos": ["Fulano Exemplar de Tal", "Exemplar"]
+}
+```
+
+- `esperado` is `omitido` (the subject has a person's name) or `mostrado` (it does not). `categoria` is optional (`fato_relevante` or `comunicado_ao_mercado`); the rule may ignore it.
+- `nomes_proibidos` lists each person's name in the file's `omitido` subjects, in full and in the parts that identify the person (a lone surname, for example).
+- Person names are invented: no real natural-person name enters the repository. Names of companies, places, acronyms and products may be real.
+- Suggestion for the held-out cases: at least 300 subjects, at least 60 with a name, in varied forms (full name, lone surname, all caps, after a colon, with a courtesy title, with initials, in an English subject, a name that matches a common word or a company name), and at least 200 without a name, similar to the real ones (title case, acronyms, companies in and outside the registry, places, months such as "Maio/2017", products, English titles).
+- Subject development cases, written by the agent: at least 150 subjects, in the same format.
+
+### 10.5 Cases and procedure
+
+1. This amendment is registered before any code of `leitor-f1-2` and of the subject rule.
+2. The agent develops with the development cases (10.1 and 10.4). The 20 held-out cases of `leitor-f1-1` are now public: measuring on them is informative only and decides nothing.
+3. The agent freezes `leitor-f1-2` and the subject rule in a commit, with each file's SHA-256 in a record of its own and a test that fails if any changes, and reports the hash.
+4. Only then does Roberto write the new held-out cases (reader cases in the section 6 format, with the optional field of 10.2, and subject cases in the 10.4 format) and hand them over. Suggestion: at least 20 reader cases, at least 8 of them with a table in the real format.
+5. The measurement is made once, with the frozen code (`python -m chiocca.v2.leitor.avaliar <case folder>`, which will also read the `assuntos_` files), and published as it came out. Nothing is adjusted against the held-out cases; a new attempt requires new held-out cases.
+6. Results with three decimal places, summing all cases (micro average).
+
+### 10.6 Amendment record
+
+- Date: 2026-11-13.
+- Commit: the one that introduces this section. The hash is recorded here in the next commit, without changing any rule above.
+- Amendment commit hash: `2fcdbc18752b693510c76cda12acd4f53af055ee`.
+
+### 10.7 Roberto's decisions on the amendment (2026-11-13, before any code)
+
+1. The three informative additions of 10.2 and 10.3 stay.
+2. **Development alongside, not on top.** The frozen `leitor-f1-1` files do not change: `leitor-f1-2` is built alongside (a module of its own or a selectable version), and the `leitor-f1-1` hash test still applies. Until the measurement approves `leitor-f1-2`, the section, the examples and the demo keep `leitor-f1-1`. The same holds for the subject: until the new rule is approved, today's conservative rules stay.
+3. **Replacement criterion for `leitor-f1-2`.** Besides the four targets, `leitor-f1-2` only replaces `leitor-f1-1` if, on the same new held-out cases: (a) the precision of `leitor-f1-2` is at least that of `leitor-f1-1`; (b) the number of `trechos_que_nao_devem_aparecer` texts that come out as excerpts in `leitor-f1-2` is not larger than in `leitor-f1-1`. Otherwise `leitor-f1-1` stays, and the result goes into the report as it came out.
+4. **Definition.** A `trechos_que_nao_devem_aparecer` text "comes out as an excerpt" when it is contained, ignoring whitespace differences, in the text of some shown excerpt.
+5. **Name detector.** A test runs the `leitor-f1-2` detector and the `leitor-f1-1` detector over all public cases (the development ones and the 20 old held-out ones) and over the real excerpts of the 96 demo documents. The test fails if any excerpt omitted by `leitor-f1-1` stops being omitted.
+6. **Real-data audit of the subject rule, before switching it on.** If the rule meets both targets on the held-out cases, 400 subjects from 2010 to 2024 that the new rule shows and today's rules omit are drawn (seed 20261113). The agent reads all 400. If any has a natural-person name, the rule does not come in and today's rules stay. The counts are reported without writing the names.
+7. **`leitor-f1-1` comparison on the new cases.** The old evaluator rejects the new `esperado` field. `leitor-f1-1` is measured with the new evaluator, which calls the `leitor-f1-1` reader unchanged, and the report says how it was done.
+
+- Hash of the commit of these decisions: `c7232b6e751bb0e6e5675e606873869a7be0583c` (recorded in the next commit, without changing any rule above).
+
+### 10.8 Procedure notes (before the measurement)
+
+Recorded on 2026-11-13, after the freeze and before the measurement, with Roberto's reply of the same date. No definition or target in 10.1 to 10.7 changes.
+
+1. **Measurement command.** The measurement uses `python -m chiocca.v2.leitor_f1_2.avaliar <cases folder> --saida <file>`, not the command named in 10.5, item 5. The command changes because the `leitor-f1-1` one (`chiocca/v2/leitor/avaliar.py`) is one of its frozen files (10.7, item 2). The new evaluator applies the same definitions, also reads the `assuntos_` files and measures `leitor-f1-1` unchanged alongside (10.7, item 7).
+2. **Freeze.** `leitor-f1-2` and the subject rule were frozen at commit `dd688dadf9a1f0bc43b4ba1d02fd2f5ad0c0d0db`, with the SHA-256 of each file in `docs/leitor_congelado_f1_2.json` and the test that flags a change (`tests/test_v2_leitor_f1_2.py`). The measurement runs in a working copy at that commit.
+3. **First word in today's rules.** Today's conservative rules (`chiocca/v2/ipe.py`) do not look at the first word of the subject. They do not change before the measurement, because the file is in the freeze record. If the new rule is approved (targets and audit), it replaces today's; if not, an adjustment that only omits more is applied right after the measurement.
+4. **New held-out cases.** They are in `tests/leitor/casos/guardados_f1_2/`: 22 reader cases and 4 subject files, with 335 subjects. They were written by Roberto with Claude (claude.ai), outside this environment, after the freeze and without access to the detection code or the word lists. The SHA-256 of each file was checked against Roberto's list before the measurement.

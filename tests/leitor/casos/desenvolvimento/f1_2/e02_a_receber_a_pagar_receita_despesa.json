@@ -1,0 +1,80 @@
+{
+ "id": "e02_a_receber_a_pagar_receita_despesa",
+ "descricao": "Cabeçalho 'A receber (a pagar)' e 'Receita (despesa)' com datas na linha de baixo; cada linha da tabela é uma parte, com a categoria entre parênteses; total; notas de rodapé (i) e (ii).",
+ "notas": {
+  "paginas": [
+   [
+    "Nota 14 – Partes relacionadas",
+    "Os saldos e as transações com partes relacionadas estão resumidos a seguir:",
+    "",
+    "                                        A receber (a pagar)            Receita (despesa)",
+    "                                     31/12/2021    31/12/2020     31/12/2021    31/12/2020",
+    "Exemplo Holding S.A. (controladora) (i)  (4.100)    (3.950)          (820)         (760)",
+    "Exemplo Agro Ltda. (controlada)          12.300     10.800          1.450         1.210",
+    "Exemplo Portos S.A. (coligada)            2.050      1.900            310           280",
+    "Fundação Exemplo de Seguridade (ii)        (690)      (640)        (1.120)       (1.050)",
+    "Total                                     9.560      8.110           (180)          (320)",
+    "",
+    "(i) Taxa de uso da marca, de 0,5% da receita líquida.",
+    "(ii) Contribuições ao plano de previdência complementar dos empregados.",
+    "",
+    "Os saldos com a controlada e a coligada não têm prazo de vencimento e não incidem juros.",
+    "",
+    "Nota 15 – Imposto de renda e contribuição social",
+    "A alíquota nominal combinada é de 34%."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "Exemplo Holding S.A. (controladora)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "Exemplo Agro Ltda. (controlada)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "coligadas",
+    "pagina": 1,
+    "contem": "Exemplo Portos S.A. (coligada)"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "outras_partes",
+    "pagina": 1,
+    "contem": "Fundação Exemplo de Seguridade"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 1,
+    "contem": "Os saldos e as transações"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 1,
+    "contem": "Contribuições ao plano de previdência"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 1,
+    "contem": "não têm prazo de vencimento"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "A receber (a pagar) Receita (despesa)",
+   "31/12/2021 31/12/2020 31/12/2021 31/12/2020"
+  ]
+ }
+}

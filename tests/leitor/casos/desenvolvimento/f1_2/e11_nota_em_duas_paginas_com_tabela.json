@@ -1,0 +1,73 @@
+{
+ "id": "e11_nota_em_duas_paginas_com_tabela",
+ "descricao": "Nota em duas páginas: texto e 'é controlada por' na primeira, tabela com cabeçalho repetido na segunda (títulos de coluna e anos), total e rodapé (i).",
+ "notas": {
+  "paginas": [
+   [
+    "Nota 19 – Partes relacionadas",
+    "A Companhia é diretamente controlada pela Exemplo Investimentos S.A., que detém 54% do capital",
+    "votante. A Companhia mantém operações com controladas e com a controladora, descritas a seguir."
+   ],
+   [
+    "Nota 19 – Partes relacionadas (continuação)",
+    "",
+    "                                     Saldo a receber (a pagar)        Receita (despesa)",
+    "                                         2021          2020          2021          2020",
+    "Exemplo Investimentos S.A. (i)          (2.900)       (2.600)       (1.100)       (1.000)",
+    "Exemplo Distribuição Ltda.               5.450         4.980        12.800        11.900",
+    "Total                                    2.550         2.380        11.700        10.900",
+    "",
+    "(i) Serviços de gestão cobrados pela controladora, com vigência até dezembro de 2025.",
+    "",
+    "Nota 20 – Fornecedores",
+    "Os fornecedores são pagos em até 90 dias."
+   ]
+  ]
+ },
+ "esperado": {
+  "notas": "lido",
+  "itens": [
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 1,
+    "contem": "diretamente controlada pela Exemplo Investimentos S.A."
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladas",
+    "pagina": 1,
+    "contem": "operações com controladas"
+   },
+   {
+    "verificacao": "partes_relacionadas",
+    "rotulo": "controladora",
+    "pagina": 2,
+    "contem": "cobrados pela controladora"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "saldos",
+    "pagina": 2,
+    "contem": "Exemplo Distribuição Ltda. 5.450"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "montante",
+    "pagina": 2,
+    "contem": "Exemplo Distribuição Ltda. 5.450"
+   },
+   {
+    "verificacao": "campo_cpc05_18",
+    "rotulo": "termos_e_condicoes",
+    "pagina": 2,
+    "contem": "vigência até dezembro de 2025"
+   }
+  ],
+  "nomes_proibidos": [],
+  "trechos_que_nao_devem_aparecer": [
+   "Saldo a receber (a pagar) Receita (despesa)",
+   "2021 2020 2021 2020"
+  ]
+ }
+}
