@@ -58,11 +58,16 @@ def test_numeros_do_json_nos_dois_documentos() -> None:
     assert f"{esp:.1f}".replace(".", ",") + " até 31/12/2029" in PT and f"{esp:.1f} by 2029-12-31" in EN
 
 
-def test_rascunho_do_pre_registro_com_os_numeros_do_json() -> None:
-    """O rascunho do pré-registro (não registrado) usa os mesmos números do JSON e do estudo 1."""
-    pt = (base.RAIZ / "docs" / "pre-registro-estudo-2-rascunho.md").read_text(encoding="utf-8")
-    en = (base.RAIZ / "docs" / "en" / "study-2-preregistration-draft.md").read_text(encoding="utf-8")
-    assert "Ainda não está registrado" in pt and "It is not registered yet" in en
+def test_pre_registro_do_estudo_2_com_os_numeros_do_json() -> None:
+    """O pré-registro do estudo 2 usa os mesmos números do JSON e do estudo 1, e é assinado por Roberto."""
+    pt = (base.RAIZ / "docs" / "pre-registro-estudo-2.md").read_text(encoding="utf-8")
+    en = (base.RAIZ / "docs" / "en" / "study-2-preregistration.md").read_text(encoding="utf-8")
+    assert "**Registrado em 15/11/2026.**" in pt and "**Registered on 2026-11-15.**" in en
+    assert (
+        "Assinado por: Roberto Chiocca · Data: 15/11/2026" in pt
+        and "Signed by: Roberto Chiocca · Date: 2026-11-15" in en
+    )
+    assert "revisado por Roberto com o Claude (claude.ai)" in pt and "reviewed by Roberto with Claude (claude.ai)" in en
     e = NUMEROS["entregas_dfp"]
     assert f"{e['2024']['ate_o_corte']} companhias entregaram a DFP de 2024" in pt
     assert f"{e['2024']['ate_o_corte']} companies filed the 2024 DFP" in en

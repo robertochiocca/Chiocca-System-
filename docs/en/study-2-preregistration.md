@@ -1,6 +1,6 @@
-# Study 2 pre-registration (draft for review)
+# Study 2 pre-registration
 
-> **Draft of 2026-11-15, written by the agent with Roberto's decisions of the same day, for review.** It is not registered yet: it has no hash, the seal has not changed and nothing from fiscal years 2024 and 2025 has been downloaded for the study. It applies only after Roberto approves the text and it enters a commit, with its hash recorded in the next commit, as in study 1 and the reader.
+> **Registered on 2026-11-15.** Drafted by the agent with Roberto's decisions and reviewed by Roberto with Claude (claude.ai), who approved the text with the adjustments in section 11. The commit that introduces this file is the registration, and its hash is recorded in the next commit, without changing any rule, as in study 1 and the reader. Registering does not open the seal: nothing from fiscal years 2024 and 2025 is downloaded or computed before part 1 of the ground truth is frozen (section 9).
 >
 > Why this exists: engine v1 was built and measured on fiscal years 2010 to 2023. Fiscal years 2024 and 2025 were sealed from the start (`chiocca/v2/lacre.py`) precisely for a clean test, on data nobody has looked at. Deciding beforehand how the test is done is what makes the result trustworthy.
 
@@ -29,13 +29,13 @@ Basis: the draft plan ([`docs/en/study-2-plan.md`](study-2-plan.md)), with the n
 - **Already in the environment:** the 2024 to 2026 DFP zips were downloaded on 2026-11-07, with the rest of study 1's open data, and are in `data/brutos/cvm/` (outside git), with their SHA-256 in `data/manifesto_brutos.csv`. None of their values was read: the warehouse only holds fiscal years 2010 to 2023, and the seal refuses any fiscal year above 2023 (`tests/test_v2_lacre.py`). The metadata of the 2024 and 2025 DFP index (who filed and when) were read by the monitor and by the draft plan, with no values.
 - **In the opening session (section 9):** the 2024 and 2025 DFP zips are downloaded again, in the CVM version of the day, with size and SHA-256 in the manifest, because the environment is temporary and the CVM files change with refilings. The version-at-the-time rule gives the same result with the 2026-11-07 files or with those of the day: whatever changes between them comes from ENET.
 - **ENET, volume and pace:** only the documents of the company-years whose open-data version is after the cut-off and that have consolidated statements. From the metadata, 139 companies have more than one version of the 2024 DFP and 76 of the 2025 one: that is the ceiling, because part of the refilings happened before the cut-off. In study 1, there were 390 documents in 14 fiscal years, about 28 per fiscal year. I expect between 50 and 250 documents. The pace is study 1's (`chiocca/enet.py`): one request at a time; per document, the document page (up to 10 attempts, with 2 seconds between them) and the 4 tables (BPA, BPP, DRE and DFC), with 1 second between them; up to 3 retries per document, waiting 5, 10 and 15 seconds; a generic client identifier. That is about 6 to 10 seconds per document, or 5 to 40 minutes in all, and a few MB in the cache (`data/cache/enet/`, outside git).
-- **Data archive:** the two zips, the ENET tables and the manifest go to an orphan branch `estudo-2-dados` in this repository, pushed without force push, like `gh-pages` (it asks Roberto's authorization for that branch when this text is approved). The SHA-256 of each file stays in the study manifest, versioned on the development branch. At the secondary evaluation, the 2026 DFP zip joins the same branch.
+- **Data archive:** the two zips, the ENET tables and the manifest go to an orphan branch `estudo-2-dados` in this repository, pushed without force push, like `gh-pages` (authorized by Roberto on 2026-11-15). Before the opening session, the size of each file going to the branch is checked (the 2024 and 2025 DFP zips and, at the secondary evaluation, the 2026 one): GitHub refuses files above 100 MB, and, if any exceeds 95 MB, the agent proposes another way to archive it, with the SHA-256 in the manifest, and stops before opening the seal. Whoever clones the whole repository also gets that branch, like `gh-pages` (README). The SHA-256 of each file stays in the study manifest, versioned on the development branch. At the secondary evaluation, the 2026 DFP zip joins the same branch.
 
 ## 4. Outcomes
 
 ### 4.1 Primary: an accounting irregularity that comes to light
 
-- A ground-truth case (section 5) whose affected period includes 2024 or 2025 and whose public date falls by 2029-12-31.
+- A ground-truth case (section 5) whose affected period includes 2024 or 2025 and whose public date falls by 2029-12-31. The cases split into two parts: part 1, with the cases public by the date it is frozen (the commit with the SHA-256), and part 2, with those that come to light after that date and by 2029-12-31.
 - **Hit:** as in study 1, the company was in alert in at least one fiscal year of the affected period (2024 or 2025), using only the version public at the cut-off and before the public date. If the public date falls before 2026-04-30, only the 2024 DFP can count.
 - **Lead time:** months between the filing of the first DFP in alert in the affected period and the public date, as in section 5 of study 1's analyses, now pre-registered.
 
@@ -59,8 +59,8 @@ To compute the 2025 alerts, the engine reads the 2025 DFP, which carries the 202
 - **Who writes it:** Roberto, with Claude (claude.ai), outside this environment, without the list and without running the code, like the reader's held-out cases. The agent in this environment neither chooses nor writes cases.
 - **Sources:** (1) CVM sanctioning proceedings about the financial statements; (2) material fact notices that admit an accounting error or fraud; (3) CVM restatement or republication orders; (4) for financial companies, the Central Bank. The content of IPE filings after 2024-12-31 is still not read in this environment: Roberto reads it, outside it.
 - **Fields and criterion:** study 1's (`data/gabarito_casos.csv`), plus the part (1 or 2) and the type `refazimento_cvm`. `data_publica` is the first documented public date (opening of the proceeding, material fact notice, restatement order or first news item with a source); the affected period comes from the fiscal years named in the document; without a document giving the years, the case is not detectable. Cases without a misstatement in the financial statements (only insider trading or governance) stay out. Each case with two sources, as in study 1's amendment 9.
-- **Part 1:** the cases already public on the seal date. Written after this pre-registration is registered and frozen (SHA-256 in a commit) before the seal is opened. It can be described right after the seal, separately from the others.
-- **Part 2:** the cases that come to light by 2029-12-31. Written after that date and frozen before the list is opened for the primary outcome.
+- **Part 1:** the cases public by the date it is frozen (the commit with the SHA-256). Written after this pre-registration is registered and frozen before the seal is opened. It can be described right after the seal, separately from the others.
+- **Part 2:** the cases that come to light after the date part 1 was frozen and by 2029-12-31. Written after 2029-12-31 and frozen before the list is opened for the primary outcome.
 - **Limit of the blinding:** the code and the data are public, and anyone can recompute the list; the list file stays with Roberto, unencrypted. The blinding is procedural: Roberto commits not to open the file or run the code before freezing each part, and the ground-truth criteria are document-based. Describing part 1 right after the seal reveals the alert of that part's companies; if one of them has a new case in part 2, that is recorded in the report.
 
 ## 6. Dates
@@ -82,7 +82,7 @@ Nothing is looked at before those dates: no preview of the primary outcome and n
 ### 7.1 Primary (descriptive)
 
 - For each detectable case: hit or not, which signals fired, in which fiscal year, and the lead time.
-- Totals: hits out of detectable cases, for parts 1 and 2 together and separately, and the alert rate of each fiscal year.
+- Totals: hits out of detectable cases, for parts 1 (cases public by its freezing) and 2 (those public after it and by 2029-12-31), together and separately, and the alert rate of each fiscal year.
 - The chance of each total by luck (each case hit at the alert rate of its group in the fiscal year) is reported only as description. With the expected number of cases (about 1.6 by 2029-12-31 at study 1's medium rate), no test against chance is a result criterion. The ranking metrics stay descriptive only.
 
 ### 7.2 Secondary (the test)
@@ -97,7 +97,7 @@ Nothing is looked at before those dates: no preview of the primary outcome and n
 ### 7.3 Predictions written before the data
 
 - An alert rate for non-financial companies between 40% and 60% in each fiscal year, driven by implied interest, as in study 1 (a rate of 49.9%, with 59.8% of the company-years in alert coming from implied interest).
-- For the secondary outcome, I expect a positive but small RD: implied interest fires because of exchange-rate variation and leases, which have no direct relation to restatements.
+- For the secondary outcome, I expect a positive but small RD: implied interest fires because of exchange-rate variation and leases, which have no direct relation to restatements. In numbers: a rate ratio between 1.0 and 1.5 (company-years in alert against those not in alert).
 
 ### 7.4 If the result is bad
 
@@ -106,7 +106,7 @@ The study is published all the same, with the result it gave, on the dates in se
 ## 8. Custody of the sealed list
 
 - **The file:** a CSV in a fixed format (UTF-8, LF line breaks, sorted by CVM code and fiscal year, numbers with fixed decimals, no generation date in the content), with all evaluated company-years, in alert or not, the signals and the value of each signal; in the header, the code commit and the SHA-256 of each input file.
-- **The proof:** the file's SHA-256 in a commit pushed to GitHub, and the recomputation at the evaluation: the engine is deterministic, and the frozen script, with the files of the `estudo-2-dados` branch and the lock versions (pandas 3.0.5, numpy 2.5.3), must produce the same file, byte for byte. A test in the opening session runs the script twice and checks that the SHA-256 is the same.
+- **The proof:** the file's SHA-256 in a commit pushed to GitHub, and the recomputation at the evaluation: the engine is deterministic, and the frozen script, with the files of the `estudo-2-dados` branch and the lock versions (pandas 3.0.5, numpy 2.5.3), must produce the same file, byte for byte. A test in the opening session runs the script twice and checks that the SHA-256 is the same. The study record also notes the Python version (3.13.x) and the SHA-256 of `requirements-lock.txt`, and the recomputation uses the same minor Python version (3.13).
 - **Timestamp:** the environment reaches the OpenTimestamps calendars (checked on 2026-11-15). In the opening session, the agent stamps the hash file (the SHA-256 of the list and of the manifest) with `opentimestamps-client` and puts the `.ots` in the repository; in a later session, after the Bitcoin confirmation, the `.ots` is upgraded (`ots upgrade`). If the calendars do not answer that day, Roberto stamps the hash file on the opentimestamps.org site and returns the `.ots`.
 - **Where the list file lives:** it comes to Roberto, unencrypted, through the session's file delivery; he keeps it in two private places (a private repository and Drive). The copy is deleted from the environment in the same session. No age or GPG key: the recomputation is the main proof.
 
@@ -130,15 +130,25 @@ The study is published all the same, with the result it gave, on the dates in se
 - Reading in this environment the content of IPE documents filed after 2024-12-31.
 - Tests against chance on the primary outcome as a result criterion.
 
-## Points for Roberto's review
+## 11. Roberto's review (2026-11-15)
 
-1. The secondary outcome for non-financial companies only (section 2), because of account 3.11 at financial companies.
-2. The ranking order for the ranking metrics (section 7.2): number of signals, then the M-score, then the CVM code.
-3. The bootstrap seed, 20270531, and the 10,000 resamples.
-4. The date of the secondary evaluation, from 2027-05-31.
-5. The orphan branch `estudo-2-dados` to archive the data, pushed without force push.
-6. The predictions in section 7.3.
+Roberto read the whole draft (commit `549b7611a4260fa7325a9da70d0be3449fb7e15c`) and approved it, with these answers and adjustments, already incorporated above:
+
+1. Secondary outcome for non-financial companies only: agreed.
+2. Ranking order (number of signals, M-score, CVM code): agreed.
+3. Seed 20270531 and 10,000 resamples: agreed.
+4. Secondary evaluation from 2027-05-31: agreed.
+5. Orphan branch `estudo-2-dados`: authorized, pushed without force push, with the size check of each file before the opening (section 3.1) and the note in the README.
+6. Predictions in section 7.3: agreed, with the rate-ratio prediction in numbers.
+
+Adjustments: the boundary between the ground-truth parts by the date part 1 is frozen (sections 4.1, 5 and 7.1); the Python version and the lock's SHA-256 in the study record (section 8); the header with the authorship of the text; the signature.
+
+## 12. Registration
+
+- Date: 2026-11-15.
+- Commit: the one that introduces this file under this name. Its hash is recorded here in the next commit, without changing any rule above.
+- Hash of the registration commit: (recorded in the next commit).
 
 ---
 
-Signed by: (to be filled at registration) · Date: (to be filled)
+Signed by: Roberto Chiocca · Date: 2026-11-15

@@ -1,6 +1,6 @@
-# Pré-registro do estudo 2 (rascunho para revisão)
+# Pré-registro do estudo 2
 
-> **Rascunho de 15/11/2026, escrito pelo agente com as decisões de Roberto do mesmo dia, para revisão.** Ainda não está registrado: não tem hash, o lacre não mudou e nada dos exercícios de 2024 e 2025 foi baixado para o estudo. Vale só depois de Roberto aprovar o texto e de ele entrar num commit, com o hash anotado no commit seguinte, como no estudo 1 e no leitor.
+> **Registrado em 15/11/2026.** Redigido pelo agente com as decisões de Roberto e revisado por Roberto com o Claude (claude.ai), que aprovou o texto com os ajustes da seção 11. O commit que introduz este arquivo é o registro, e o hash dele é anotado no commit seguinte, sem mudar nenhuma regra, como no estudo 1 e no leitor. Registrar não abre o lacre: nada dos exercícios de 2024 e 2025 é baixado ou calculado antes de a parte 1 do gabarito ser congelada (seção 9).
 >
 > Por que isso existe: o motor v1 foi construído e medido com os exercícios de 2010 a 2023. Os de 2024 e 2025 ficaram lacrados desde o começo (`chiocca/v2/lacre.py`) justamente para um teste limpo, em dados que ninguém olhou. Decidir antes como o teste é feito é o que torna o resultado confiável.
 
@@ -29,13 +29,13 @@ Base: o rascunho do plano ([`docs/estudo-2-plano.md`](estudo-2-plano.md)), com o
 - **Já existe no ambiente:** os zips de DFP de 2024 a 2026 foram baixados em 07/11/2026, com o resto dos dados abertos do estudo 1, e estão em `data/brutos/cvm/` (fora do git), com o SHA-256 em `data/manifesto_brutos.csv`. Nenhum valor deles foi lido: o armazém só tem os exercícios de 2010 a 2023, e o lacre recusa qualquer exercício acima de 2023 (`tests/test_v2_lacre.py`). Os metadados do índice da DFP de 2024 e 2025 (quem entregou e quando) foram lidos pelo monitor e pelo rascunho do plano, sem valores.
 - **Na sessão de abertura (seção 9):** os zips de DFP de 2024 e 2025 são baixados de novo, na versão da CVM do dia, com tamanho e SHA-256 no manifesto, porque o ambiente é temporário e os arquivos da CVM mudam com as reentregas. A regra da versão da época dá o mesmo resultado com os arquivos de 07/11/2026 ou com os do dia: o que mudar entre eles vem do ENET.
 - **ENET, volume e ritmo:** só os documentos das empresa-anos cuja versão dos dados abertos é posterior ao corte e que têm consolidado. Pelos metadados, 139 companhias têm mais de uma versão da DFP de 2024 e 76 da de 2025: é o teto, porque parte das reentregas foi antes do corte. No estudo 1, foram 390 documentos em 14 exercícios, cerca de 28 por exercício. Espero entre 50 e 250 documentos. O ritmo é o do estudo 1 (`chiocca/enet.py`): uma requisição por vez; por documento, a página do documento (até 10 tentativas, com 2 segundos entre elas) e as 4 tabelas (BPA, BPP, DRE e DFC), com 1 segundo entre elas; até 3 novas tentativas por documento, com espera de 5, 10 e 15 segundos; identificador de cliente genérico. São cerca de 6 a 10 segundos por documento, ou de 5 a 40 minutos ao todo, e alguns MB no cache (`data/cache/enet/`, fora do git).
-- **Arquivo dos dados:** os dois zips, as tabelas do ENET e o manifesto vão para um branch órfão `estudo-2-dados` neste repositório, enviado sem force push, como o `gh-pages` (pede autorização de Roberto para esse branch na aprovação deste texto). O SHA-256 de cada arquivo fica no manifesto do estudo, versionado no branch de desenvolvimento. Na avaliação secundária, o zip da DFP de 2026 entra no mesmo branch.
+- **Arquivo dos dados:** os dois zips, as tabelas do ENET e o manifesto vão para um branch órfão `estudo-2-dados` neste repositório, enviado sem force push, como o `gh-pages` (autorizado por Roberto em 15/11/2026). Antes da sessão de abertura, confere-se o tamanho de cada arquivo que vai para o branch (os zips da DFP de 2024 e 2025 e, na avaliação secundária, o de 2026): o GitHub recusa arquivos acima de 100 MB, e, se algum passar de 95 MB, o agente propõe outra forma de arquivar, com o SHA-256 no manifesto, e para antes de abrir o lacre. Quem clona o repositório inteiro leva também esse branch, como o `gh-pages` (README). O SHA-256 de cada arquivo fica no manifesto do estudo, versionado no branch de desenvolvimento. Na avaliação secundária, o zip da DFP de 2026 entra no mesmo branch.
 
 ## 4. Desfechos
 
 ### 4.1 Primário: irregularidade contábil que vem a público
 
-- Um caso do gabarito (seção 5) cujo período afetado inclui 2024 ou 2025 e cuja data pública cai até 31/12/2029.
+- Um caso do gabarito (seção 5) cujo período afetado inclui 2024 ou 2025 e cuja data pública cai até 31/12/2029. Os casos se dividem em duas partes: a parte 1, com os casos públicos até a data em que ela é congelada (o commit com o SHA-256), e a parte 2, com os que vierem a público depois dessa data e até 31/12/2029.
 - **Acerto:** como no estudo 1, a empresa entrou em alerta em pelo menos um exercício do período afetado (2024 ou 2025), usando só a versão pública no corte e antes da data pública. Se a data pública cai antes de 30/04/2026, só a DFP de 2024 pode contar.
 - **Antecedência:** meses entre a entrega da primeira DFP em alerta no período afetado e a data pública, como na análise da seção 5 das análises do estudo 1, agora pré-registrada.
 
@@ -59,8 +59,8 @@ Para calcular os alertas de 2025, o motor lê a DFP de 2025, que traz o comparat
 - **Quem escreve:** Roberto, com o Claude (claude.ai), fora deste ambiente, sem a lista e sem rodar o código, como os casos guardados do leitor. O agente deste ambiente não escolhe nem escreve casos.
 - **Fontes:** (1) processos sancionadores da CVM sobre as demonstrações; (2) fatos relevantes que admitem erro ou fraude contábil; (3) determinações de refazimento ou republicação da CVM; (4) para financeiras, o Banco Central. O conteúdo do IPE entregue depois de 31/12/2024 continua sem ser lido neste ambiente: quem lê é Roberto, fora dele.
 - **Campos e critério:** os do estudo 1 (`data/gabarito_casos.csv`), mais a parte (1 ou 2) e o tipo `refazimento_cvm`. `data_publica` é a primeira data pública documentada (instauração do processo, fato relevante, ofício de refazimento ou primeira notícia com fonte); o período afetado vem dos exercícios citados no documento; sem documento com os anos, o caso não é acertável. Ficam de fora os casos sem distorção nas demonstrações (só negociação com informação privilegiada ou governança). Cada caso com duas fontes, como na emenda 9 do estudo 1.
-- **Parte 1:** os casos já públicos na data do lacre. Escrita depois de este pré-registro ser registrado e congelada (SHA-256 num commit) antes de abrir o lacre. Pode ser descrita logo depois do lacre, separada dos outros.
-- **Parte 2:** os casos que vierem a público até 31/12/2029. Escrita depois dessa data e congelada antes de a lista ser aberta para o desfecho primário.
+- **Parte 1:** os casos públicos até a data em que ela é congelada (o commit com o SHA-256). Escrita depois de este pré-registro ser registrado e congelada antes de abrir o lacre. Pode ser descrita logo depois do lacre, separada dos outros.
+- **Parte 2:** os casos que vierem a público depois da data em que a parte 1 foi congelada e até 31/12/2029. Escrita depois de 31/12/2029 e congelada antes de a lista ser aberta para o desfecho primário.
 - **Limite da cegueira:** o código e os dados são públicos, e qualquer pessoa pode recalcular a lista; o arquivo da lista fica com Roberto, sem cifra. A cegueira é de procedimento: Roberto se compromete a não abrir o arquivo nem rodar o código antes de congelar cada parte, e os critérios do gabarito são por documento. A descrição da parte 1 logo depois do lacre revela o alerta das companhias dessa parte; se uma delas tiver um caso novo na parte 2, isso fica registrado no relatório.
 
 ## 6. Datas
@@ -82,7 +82,7 @@ Nada é olhado antes dessas datas: nenhuma prévia do desfecho primário e nenhu
 ### 7.1 Primário (descritivo)
 
 - Para cada caso acertável: acertado ou não, quais sinais dispararam, em que exercício, e a antecedência.
-- Totais: acertos de casos acertáveis, nas partes 1 e 2 juntas e separadas, e a taxa de alerta de cada exercício.
+- Totais: acertos de casos acertáveis, nas partes 1 (casos públicos até o congelamento dela) e 2 (os públicos depois dele e até 31/12/2029), juntas e separadas, e a taxa de alerta de cada exercício.
 - A chance de cada total ao acaso (cada caso acertado com a taxa de alerta do seu grupo no exercício) é relatada só como descrição. Com o número esperado de casos (cerca de 1,6 até 31/12/2029 na taxa média do estudo 1), nenhum teste contra o acaso é critério de resultado. As métricas de ranking ficam só descritivas.
 
 ### 7.2 Secundário (o teste)
@@ -97,7 +97,7 @@ Nada é olhado antes dessas datas: nenhuma prévia do desfecho primário e nenhu
 ### 7.3 Previsões escritas antes dos dados
 
 - Taxa de alerta das não financeiras entre 40% e 60% em cada exercício, puxada pelo juro implícito, como no estudo 1 (taxa de 49,9%, com 59,8% das empresa-anos em alerta vindas do juro implícito).
-- No secundário, espero DR positiva, mas pequena: o juro implícito dispara por causa de variação cambial e arrendamentos, que não têm relação direta com republicação.
+- No secundário, espero DR positiva, mas pequena: o juro implícito dispara por causa de variação cambial e arrendamentos, que não têm relação direta com republicação. Em número: razão de taxas entre 1,0 e 1,5 (empresa-anos em alerta contra fora de alerta).
 
 ### 7.4 Se o resultado for ruim
 
@@ -106,7 +106,7 @@ O estudo é publicado do mesmo jeito, com o resultado que deu, nas datas da seç
 ## 8. Guarda da lista lacrada
 
 - **O arquivo:** um CSV em formato fixo (UTF-8, quebra de linha LF, ordenado por código CVM e exercício, números com casas fixas, sem data de geração no conteúdo), com todas as empresa-anos avaliadas, em alerta ou não, os sinais e os valores de cada sinal; no cabeçalho, o commit do código e o SHA-256 de cada arquivo de entrada.
-- **A prova:** o SHA-256 do arquivo num commit enviado ao GitHub, e o recálculo na avaliação: o motor é determinístico, e o script congelado, com os arquivos do branch `estudo-2-dados` e as versões do lock (pandas 3.0.5, numpy 2.5.3), tem de gerar o mesmo arquivo, byte a byte. Um teste da sessão de abertura roda o script duas vezes e confere que o SHA-256 é o mesmo.
+- **A prova:** o SHA-256 do arquivo num commit enviado ao GitHub, e o recálculo na avaliação: o motor é determinístico, e o script congelado, com os arquivos do branch `estudo-2-dados` e as versões do lock (pandas 3.0.5, numpy 2.5.3), tem de gerar o mesmo arquivo, byte a byte. Um teste da sessão de abertura roda o script duas vezes e confere que o SHA-256 é o mesmo. O registro do estudo anota também a versão do Python (3.13.x) e o SHA-256 do `requirements-lock.txt`, e o recálculo usa a mesma versão menor do Python (3.13).
 - **Carimbo de tempo:** o ambiente alcança os calendários do OpenTimestamps (conferido em 15/11/2026). Na sessão de abertura, o agente carimba o arquivo de hashes (o SHA-256 da lista e do manifesto) com o `opentimestamps-client` e põe o `.ots` no repositório; numa sessão seguinte, depois da confirmação no Bitcoin, o `.ots` é atualizado (`ots upgrade`). Se os calendários não responderem no dia, Roberto carimba o arquivo de hashes pelo site opentimestamps.org e devolve o `.ots`.
 - **Onde fica o arquivo da lista:** vem para Roberto, sem cifra, pelo envio de arquivo da sessão; ele guarda em dois lugares privados (um repositório privado e o Drive). A cópia é apagada do ambiente na mesma sessão. Sem chave age ou GPG: o recálculo é a prova principal.
 
@@ -130,15 +130,25 @@ O estudo é publicado do mesmo jeito, com o resultado que deu, nas datas da seç
 - Ler neste ambiente o conteúdo dos documentos do IPE entregues depois de 31/12/2024.
 - Testes contra o acaso no desfecho primário como critério de resultado.
 
-## Pontos para a revisão de Roberto
+## 11. Revisão de Roberto (15/11/2026)
 
-1. O desfecho secundário só nas não financeiras (seção 2), por causa da conta 3.11 nas financeiras.
-2. A ordem do ranking para as métricas de ranking (seção 7.2): número de sinais, depois o M-score, depois o código CVM.
-3. A semente do bootstrap, 20270531, e as 10.000 reamostragens.
-4. A data da avaliação secundária, a partir de 31/05/2027.
-5. O branch órfão `estudo-2-dados` para arquivar os dados, enviado sem force push.
-6. As previsões da seção 7.3.
+Roberto leu o rascunho inteiro (commit `549b7611a4260fa7325a9da70d0be3449fb7e15c`) e aprovou, com estas respostas e ajustes, já incorporados acima:
+
+1. Desfecho secundário só nas não financeiras: de acordo.
+2. Ordem do ranking (número de sinais, M-score, código CVM): de acordo.
+3. Semente 20270531 e 10.000 reamostragens: de acordo.
+4. Avaliação secundária a partir de 31/05/2027: de acordo.
+5. Branch órfão `estudo-2-dados`: autorizado, enviado sem force push, com a conferência do tamanho de cada arquivo antes da abertura (seção 3.1) e o aviso no README.
+6. Previsões da seção 7.3: de acordo, com a previsão em número da razão de taxas.
+
+Ajustes: a fronteira entre as partes do gabarito pela data de congelamento da parte 1 (seções 4.1, 5 e 7.1); a versão do Python e o SHA-256 do lock no registro do estudo (seção 8); o cabeçalho com a autoria do texto; a assinatura.
+
+## 12. Registro
+
+- Data: 15/11/2026.
+- Commit: o que introduz este arquivo com este nome. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+- Hash do commit de registro: (anotado no commit seguinte).
 
 ---
 
-Assinado por: (a preencher no registro) · Data: (a preencher)
+Assinado por: Roberto Chiocca · Data: 15/11/2026
