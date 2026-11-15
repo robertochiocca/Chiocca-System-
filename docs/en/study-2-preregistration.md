@@ -147,7 +147,7 @@ Adjustments: the boundary between the ground-truth parts by the date part 1 is f
 
 - Date: 2026-11-15.
 - Commit: the one that introduces this file under this name. Its hash is recorded here in the next commit, without changing any rule above.
-- Hash of the registration commit: (recorded in the next commit).
+- Hash of the registration commit: `79c9214714696693235ce372b82cdaa1ad73c38e` (recorded in the next commit, without changing any rule above).
 
 ---
 

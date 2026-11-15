@@ -68,6 +68,8 @@ def test_pre_registro_do_estudo_2_com_os_numeros_do_json() -> None:
         and "Signed by: Roberto Chiocca · Date: 2026-11-15" in en
     )
     assert "revisado por Roberto com o Claude (claude.ai)" in pt and "reviewed by Roberto with Claude (claude.ai)" in en
+    registro = "79c9214714696693235ce372b82cdaa1ad73c38e"  # o commit do texto registrado
+    assert f"Hash do commit de registro: `{registro}`" in pt and f"Hash of the registration commit: `{registro}`" in en
     e = NUMEROS["entregas_dfp"]
     assert f"{e['2024']['ate_o_corte']} companhias entregaram a DFP de 2024" in pt
     assert f"{e['2024']['ate_o_corte']} companies filed the 2024 DFP" in en

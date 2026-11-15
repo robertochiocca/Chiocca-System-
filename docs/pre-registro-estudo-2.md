@@ -147,7 +147,7 @@ Ajustes: a fronteira entre as partes do gabarito pela data de congelamento da pa
 
 - Data: 15/11/2026.
 - Commit: o que introduz este arquivo com este nome. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
-- Hash do commit de registro: (anotado no commit seguinte).
+- Hash do commit de registro: `79c9214714696693235ce372b82cdaa1ad73c38e` (anotado no commit seguinte, sem mudar nenhuma regra acima).
 
 ---
 
