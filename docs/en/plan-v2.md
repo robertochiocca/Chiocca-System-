@@ -74,6 +74,12 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
   - *F2b, only after the reply to F2a:* `leitor-f1-2` (the "expanded adversarial set, measured again"), with an amendment to the pre-registration before any code, the same targets, new development cases with tables in the real format, a freeze with hash and new held-out cases written by Roberto after the freeze; if `leitor-f1-2` fails, the section keeps `leitor-f1-1`. The 20 held-out cases of `leitor-f1-1` are now public: measuring the new version on them is informative only.
   - *Decisions:* natural-person names become "trecho omitido; ver página N do documento" ("excerpt omitted; see page N of the document"), with the detector erring on the side of omitting; from the Reference Form, only the last version filed by the date; LLM outside Phase F (on the roadmap); ENET access one request at a time, with interval, retries, integrity and a cache outside git.
 
+## After Phase F (Roberto's decisions, 2026-11-15)
+
+- **Deploy: decision postponed, not declined.** For now, the product stays on static GitHub Pages only, with no live API, no cost and no domain. Coming back to it requires deciding hosting, account and cost, where the warehouse lives and how often it is updated, whether the CVM monitor runs on a schedule and who reviews the queue, observability (no personal data) and the domain.
+- **In the plan, undated:** `leitor-f1-3` and the subject-rule improvements (Phase F section), the comparison of explanatory-note versions across fiscal years, the context indicators (accruals ÷ average assets and SMTH1), Monte Carlo and stress scenarios only as a robustness test, and the items outside Phase F (LLM, earlier Reference Form versions, text recognition in PDFs without a text layer and ITR explanatory notes). Each one starts only with authorization.
+- **Next big step: study 2.** Draft plan in [`docs/en/study-2-plan.md`](study-2-plan.md), written before any code and without any value from fiscal years 2024 onward. It is not yet the pre-registration: it brings the options and a recommendation for each decision.
+
 ## CI maintenance
 
 - *2026-11-13:* the `auditoria-python` job was red from commit `dd688da` on: pip-audit flagged a new vulnerability in `opentelemetry-api` (CVE-2026-126360). With Roberto's authorization, the version moved to the fixed one in `requirements-lock.txt`, with no other version changed. From now on, every report brings the CI state on the last pushed commit, job by job, and not only the local tests.

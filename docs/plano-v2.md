@@ -74,6 +74,12 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
   - *F2b, só depois da resposta à F2a:* o `leitor-f1-2` (o "conjunto adversarial ampliado, medido de novo"), com emenda ao pré-registro antes de qualquer código, as mesmas metas, casos de desenvolvimento novos com tabelas no formato real, congelamento com hash e casos guardados novos escritos por Roberto depois do congelamento; se a `leitor-f1-2` falhar, a seção continua com a `leitor-f1-1`. Os 20 casos guardados da `leitor-f1-1` já são públicos: medir a nova versão neles é só informativo.
   - *Decisões:* nomes de pessoa física viram "trecho omitido; ver página N do documento", com o detector errando para o lado de omitir; do Formulário de Referência, só a última versão entregue até a data; LLM fora da Fase F (no roadmap); acesso ao ENET uma requisição por vez, com intervalo, tentativas, integridade e cache fora do git.
 
+## Depois da Fase F (decisões de Roberto, 15/11/2026)
+
+- **Deploy: decisão adiada, não recusada.** Por ora, o produto fica só no GitHub Pages estático, sem API ao vivo, sem custo e sem domínio. Voltar ao tema exige decidir hospedagem, conta e custo, onde fica o armazém e com que frequência ele é atualizado, se o monitor da CVM roda agendado e quem revisa a fila, a observabilidade (sem dados pessoais) e o domínio.
+- **No plano, sem data:** a `leitor-f1-3` e as melhorias da regra do assunto (seção da Fase F), a comparação de versões das notas explicativas entre exercícios, os indicadores de contexto (accruals ÷ ativo médio e SMTH1), Monte Carlo e cenários de stress só como teste de robustez, e os itens fora da Fase F (LLM, versões anteriores do Formulário de Referência, reconhecimento de texto em PDF sem camada de texto e notas explicativas de ITR). Cada um só começa com autorização.
+- **Próximo passo grande: o estudo 2.** Rascunho do plano em [`docs/estudo-2-plano.md`](estudo-2-plano.md), escrito antes de qualquer código e sem nenhum valor de exercício de 2024 em diante. Ainda não é o pré-registro: traz as opções e uma recomendação para cada decisão.
+
 ## Manutenção do CI
 
 - *13/11/2026:* o job `auditoria-python` ficou vermelho do commit `dd688da` em diante: o pip-audit acusou uma vulnerabilidade nova em `opentelemetry-api` (CVE-2026-126360). Com a autorização de Roberto, a versão passou para a corrigida no `requirements-lock.txt`, sem mudar nenhuma outra. Daqui em diante, cada relatório traz o estado do CI no último commit enviado, job por job, e não só os testes locais.
