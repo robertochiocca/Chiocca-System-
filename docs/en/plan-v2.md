@@ -78,7 +78,7 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
 
 - **Deploy: decision postponed, not declined.** For now, the product stays on static GitHub Pages only, with no live API, no cost and no domain. Coming back to it requires deciding hosting, account and cost, where the warehouse lives and how often it is updated, whether the CVM monitor runs on a schedule and who reviews the queue, observability (no personal data) and the domain.
 - **In the plan, undated:** `leitor-f1-3` and the subject-rule improvements (Phase F section), the comparison of explanatory-note versions across fiscal years, the context indicators (accruals ÷ average assets and SMTH1), Monte Carlo and stress scenarios only as a robustness test, and the items outside Phase F (LLM, earlier Reference Form versions, text recognition in PDFs without a text layer and ITR explanatory notes). Each one starts only with authorization.
-- **Next big step: study 2.** Draft plan in [`docs/en/study-2-plan.md`](study-2-plan.md), written before any code and without any value from fiscal years 2024 onward. It is not yet the pre-registration: it brings the options and a recommendation for each decision.
+- **Next big step: study 2.** Draft plan in [`docs/en/study-2-plan.md`](study-2-plan.md), written before any code and without any value from fiscal years 2024 onward. It is not yet the pre-registration: it brings the options and a recommendation for each decision. Recommendations accepted by Roberto, with adjustments, on 2026-11-15; the pre-registration draft, for review and not yet registered (no hash, no change to the seal and nothing from 2024 and 2025 downloaded), is in [`docs/en/study-2-preregistration-draft.md`](study-2-preregistration-draft.md).
 
 ## CI maintenance
 

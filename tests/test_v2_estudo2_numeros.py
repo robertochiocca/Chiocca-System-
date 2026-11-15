@@ -56,3 +56,27 @@ def test_numeros_do_json_nos_dois_documentos() -> None:
     assert f"1,5 é de {ps['1.5']['poder']:.2f}".replace("0.", "0,") in PT and f"1.5 is {ps['1.5']['poder']:.2f}" in EN
     esp = NUMEROS["esperados"]["por_data"]["2029-12-31"]["media"]
     assert f"{esp:.1f}".replace(".", ",") + " até 31/12/2029" in PT and f"{esp:.1f} by 2029-12-31" in EN
+
+
+def test_rascunho_do_pre_registro_com_os_numeros_do_json() -> None:
+    """O rascunho do pré-registro (não registrado) usa os mesmos números do JSON e do estudo 1."""
+    pt = (base.RAIZ / "docs" / "pre-registro-estudo-2-rascunho.md").read_text(encoding="utf-8")
+    en = (base.RAIZ / "docs" / "en" / "study-2-preregistration-draft.md").read_text(encoding="utf-8")
+    assert "Ainda não está registrado" in pt and "It is not registered yet" in en
+    e = NUMEROS["entregas_dfp"]
+    assert f"{e['2024']['ate_o_corte']} companhias entregaram a DFP de 2024" in pt
+    assert f"{e['2024']['ate_o_corte']} companies filed the 2024 DFP" in en
+    assert f"{e['2025']['ate_o_corte']} a de 2025" in pt and f"{e['2025']['ate_o_corte']} the 2025 one" in en
+    v24, v25 = e["2024"]["com_mais_de_uma_versao"], e["2025"]["com_mais_de_uma_versao"]
+    assert f"{v24} companhias têm mais de uma versão da DFP de 2024 e {v25} da de 2025" in pt
+    assert f"{v24} companies have more than one version of the 2024 DFP and {v25} of the 2025 one" in en
+    d = NUMEROS["derivados"]
+    tx = f"{100 * d['taxas_2013_2022']['pl_ou_lucro']:.1f}"
+    assert f"{tx.replace('.', ',')}% das empresa-anos tiveram republicação" in pt and f"{tx}% of company-years" in en
+    ps = d["poder_secundario"]["pl_ou_lucro"]["por_razao"]
+    assert f"{ps['1.5']['poder']:.2f}".replace(".", ",") + " para uma razão de taxas de 1,5" in pt
+    assert f"{ps['2.0']['poder']:.2f} for 2.0" in en
+    esp = NUMEROS["esperados"]["por_data"]["2029-12-31"]["media"]
+    assert f"cerca de {esp:.1f}".replace(".", ",") + " até 31/12/2029" in pt and f"about {esp:.1f} by 2029-12-31" in en
+    base_md = (base.RAIZ / "docs" / "base.md").read_text(encoding="utf-8")
+    assert "Documentos pedidos ao ENET: 390." in base_md and "390 documentos em 14 exercícios" in pt
