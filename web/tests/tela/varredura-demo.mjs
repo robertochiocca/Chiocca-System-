@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { PRIMEIRO_EXERCICIO } from "../../lib/limites.mjs";
 import { codigosInternos, hifensComoSinal, pontosDuplos, textoDaTela } from "./comum.mjs";
-import { servir } from "./servidor.mjs";
+import { prefixoDoBuild, servir } from "./servidor.mjs";
 
 const out = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "out");
 if (!existsSync(join(out, "demo", "manifesto.json"))) {
@@ -19,7 +19,7 @@ if (!existsSync(join(out, "demo", "manifesto.json"))) {
 }
 const indice = JSON.parse(readFileSync(join(out, "demo", "indice.json"), "utf-8"));
 // o prefixo do build (NEXT_PUBLIC_BASE_PATH), lido do próprio site exportado: "/Chiocca-System-" no GitHub Pages
-const prefixo = /(?:src|href)="([^"]*)\/_next\//.exec(readFileSync(join(out, "index.html"), "utf-8"))?.[1] ?? "";
+const prefixo = prefixoDoBuild(out);
 const { url, fechar } = await servir(out, prefixo);
 const navegador = await chromium.launch();
 const problemas = {};

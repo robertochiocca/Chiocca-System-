@@ -77,8 +77,8 @@ The estimates are orders of magnitude for comparing phases (lines of new code, n
 ## CI maintenance
 
 - *2026-11-13:* the `auditoria-python` job was red from commit `dd688da` on: pip-audit flagged a new vulnerability in `opentelemetry-api` (CVE-2026-126360). With Roberto's authorization, the version moved to the fixed one in `requirements-lock.txt`, with no other version changed. From now on, every report brings the CI state on the last pushed commit, job by job, and not only the local tests.
-- *No urgency:* the Node.js 20 warnings in the actions (`actions/checkout`, `actions/setup-python`, `actions/setup-node` and `actions/upload-artifact`) call for updating the action versions.
-- *Next round, no urgency (Roberto's request, 2026-11-14):* the screen test (`npm run test:tela`) currently serves the exported site without the GitHub Pages prefix, so it runs on a build without the prefix, unlike the published one. Task: make it serve the site under `/Chiocca-System-/`, as the sweep already does, to test exactly what is published.
+- *No urgency:* the Node.js 20 warnings in the actions (`actions/checkout`, `actions/setup-python`, `actions/setup-node` and `actions/upload-artifact`) call for updating the action versions. **Done on 2026-11-15:** the four actions at v7, which runs on Node.js 24, without changing what the jobs do.
+- *Next round, no urgency (Roberto's request, 2026-11-14):* the screen test (`npm run test:tela`) currently serves the exported site without the GitHub Pages prefix, so it runs on a build without the prefix, unlike the published one. Task: make it serve the site under `/Chiocca-System-/`, as the sweep already does, to test exactly what is published. **Done on 2026-11-15:** the screen-test server reads the prefix from the build itself, and CI builds the static demo with `/Chiocca-System-`; the screen test and the captures run on that build.
 
 ## Questions and decisions
 
