@@ -56,3 +56,25 @@ def test_registro_da_busca_fora_do_codigo() -> None:
             texto = (RAIZ / caminho).read_text(encoding="utf-8")
             for documento in BUSCA:
                 assert Path(documento).stem not in texto, f"{caminho} cita {documento}"
+
+
+# ---- carimbo OpenTimestamps (docs/carimbos/estudo-2-parte-1.txt e o .ots; `ots upgrade` numa sessão seguinte) ----
+CARIMBO = RAIZ / "docs" / "carimbos" / "estudo-2-parte-1.txt"
+COMMIT_DO_CONGELAMENTO = "ee51d054c056a8ba987799cced4e181d9cd7e152"
+CABECALHO_OTS = b"\x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94"
+
+
+def test_carimbo_com_os_commits_e_os_hashes_da_parte_1() -> None:
+    registro = _registro()
+    linhas = [x.split("  ", 1) for x in CARIMBO.read_text(encoding="utf-8").splitlines() if not x.startswith("#")]
+    commits = [registro["commit_de_registro"], registro["commit_da_emenda_1"], COMMIT_DO_CONGELAMENTO]
+    assert [h for h, _ in linhas[:3]] == commits
+    assert {c: h for h, c in linhas[3:]} == registro["arquivos"]
+
+
+def test_ots_e_do_arquivo_de_hashes() -> None:
+    ots = CARIMBO.with_name(CARIMBO.name + ".ots").read_bytes()
+    assert ots.startswith(CABECALHO_OTS) and ots[len(CABECALHO_OTS)] == 1  # versão 1 do formato
+    assert ots[len(CABECALHO_OTS) + 1] == 0x08  # o resumo do arquivo é SHA-256
+    resumo = ots[len(CABECALHO_OTS) + 2 : len(CABECALHO_OTS) + 34]
+    assert resumo == hashlib.sha256(CARIMBO.read_bytes()).digest()
