@@ -152,3 +152,13 @@ Adjustments: the boundary between the ground-truth parts by the date part 1 is f
 ---
 
 Signed by: Roberto Chiocca · Date: 2026-11-15
+
+## 13. Amendments
+
+### Amendment 1 · 2026-11-19 · boundary between the ground-truth parts and qualification of the cases (before the seal is opened, without any 2024 or 2025 value and without any alert)
+
+1. A case belongs to the part in which the first document that qualifies it under section 5 becomes public: a CVM proceeding about the financial statements, a material fact notice that admits an accounting error or fraud, a CVM restatement or republication order or, for financial companies, the Central Bank. The data_publica is still the first documented public date, even if it is earlier than that document.
+2. The part 2 search covers the whole period, from the registration of this pre-registration to 2029-12-31. A case whose qualifying document predates the freezing of part 1, but which the part 1 search did not find, enters part 2 marked as "not found in part 1" and is reported separately.
+3. A restatement or republication order reversed by the CVM's Collegiate Board does not qualify the case. If upheld, it qualifies normally.
+4. Under source (2), only a material fact notice that admits an error or fraud in the financial statements qualifies. A restatement described as a change in accounting policy or in an estimate, without an admission of error, does not qualify; such restatements are handled only by the secondary outcome (section 4.2), by its mechanical rule.
+5. Cases that do not qualify at the freeze, but may qualify later, are listed in the search record as "may enter part 2". Being on the list is not an accusation; none of their alerts is described or published because they are on it, and the list does not enter any metric.

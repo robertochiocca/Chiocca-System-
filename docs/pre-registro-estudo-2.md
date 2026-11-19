@@ -152,3 +152,13 @@ Ajustes: a fronteira entre as partes do gabarito pela data de congelamento da pa
 ---
 
 Assinado por: Roberto Chiocca · Data: 15/11/2026
+
+## 13. Emendas
+
+### Emenda 1 · 19/11/2026 · fronteira entre as partes do gabarito e qualificação dos casos (antes da abertura do lacre, sem nenhum valor de 2024 ou 2025 e sem nenhum alerta)
+
+1. Um caso pertence à parte em que se torna público o primeiro documento que o qualifica pela seção 5: processo da CVM sobre as demonstrações, fato relevante que admite erro ou fraude contábil, determinação de refazimento ou republicação da CVM ou, nas financeiras, o Banco Central. A data_publica continua sendo a primeira data pública documentada, mesmo que anterior a esse documento.
+2. A busca da parte 2 cobre todo o período, do registro deste pré-registro até 31/12/2029. Um caso cujo documento qualificador é anterior ao congelamento da parte 1, mas que a busca da parte 1 não encontrou, entra na parte 2 marcado como "não encontrado na parte 1" e é relatado à parte.
+3. Uma determinação de refazimento ou republicação revertida pelo Colegiado da CVM não qualifica o caso. Se mantida, qualifica normalmente.
+4. Pela fonte (2), só qualifica um fato relevante que admite erro ou fraude nas demonstrações. Uma reapresentação descrita como mudança de política contábil ou de estimativa, sem admissão de erro, não qualifica; reapresentações assim são tratadas só pelo desfecho secundário (seção 4.2), pela regra mecânica dele.
+5. Casos que não qualificam no congelamento, mas podem qualificar depois, ficam listados no registro da busca como "podem entrar na parte 2". Estar na lista não é acusação; nenhum alerta deles é descrito ou publicado por estarem nela, e a lista não entra em nenhuma métrica.
