@@ -127,12 +127,19 @@ export async function servir(raiz, prefixo = "") {
   return { url: `http://127.0.0.1:${port}${prefixo}`, fechar: () => new Promise((ok) => servidor.close(ok)) };
 }
 
-/** Copia o site exportado para uma pasta temporária, monta os dados de teste e sobe o servidor. */
+/** O prefixo do build (NEXT_PUBLIC_BASE_PATH), lido do próprio site exportado: "/Chiocca-System-" no build que vai para
+ * o GitHub Pages, "" no build sem prefixo. */
+export function prefixoDoBuild(pasta) {
+  return /(?:src|href)="([^"]*)\/_next\//.exec(readFileSync(join(pasta, "index.html"), "utf-8"))?.[1] ?? "";
+}
+
+/** Copia o site exportado para uma pasta temporária, monta os dados de teste e sobe o servidor debaixo do mesmo prefixo
+ * do build (15/11/2026: o teste de tela e as capturas rodam no build com o prefixo do GitHub Pages, o que é publicado). */
 export async function subir() {
   const out = join(web, "out");
   if (!existsSync(join(out, "index.html"))) throw new Error("rode antes: npm run build:estatico");
   const raiz = mkdtempSync(join(tmpdir(), "chiocca-tela-"));
   cpSync(out, raiz, { recursive: true });
   montarDados(raiz);
-  return { ...(await servir(raiz)), raiz };
+  return { ...(await servir(raiz, prefixoDoBuild(out))), raiz };
 }

@@ -21,6 +21,8 @@ PARES = [
     ("docs/referencias.md", "docs/en/references.md"),
     ("docs/armazenamento-temporal.md", "docs/en/temporal-storage.md"),
     ("docs/pre-registro-leitor.md", "docs/en/reader-preregistration.md"),
+    ("docs/estudo-2-plano.md", "docs/en/study-2-plan.md"),
+    ("docs/pre-registro-estudo-2.md", "docs/en/study-2-preregistration.md"),
 ]
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
 AVISO_EN = "Statistical signal based on public financial statements. Not an accusation, not investment advice."
