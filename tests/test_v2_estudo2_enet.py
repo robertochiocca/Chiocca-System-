@@ -15,7 +15,8 @@ def test_registro_das_tentativas_coerente() -> None:
     tabelas = r["tabelas"]
     assert len(tabelas) == r["resumo"]["tabelas"] == 26
     for t in tabelas:
-        assert re.fullmatch(r"enet/\d+_con\.csv", t["arquivo"]) and re.fullmatch(r"[0-9a-f]{64}", t["sha256_copia_de_07_11"])
+        assert re.fullmatch(r"enet/\d+_con\.csv", t["arquivo"])
+        assert re.fullmatch(r"[0-9a-f]{64}", t["sha256_copia_de_07_11"])
         if t["sha256_baixada"] is None:
             assert t["identica"] is None and t["tentativa"] is None
         else:
