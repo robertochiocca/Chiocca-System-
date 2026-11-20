@@ -70,3 +70,10 @@ def garantir_data_referencia(data: str | date) -> date:
     if not DATA_REFERENCIA_MINIMA <= d <= DATA_REFERENCIA_MAXIMA:
         raise DataForaDoIntervalo(d)
     return d
+
+
+# >>> estudo 2: abertura do lacre, só para o script do estudo (pré-registro do estudo 2, seção 9)
+# Lido só pelo script do estudo (abertura.exercicios_do_estudo). O produto continua com ULTIMO_EXERCICIO_LIBERADO =
+# 2023 e com a data máxima de 31/12/2024: a interface, a API, a demonstração e o monitor não mudam.
+ESTUDO_2_EXERCICIOS = (2024, 2025)
+# <<< estudo 2
