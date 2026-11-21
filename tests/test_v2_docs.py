@@ -23,7 +23,11 @@ PARES = [
     ("docs/pre-registro-leitor.md", "docs/en/reader-preregistration.md"),
     ("docs/estudo-2-plano.md", "docs/en/study-2-plan.md"),
     ("docs/pre-registro-estudo-2.md", "docs/en/study-2-preregistration.md"),
+    ("README.md", "README.en.md"),
+    ("docs/historico.md", "docs/en/history.md"),
+    ("docs/como-reproduzir.md", "docs/en/how-to-reproduce.md"),
 ]
+README = {"pt": "README.md", "en": "README.en.md"}
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
 AVISO_EN = "Statistical signal based on public financial statements. Not an accusation, not investment advice."
 
@@ -101,43 +105,72 @@ def test_readme_invariante_e_testes_pulados_no_ci() -> None:
     iguais = sum(v["empresa_anos_iguais"] for v in n["exercicios"].values())
     estudo = sum(v["empresa_anos_estudo"] for v in n["exercicios"].values())
     armazem = len(exemplos.PARES) + 1  # a regeneração dos exemplos e o invariante de 2021
-    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
-    for lang, frase in (
-        ("pt", "O invariante do estudo 1 ({i} de {e} empresa-anos iguais ao estudo) roda localmente"),
-        ("en", "The study 1 invariant ({i} of {e} company-years equal to the study) runs locally"),
+    pt = (RAIZ / README["pt"]).read_text(encoding="utf-8")
+    en = (RAIZ / README["en"]).read_text(encoding="utf-8")
+    for lang, readme, frase in (
+        ("pt", pt, "O invariante do estudo 1 ({i} de {e} empresa-anos iguais ao estudo) roda localmente"),
+        ("en", en, "The study 1 invariant ({i} of {e} company-years equal to the study) runs locally"),
     ):
         assert frase.format(i=inteiro(iguais, lang), e=inteiro(estudo, lang)) in readme
     total = armazem + len(FASE_2)
     assert (
-        f"pula {total} testes: {armazem} dependem do armazém" in readme
-        and f"e {len(FASE_2)} são valores da fase 2" in readme
+        f"pula {total} testes: {armazem} dependem do armazém" in pt and f"e {len(FASE_2)} são valores da fase 2" in pt
     )
-    assert (
-        f"skips {total} tests: {armazem} depend on the store" in readme
-        and f"and {len(FASE_2)} are phase 2 values" in readme
-    )
-    assert (
-        len(exemplos.PARES) == 4
-        and "regeneração dos 4 exemplos" in readme
-        and "regeneration of the 4 examples" in readme
-    )
+    assert f"skips {total} tests: {armazem} depend on the store" in en and f"and {len(FASE_2)} are phase 2 values" in en
+    assert len(exemplos.PARES) == 4 and "regeneração dos 4 exemplos" in pt and "regeneration of the 4 examples" in en
 
 
 def test_readme_demonstracao_com_o_numero_de_companhias_do_modo_demonstracao() -> None:
     from chiocca.v2.api import empresas_da_demonstracao
 
-    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
     n = len(empresas_da_demonstracao())
-    pt = readme.split("### Demonstração", 1)[1].split("\n### ", 1)[0]
-    en = readme.split("### Demo\n", 1)[1].split("\n### ", 1)[0]
-    secoes = ((pt, f"as {n} companhias do gabarito", "pt"), (en, f"the {n} ground-truth companies", "en"))
-    for secao, companhias, lingua in secoes:
-        assert "https://robertochiocca.github.io/Chiocca-System-/" in secao and companhias in secao
-        # as capturas de npm run capturas -- --readme, na língua da seção: computador e celular
-        assert re.findall(r'src="(docs/imagens/[^"]+)"', secao) == [
+    casos = (
+        ("pt", "## Em 30 segundos\n", "## Demonstração\n", f"as {n} companhias do gabarito"),
+        ("en", "## In 30 seconds\n", "## Demo\n", f"the {n} ground-truth companies"),
+    )
+    for lingua, h_topo, h_demo, companhias in casos:
+        readme = (RAIZ / README[lingua]).read_text(encoding="utf-8")
+        topo = readme.split(h_topo, 1)[1].split("\n## ", 1)[0]
+        demo = readme.split(h_demo, 1)[1].split("\n## ", 1)[0]
+        assert "https://robertochiocca.github.io/Chiocca-System-/" in demo and companhias in demo
+        assert "https://robertochiocca.github.io/Chiocca-System-/" in topo
+        # as capturas de npm run capturas -- --readme, na língua do README, no topo: computador e celular
+        assert re.findall(r'src="(docs/imagens/[^"]+)"', readme) == [
             f"docs/imagens/demonstracao-computador-{lingua}.png",
             f"docs/imagens/demonstracao-celular-{lingua}.png",
         ]
+        assert re.findall(r'src="(docs/imagens/[^"]+)"', topo) == re.findall(r'src="(docs/imagens/[^"]+)"', readme)
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_readme_topo_de_30_segundos(lang: str) -> None:
+    """Pedido de 21/11/2026: o topo traz os números do estudo 1 e o estado do estudo 2, gerados, e o README tem
+    no máximo 1.500 palavras; o histórico das fases fica em docs/historico.md."""
+    from chiocca.v2 import textos_readme
+
+    readme = (RAIZ / README[lang]).read_text(encoding="utf-8")
+    topo = readme.split("## Em 30 segundos\n" if lang == "pt" else "## In 30 seconds\n", 1)[1].split("\n## ", 1)[0]
+    t = textos_readme.topo(lang)
+    assert t["estudo_1"] in topo and t["estudo_2"] in topo
+    assert len(readme.split()) <= 1500
+    historico = "docs/historico.md" if lang == "pt" else "docs/en/history.md"
+    assert f"]({historico})" in readme
+    aviso = (
+        ("Alerta, não acusação.", "não é recomendação de investimento")
+        if lang == "pt"
+        else ("Alert, not accusation.", "is not investment advice")
+    )
+    assert all(a in readme for a in aviso)
+
+
+def test_datas_do_topo_iguais_as_do_script_do_estudo_2() -> None:
+    """O produto não importa o script do estudo; o teste confere a data da avaliação secundária contra ele."""
+    from chiocca.v2 import textos_readme
+    from chiocca.v2.estudo2 import secundaria
+
+    assert textos_readme.DATA_AVALIACAO_SECUNDARIA == secundaria.DATA_MINIMA.isoformat()
+    pre_registro = (RAIZ / "docs/pre-registro-estudo-2.md").read_text(encoding="utf-8")
+    assert "31/05/2027" in pre_registro and "01/01/2030" in pre_registro
 
 
 def _imagens_citadas(md: str) -> list[str]:
@@ -150,7 +183,7 @@ def test_imagens_citadas_nos_readmes_existem_no_repositorio() -> None:
     versionados = set(subprocess.run(["git", "ls-files", "-z"], cwd=RAIZ, capture_output=True, check=True,
                                      text=True).stdout.split("\0"))  # fmt: skip
     readmes = sorted(p for p in versionados if re.search(r"(^|/)readme[^/]*\.md$", p, re.IGNORECASE))
-    assert "README.md" in readmes
+    assert "README.md" in readmes and "README.en.md" in readmes
     citadas = []
     for readme in readmes:
         for alvo in _imagens_citadas((RAIZ / readme).read_text(encoding="utf-8")):

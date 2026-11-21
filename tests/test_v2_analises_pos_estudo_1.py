@@ -53,7 +53,7 @@ def test_documento_igual_a_saida_do_script(lang: str) -> None:
 def test_readme_traz_o_resultado_com_o_rotulo(lang: str, link: str) -> None:
     paragrafo = ap.resumo(_r(), lang, link)
     assert paragrafo is not None
-    assert paragrafo in (ap.RAIZ / "README.md").read_text(encoding="utf-8")
+    assert paragrafo in (ap.RAIZ / ("README.md" if lang == "pt" else "README.en.md")).read_text(encoding="utf-8")
     assert ("não pré-registrada" if lang == "pt" else "not pre-registered") in paragrafo
 
 
@@ -95,13 +95,15 @@ def test_mesmos_numeros_e_rotulo_nos_dois_idiomas() -> None:
 )
 def test_readme_cita_os_balancos_nao_preenchidos(lang: str, link: str) -> None:
     frase = ap.frase_readme_nao_preenchidas(_r(), lang, link)
-    assert frase is not None and frase in (ap.RAIZ / "README.md").read_text(encoding="utf-8")
+    assert frase is not None and frase in (ap.RAIZ / ("README.md" if lang == "pt" else "README.en.md")).read_text(
+        encoding="utf-8"
+    )
 
 
 @pytest.mark.parametrize(
     "caminho,taxa,definicao",
     [("README.md", "49,9%", "não financeiras"), ("docs/resumo.md", "49,9%", "não financeiras"),
-     ("README.md", "49.9%", "non-financial"), ("docs/summary.md", "49.9%", "non-financial")],
+     ("README.en.md", "49.9%", "non-financial"), ("docs/summary.md", "49.9%", "non-financial")],
 )  # fmt: skip
 def test_taxa_de_alerta_sempre_com_a_mesma_definicao(caminho: str, taxa: str, definicao: str) -> None:
     """Pedido de 08/11/2026: a taxa de alerta citada é sempre a das empresa-anos não financeiras avaliadas."""
@@ -116,7 +118,7 @@ def test_readme_limitacoes_geradas_dos_json(lang: str) -> None:
     from chiocca.v2 import textos_readme
 
     secao = textos_readme.secao_limitacoes(lang)
-    assert secao in (ap.RAIZ / "README.md").read_text(encoding="utf-8")
+    assert secao in (ap.RAIZ / ("README.md" if lang == "pt" else "README.en.md")).read_text(encoding="utf-8")
     itens = textos_readme.limitacoes(lang)
     assert len(itens) == 8 and all("](docs/" in x for x in itens)
     assert "59,8%" in itens[0] if lang == "pt" else "59.8%" in itens[0]

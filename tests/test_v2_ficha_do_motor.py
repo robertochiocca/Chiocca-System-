@@ -61,7 +61,7 @@ def test_antecedencia_dos_acertos() -> None:
 
 @pytest.mark.parametrize("lang", ["pt", "en"])
 def test_readme_separa_correcao_e_efetividade(lang: str) -> None:
-    readme = (RAIZ / "README.md").read_text(encoding="utf-8")
+    readme = (RAIZ / ("README.md" if lang == "pt" else "README.en.md")).read_text(encoding="utf-8")
     s = textos_readme.separacao(lang)
     for chave in ("h_correcao", "correcao", "h_efetividade", "efetividade", "nao_prova"):
         assert s[chave] in readme
