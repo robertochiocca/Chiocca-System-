@@ -1,6 +1,6 @@
 """Script do estudo 2 (pré-registro do estudo 2, seção 9, item 3): a lista, o gabarito, a avaliação secundária e o
 registro de SHA-256 do código. Só com dados sintéticos (empresas fictícias, `tests/fixtures_cvm.py`) ou, quando os dados
-estão no ambiente, com o exercício de 2023; nada de 2024 e 2025 é lido."""
+estão no ambiente, com o exercício de 2023; nenhum teste lê dados de 2024 e 2025."""
 
 from __future__ import annotations
 
@@ -47,24 +47,36 @@ def _corpo(conteudo: bytes) -> str:
 # ---- lacre ----
 
 
-def test_lacre_do_estudo_fechado() -> None:
-    """Antes do commit de abertura, as constantes do estudo não existem (seção 9)."""
-    assert not hasattr(lacre, abertura.CONSTANTE) and not hasattr(lacre, abertura.CONSTANTE_SEGUNDA)
-    assert abertura.exercicios_do_estudo() == () and abertura.segunda_abertura() == ()
+def test_lacre_aberto_so_para_o_estudo() -> None:
+    """Depois do commit de abertura (seção 9): 2024 e 2025 só para o script do estudo; a segunda abertura (DFP de 2026,
+    só o comparativo) ainda não existe; o produto continua com o lacre em 2023 e a data máxima em 31/12/2024."""
+    assert abertura.exercicios_do_estudo() == (2024, 2025) and not hasattr(lacre, abertura.CONSTANTE_SEGUNDA)
+    assert abertura.segunda_abertura() == ()
     assert lacre.ULTIMO_EXERCICIO_LIBERADO == 2023 and lacre.DATA_REFERENCIA_MAXIMA == date(2024, 12, 31)
+    for ano in (2024, 2025):
+        assert not lacre.liberado(ano)
+        with pytest.raises(lacre.ExercicioLacrado):
+            lacre.garantir_liberado(ano)  # o produto continua recusando
+    texto = (RAIZ / "chiocca/v2/lacre.py").read_text(encoding="utf-8")
+    assert texto.rstrip("\n").endswith(abertura.MARCA_FIM)  # o bloco do estudo fica no fim do arquivo
 
 
-def test_lista_recusa_exercicio_lacrado_antes_de_ler() -> None:
-    for anos in ([2024], [2025], [2023, 2024]):
+def test_lista_recusa_exercicio_lacrado_antes_de_ler(monkeypatch: pytest.MonkeyPatch) -> None:
+    for anos in ([2026], [2023, 2026]):
         with pytest.raises(lacre.ExercicioLacrado):
             lista.calcular(FontesProibidas(), anos)  # type: ignore[arg-type]
         with pytest.raises(lacre.ExercicioLacrado):
             lista.gerar(FontesProibidas(), anos, "0" * 40, "3.13", "1" * 64)  # type: ignore[arg-type]
+    monkeypatch.delattr(lacre, abertura.CONSTANTE)  # sem a constante, 2024 e 2025 voltam a ser recusados
+    for anos in ([2024], [2025], [2023, 2024]):
+        with pytest.raises(lacre.ExercicioLacrado):
+            lista.calcular(FontesProibidas(), anos)  # type: ignore[arg-type]
     with pytest.raises(SystemExit, match="lacre do estudo 2 está fechado"):
         lista.main([])
 
 
 def test_abertura_so_pela_constante(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delattr(lacre, abertura.CONSTANTE, raising=False)
     with pytest.raises(lacre.ExercicioLacrado):
         abertura.garantir_exercicio(2024)
     monkeypatch.setattr(lacre, abertura.CONSTANTE, (2024, 2025), raising=False)
@@ -97,7 +109,9 @@ def test_constantes_do_estudo_e_o_script_fora_do_produto() -> None:
 
 
 def test_sem_o_bloco_da_abertura() -> None:
-    original = (RAIZ / "chiocca/v2/lacre.py").read_text(encoding="utf-8")
+    no_repositorio = (RAIZ / "chiocca/v2/lacre.py").read_text(encoding="utf-8")
+    original = abertura.sem_o_bloco_da_abertura(no_repositorio)
+    assert abertura.MARCA_INICIO in no_repositorio and abertura.MARCA_INICIO not in original
     aberto = original + f"\n\n{abertura.MARCA_INICIO}\nESTUDO_2_EXERCICIOS = (2024, 2025)\n{abertura.MARCA_FIM}\n"
     assert abertura.sem_o_bloco_da_abertura(aberto) == original == abertura.sem_o_bloco_da_abertura(original)
     mudado = original.replace("ULTIMO_EXERCICIO_LIBERADO = 2023", "ULTIMO_EXERCICIO_LIBERADO = 2024")
@@ -387,8 +401,8 @@ def test_secundaria_para_se_a_versao_nao_e_a_da_lista(tmp_path: Path) -> None:
 
 
 def test_secundaria_recusa_a_dfp_seguinte_lacrada() -> None:
-    s = _linhas_da_lista(["11"]).assign(exercicio=pd.array([2023], dtype="Int64"))
-    with pytest.raises(lacre.ExercicioLacrado):
+    s = _linhas_da_lista(["11"]).assign(exercicio=pd.array([2025], dtype="Int64"))
+    with pytest.raises(lacre.ExercicioLacrado):  # a DFP de 2026 só com a segunda abertura
         secundaria.republicacoes(FontesProibidas(), s)  # type: ignore[arg-type]
     with pytest.raises(SystemExit, match="2027-05-31"):
         secundaria.main(["--sha256", "0" * 64])
