@@ -45,3 +45,18 @@ def test_manifesto_dos_arquivos_de_entrada() -> None:
         t = baixadas[x["arquivo"]]
         assert x["sha256"] == t["sha256_baixada"] and x["sha256_copia_de_07_11"] == t["sha256_copia_de_07_11"]
     assert sum(x["sha256"] != x["sha256_copia_de_07_11"] for x in enet) == r["tabelas_enet"]["diferentes_das_de_07_11"]
+
+
+CARIMBO = RAIZ / "docs" / "carimbos" / "estudo-2-lista.txt"
+CABECALHO_OTS = b"\x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94"
+
+
+def test_carimbo_da_lista() -> None:
+    r = json.loads(REGISTRO.read_text(encoding="utf-8"))
+    linhas = [x.split("  ", 1) for x in CARIMBO.read_text(encoding="utf-8").splitlines() if not x.startswith("#")]
+    hashes = {nome: h for h, nome in linhas}
+    assert linhas[0][0] == r["commit_do_calculo"]
+    assert hashes["lista_estudo_2.csv"] == r["sha256"] and hashes[r["manifesto"]] == r["manifesto_sha256"]
+    ots = CARIMBO.with_name(CARIMBO.name + ".ots").read_bytes()
+    assert ots.startswith(CABECALHO_OTS) and ots[len(CABECALHO_OTS) + 1] == 0x08
+    assert ots[len(CABECALHO_OTS) + 2 : len(CABECALHO_OTS) + 34] == hashlib.sha256(CARIMBO.read_bytes()).digest()
