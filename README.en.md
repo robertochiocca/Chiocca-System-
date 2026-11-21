@@ -78,6 +78,8 @@ python -m pip install -r requirements-lock.txt && python -m pip install -e . --n
 python -m pytest                      # offline tests
 ```
 
+To see the demo on your computer, `make demo` (Node.js 22 or later): it serves the interface at `http://127.0.0.1:3000/` with the versioned examples in `docs/exemplos/` (Americanas, fiscal year 2021, on 2022-04-30 and 2024-12-31), without downloading anything from the CVM and with no API. The full demo is at the link at the top.
+
 The study 1 invariant (9,474 of 9,474 company-years equal to the study) runs locally, with the CVM data in `data/brutos` and the store built by `python -m chiocca.v2.armazem`. CI does not have that data and skips 9 tests: 5 depend on the store (the 2021 invariant and the regeneration of the 4 examples in `docs/exemplos/`) and 4 are phase 2 values of the reference test, left for later.
 
 The full commands (CVM download, base, signals, API, interface and static demo) and the repository structure are in [`docs/en/how-to-reproduce.md`](docs/en/how-to-reproduce.md). Besides the development branch, there are the generated branches `gh-pages` (the demo site) and `estudo-2-dados` (the CVM files used in study 2); to clone only the code, `git clone --single-branch --branch main <repository address>`.

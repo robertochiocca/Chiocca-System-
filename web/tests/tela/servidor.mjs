@@ -56,8 +56,9 @@ function casoDaAmericanas(g) {
 
 /** Monta os dados de teste: Americanas, exercício 2021, em 30/04/2022 e em 31/12/2024 (os exemplos guardados), e a
  * companhia da fixture (as respostas da API guardadas em tests/contrato/, só em PT). O índice segue o formato da rota
- * /api/v1/demonstracao, com os destaques que o Python tirou dos mesmos exemplos. */
-export function montarDados(raiz) {
+ * /api/v1/demonstracao, com os destaques que o Python tirou dos mesmos exemplos. Com `ficticias: false` (o make demo,
+ * 21/11/2026), só a Americanas: ficam de fora a companhia da fixture e a investigação com documentos fictícios. */
+export function montarDados(raiz, { ficticias = true } = {}) {
   rmSync(join(raiz, "demo"), { recursive: true, force: true });
   const datas = ["2022-04-30", "2024-12-31"];
   const nomes = new Set();
@@ -88,8 +89,9 @@ export function montarDados(raiz) {
     data_inicial: "2022-04-30",
     casos: [casoDaAmericanas(g)],
   };
-  grava(raiz, "indice.json", { ...demonstracao, empresas: [americanas, ...demonstracao.empresas] });
+  grava(raiz, "indice.json", { ...demonstracao, empresas: ficticias ? [americanas, ...demonstracao.empresas] : [americanas] });
   cpSync(join(web, "tests", "contrato", "como_testado.json"), join(raiz, "demo", "como-o-motor-foi-testado.json"));
+  if (!ficticias) return;
   // Fase F1: uma investigação com a seção de leitura de documentos (a da Americanas em 31/12/2024 com a seção gerada
   // pelo Python a partir de documentos fictícios, tests/test_v2_leitor.py), num código à parte, fora do índice.
   for (const lang of ["pt", "en"]) {
@@ -107,9 +109,9 @@ export const INV_FIXTURE = "/investigacao/?cd=100&ex=2020&data=2022-04-30";
 const INV_LEITURA_CD = "777";
 export const INV_LEITURA = `/investigacao/?cd=${INV_LEITURA_CD}&ex=2021&data=2024-12-31`;
 
-/** Serve uma pasta (o site exportado) em http://127.0.0.1:<porta livre>, debaixo de `prefixo` (o NEXT_PUBLIC_BASE_PATH
- * do build, por exemplo "/Chiocca-System-", como no GitHub Pages). */
-export async function servir(raiz, prefixo = "") {
+/** Serve uma pasta (o site exportado) em http://127.0.0.1:<porta>, debaixo de `prefixo` (o NEXT_PUBLIC_BASE_PATH
+ * do build, por exemplo "/Chiocca-System-", como no GitHub Pages). Porta 0: uma porta livre (os testes). */
+export async function servir(raiz, prefixo = "", porta = 0) {
   const servidor = createServer((req, res) => {
     const pedido = decodeURIComponent(new URL(req.url, "http://x").pathname);
     const caminho = pedido.startsWith(`${prefixo}/`) ? pedido.slice(prefixo.length) : null;
@@ -122,7 +124,10 @@ export async function servir(raiz, prefixo = "") {
     res.writeHead(200, { "Content-Type": TIPOS[extname(arquivo)] ?? "application/octet-stream" });
     res.end(readFileSync(arquivo));
   });
-  await new Promise((ok) => servidor.listen(0, "127.0.0.1", ok));
+  await new Promise((ok, erro) => {
+    servidor.once("error", erro);
+    servidor.listen(porta, "127.0.0.1", ok);
+  });
   const { port } = servidor.address();
   return { url: `http://127.0.0.1:${port}${prefixo}`, fechar: () => new Promise((ok) => servidor.close(ok)) };
 }

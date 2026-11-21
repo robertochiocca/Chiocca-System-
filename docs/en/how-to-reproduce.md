@@ -52,6 +52,7 @@ cd web && npm ci && npm run build && npm start   # interface at http://localhost
 python -m chiocca.v2.demonstracao_estatica --processos 4   # static demo in web/public/demo/ (JSON and PDF, outside git)
 cd web && npm run build:estatico && npm run test:tela   # static site in web/out/, no API, and the screen test
 cd web && npm run varrer:demo   # before publishing: every demo investigation in the browser, PT and EN
+make demo                       # at the root: the demo on your computer, with the examples in docs/exemplos/ and no download (port 3000; another: make demo PORTA=8080)
 python -m chiocca.v2.gh_pages GH_PAGES_FOLDER --varredura varredura.json   # assembles the gh-pages branch (see the module)
 python -m pytest                      # offline tests
 ```

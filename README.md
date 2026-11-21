@@ -78,6 +78,8 @@ python -m pip install -r requirements-lock.txt && python -m pip install -e . --n
 python -m pytest                      # testes sem rede
 ```
 
+Para ver a demonstração no computador, `make demo` (Node.js 22 ou mais): serve a interface em `http://127.0.0.1:3000/` com os exemplos versionados em `docs/exemplos/` (Americanas, exercício 2021, em 30/04/2022 e em 31/12/2024), sem baixar nada da CVM e sem API. A demonstração completa está no link do topo.
+
 O invariante do estudo 1 (9.474 de 9.474 empresa-anos iguais ao estudo) roda localmente, com os dados da CVM em `data/brutos` e o armazém montado por `python -m chiocca.v2.armazem`. O CI não tem esses dados e pula 9 testes: 5 dependem do armazém (o invariante de 2021 e a regeneração dos 4 exemplos de `docs/exemplos/`) e 4 são valores da fase 2 do teste de referência, que ficam para depois.
 
 Os comandos completos (download da CVM, base, sinais, API, interface e demonstração estática) e a estrutura do repositório estão em [`docs/como-reproduzir.md`](docs/como-reproduzir.md). Além do branch de desenvolvimento, há os branches gerados `gh-pages` (o site da demonstração) e `estudo-2-dados` (os arquivos da CVM usados no estudo 2); para clonar só o código, `git clone --single-branch --branch main <endereço do repositório>`.
