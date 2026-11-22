@@ -80,14 +80,24 @@ def test_entradas_datas_e_constantes(lang: str) -> None:
     assert inteiro(sum(v["empresa_anos_iguais"] for v in inv["exercicios"].values()), lang) in doc
     assert str(secundaria.SEMENTE) in doc and inteiro(secundaria.REAMOSTRAGENS, lang) in doc
     assert data(secundaria.DATA_MINIMA.isoformat(), lang) in doc
-    for d in ("2027-03-31", "2027-04-15", "2027-04-30", "2026-11-19", "2029-12-31"):
+    for d in ("2026-12-10", "2026-12-20", "2027-01-25", "2027-01-31", "2027-03-31", "2027-04-15", "2027-04-30",
+              "2026-11-19", "2029-12-31"):  # fmt: skip
         assert data(d, lang) in doc, d
 
 
 def test_rascunho_nao_muda_o_pre_registro_nem_o_registro_do_codigo() -> None:
-    """O rascunho só cita o pré-registro do estudo 2; a emenda é texto do plano, não do pré-registro."""
+    """O rascunho só cita o pré-registro do estudo 2; a emenda 5 é texto do plano, não do pré-registro, e registra
+    que a emenda 4 (contingência do ENET) não foi usada nem registrada."""
     pre = (RAIZ / "docs/pre-registro-estudo-2.md").read_text(encoding="utf-8")
-    assert "motor v2" not in pre.lower() and "Emenda N" not in pre
-    for lang in ("pt", "en"):
-        doc = DOCS[lang].read_text(encoding="utf-8")
-        assert "Emenda N" in doc if lang == "pt" else "Amendment N" in doc
+    assert "motor v2" not in pre.lower() and "Emenda 5" not in pre and "Emenda 4" not in pre
+    pt, en = DOCS["pt"].read_text(encoding="utf-8"), DOCS["en"].read_text(encoding="utf-8")
+    assert "**Emenda 5 ·" in pt and "não foi usada nem registrada" in pt
+    assert "**Amendment 5 ·" in en and "neither used nor registered" in en
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_rotulo_prospectivo_por_empresa_ano(lang: str) -> None:
+    """Decisão de Roberto (22/11/2026): 2025 prospectiva pelo DT_RECEB da DFP de 2026; 2024 não prospectiva."""
+    doc = DOCS[lang].read_text(encoding="utf-8")
+    assert "DT_RECEB" in doc
+    assert ("não prospectivas nos dois braços" in doc) if lang == "pt" else ("not prospective in either arm" in doc)
