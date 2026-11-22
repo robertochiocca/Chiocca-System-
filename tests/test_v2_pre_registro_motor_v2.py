@@ -175,3 +175,41 @@ def test_hash_do_commit_de_registro_anotado_nos_dois_documentos(lang: str) -> No
     rotulo = "Hash do commit de registro" if lang == "pt" else "Hash of the registration commit"
     assert f"{rotulo}: `{COMMIT_DE_REGISTRO}`" in pre
     assert f"`{COMMIT_DE_REGISTRO}`" in _emenda_5(lang).split("\n2. ", 1)[0]
+
+
+# ---- carimbo OpenTimestamps do registro (docs/carimbos/motor-v2-registro.txt e o .ots; `ots upgrade` depois) ----
+CARIMBO = RAIZ / "docs" / "carimbos" / "motor-v2-registro.txt"
+CABECALHO_OTS = b"\x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94"
+
+
+def _como_no_registro() -> dict[str, bytes]:
+    """Os dois arquivos registrados como estavam no commit de registro: tira só a anotação do hash, feita no commit
+    seguinte."""
+    v2 = PRE["pt"].read_text(encoding="utf-8")
+    anotacao = (
+        f"- Hash do commit de registro: `{COMMIT_DE_REGISTRO}` (anotado no commit seguinte, sem mudar nenhuma regra "
+        "acima).\n"
+    )
+    assert v2.count(anotacao) == 1
+    e2 = ESTUDO_2["pt"].read_text(encoding="utf-8")
+    item_1 = f"(commit de registro `{COMMIT_DE_REGISTRO}`, anotado no commit seguinte)"
+    assert e2.count(item_1) == 1
+    return {
+        "docs/pre-registro-motor-v2.md": v2.replace(anotacao, "").encode("utf-8"),
+        "docs/pre-registro-estudo-2.md": e2.replace(item_1, "(commit de registro a anotar)").encode("utf-8"),
+    }
+
+
+def test_carimbo_do_registro_com_o_commit_e_os_hashes() -> None:
+    linhas = [x.split("  ", 1) for x in CARIMBO.read_text(encoding="utf-8").splitlines() if not x.startswith("#")]
+    assert linhas[0][0] == COMMIT_DE_REGISTRO
+    arquivos = {caminho: h for h, caminho in linhas[1:]}
+    assert arquivos == {c: hashlib.sha256(b).hexdigest() for c, b in _como_no_registro().items()}
+
+
+def test_ots_e_do_arquivo_do_registro() -> None:
+    ots = CARIMBO.with_name(CARIMBO.name + ".ots").read_bytes()
+    assert ots.startswith(CABECALHO_OTS) and ots[len(CABECALHO_OTS)] == 1  # versão 1 do formato
+    assert ots[len(CABECALHO_OTS) + 1] == 0x08  # o resumo do arquivo é SHA-256
+    resumo = ots[len(CABECALHO_OTS) + 2 : len(CABECALHO_OTS) + 34]
+    assert resumo == hashlib.sha256(CARIMBO.read_bytes()).digest()
