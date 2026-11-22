@@ -102,6 +102,7 @@ The 3.06.02 sub-accounts in implied interest; discretionary accruals and the Dec
 
 - Date: 2026-11-22.
 - Commit: the one that introduces this version under this name, the same one that registers amendment 5 to study 2. Its hash is noted here in the next commit, without changing any rule above.
+- Hash of the registration commit: `313c52db5df2f11b0a4f9d7920e486e688a9f381` (noted in the next commit, without changing any rule above).
 - Timestamp, as in study 2: `docs/carimbos/motor-v2-registro.txt`, with the hash of the registration commit and the SHA-256 of the two registered files (this pre-registration and study 2's with amendment 5), stamped with OpenTimestamps; the `.ots` goes into the repository, and `ots upgrade` is run after confirmation on Bitcoin. If the calendars do not respond, Roberto stamps through the opentimestamps.org website and returns the `.ots`.
 
 ## 12. Roberto's review (2026-11-22)

@@ -102,6 +102,7 @@ As subcontas de 3.06.02 no juro implícito; os accruals discricionários e o F-s
 
 - Data: 22/11/2026.
 - Commit: o que introduz esta versão com este nome, o mesmo que registra a emenda 5 ao estudo 2. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+- Hash do commit de registro: `313c52db5df2f11b0a4f9d7920e486e688a9f381` (anotado no commit seguinte, sem mudar nenhuma regra acima).
 - Carimbo de tempo, como no estudo 2: `docs/carimbos/motor-v2-registro.txt`, com o hash do commit de registro e o SHA-256 dos dois arquivos registrados (este pré-registro e o do estudo 2 com a emenda 5), carimbado com o OpenTimestamps; o `.ots` vai para o repositório, e o `ots upgrade` é feito depois da confirmação no Bitcoin. Se os calendários não responderem, Roberto carimba pelo site opentimestamps.org e devolve o `.ots`.
 
 ## 12. Revisão de Roberto (22/11/2026)

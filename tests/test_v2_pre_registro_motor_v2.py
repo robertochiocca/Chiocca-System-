@@ -162,3 +162,16 @@ def test_emenda_5_item_3_alerta_da_lista_inteira_medidas_no_conjunto_do_v1(lang:
                   "is computed only on the company-years that section 7.2 evaluates for v1", "prospective subset",
                   "reported separately, as description only")  # fmt: skip
     assert all(f in item_3 for f in frases)
+
+
+COMMIT_DE_REGISTRO = (
+    "313c52db5df2f11b0a4f9d7920e486e688a9f381"  # o registro do pré-registro do motor v2 e da emenda 5 ao estudo 2
+)
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_hash_do_commit_de_registro_anotado_nos_dois_documentos(lang: str) -> None:
+    pre = PRE[lang].read_text(encoding="utf-8")
+    rotulo = "Hash do commit de registro" if lang == "pt" else "Hash of the registration commit"
+    assert f"{rotulo}: `{COMMIT_DE_REGISTRO}`" in pre
+    assert f"`{COMMIT_DE_REGISTRO}`" in _emenda_5(lang).split("\n2. ", 1)[0]
