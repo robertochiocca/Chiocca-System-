@@ -2,6 +2,8 @@
 
 Rascunho de 22/11/2026, pedido por Roberto, com as decisões dele do mesmo dia (resumo no fim). **Não é o pré-registro e não tem código do motor.** Foi escrito sem nenhum valor de exercício de 2024 em diante. Os números do estudo 1 vêm de [`docs/resultados_numeros.json`](resultados_numeros.json); os do estudo 2, de [`docs/estudo_2_numeros.json`](estudo_2_numeros.json), só metadados; as datas e as regras, do [pré-registro do estudo 2](pre-registro-estudo-2.md), que não muda nesta rodada: a emenda da seção 4 é só um rascunho. Um teste confere cada número contra os JSONs.
 
+**Estado (22/11/2026):** o [pré-registro do motor v2](pre-registro-motor-v2.md) e a emenda 5 ao estudo 2 foram registrados no commit `313c52db5df2f11b0a4f9d7920e486e688a9f381`; o hash foi anotado no commit `29e472b130a61f1358b97694eddbeaba6e9bbb88`, e o carimbo entrou no commit `13564a22074aca81a7b96dcdf9c8cda4fe3a9c81`. Este plano fica como registro das decisões que levaram ao pré-registro.
+
 ## Objetivo
 
 - **Tentar o v2 no estudo 2** (decisão de Roberto, 22/11/2026), como um braço a mais na avaliação secundária (a partir de 31/05/2027), ao lado do v1 e da regra boba, pela emenda 5, que só acrescenta o braço. A análise do v1 não muda em nada: lista, registro, desfechos, métricas, semente, critérios e previsões continuam os do pré-registro.

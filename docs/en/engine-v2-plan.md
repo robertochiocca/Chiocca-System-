@@ -2,6 +2,8 @@
 
 Draft of 2026-11-22, requested by Roberto, with his decisions of the same day (summary at the end). **It is not the pre-registration and has no engine code.** It was written without any value from fiscal year 2024 onward. Study 1 figures come from [`docs/resultados_numeros.json`](../resultados_numeros.json); study 2 figures, from [`docs/estudo_2_numeros.json`](../estudo_2_numeros.json), metadata only; dates and rules, from the [study 2 pre-registration](study-2-preregistration.md), which does not change in this round: the amendment in section 4 is only a draft. A test checks each figure against the JSON files.
 
+**Status (2026-11-22):** the [engine v2 pre-registration](engine-v2-preregistration.md) and amendment 5 to study 2 were registered in commit `313c52db5df2f11b0a4f9d7920e486e688a9f381`; the hash was noted in commit `29e472b130a61f1358b97694eddbeaba6e9bbb88`, and the stamp went in with commit `13564a22074aca81a7b96dcdf9c8cda4fe3a9c81`. This plan stays as the record of the decisions that led to the pre-registration.
+
 ## Goal
 
 - **Attempt v2 in study 2** (Roberto's decision, 2026-11-22), as one more arm in the secondary evaluation (from 2027-05-31), next to v1 and the naive rule, through amendment 5, which only adds the arm. The v1 analysis does not change at all: list, registry, outcomes, metrics, seed, criteria and predictions stay as pre-registered.
