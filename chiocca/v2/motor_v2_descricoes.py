@@ -20,6 +20,9 @@ O que é descrito:
 6. Decisão de Roberto de 22/11/2026: o Benford final usa a normalização do artigo, (desvio - média da faixa) ÷
    desvio-padrão da faixa, dentro do ano, do grupo e da faixa de quantidade de números. Aqui, o topo do Benford e o
    topo da opção (ii) por quintil de quantidade de números, nas duas normalizações.
+7. Pedido de Roberto de 22/11/2026: a taxa de alerta por número de sinais calculáveis em duas versões do escore (o
+   maior percentil e o maior percentil elevado ao número de sinais calculáveis), com o critério de escolha escrito
+   antes de rodar, e o topo por quintil nas duas.
 """
 
 from __future__ import annotations
@@ -38,7 +41,7 @@ import pandas as pd
 
 from chiocca import base
 from chiocca.cvm import cd_texto
-from chiocca.formato import data, inteiro, pct
+from chiocca.formato import data, decimal, inteiro, pct
 from chiocca.sinais import mscore as ms
 from chiocca.v2 import lacre
 
@@ -66,6 +69,8 @@ ARRENDAMENTO = re.compile(r"arrendament|leasing|direito de uso")
 CRITERIO_COBERTURA = 0.5
 ANOS_CRITERIO = range(2019, 2024)
 FAIXAS_BENFORD = 5
+MINIMO_NUMEROS_BENFORD = 20  # pré-registro do v2: o Benford só com pelo menos 20 números
+VERSOES_ESCORE = ("maximo", "potencia")
 PERCENTIL = 0.9
 BENFORD = np.log10(1 + 1 / np.arange(1, 10))
 COMPONENTES_SEM_DEPI = ("DSRI", "GMI", "AQI", "SGI", "SGAI", "TATA", "LVGI")
@@ -118,10 +123,13 @@ def faixa_de_quantidade(n: pd.Series, faixas: int = FAIXAS_BENFORD) -> pd.Series
     return out
 
 
-def padroniza_por_faixa(mad: pd.Series, n: pd.Series, faixas: int = FAIXAS_BENFORD) -> pd.Series:
+def padroniza_por_faixa(
+    mad: pd.Series, n: pd.Series, faixas: int = FAIXAS_BENFORD, minimo: int = MINIMO_NUMEROS_BENFORD
+) -> pd.Series:
     """Normalização do artigo: (desvio - média da faixa) ÷ desvio-padrão da faixa (amostral, n - 1), com as faixas de
-    quantidade de números do conjunto (quintis); faixa com desvio-padrão zero fica sem valor."""
-    ok = mad.notna() & (n > 0)
+    quantidade de números do conjunto (quintis), só nas empresa-anos com pelo menos `minimo` números; faixa com
+    desvio-padrão zero fica sem valor."""
+    ok = mad.notna() & (n >= minimo)
     out = pd.Series(np.nan, index=mad.index)
     if ok.sum() < faixas:
         return out
@@ -155,6 +163,28 @@ def alerta_ii(g: pd.DataFrame, sinais: tuple[str, ...]) -> pd.Series:
     """Opção (ii): o escore é o maior percentil entre os sinais calculáveis; alerta no decil superior do escore."""
     pcts = pd.DataFrame({s: g[s].rank(pct=True) for s in sinais}, index=g.index)
     return _decil(pcts.max(axis=1))
+
+
+def alerta_escore(g: pd.DataFrame, sinais: tuple[str, ...], versao: str) -> tuple[pd.Series, pd.Series]:
+    """Alerta no decil superior do escore e número de sinais calculáveis. Versões: "maximo", o maior percentil entre os
+    sinais calculáveis; "potencia", esse maior percentil elevado ao número k de sinais calculáveis (sob sinais
+    independentes, a probabilidade de o máximo de k percentis ficar abaixo do observado)."""
+    pcts = pd.DataFrame({s: g[s].rank(pct=True) for s in sinais}, index=g.index)
+    k = pcts.notna().sum(axis=1)
+    m = pcts.max(axis=1)
+    if versao == "maximo":
+        escore = m
+    elif versao == "potencia":
+        escore = m**k
+    else:
+        raise ValueError(versao)
+    return _decil(escore.where(k > 0)), k
+
+
+def escolhe_versao(maior_distancia: dict[str, float]) -> str:
+    """Critério escrito antes de rodar (Roberto, 22/11/2026): fica a versão com a menor das maiores distâncias entre a
+    taxa por número de sinais calculáveis e a taxa do grupo; em empate, o maior percentil simples."""
+    return "potencia" if maior_distancia["potencia"] < maior_distancia["maximo"] else "maximo"
 
 
 def _por_quintil(g: pd.DataFrame, marca: pd.Series) -> list[int]:
@@ -409,6 +439,38 @@ def calcula() -> dict[str, Any]:
         } | z["ii"]
         quintis[g] = bloco
 
+    # 7. Escore: o maior percentil ou elevado ao número de sinais calculáveis (com o Benford padronizado)
+    grupos: dict[str, Any] = {}
+    for g, sinais in SINAIS_V2.items():
+        gg = s[s.amostra == g]
+        com_z = tuple("benford_z" if x == "benford" else x for x in sinais)
+        bloco_e: dict[str, Any] = {}
+        for versao in VERSOES_ESCORE:
+            alerta = pd.Series(False, index=gg.index)
+            k = pd.Series(0, index=gg.index)
+            for a in ANOS:
+                ga = gg[gg.exercicio == a]
+                al, kk = alerta_escore(ga, com_z, versao)
+                alerta.loc[ga.index] = al
+                k.loc[ga.index] = kk
+            por_k = {str(j): {"empresa_anos": int((k == j).sum()), "alertas": int((alerta & (k == j)).sum())}
+                     for j in range(1, len(sinais) + 1)}  # fmt: skip
+            avaliadas, alertas = int((k > 0).sum()), int(alerta.sum())
+            dist = max(abs(v["alertas"] / v["empresa_anos"] - alertas / avaliadas) for v in por_k.values()
+                       if v["empresa_anos"])  # fmt: skip
+            bloco_e[versao] = {"por_k": por_k, "avaliadas": avaliadas, "alertas": alertas, "maior_distancia": dist,
+                               "topo_por_quintil": _por_quintil(gg, alerta)}  # fmt: skip
+        grupos[g] = bloco_e
+    maior = {v: max(grupos[g][v]["maior_distancia"] for g in grupos) for v in VERSOES_ESCORE}
+    escore_k = {
+        "grupos": grupos,
+        "criterio": "fica a versão cuja maior distância entre a taxa por número de sinais calculáveis e a taxa do grupo "
+        "for menor, a maior entre os dois grupos; em empate, o maior percentil simples (escrito por Roberto antes de rodar)",
+        "maior_distancia": maior,
+        "por_grupo": {g: escolhe_versao({v: grupos[g][v]["maior_distancia"] for v in VERSOES_ESCORE}) for g in grupos},
+        "escolhida": escolhe_versao(maior),
+    }
+
     return {
         "o_que_e": "descrições sem rótulo para o pré-registro do motor v2 (docs/motor-v2-plano.md, seção 2); só "
         "exercícios de 2010 a 2023, só agregados por ano e grupo, sem o gabarito",
@@ -420,6 +482,7 @@ def calcula() -> dict[str, Any]:
         "fracao": fracao,
         "entregas_dfp_2023": _entregas(s),
         "benford_quintis": quintis,
+        "escore_por_numero_de_sinais": escore_k,
     }
 
 
@@ -460,6 +523,14 @@ T: dict[str, dict[str, Any]] = {
         "q6": "Decisão de Roberto (22/11/2026): na versão final, o desvio de Benford é padronizado como no artigo, dentro do ano, do grupo e da faixa de quantidade de números: (desvio − média da faixa) ÷ desvio-padrão da faixa (amostral, n − 1). Abaixo, as empresa-anos no topo do Benford (o decil superior do ano, dentro do grupo) e no topo da opção (ii), por quintil de quantidade de números dentro do ano e do grupo (1 = menos números), nas duas normalizações: a divisão só pela média da faixa, usada nas seções 4 e 5, e a padronizada. Sem concentração, cada quintil teria perto de 20% de cada topo. A última coluna é a opção (ii) sem o Benford, só com os outros sinais do grupo, para separar o efeito dele do dos outros sinais.",
         "cab_q6": "| Quintil | Empresa-anos | Topo do Benford, só a média | Topo do Benford, padronizado | Topo da opção (ii), só a média | Topo da opção (ii), padronizado | Topo da opção (ii), sem o Benford |\n| --- | --- | --- | --- | --- | --- | --- |",
         "ii6": "Opção (ii) com o Benford padronizado: {al} de {n} empresa-anos em alerta ({pa}), com o Benford calculável em {cb}. Sinal que define o maior percentil entre as alertadas (com empate, conta para cada um): {nomax}; alertas com empate no maior percentil: {emp}.",
+        "h7": "## 7. Escore: o maior percentil ou elevado ao número de sinais calculáveis",
+        "q7": "Pedido de Roberto (22/11/2026). Duas versões do escore, com o Benford padronizado: o maior percentil entre os sinais calculáveis, como está, e esse maior percentil elevado ao número k de sinais calculáveis. Sob sinais independentes, o máximo de k percentis fica abaixo de m com probabilidade m elevado a k, e 1 menos esse valor é a chance de um máximo tão alto por acaso; a segunda versão tira a vantagem de quem tem mais sinais calculáveis. Nas duas, o alerta é o decil superior do escore no ano e no grupo. **Critério escrito por Roberto antes de rodar:** fica a versão cuja maior distância entre a taxa de alerta por número de sinais calculáveis e a taxa do grupo for menor; em empate, o maior percentil simples. Na escolha, vale a maior distância entre os dois grupos.",
+        "cab_k": "| Sinais calculáveis | Empresa-anos | Taxa, maior percentil | Taxa, elevado a k |\n| --- | --- | --- | --- |",
+        "grupo_k": "Grupo", "dist": "Maior distância",
+        "cab_kq": "| Quintil | Empresa-anos | Topo, maior percentil | Topo, elevado a k |\n| --- | --- | --- | --- |",
+        "versao": {"maximo": "o maior percentil", "potencia": "o maior percentil elevado a k"},
+        "res_k": "Maior distância entre os dois grupos: {dm} com o maior percentil e {dp} com ele elevado a k. Versão escolhida pelo critério: **{esc}**. Olhando cada grupo sozinho, o critério escolheria, nas não financeiras, {pg_nf} e, nas financeiras, {pg_fin}.",
+        "pp": "p.p.",
     },
     "en": {
         "titulo": "# Engine v2: label-free descriptions",
@@ -495,6 +566,14 @@ T: dict[str, dict[str, Any]] = {
         "q6": "Roberto's decision (2026-11-22): in the final version, the Benford deviation is standardized as in the article, within the year, the group and the bin of the number of figures: (deviation − bin mean) ÷ bin standard deviation (sample, n − 1). Below, the company-years at the top of Benford (the year's top decile, within the group) and at the top of option (ii), by quintile of the number of figures within the year and group (1 = fewest figures), in both normalizations: division by the bin mean only, used in sections 4 and 5, and the standardized one. With no concentration, each quintile would hold about 20% of each top. The last column is option (ii) without Benford, with only the group's other signals, to separate its effect from that of the other signals.",
         "cab_q6": "| Quintile | Company-years | Benford top, mean only | Benford top, standardized | Option (ii) top, mean only | Option (ii) top, standardized | Option (ii) top, without Benford |\n| --- | --- | --- | --- | --- | --- | --- |",
         "ii6": "Option (ii) with the standardized Benford: {al} of {n} company-years in alert ({pa}), with Benford computable in {cb}. Signal that sets the highest percentile among the flagged ones (with a tie, it counts for each): {nomax}; alerts with a tie at the highest percentile: {emp}.",
+        "h7": "## 7. Score: the highest percentile or raised to the number of computable signals",
+        "q7": "Roberto's request (2026-11-22). Two versions of the score, with the standardized Benford: the highest percentile among the computable signals, as it is, and that highest percentile raised to the number k of computable signals. Under independent signals, the maximum of k percentiles stays below m with probability m to the power k, and 1 minus that value is the chance of a maximum that high by chance; the second version removes the advantage of having more computable signals. In both, the alert is the score's top decile in the year and group. **Criterion written by Roberto before running:** the version whose largest distance between the alert rate by number of computable signals and the group rate is smaller stays; in a tie, the simple highest percentile. For the choice, the larger distance between the two groups counts.",
+        "cab_k": "| Computable signals | Company-years | Rate, highest percentile | Rate, raised to k |\n| --- | --- | --- | --- |",
+        "grupo_k": "Group", "dist": "Largest distance",
+        "cab_kq": "| Quintile | Company-years | Top, highest percentile | Top, raised to k |\n| --- | --- | --- | --- |",
+        "versao": {"maximo": "the highest percentile", "potencia": "the highest percentile raised to k"},
+        "res_k": "Largest distance across the two groups: {dm} with the highest percentile and {dp} with it raised to k. Version chosen by the criterion: **{esc}**. Looking at each group alone, the criterion would choose, among non-financial companies, {pg_nf} and, among financial ones, {pg_fin}.",
+        "pp": "pp",
     },
 }  # fmt: skip
 
@@ -613,6 +692,28 @@ def render(d: dict[str, Any], lang: str) -> str:
         nomax = "; ".join(f"{nome_z(k)}, {i(v)}" for k, v in z["sinal_no_maximo"].items())
         out += ["", t["ii6"].format(al=i(z["alertas"]), n=i(z["avaliaveis"]), pa=p(z["alertas"], z["avaliaveis"]),
                                     cb=i(z["calculaveis_benford"]), nomax=nomax, emp=i(z["empates_no_maximo"]))]  # fmt: skip
+
+    ek = d["escore_por_numero_de_sinais"]
+    pp = lambda x: f"{decimal(100 * x, lang, 1)} {t['pp']}"  # noqa: E731
+    out += ["", t["h7"], "", t["q7"]]
+    for g, b in ek["grupos"].items():
+        mx, pt_ = b["maximo"], b["potencia"]
+        out += ["", t["grupo"][g], "", t["cab_k"]]
+        for j, v in mx["por_k"].items():
+            vp = pt_["por_k"][j]
+            out.append(f"| {j} | {i(v['empresa_anos'])} | {p(v['alertas'], v['empresa_anos'])} | "
+                       f"{p(vp['alertas'], vp['empresa_anos'])} |")  # fmt: skip
+        out.append(f"| {t['grupo_k']} | {i(mx['avaliadas'])} | {p(mx['alertas'], mx['avaliadas'])} | "
+                   f"{p(pt_['alertas'], pt_['avaliadas'])} |")  # fmt: skip
+        out.append(f"| {t['dist']} | | {pp(mx['maior_distancia'])} | {pp(pt_['maior_distancia'])} |")
+        out += ["", t["cab_kq"]]
+        for q in range(FAIXAS_BENFORD):
+            a_, b_ = mx["topo_por_quintil"], pt_["topo_por_quintil"]
+            out.append(f"| {q + 1} | {i(d['benford_quintis'][g]['empresa_anos'][q])} | {i(a_[q])} ({p(a_[q], sum(a_))}) | "
+                       f"{i(b_[q])} ({p(b_[q], sum(b_))}) |")  # fmt: skip
+    out += ["", t["res_k"].format(dm=pp(ek["maior_distancia"]["maximo"]), dp=pp(ek["maior_distancia"]["potencia"]),
+                                  esc=t["versao"][ek["escolhida"]], pg_nf=t["versao"][ek["por_grupo"][NF]],
+                                  pg_fin=t["versao"][ek["por_grupo"][FIN]])]  # fmt: skip
     return "\n".join(out) + "\n"
 
 

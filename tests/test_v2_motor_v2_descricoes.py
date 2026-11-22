@@ -116,7 +116,7 @@ def test_opcoes_numa_tabela_pequena() -> None:
 
 
 def test_padronizacao_por_faixa_tem_media_0_e_desvio_1() -> None:
-    n = pd.Series(range(1, 21), dtype=float)
+    n = pd.Series(range(20, 40), dtype=float)
     rng = np.random.default_rng(7)
     mad = pd.Series(rng.uniform(0.01, 0.2, 20))
     z = md.padroniza_por_faixa(mad, n, faixas=5)
@@ -137,3 +137,42 @@ def test_quintis_somam_os_topos() -> None:
         assert sum(b["razao"]["topo_benford"]) == total["i"]["por_sinal"]["benford"]
         assert sum(b["padronizado"]["topo_ii"]) == b["ii_padronizado"]["alertas"]
         assert len(b["sem_benford"]["topo_ii"]) == 5
+
+
+def test_benford_padronizado_exige_20_numeros() -> None:
+    n = pd.Series([19.0] + list(range(20, 40)))
+    mad = pd.Series(np.linspace(0.01, 0.2, len(n)))
+    z = md.padroniza_por_faixa(mad, n, faixas=5)
+    assert math.isnan(z.iloc[0]) and z.iloc[1:].notna().all()
+    assert md.MINIMO_NUMEROS_BENFORD == 20
+
+
+def test_escore_potencia_e_criterio() -> None:
+    g = pd.DataFrame({"a": np.arange(1, 21, dtype=float), "b": [np.nan] * 10 + list(np.arange(1, 11, dtype=float))})
+    al_m, k = md.alerta_escore(g, ("a", "b"), "maximo")
+    al_p, _ = md.alerta_escore(g, ("a", "b"), "potencia")
+    assert k.tolist() == [1] * 10 + [2] * 10
+    assert al_m.sum() >= 2 and al_p.sum() >= 2
+    with pytest.raises(ValueError):
+        md.alerta_escore(g, ("a", "b"), "outra")
+    assert md.escolhe_versao({"maximo": 0.05, "potencia": 0.05}) == "maximo"  # empate: o maior percentil simples
+    assert md.escolhe_versao({"maximo": 0.06, "potencia": 0.05}) == "potencia"
+
+
+def test_escore_por_numero_de_sinais_soma_e_escolha() -> None:
+    """Pedido de 22/11/2026: as duas versões do escore, com o critério escrito antes de rodar."""
+    d = _d()
+    ek = d["escore_por_numero_de_sinais"]
+    for g, b in ek["grupos"].items():
+        for versao in ("maximo", "potencia"):
+            x = b[versao]
+            assert sum(v["alertas"] for v in x["por_k"].values()) == x["alertas"]
+            assert sum(v["empresa_anos"] for v in x["por_k"].values()) == x["avaliadas"]
+            assert sum(x["topo_por_quintil"]) == x["alertas"]
+            taxa = x["alertas"] / x["avaliadas"]
+            dist = max(abs(v["alertas"] / v["empresa_anos"] - taxa) for v in x["por_k"].values() if v["empresa_anos"])
+            assert dist == pytest.approx(x["maior_distancia"])
+        # o maior percentil simples é a opção (ii) da seção 6, com o Benford padronizado
+        assert b["maximo"]["topo_por_quintil"] == d["benford_quintis"][g]["padronizado"]["topo_ii"]
+    maior = {v: max(ek["grupos"][g][v]["maior_distancia"] for g in ek["grupos"]) for v in ("maximo", "potencia")}
+    assert ek["maior_distancia"] == pytest.approx(maior) and ek["escolhida"] == md.escolhe_versao(maior)

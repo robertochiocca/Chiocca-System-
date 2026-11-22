@@ -171,3 +171,45 @@ Option (ii) with the standardized Benford: 700 of 6,938 company-years in alert (
 | 5 | 108 | 15 (25.4%) | 13 (22.0%) | 12 (20.0%) | 11 (18.3%) | 8 (22.2%) |
 
 Option (ii) with the standardized Benford: 60 of 517 company-years in alert (11.6%), with Benford computable in 517. Signal that sets the highest percentile among the flagged ones (with a tie, it counts for each): share of non-recurring gains, 25; standardized Benford deviation, 35; alerts with a tie at the highest percentile: 0.
+
+## 7. Score: the highest percentile or raised to the number of computable signals
+
+Roberto's request (2026-11-22). Two versions of the score, with the standardized Benford: the highest percentile among the computable signals, as it is, and that highest percentile raised to the number k of computable signals. Under independent signals, the maximum of k percentiles stays below m with probability m to the power k, and 1 minus that value is the chance of a maximum that high by chance; the second version removes the advantage of having more computable signals. In both, the alert is the score's top decile in the year and group. **Criterion written by Roberto before running:** the version whose largest distance between the alert rate by number of computable signals and the group rate is smaller stays; in a tie, the simple highest percentile. For the choice, the larger distance between the two groups counts.
+
+### Non-financial companies
+
+| Computable signals | Company-years | Rate, highest percentile | Rate, raised to k |
+| --- | --- | --- | --- |
+| 1 | 215 | 7.0% | 18.6% |
+| 2 | 426 | 16.9% | 23.0% |
+| 3 | 745 | 14.5% | 15.2% |
+| 4 | 5,552 | 9.1% | 8.1% |
+| Group | 6,938 | 10.1% | 10.1% |
+| Largest distance | | 6.8 pp | 12.9 pp |
+
+| Quintile | Company-years | Top, highest percentile | Top, raised to k |
+| --- | --- | --- | --- |
+| 1 | 1,392 | 224 (32.0%) | 265 (37.9%) |
+| 2 | 1,387 | 160 (22.9%) | 151 (21.6%) |
+| 3 | 1,383 | 133 (19.0%) | 124 (17.7%) |
+| 4 | 1,387 | 105 (15.0%) | 91 (13.0%) |
+| 5 | 1,389 | 78 (11.1%) | 69 (9.9%) |
+
+### Financial companies
+
+| Computable signals | Company-years | Rate, highest percentile | Rate, raised to k |
+| --- | --- | --- | --- |
+| 1 | 217 | 7.8% | 9.7% |
+| 2 | 300 | 14.3% | 12.7% |
+| Group | 517 | 11.6% | 11.4% |
+| Largest distance | | 3.8 pp | 1.7 pp |
+
+| Quintile | Company-years | Top, highest percentile | Top, raised to k |
+| --- | --- | --- | --- |
+| 1 | 109 | 10 (16.7%) | 11 (18.6%) |
+| 2 | 99 | 9 (15.0%) | 9 (15.3%) |
+| 3 | 102 | 14 (23.3%) | 13 (22.0%) |
+| 4 | 99 | 16 (26.7%) | 16 (27.1%) |
+| 5 | 108 | 11 (18.3%) | 10 (16.9%) |
+
+Largest distance across the two groups: 6.8 pp with the highest percentile and 12.9 pp with it raised to k. Version chosen by the criterion: **the highest percentile**. Looking at each group alone, the criterion would choose, among non-financial companies, the highest percentile and, among financial ones, the highest percentile raised to k.

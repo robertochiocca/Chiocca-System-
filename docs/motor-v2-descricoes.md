@@ -171,3 +171,45 @@ Opção (ii) com o Benford padronizado: 700 de 6.938 empresa-anos em alerta (10,
 | 5 | 108 | 15 (25,4%) | 13 (22,0%) | 12 (20,0%) | 11 (18,3%) | 8 (22,2%) |
 
 Opção (ii) com o Benford padronizado: 60 de 517 empresa-anos em alerta (11,6%), com o Benford calculável em 517. Sinal que define o maior percentil entre as alertadas (com empate, conta para cada um): peso de ganhos não recorrentes, 25; desvio de Benford padronizado, 35; alertas com empate no maior percentil: 0.
+
+## 7. Escore: o maior percentil ou elevado ao número de sinais calculáveis
+
+Pedido de Roberto (22/11/2026). Duas versões do escore, com o Benford padronizado: o maior percentil entre os sinais calculáveis, como está, e esse maior percentil elevado ao número k de sinais calculáveis. Sob sinais independentes, o máximo de k percentis fica abaixo de m com probabilidade m elevado a k, e 1 menos esse valor é a chance de um máximo tão alto por acaso; a segunda versão tira a vantagem de quem tem mais sinais calculáveis. Nas duas, o alerta é o decil superior do escore no ano e no grupo. **Critério escrito por Roberto antes de rodar:** fica a versão cuja maior distância entre a taxa de alerta por número de sinais calculáveis e a taxa do grupo for menor; em empate, o maior percentil simples. Na escolha, vale a maior distância entre os dois grupos.
+
+### Não financeiras
+
+| Sinais calculáveis | Empresa-anos | Taxa, maior percentil | Taxa, elevado a k |
+| --- | --- | --- | --- |
+| 1 | 215 | 7,0% | 18,6% |
+| 2 | 426 | 16,9% | 23,0% |
+| 3 | 745 | 14,5% | 15,2% |
+| 4 | 5.552 | 9,1% | 8,1% |
+| Grupo | 6.938 | 10,1% | 10,1% |
+| Maior distância | | 6,8 p.p. | 12,9 p.p. |
+
+| Quintil | Empresa-anos | Topo, maior percentil | Topo, elevado a k |
+| --- | --- | --- | --- |
+| 1 | 1.392 | 224 (32,0%) | 265 (37,9%) |
+| 2 | 1.387 | 160 (22,9%) | 151 (21,6%) |
+| 3 | 1.383 | 133 (19,0%) | 124 (17,7%) |
+| 4 | 1.387 | 105 (15,0%) | 91 (13,0%) |
+| 5 | 1.389 | 78 (11,1%) | 69 (9,9%) |
+
+### Financeiras
+
+| Sinais calculáveis | Empresa-anos | Taxa, maior percentil | Taxa, elevado a k |
+| --- | --- | --- | --- |
+| 1 | 217 | 7,8% | 9,7% |
+| 2 | 300 | 14,3% | 12,7% |
+| Grupo | 517 | 11,6% | 11,4% |
+| Maior distância | | 3,8 p.p. | 1,7 p.p. |
+
+| Quintil | Empresa-anos | Topo, maior percentil | Topo, elevado a k |
+| --- | --- | --- | --- |
+| 1 | 109 | 10 (16,7%) | 11 (18,6%) |
+| 2 | 99 | 9 (15,0%) | 9 (15,3%) |
+| 3 | 102 | 14 (23,3%) | 13 (22,0%) |
+| 4 | 99 | 16 (26,7%) | 16 (27,1%) |
+| 5 | 108 | 11 (18,3%) | 10 (16,9%) |
+
+Maior distância entre os dois grupos: 6,8 p.p. com o maior percentil e 12,9 p.p. com ele elevado a k. Versão escolhida pelo critério: **o maior percentil**. Olhando cada grupo sozinho, o critério escolheria, nas não financeiras, o maior percentil e, nas financeiras, o maior percentil elevado a k.
