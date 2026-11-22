@@ -113,3 +113,20 @@ def test_revisoes_antes_do_registro(lang: str) -> None:
     assert pct(sem[0] / sum(sem), lang) in doc
     produto = "O produto continua com o v1" if lang == "pt" else "The product stays on v1"
     assert produto in doc and "OpenTimestamps" in doc and "docs/carimbos/" in doc
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_emenda_5_item_3_alerta_da_lista_inteira_medidas_no_conjunto_do_v1(lang: str) -> None:
+    """Pedido de 22/11/2026: o alerta do v2 sai da lista do v2 inteira, e todas as medidas do braço são calculadas só
+    nas empresa-anos avaliadas pelo v1."""
+    emenda = EMENDA[lang].read_text(encoding="utf-8")
+    item_3 = emenda.split("> 3. ", 1)[1].split("\n> 4. ", 1)[0]
+    if lang == "pt":
+        frases = ("O alerta do v2 sai da lista do v2 inteira", "entre todas as empresa-anos que o v2 avalia",
+                  "são calculadas só nas empresa-anos que a seção 7.2 avalia para o v1", "subconjunto prospectivo",
+                  "ficam à parte, só como descrição")  # fmt: skip
+    else:
+        frases = ("v2's alert comes from the whole v2 list", "among all the company-years that v2 evaluates",
+                  "is computed only on the company-years that section 7.2 evaluates for v1", "prospective subset",
+                  "reported separately, as description only")  # fmt: skip
+    assert all(f in item_3 for f in frases)
