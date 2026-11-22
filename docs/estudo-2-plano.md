@@ -123,6 +123,11 @@ Cada uma com pré-registro próprio, comparada com o motor v1 sem mudança e com
 6. **Cortes recalibrados para o Brasil ou por setor.**
 7. **Dados trimestrais (ITR)**, para casos como o do IRB.
 8. **Aprendizado supervisionado**, só exploratório.
+9. **Desvio de Benford ajustado, a partir do AB-score de Chakrabarty et al. (2025), em versão sem rótulo.** Acrescentado em 22/11/2026, depois do pré-registro do estudo 2, que não muda; a ordem dos itens 1 a 8, citada no pré-registro, também não muda. Referência em [`docs/referencias.md`](referencias.md).
+   - *O quê:* o desvio médio absoluto da distribuição do primeiro dígito dos números da versão usada da DFP, normalizado dentro do ano por faixas de quantidade de números (o `B_Input` do artigo) e pelo ano (o `B_Year`); alerta no decil mais alto do ano, dentro de cada grupo.
+   - *Por quê:* dá para calcular em quase todas as empresa-anos; no estudo 1, o M-score ficou sem valor em 1.548 de 6.938.
+   - *Limites já sabidos:* os coeficientes do artigo foram estimados com AAER dos EUA e não são usados; sozinho, no artigo, ele alerta demais, então entra como sinal complementar; a DFP tem menos números que a Compustat, e a distribuição da quantidade de números por empresa-ano precisa ser descrita antes, só com exercícios até 2023.
+   - *Regra:* pré-registro próprio antes de qualquer código, desenvolvimento só com exercícios até 2023 e avaliação em dados que não serviram para desenvolvê-lo.
 
 ## Decisões de Roberto (resumo)
 

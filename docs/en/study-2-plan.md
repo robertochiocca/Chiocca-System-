@@ -123,6 +123,11 @@ Each one with its own pre-registration, compared with engine v1 unchanged and wi
 6. **Cut-offs recalibrated for Brazil or by sector.**
 7. **Quarterly data (ITR)**, for cases like IRB.
 8. **Supervised learning**, exploratory only.
+9. **Adjusted Benford deviation, based on Chakrabarty et al.'s (2025) AB-score, in a label-free version.** Added on 2026-11-22, after the study 2 pre-registration, which does not change; the order of items 1 to 8, cited in the pre-registration, does not change either. Reference in [`docs/en/references.md`](references.md).
+   - *What:* the mean absolute deviation of the first-digit distribution of the figures in the DFP version used, normalized within the year by bins of the number of figures (the article's `B_Input`) and by the year (`B_Year`); alert in the top decile of the year, within each group.
+   - *Why:* it can be computed for almost every company-year; in study 1, the M-score had no value in 1,548 of 6,938.
+   - *Known limits:* the article's coefficients were estimated with US AAERs and are not used; on its own, in the article, it flags too much, so it enters as a complementary signal; the DFP has fewer figures than Compustat, and the distribution of the number of figures per company-year must be described first, only with fiscal years up to 2023.
+   - *Rule:* its own pre-registration before any code, development only with fiscal years up to 2023 and evaluation on data that were not used to develop it.
 
 ## Roberto's decisions (summary)
 

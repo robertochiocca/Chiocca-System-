@@ -1,4 +1,5 @@
-"""Textos do README gerados dos JSONs versionados (pedido de 09/11/2026): a seção "Limitações", em PT e EN.
+"""Textos do README gerados dos JSONs versionados (pedido de 09/11/2026): a seção "Limitações", em PT e EN, e o topo
+de 30 segundos (pedido de 21/11/2026), com os números do estudo 1 e as datas do estudo 2.
 
 Cada limitação traz uma frase e o link para o documento onde está o número. Nenhum número é escrito à mão: todos
 vêm de `docs/resultados_numeros.json` (estudo 1), da análise depois do resultado (`chiocca.v2.analises_pos_estudo_1`)
@@ -80,16 +81,16 @@ def secao_limitacoes(lang: str) -> str:
 # Pedido de 09/11/2026: o README separa a correção do software da efetividade da detecção.
 SEPARACAO = {
     "pt": {
-        "h_correcao": "#### Correção do software",
+        "h_correcao": "### Correção do software",
         "correcao": "Os testes automáticos (pytest) rodam no CI em Python 3.12 e 3.13. O invariante reproduz o estudo 1 a partir do armazém temporal: {i} de {e} empresa-anos iguais ao estudo, coluna por coluna ([armazenamento temporal](docs/armazenamento-temporal.md)). O exemplo resolvido confere cada fórmula contra valores calculados à mão (`data/exemplo_resolvido.json`), e as conferências de qualidade testam os próprios dados da CVM ([conferências](docs/conferencias.md)). Isso mostra que o software calcula o que o pré-registro manda e reproduz o estudo 1.",
-        "h_efetividade": "#### Efetividade da detecção",
+        "h_efetividade": "### Efetividade da detecção",
         "efetividade": "No estudo 1, o motor acertou {a} de {n} casos acertáveis, com {xi} alarmes por acerto no período inteiro e taxa de alerta de {taxa} das empresa-anos não financeiras avaliadas ([resumo](docs/resumo.md)). A [ficha do motor](docs/ficha-do-motor.md) reúne esses números, o teste contra o acaso, o uso pretendido e o que fica fora de escopo.",
         "nao_prova": "Uma coisa não prova a outra: o software estar correto não faz os alertas acertarem, e um acerto não mostra que o cálculo está certo. A correção é conferida pelos testes; a efetividade, só pelo estudo, com gabarito e pré-registro.",
     },
     "en": {
-        "h_correcao": "#### Software correctness",
+        "h_correcao": "### Software correctness",
         "correcao": "The automated tests (pytest) run in CI on Python 3.12 and 3.13. The invariant reproduces study 1 from the temporal store: {i} of {e} company-years equal to the study, column by column ([temporal storage](docs/en/temporal-storage.md)). The worked example checks every formula against hand-calculated values (`data/exemplo_resolvido.json`), and the quality checks test the CVM data itself ([data checks](docs/en/data-checks.md)). This shows that the software computes what the pre-registration prescribes and reproduces study 1.",
-        "h_efetividade": "#### Detection effectiveness",
+        "h_efetividade": "### Detection effectiveness",
         "efetividade": "In study 1, the engine detected {a} of {n} detectable cases, with {xi} false alarms per detected case over the whole period and an alert rate of {taxa} of evaluated non-financial company-years ([summary](docs/summary.md)). The [engine card](docs/en/engine-card.md) brings these figures together with the test against chance, the intended use and what is out of scope.",
         "nao_prova": "One does not prove the other: correct software does not make the alerts right, and a detection does not show that the calculation is correct. Correctness is checked by the tests; effectiveness only by the study, with a ground truth and a pre-registration.",
     },
@@ -111,4 +112,51 @@ def separacao(lang: str) -> dict[str, str]:
                                                xi=decimal(x["alarmes_por_acerto_nf"]["periodo_inteiro"], lang, 1),
                                                taxa=pct(x["taxa_de_alerta"]["nao_financeiras"], lang)),
         "nao_prova": t["nao_prova"], "h_correcao": t["h_correcao"], "h_efetividade": t["h_efetividade"],
+    }  # fmt: skip
+
+
+# Pedido de 21/11/2026: o topo de 30 segundos do README, com os números honestos do estudo 1 e o estado do estudo 2.
+# Datas do pré-registro do estudo 2, seção 6. O produto não importa o script do estudo (chiocca/v2/estudo2/); um
+# teste confere a data da secundária contra a constante do script.
+DATA_AVALIACAO_SECUNDARIA = "2027-05-31"  # a partir de 31/05/2027
+DATA_AVALIACAO_PRIMARIA = "2030-01-01"  # a partir de 01/01/2030
+TOPO = {
+    "pt": {
+        "estudo_1": "**Estudo 1 (2010 a 2023), com as regras fixadas antes dos dados:** o motor acertou {a} de {n} casos acertáveis, o que não supera o acaso ({esp} esperados, num cálculo feito depois do resultado); alertou {taxa} das empresa-anos não financeiras avaliadas; e, no período inteiro, deu {xi} alarmes por acerto, contra {xib} da regra boba de comparação (alertar os {decil} mais endividados de cada ano, dentro de cada grupo), que acertou {ab} ([resultados](docs/resultados.md)).",
+        "estudo_2": "**Estudo 2 (2024 e 2025):** o mesmo motor, sem nenhuma mudança, testado para frente. A lista foi lacrada em {lacre}, e só o SHA-256 dela é público, carimbado no Bitcoin pelo OpenTimestamps; avaliação secundária a partir de {sec} e principal a partir de {pri} ([pré-registro](docs/pre-registro-estudo-2.md)).",
+        "stack": "**Stack:** Python 3.12+ (pandas, DuckDB sobre Parquet, FastAPI), Next.js com TypeScript e GitHub Actions; dados abertos da CVM e do Banco Central.",
+    },
+    "en": {
+        "estudo_1": "**Study 1 (2010 to 2023), with the rules fixed before the data:** the engine detected {a} of {n} detectable cases, which does not beat chance ({esp} expected, in a calculation made after the result); it flagged {taxa} of evaluated non-financial company-years; and, over the whole period, it produced {xi} false alarms per detected case, against {xib} for the naive comparison rule (flag the {decil} most indebted firms each year, within each group), which detected {ab} ([results](docs/en/results.md)).",
+        "estudo_2": "**Study 2 (2024 and 2025):** the same engine, unchanged, tested going forward. The list was sealed on {lacre}, and only its SHA-256 is public, timestamped on Bitcoin through OpenTimestamps; secondary evaluation from {sec} and primary from {pri} ([pre-registration](docs/en/study-2-preregistration.md)).",
+        "stack": "**Stack:** Python 3.12+ (pandas, DuckDB over Parquet, FastAPI), Next.js with TypeScript and GitHub Actions; open data from the CVM and Banco Central.",
+    },
+}  # fmt: skip
+
+
+def topo(lang: str) -> dict[str, str]:
+    """O topo do README: estudo 1 (ficha do motor, análise depois do resultado e o decil da regra boba), estado do
+    estudo 2 (data do lacre e datas das avaliações) e a stack."""
+    from chiocca import sinais_amostra
+    from chiocca.formato import data
+    from chiocca.v2 import ficha_do_motor
+
+    x = ficha_do_motor.numeros()
+    n: dict[str, Any] = json.loads(pos_estudo.NUMEROS_ESTUDO_1.read_text(encoding="utf-8"))
+    lacre = json.loads((base.RAIZ / "docs" / "estudo_2_lista_lacrada.json").read_text(encoding="utf-8"))
+    i = lambda v: inteiro(v, lang)  # noqa: E731
+    t = TOPO[lang]
+    return {
+        "estudo_1": t["estudo_1"].format(
+            a=i(x["acerto"]["acertados"]), n=i(x["acerto"]["acertaveis"]),
+            esp=decimal(x["acaso"]["esperado_sem_independencia"], lang, 2),
+            taxa=pct(x["taxa_de_alerta"]["nao_financeiras"], lang),
+            xi=decimal(x["alarmes_por_acerto_nf"]["periodo_inteiro"], lang, 1),
+            xib=decimal(n["alarmes"]["nf_boba"]["inteiro"]["alarmes_por_acerto"], lang, 1),
+            ab=i(x["acerto"]["acertados_boba"]),
+            decil=f"{i(round((1 - sinais_amostra.PERCENTIL) * 100))}%"),  # decil superior (seção 7 do pré-registro)
+        "estudo_2": t["estudo_2"].format(lacre=data(lacre["calculada_em"], lang),
+                                         sec=data(DATA_AVALIACAO_SECUNDARIA, lang),
+                                         pri=data(DATA_AVALIACAO_PRIMARIA, lang)),
+        "stack": t["stack"],
     }  # fmt: skip
