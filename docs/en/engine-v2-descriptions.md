@@ -143,3 +143,31 @@ Estimate for the prospective label: of the 557 non-financial companies evaluated
 | 2024-04-15 to 2024-04-21 | 5 | 99.3% |
 | 2024-04-22 to 2024-04-28 | 4 | 99.9% |
 | 2024-04-29 to 2024-04-30 | 1 | 100.0% |
+
+## 6. Benford: the top by quintile of the number of figures
+
+Roberto's decision (2026-11-22): in the final version, the Benford deviation is standardized as in the article, within the year, the group and the bin of the number of figures: (deviation − bin mean) ÷ bin standard deviation (sample, n − 1). Below, the company-years at the top of Benford (the year's top decile, within the group) and at the top of option (ii), by quintile of the number of figures within the year and group (1 = fewest figures), in both normalizations: division by the bin mean only, used in sections 4 and 5, and the standardized one. With no concentration, each quintile would hold about 20% of each top. The last column is option (ii) without Benford, with only the group's other signals, to separate its effect from that of the other signals.
+
+### Non-financial companies
+
+| Quintile | Company-years | Benford top, mean only | Benford top, standardized | Option (ii) top, mean only | Option (ii) top, standardized | Option (ii) top, without Benford |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1,392 | 188 (26.9%) | 138 (19.7%) | 256 (36.6%) | 224 (32.0%) | 214 (31.5%) |
+| 2 | 1,387 | 139 (19.9%) | 144 (20.6%) | 155 (22.1%) | 160 (22.9%) | 178 (26.2%) |
+| 3 | 1,383 | 112 (16.0%) | 126 (18.0%) | 126 (18.0%) | 133 (19.0%) | 134 (19.7%) |
+| 4 | 1,387 | 128 (18.3%) | 143 (20.4%) | 96 (13.7%) | 105 (15.0%) | 89 (13.1%) |
+| 5 | 1,389 | 133 (19.0%) | 149 (21.3%) | 67 (9.6%) | 78 (11.1%) | 65 (9.6%) |
+
+Option (ii) with the standardized Benford: 700 of 6,938 company-years in alert (10.1%), with Benford computable in 6,938. Signal that sets the highest percentile among the flagged ones (with a tie, it counts for each): M-score (DEPI from the DVA when missing in the DFC), 163; DPO jump, 173; implied interest (v1 formula), 169; standardized Benford deviation, 195; alerts with a tie at the highest percentile: 0.
+
+### Financial companies
+
+| Quintile | Company-years | Benford top, mean only | Benford top, standardized | Option (ii) top, mean only | Option (ii) top, standardized | Option (ii) top, without Benford |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 109 | 16 (27.1%) | 14 (23.7%) | 11 (18.3%) | 10 (16.7%) | 3 (8.3%) |
+| 2 | 99 | 8 (13.6%) | 10 (16.9%) | 8 (13.3%) | 9 (15.0%) | 3 (8.3%) |
+| 3 | 102 | 9 (15.3%) | 10 (16.9%) | 11 (18.3%) | 14 (23.3%) | 10 (27.8%) |
+| 4 | 99 | 11 (18.6%) | 12 (20.3%) | 18 (30.0%) | 16 (26.7%) | 12 (33.3%) |
+| 5 | 108 | 15 (25.4%) | 13 (22.0%) | 12 (20.0%) | 11 (18.3%) | 8 (22.2%) |
+
+Option (ii) with the standardized Benford: 60 of 517 company-years in alert (11.6%), with Benford computable in 517. Signal that sets the highest percentile among the flagged ones (with a tie, it counts for each): share of non-recurring gains, 25; standardized Benford deviation, 35; alerts with a tie at the highest percentile: 0.

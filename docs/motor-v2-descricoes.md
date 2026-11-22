@@ -143,3 +143,31 @@ Estimativa para o rótulo prospectivo: das 557 não financeiras avaliadas em 202
 | 15/04/2024 a 21/04/2024 | 5 | 99,3% |
 | 22/04/2024 a 28/04/2024 | 4 | 99,9% |
 | 29/04/2024 a 30/04/2024 | 1 | 100,0% |
+
+## 6. Benford: o topo por quintil de quantidade de números
+
+Decisão de Roberto (22/11/2026): na versão final, o desvio de Benford é padronizado como no artigo, dentro do ano, do grupo e da faixa de quantidade de números: (desvio − média da faixa) ÷ desvio-padrão da faixa (amostral, n − 1). Abaixo, as empresa-anos no topo do Benford (o decil superior do ano, dentro do grupo) e no topo da opção (ii), por quintil de quantidade de números dentro do ano e do grupo (1 = menos números), nas duas normalizações: a divisão só pela média da faixa, usada nas seções 4 e 5, e a padronizada. Sem concentração, cada quintil teria perto de 20% de cada topo. A última coluna é a opção (ii) sem o Benford, só com os outros sinais do grupo, para separar o efeito dele do dos outros sinais.
+
+### Não financeiras
+
+| Quintil | Empresa-anos | Topo do Benford, só a média | Topo do Benford, padronizado | Topo da opção (ii), só a média | Topo da opção (ii), padronizado | Topo da opção (ii), sem o Benford |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1.392 | 188 (26,9%) | 138 (19,7%) | 256 (36,6%) | 224 (32,0%) | 214 (31,5%) |
+| 2 | 1.387 | 139 (19,9%) | 144 (20,6%) | 155 (22,1%) | 160 (22,9%) | 178 (26,2%) |
+| 3 | 1.383 | 112 (16,0%) | 126 (18,0%) | 126 (18,0%) | 133 (19,0%) | 134 (19,7%) |
+| 4 | 1.387 | 128 (18,3%) | 143 (20,4%) | 96 (13,7%) | 105 (15,0%) | 89 (13,1%) |
+| 5 | 1.389 | 133 (19,0%) | 149 (21,3%) | 67 (9,6%) | 78 (11,1%) | 65 (9,6%) |
+
+Opção (ii) com o Benford padronizado: 700 de 6.938 empresa-anos em alerta (10,1%), com o Benford calculável em 6.938. Sinal que define o maior percentil entre as alertadas (com empate, conta para cada um): M-score (DEPI pela DVA quando falta na DFC), 163; salto do DPO, 173; juro implícito (fórmula do v1), 169; desvio de Benford padronizado, 195; alertas com empate no maior percentil: 0.
+
+### Financeiras
+
+| Quintil | Empresa-anos | Topo do Benford, só a média | Topo do Benford, padronizado | Topo da opção (ii), só a média | Topo da opção (ii), padronizado | Topo da opção (ii), sem o Benford |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 109 | 16 (27,1%) | 14 (23,7%) | 11 (18,3%) | 10 (16,7%) | 3 (8,3%) |
+| 2 | 99 | 8 (13,6%) | 10 (16,9%) | 8 (13,3%) | 9 (15,0%) | 3 (8,3%) |
+| 3 | 102 | 9 (15,3%) | 10 (16,9%) | 11 (18,3%) | 14 (23,3%) | 10 (27,8%) |
+| 4 | 99 | 11 (18,6%) | 12 (20,3%) | 18 (30,0%) | 16 (26,7%) | 12 (33,3%) |
+| 5 | 108 | 15 (25,4%) | 13 (22,0%) | 12 (20,0%) | 11 (18,3%) | 8 (22,2%) |
+
+Opção (ii) com o Benford padronizado: 60 de 517 empresa-anos em alerta (11,6%), com o Benford calculável em 517. Sinal que define o maior percentil entre as alertadas (com empate, conta para cada um): peso de ganhos não recorrentes, 25; desvio de Benford padronizado, 35; alertas com empate no maior percentil: 0.

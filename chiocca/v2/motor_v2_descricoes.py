@@ -17,6 +17,9 @@ O que é descrito:
    dígito dividido pela média do desvio da mesma faixa de quantidade de números, quintis dentro do ano e do grupo); a
    normalização final fica no pré-registro do v2.
 5. Só com metadados: as datas da primeira entrega da DFP de 2023 (recebidas em 2024), por semana.
+6. Decisão de Roberto de 22/11/2026: o Benford final usa a normalização do artigo, (desvio - média da faixa) ÷
+   desvio-padrão da faixa, dentro do ano, do grupo e da faixa de quantidade de números. Aqui, o topo do Benford e o
+   topo da opção (ii) por quintil de quantidade de números, nas duas normalizações.
 """
 
 from __future__ import annotations
@@ -105,6 +108,30 @@ def ajusta_por_faixa(mad: pd.Series, n: pd.Series, faixas: int = FAIXAS_BENFORD)
     return out
 
 
+def faixa_de_quantidade(n: pd.Series, faixas: int = FAIXAS_BENFORD) -> pd.Series:
+    """Quintil (0 = menos números) da quantidade de números, dentro do conjunto; empates desfeitos pela ordem."""
+    out = pd.Series(np.nan, index=n.index)
+    ok = n > 0
+    if ok.sum() < faixas:
+        return out
+    out[ok] = pd.qcut(n[ok].rank(method="first"), faixas, labels=False)
+    return out
+
+
+def padroniza_por_faixa(mad: pd.Series, n: pd.Series, faixas: int = FAIXAS_BENFORD) -> pd.Series:
+    """Normalização do artigo: (desvio - média da faixa) ÷ desvio-padrão da faixa (amostral, n - 1), com as faixas de
+    quantidade de números do conjunto (quintis); faixa com desvio-padrão zero fica sem valor."""
+    ok = mad.notna() & (n > 0)
+    out = pd.Series(np.nan, index=mad.index)
+    if ok.sum() < faixas:
+        return out
+    faixa = pd.qcut(n[ok].rank(method="first"), faixas, labels=False)
+    grupo = mad[ok].groupby(faixa)
+    media, dp = grupo.transform("mean"), grupo.transform("std")
+    out[ok] = (mad[ok] - media) / dp.where(dp > 0)
+    return out
+
+
 def depi_pela_dva(dep_t: float, dep_t1: float, imob_t: float, imob_t1: float) -> float:
     """DEPI do v1 (taxa de t-1 ÷ taxa de t, taxa = depreciação ÷ (depreciação + imobilizado)) com a depreciação da DVA."""
     vals = (dep_t, dep_t1, imob_t, imob_t1)
@@ -122,6 +149,16 @@ def _decil(valores: pd.Series) -> pd.Series:
     if ok.empty:
         return pd.Series(False, index=valores.index)
     return (valores >= ok.quantile(PERCENTIL)).fillna(False)
+
+
+def alerta_ii(g: pd.DataFrame, sinais: tuple[str, ...]) -> pd.Series:
+    """Opção (ii): o escore é o maior percentil entre os sinais calculáveis; alerta no decil superior do escore."""
+    pcts = pd.DataFrame({s: g[s].rank(pct=True) for s in sinais}, index=g.index)
+    return _decil(pcts.max(axis=1))
+
+
+def _por_quintil(g: pd.DataFrame, marca: pd.Series) -> list[int]:
+    return [int((marca & (g.quintil == q)).sum()) for q in range(FAIXAS_BENFORD)]
 
 
 def opcoes(g: pd.DataFrame, sinais: tuple[str, ...]) -> dict[str, Any]:
@@ -321,8 +358,12 @@ def calcula() -> dict[str, Any]:
 
     # 4. Opções da fração, por ano e grupo
     s["benford"] = np.nan
+    s["benford_z"] = np.nan
+    s["quintil"] = np.nan
     for (a, g), idx in s[tem].groupby(["exercicio", "amostra"]).groups.items():
         s.loc[idx, "benford"] = ajusta_por_faixa(s.loc[idx, "mad"], s.loc[idx, "n_numeros"])
+        s.loc[idx, "benford_z"] = padroniza_por_faixa(s.loc[idx, "mad"], s.loc[idx, "n_numeros"])
+        s.loc[idx, "quintil"] = faixa_de_quantidade(s.loc[idx, "n_numeros"])
     fracao: dict[str, Any] = {}
     for g, sinais in SINAIS_V2.items():
         por_ano = {str(a): opcoes(s[(s.amostra == g) & (s.exercicio == a)], sinais) for a in ANOS}
@@ -340,6 +381,34 @@ def calcula() -> dict[str, Any]:
                      "avaliaveis_so_pelo_v2": so_v2,
                      "linhas_alem_de_uma_por_companhia_e_ano": repetidas}  # fmt: skip
 
+    # 6. Topo do Benford e da opção (ii) por quintil de quantidade de números, nas duas normalizações
+    quintis: dict[str, Any] = {}
+    for g, sinais in SINAIS_V2.items():
+        gg = s[s.amostra == g]
+        bloco: dict[str, Any] = {"empresa_anos": _por_quintil(gg, pd.Series(True, index=gg.index))}
+        for nome, col in (("razao", "benford"), ("padronizado", "benford_z")):
+            com_col = tuple(col if x == "benford" else x for x in sinais)
+            topo_b = pd.Series(False, index=gg.index)
+            topo_ii = pd.Series(False, index=gg.index)
+            for a in ANOS:
+                ga = gg[gg.exercicio == a]
+                topo_b.loc[ga.index] = _decil(ga[col])
+                topo_ii.loc[ga.index] = alerta_ii(ga, com_col)
+            bloco[nome] = {"topo_benford": _por_quintil(gg, topo_b), "topo_ii": _por_quintil(gg, topo_ii)}
+        sem_benford = tuple(x for x in sinais if x != "benford")
+        topo_sem = pd.Series(False, index=gg.index)
+        for a in ANOS:
+            ga = gg[gg.exercicio == a]
+            topo_sem.loc[ga.index] = alerta_ii(ga, sem_benford)
+        bloco["sem_benford"] = {"topo_ii": _por_quintil(gg, topo_sem)}
+        z = _soma([opcoes(gg[gg.exercicio == a].assign(benford=gg.loc[gg.exercicio == a, "benford_z"]), sinais)
+                   for a in ANOS])  # fmt: skip
+        bloco["ii_padronizado"] = {
+            "avaliaveis": z["avaliaveis"],
+            "calculaveis_benford": z["calculaveis"]["benford"],
+        } | z["ii"]
+        quintis[g] = bloco
+
     return {
         "o_que_e": "descrições sem rótulo para o pré-registro do motor v2 (docs/motor-v2-plano.md, seção 2); só "
         "exercícios de 2010 a 2023, só agregados por ano e grupo, sem o gabarito",
@@ -350,6 +419,7 @@ def calcula() -> dict[str, Any]:
         "quantidade_de_numeros": quantidade,
         "fracao": fracao,
         "entregas_dfp_2023": _entregas(s),
+        "benford_quintis": quintis,
     }
 
 
@@ -386,6 +456,10 @@ T: dict[str, dict[str, Any]] = {
         "ent": "Primeira entrega (o menor DT_RECEB do índice) da DFP de 2023 com data de referência 31/12/2023, por companhia: {tot} companhias, {ate} até o corte de {corte} e {dep} depois. Das entregues até o corte, {d25} ({p25}) foram depois de {m25} e {d31} ({p31}) depois de {m31}, o análogo de 2024 das datas da meta (25/01/2027 e 31/01/2027).",
         "anal": "Estimativa para o rótulo prospectivo: das {n} não financeiras avaliadas em 2022 (referência em 31/12/2022) com a DFP de 2023 entregue até o corte, {k31} ({p31}) tiveram a primeira entrega depois de {m31}, e {k25} ({p25}) depois de {m25}. Com o mesmo padrão em 2027 e o lacre em 31/01/2027, essa seria a fração prospectiva das empresa-anos de 2025; as datas da semana não coincidem entre os anos.",
         "cab_e": "| Semana | Primeiras entregas | Acumulado até o corte |\n| --- | --- | --- |",
+        "h6": "## 6. Benford: o topo por quintil de quantidade de números",
+        "q6": "Decisão de Roberto (22/11/2026): na versão final, o desvio de Benford é padronizado como no artigo, dentro do ano, do grupo e da faixa de quantidade de números: (desvio − média da faixa) ÷ desvio-padrão da faixa (amostral, n − 1). Abaixo, as empresa-anos no topo do Benford (o decil superior do ano, dentro do grupo) e no topo da opção (ii), por quintil de quantidade de números dentro do ano e do grupo (1 = menos números), nas duas normalizações: a divisão só pela média da faixa, usada nas seções 4 e 5, e a padronizada. Sem concentração, cada quintil teria perto de 20% de cada topo. A última coluna é a opção (ii) sem o Benford, só com os outros sinais do grupo, para separar o efeito dele do dos outros sinais.",
+        "cab_q6": "| Quintil | Empresa-anos | Topo do Benford, só a média | Topo do Benford, padronizado | Topo da opção (ii), só a média | Topo da opção (ii), padronizado | Topo da opção (ii), sem o Benford |\n| --- | --- | --- | --- | --- | --- | --- |",
+        "ii6": "Opção (ii) com o Benford padronizado: {al} de {n} empresa-anos em alerta ({pa}), com o Benford calculável em {cb}. Sinal que define o maior percentil entre as alertadas (com empate, conta para cada um): {nomax}; alertas com empate no maior percentil: {emp}.",
     },
     "en": {
         "titulo": "# Engine v2: label-free descriptions",
@@ -417,6 +491,10 @@ T: dict[str, dict[str, Any]] = {
         "ent": "First filing (the smallest DT_RECEB in the index) of the 2023 DFP with reference date 2023-12-31, by company: {tot} companies, {ate} by the {corte} cut-off and {dep} after it. Of those filed by the cut-off, {d25} ({p25}) were after {m25} and {d31} ({p31}) after {m31}, the 2024 analogue of the target dates (2027-01-25 and 2027-01-31).",
         "anal": "Estimate for the prospective label: of the {n} non-financial companies evaluated in 2022 (reference date 2022-12-31) with the 2023 DFP filed by the cut-off, {k31} ({p31}) had their first filing after {m31}, and {k25} ({p25}) after {m25}. With the same pattern in 2027 and the seal on 2027-01-31, this would be the prospective share of the 2025 company-years; the weekdays do not match across years.",
         "cab_e": "| Week | First filings | Cumulative up to the cut-off |\n| --- | --- | --- |",
+        "h6": "## 6. Benford: the top by quintile of the number of figures",
+        "q6": "Roberto's decision (2026-11-22): in the final version, the Benford deviation is standardized as in the article, within the year, the group and the bin of the number of figures: (deviation − bin mean) ÷ bin standard deviation (sample, n − 1). Below, the company-years at the top of Benford (the year's top decile, within the group) and at the top of option (ii), by quintile of the number of figures within the year and group (1 = fewest figures), in both normalizations: division by the bin mean only, used in sections 4 and 5, and the standardized one. With no concentration, each quintile would hold about 20% of each top. The last column is option (ii) without Benford, with only the group's other signals, to separate its effect from that of the other signals.",
+        "cab_q6": "| Quintile | Company-years | Benford top, mean only | Benford top, standardized | Option (ii) top, mean only | Option (ii) top, standardized | Option (ii) top, without Benford |\n| --- | --- | --- | --- | --- | --- | --- |",
+        "ii6": "Option (ii) with the standardized Benford: {al} of {n} company-years in alert ({pa}), with Benford computable in {cb}. Signal that sets the highest percentile among the flagged ones (with a tie, it counts for each): {nomax}; alerts with a tie at the highest percentile: {emp}.",
     },
 }  # fmt: skip
 
@@ -520,6 +598,21 @@ def render(d: dict[str, Any], lang: str) -> str:
         out.append(f"| {data(w['inicio'], lang)} a {data(w['fim'], lang)} | {i(w['entregas'])} | {p(acum, ate)} |"
                    if lang == "pt" else
                    f"| {data(w['inicio'], lang)} to {data(w['fim'], lang)} | {i(w['entregas'])} | {p(acum, ate)} |")  # fmt: skip
+    qd = d["benford_quintis"]
+    out += ["", t["h6"], "", t["q6"]]
+    for g, b in qd.items():
+        out += ["", t["grupo"][g], "", t["cab_q6"]]
+        colunas = (b["razao"]["topo_benford"], b["padronizado"]["topo_benford"], b["razao"]["topo_ii"],
+                   b["padronizado"]["topo_ii"], b["sem_benford"]["topo_ii"])  # fmt: skip
+        for q in range(FAIXAS_BENFORD):
+            celulas = " | ".join(f"{i(c[q])} ({p(c[q], sum(c))})" for c in colunas)
+            out.append(f"| {q + 1} | {i(b['empresa_anos'][q])} | {celulas} |")
+        z = b["ii_padronizado"]
+        nomes_z = NOMES | {"benford": ("desvio de Benford padronizado", "standardized Benford deviation")}
+        nome_z = lambda k: nomes_z[k][0 if lang == "pt" else 1]  # noqa: E731
+        nomax = "; ".join(f"{nome_z(k)}, {i(v)}" for k, v in z["sinal_no_maximo"].items())
+        out += ["", t["ii6"].format(al=i(z["alertas"]), n=i(z["avaliaveis"]), pa=p(z["alertas"], z["avaliaveis"]),
+                                    cb=i(z["calculaveis_benford"]), nomax=nomax, emp=i(z["empates_no_maximo"]))]  # fmt: skip
     return "\n".join(out) + "\n"
 
 

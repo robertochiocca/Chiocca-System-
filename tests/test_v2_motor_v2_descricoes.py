@@ -113,3 +113,27 @@ def test_opcoes_numa_tabela_pequena() -> None:
     assert x["i"]["por_sinal"] == {"a": 1, "b": 1} and x["i"]["uniao"] == 2 and x["i"]["pares"] == {"a+b": 0}
     # (ii): o maior percentil de cada linha; a primeira linha (b no topo) e a décima (a no topo) empatam em 1,0
     assert x["ii"]["alertas"] == 2 and x["ii"]["sinal_no_maximo"] == {"a": 1, "b": 1}
+
+
+def test_padronizacao_por_faixa_tem_media_0_e_desvio_1() -> None:
+    n = pd.Series(range(1, 21), dtype=float)
+    rng = np.random.default_rng(7)
+    mad = pd.Series(rng.uniform(0.01, 0.2, 20))
+    z = md.padroniza_por_faixa(mad, n, faixas=5)
+    faixa = md.faixa_de_quantidade(n, faixas=5)
+    assert z.groupby(faixa).mean().tolist() == pytest.approx([0.0] * 5, abs=1e-12)
+    assert z.groupby(faixa).std().tolist() == pytest.approx([1.0] * 5)
+    assert sorted(faixa.unique().tolist()) == [0, 1, 2, 3, 4]
+
+
+def test_quintis_somam_os_topos() -> None:
+    """Pedido de 22/11/2026: o topo do Benford e o da opção (ii) por quintil, nas duas normalizações."""
+    d = _d()
+    for g in ("nao_financeira", "financeira"):
+        b = d["benford_quintis"][g]
+        total = d["fracao"][g]["total"]
+        assert sum(b["empresa_anos"]) == total["avaliaveis"]
+        assert sum(b["razao"]["topo_ii"]) == total["ii"]["alertas"]  # a mesma opção (ii) da seção 4
+        assert sum(b["razao"]["topo_benford"]) == total["i"]["por_sinal"]["benford"]
+        assert sum(b["padronizado"]["topo_ii"]) == b["ii_padronizado"]["alertas"]
+        assert len(b["sem_benford"]["topo_ii"]) == 5
