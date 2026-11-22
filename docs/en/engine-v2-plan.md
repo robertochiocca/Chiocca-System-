@@ -96,6 +96,8 @@ In development, the inputs are study 1's (the 2010 to 2023 open data, checked ag
 
 ## 4. Draft text of the study 2 amendment
 
+**Current text:** the amendment 5 draft that goes to registration is in [`docs/en/study-2-amendment-5-draft.md`](study-2-amendment-5-draft.md), next to the [engine v2 pre-registration draft](engine-v2-preregistration.md). The text below stays as the record of this stage of the plan.
+
 Draft with Roberto's decisions; it is not registered in this round. It will be amendment 5: amendment 4 was reserved for the ENET contingency and was neither used nor registered, and the text of amendment 5 says so.
 
 > **Amendment 5 · (date) · engine v2 arm in the secondary evaluation (before any 2024 or 2025 value computed by v2)**

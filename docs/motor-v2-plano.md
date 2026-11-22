@@ -96,6 +96,8 @@ No desenvolvimento, as entradas são as do estudo 1 (os dados abertos de 2010 a 
 
 ## 4. Rascunho do texto da emenda ao estudo 2
 
+**Texto atual:** o rascunho da emenda 5 que vai a registro está em [`docs/estudo-2-emenda-5-rascunho.md`](estudo-2-emenda-5-rascunho.md), ao lado do [rascunho do pré-registro do motor v2](pre-registro-motor-v2.md). O texto abaixo fica como registro desta etapa do plano.
+
 Rascunho com as decisões de Roberto; não é registrado nesta rodada. Será a emenda 5: a emenda 4 foi reservada para a contingência do ENET e não foi usada nem registrada, e o texto da emenda 5 diz isso.
 
 > **Emenda 5 · (data) · braço do motor v2 na avaliação secundária (antes de qualquer valor de 2024 ou 2025 calculado pelo v2)**

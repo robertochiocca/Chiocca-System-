@@ -28,6 +28,8 @@ PARES = [
     ("docs/como-reproduzir.md", "docs/en/how-to-reproduce.md"),
     ("docs/motor-v2-plano.md", "docs/en/engine-v2-plan.md"),
     ("docs/motor-v2-descricoes.md", "docs/en/engine-v2-descriptions.md"),
+    ("docs/pre-registro-motor-v2.md", "docs/en/engine-v2-preregistration.md"),
+    ("docs/estudo-2-emenda-5-rascunho.md", "docs/en/study-2-amendment-5-draft.md"),
 ]
 README = {"pt": "README.md", "en": "README.en.md"}
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
