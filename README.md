@@ -36,7 +36,7 @@ A base de dados abertos da CVM é atualizada quando uma empresa reapresenta suas
 
 ## Sinais da primeira versão
 
-M-score de Beneish (oito índices que comparam um ano com o anterior), salto no prazo de fornecedores (o mecanismo do risco sacado na Americanas), juro implícito alto demais para a dívida declarada, lucro que não vira caixa e, só nas financeiras, peso de ganhos não recorrentes. Fórmulas, contas da DFP e referências estão em [`catalogo_sinais.yaml`](catalogo_sinais.yaml), a fonte única dos sinais.
+M-score de Beneish (oito índices que comparam um ano com o anterior), salto no prazo de fornecedores (o mecanismo do risco sacado na Americanas), juro implícito alto demais para a dívida declarada, lucro que não vira caixa e, só nas financeiras, peso de ganhos não recorrentes. Fórmulas, contas da DFP e referências estão em [`catalogo_sinais.yaml`](catalogo_sinais.yaml), a fonte única dos sinais. O lucro que não vira caixa aparece na ficha, mas não dispara alerta sozinho: ele já entra no M-score pelo TATA ([pré-registro do estudo 1](docs/pre-registro.md), seção 4).
 
 ## Estado do projeto
 

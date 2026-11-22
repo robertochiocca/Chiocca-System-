@@ -36,7 +36,7 @@ The CVM (Brazil's securities regulator) updates its open-data base when a compan
 
 ## First-version signals
 
-Beneish M-score (eight indices that compare one year with the previous one), jump in days payable outstanding (the supplier-finance mechanism in the Americanas case), implied interest too high for the reported debt, earnings not backed by cash and, for financial companies only, the share of non-recurring gains. Formulas, DFP accounts and references are in [`catalogo_sinais.yaml`](catalogo_sinais.yaml), the single source of signals.
+Beneish M-score (eight indices that compare one year with the previous one), jump in days payable outstanding (the supplier-finance mechanism in the Americanas case), implied interest too high for the reported debt, earnings not backed by cash and, for financial companies only, the share of non-recurring gains. Formulas, DFP accounts and references are in [`catalogo_sinais.yaml`](catalogo_sinais.yaml), the single source of signals. Earnings not backed by cash appear on the alert sheet but do not trigger an alert on their own: they already enter the M-score through TATA ([study 1 pre-registration](docs/pre-registro.md), section 4, in Portuguese).
 
 ## Project status
 
