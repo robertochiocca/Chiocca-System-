@@ -151,7 +151,7 @@ def test_readme_topo_de_30_segundos(lang: str) -> None:
     readme = (RAIZ / README[lang]).read_text(encoding="utf-8")
     topo = readme.split("## Em 30 segundos\n" if lang == "pt" else "## In 30 seconds\n", 1)[1].split("\n## ", 1)[0]
     t = textos_readme.topo(lang)
-    assert t["estudo_1"] in topo and t["estudo_2"] in topo
+    assert t["estudo_1"] in topo and t["estudo_2"] in topo and t["stack"] in topo
     assert len(readme.split()) <= 1500
     historico = "docs/historico.md" if lang == "pt" else "docs/en/history.md"
     assert f"]({historico})" in readme
@@ -161,6 +161,29 @@ def test_readme_topo_de_30_segundos(lang: str) -> None:
         else ("Alert, not accusation.", "is not investment advice")
     )
     assert all(a in readme for a in aviso)
+
+
+def test_topo_do_estudo_2_bate_com_o_lacre_e_o_carimbo() -> None:
+    """Pedido de 22/11/2026: o topo diz que só o SHA-256 da lista é público e que ele está carimbado no Bitcoin. O
+    registro traz o SHA-256 e o carimbo da lista tem uma atestação do Bitcoin (a etiqueta do OpenTimestamps para
+    BitcoinBlockHeaderAttestation)."""
+    lacre = json.loads((RAIZ / "docs/estudo_2_lista_lacrada.json").read_text(encoding="utf-8"))
+    assert re.fullmatch(r"[0-9a-f]{64}", lacre["sha256"])
+    ots = (RAIZ / "docs/carimbos/estudo-2-lista.txt.ots").read_bytes()
+    assert bytes.fromhex("0588960d73d71901") in ots
+
+
+def test_regra_boba_do_topo_igual_a_do_pre_registro() -> None:
+    """O topo descreve a regra boba como na seção 7 do pré-registro: o decil mais endividado de cada ano, dentro de
+    cada grupo; o 10% sai da constante do código (sinais_amostra.PERCENTIL)."""
+    from chiocca import sinais_amostra
+    from chiocca.v2 import textos_readme
+
+    pre = (RAIZ / "docs/pre-registro.md").read_text(encoding="utf-8")
+    assert "sinalizar o decil mais endividado (passivo total ÷ ativo total) de cada ano, dentro de cada grupo" in pre
+    assert sinais_amostra.PERCENTIL == 0.9
+    assert "alertar os 10% mais endividados de cada ano, dentro de cada grupo" in textos_readme.topo("pt")["estudo_1"]
+    assert "flag the 10% most indebted firms each year, within each group" in textos_readme.topo("en")["estudo_1"]
 
 
 def test_datas_do_topo_iguais_as_do_script_do_estudo_2() -> None:

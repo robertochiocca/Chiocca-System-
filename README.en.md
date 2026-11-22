@@ -18,11 +18,11 @@ For a company and a date, the product shows the investigation as it was on that 
 
 <p><img src="docs/imagens/demonstracao-computador-en.png" alt="Americanas investigation in the demo, on a computer" width="620"> <img src="docs/imagens/demonstracao-celular-en.png" alt="The same investigation on a phone" width="200"></p>
 
-**Study 1 (2010 to 2023), with the rules fixed before the data:** the engine detected 7 of 13 detectable cases, against 7.37 expected by chance; alert rate of 49.9% of evaluated non-financial company-years; 108.3 false alarms per detected case, against 26.8 for the naive rule, which detected 6 ([results](docs/en/results.md)).
+**Study 1 (2010 to 2023), with the rules fixed before the data:** the engine detected 7 of 13 detectable cases, which does not beat chance (7.37 expected, in a calculation made after the result); it flagged 49.9% of evaluated non-financial company-years; and, over the whole period, it produced 108.3 false alarms per detected case, against 26.8 for the naive comparison rule (flag the 10% most indebted firms each year, within each group), which detected 6 ([results](docs/en/results.md)).
 
-**Study 2 (2024 and 2025):** list sealed on 2026-11-21; secondary evaluation from 2027-05-31 and primary from 2030-01-01 ([pre-registration](docs/en/study-2-preregistration.md)).
+**Study 2 (2024 and 2025):** the same engine, unchanged, tested going forward. The list was sealed on 2026-11-21, and only its SHA-256 is public, timestamped on Bitcoin through OpenTimestamps; secondary evaluation from 2027-05-31 and primary from 2030-01-01 ([pre-registration](docs/en/study-2-preregistration.md)).
 
-**Stack:** Python 3.12+ (pandas, DuckDB, FastAPI), Next.js with TypeScript and GitHub Actions; open data from the CVM and Banco Central.
+**Stack:** Python 3.12+ (pandas, DuckDB over Parquet, FastAPI), Next.js with TypeScript and GitHub Actions; open data from the CVM and Banco Central.
 
 **Demo:** [robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/).
 

@@ -18,11 +18,11 @@ Para uma companhia e uma data, o produto mostra a investigação como era naquel
 
 <p><img src="docs/imagens/demonstracao-computador-pt.png" alt="Investigação da Americanas na demonstração, no computador" width="620"> <img src="docs/imagens/demonstracao-celular-pt.png" alt="A mesma investigação no celular" width="200"></p>
 
-**Estudo 1 (2010 a 2023), com as regras fixadas antes dos dados:** o motor acertou 7 de 13 casos acertáveis, contra 7,37 esperados ao acaso; taxa de alerta de 49,9% das empresa-anos não financeiras avaliadas; 108,3 alarmes por acerto, contra 26,8 da regra boba, que acertou 6 ([resultados](docs/resultados.md)).
+**Estudo 1 (2010 a 2023), com as regras fixadas antes dos dados:** o motor acertou 7 de 13 casos acertáveis, o que não supera o acaso (7,37 esperados, num cálculo feito depois do resultado); alertou 49,9% das empresa-anos não financeiras avaliadas; e, no período inteiro, deu 108,3 alarmes por acerto, contra 26,8 da regra boba de comparação (alertar os 10% mais endividados de cada ano, dentro de cada grupo), que acertou 6 ([resultados](docs/resultados.md)).
 
-**Estudo 2 (2024 e 2025):** lista lacrada em 21/11/2026; avaliação secundária a partir de 31/05/2027 e principal a partir de 01/01/2030 ([pré-registro](docs/pre-registro-estudo-2.md)).
+**Estudo 2 (2024 e 2025):** o mesmo motor, sem nenhuma mudança, testado para frente. A lista foi lacrada em 21/11/2026, e só o SHA-256 dela é público, carimbado no Bitcoin pelo OpenTimestamps; avaliação secundária a partir de 31/05/2027 e principal a partir de 01/01/2030 ([pré-registro](docs/pre-registro-estudo-2.md)).
 
-**Stack:** Python 3.12+ (pandas, DuckDB, FastAPI), Next.js com TypeScript e GitHub Actions; dados abertos da CVM e do Banco Central.
+**Stack:** Python 3.12+ (pandas, DuckDB sobre Parquet, FastAPI), Next.js com TypeScript e GitHub Actions; dados abertos da CVM e do Banco Central.
 
 **Demonstração:** [robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/).
 

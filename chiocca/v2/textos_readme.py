@@ -122,18 +122,22 @@ DATA_AVALIACAO_SECUNDARIA = "2027-05-31"  # a partir de 31/05/2027
 DATA_AVALIACAO_PRIMARIA = "2030-01-01"  # a partir de 01/01/2030
 TOPO = {
     "pt": {
-        "estudo_1": "**Estudo 1 (2010 a 2023), com as regras fixadas antes dos dados:** o motor acertou {a} de {n} casos acertáveis, contra {esp} esperados ao acaso; taxa de alerta de {taxa} das empresa-anos não financeiras avaliadas; {xi} alarmes por acerto, contra {xib} da regra boba, que acertou {ab} ([resultados](docs/resultados.md)).",
-        "estudo_2": "**Estudo 2 (2024 e 2025):** lista lacrada em {lacre}; avaliação secundária a partir de {sec} e principal a partir de {pri} ([pré-registro](docs/pre-registro-estudo-2.md)).",
+        "estudo_1": "**Estudo 1 (2010 a 2023), com as regras fixadas antes dos dados:** o motor acertou {a} de {n} casos acertáveis, o que não supera o acaso ({esp} esperados, num cálculo feito depois do resultado); alertou {taxa} das empresa-anos não financeiras avaliadas; e, no período inteiro, deu {xi} alarmes por acerto, contra {xib} da regra boba de comparação (alertar os {decil} mais endividados de cada ano, dentro de cada grupo), que acertou {ab} ([resultados](docs/resultados.md)).",
+        "estudo_2": "**Estudo 2 (2024 e 2025):** o mesmo motor, sem nenhuma mudança, testado para frente. A lista foi lacrada em {lacre}, e só o SHA-256 dela é público, carimbado no Bitcoin pelo OpenTimestamps; avaliação secundária a partir de {sec} e principal a partir de {pri} ([pré-registro](docs/pre-registro-estudo-2.md)).",
+        "stack": "**Stack:** Python 3.12+ (pandas, DuckDB sobre Parquet, FastAPI), Next.js com TypeScript e GitHub Actions; dados abertos da CVM e do Banco Central.",
     },
     "en": {
-        "estudo_1": "**Study 1 (2010 to 2023), with the rules fixed before the data:** the engine detected {a} of {n} detectable cases, against {esp} expected by chance; alert rate of {taxa} of evaluated non-financial company-years; {xi} false alarms per detected case, against {xib} for the naive rule, which detected {ab} ([results](docs/en/results.md)).",
-        "estudo_2": "**Study 2 (2024 and 2025):** list sealed on {lacre}; secondary evaluation from {sec} and primary from {pri} ([pre-registration](docs/en/study-2-preregistration.md)).",
+        "estudo_1": "**Study 1 (2010 to 2023), with the rules fixed before the data:** the engine detected {a} of {n} detectable cases, which does not beat chance ({esp} expected, in a calculation made after the result); it flagged {taxa} of evaluated non-financial company-years; and, over the whole period, it produced {xi} false alarms per detected case, against {xib} for the naive comparison rule (flag the {decil} most indebted firms each year, within each group), which detected {ab} ([results](docs/en/results.md)).",
+        "estudo_2": "**Study 2 (2024 and 2025):** the same engine, unchanged, tested going forward. The list was sealed on {lacre}, and only its SHA-256 is public, timestamped on Bitcoin through OpenTimestamps; secondary evaluation from {sec} and primary from {pri} ([pre-registration](docs/en/study-2-preregistration.md)).",
+        "stack": "**Stack:** Python 3.12+ (pandas, DuckDB over Parquet, FastAPI), Next.js with TypeScript and GitHub Actions; open data from the CVM and Banco Central.",
     },
 }  # fmt: skip
 
 
 def topo(lang: str) -> dict[str, str]:
-    """Os números do topo do README: estudo 1 (ficha do motor e análise depois do resultado) e datas do estudo 2."""
+    """O topo do README: estudo 1 (ficha do motor, análise depois do resultado e o decil da regra boba), estado do
+    estudo 2 (data do lacre e datas das avaliações) e a stack."""
+    from chiocca import sinais_amostra
     from chiocca.formato import data
     from chiocca.v2 import ficha_do_motor
 
@@ -149,8 +153,10 @@ def topo(lang: str) -> dict[str, str]:
             taxa=pct(x["taxa_de_alerta"]["nao_financeiras"], lang),
             xi=decimal(x["alarmes_por_acerto_nf"]["periodo_inteiro"], lang, 1),
             xib=decimal(n["alarmes"]["nf_boba"]["inteiro"]["alarmes_por_acerto"], lang, 1),
-            ab=i(x["acerto"]["acertados_boba"])),
+            ab=i(x["acerto"]["acertados_boba"]),
+            decil=f"{i(round((1 - sinais_amostra.PERCENTIL) * 100))}%"),  # decil superior (seção 7 do pré-registro)
         "estudo_2": t["estudo_2"].format(lacre=data(lacre["calculada_em"], lang),
                                          sec=data(DATA_AVALIACAO_SECUNDARIA, lang),
                                          pri=data(DATA_AVALIACAO_PRIMARIA, lang)),
+        "stack": t["stack"],
     }  # fmt: skip
