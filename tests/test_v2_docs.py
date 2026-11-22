@@ -26,6 +26,7 @@ PARES = [
     ("README.md", "README.en.md"),
     ("docs/historico.md", "docs/en/history.md"),
     ("docs/como-reproduzir.md", "docs/en/how-to-reproduce.md"),
+    ("docs/motor-v2-plano.md", "docs/en/engine-v2-plan.md"),
 ]
 README = {"pt": "README.md", "en": "README.en.md"}
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
