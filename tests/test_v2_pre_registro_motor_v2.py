@@ -89,3 +89,27 @@ def test_calendario_constantes_e_rotulos(lang: str) -> None:
 def test_pre_registro_do_estudo_2_nao_tem_a_emenda_5() -> None:
     pre = (RAIZ / "docs/pre-registro-estudo-2.md").read_text(encoding="utf-8")
     assert "Emenda 5" not in pre and "motor v2" not in pre.lower()
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_revisoes_antes_do_registro(lang: str) -> None:
+    """Pedido de 22/11/2026: Benford com 20 números, escore escolhido pela descrição, características conhecidas, o
+    produto no v1 e o carimbo do registro."""
+    doc = PRE[lang].read_text(encoding="utf-8")
+    d = json.loads(md.SAIDA.read_text(encoding="utf-8"))
+    i = lambda v: inteiro(v, lang)  # noqa: E731
+    q = d["quantidade_de_numeros"]["grupos"]
+    assert f" {md.MINIMO_NUMEROS_BENFORD} " in doc and f" {i(round(min(g['min'] for g in q.values())))})" in doc
+    ek = d["escore_por_numero_de_sinais"]
+    assert ek["escolhida"] == "maximo"
+    for v in ("maximo", "potencia"):
+        assert decimal(100 * ek["maior_distancia"][v], lang, 1) in doc, v
+    mx = ek["grupos"]["nao_financeira"]["maximo"]
+    for v in mx["por_k"].values():
+        assert pct(v["alertas"] / v["empresa_anos"], lang) in doc
+    topo = mx["topo_por_quintil"]
+    assert pct(topo[0] / sum(topo), lang) in doc and pct(topo[-1] / sum(topo), lang) in doc
+    sem = d["benford_quintis"]["nao_financeira"]["sem_benford"]["topo_ii"]
+    assert pct(sem[0] / sum(sem), lang) in doc
+    produto = "O produto continua com o v1" if lang == "pt" else "The product stays on v1"
+    assert produto in doc and "OpenTimestamps" in doc and "docs/carimbos/" in doc

@@ -6,7 +6,7 @@
 
 ## 1. What v2 is
 
-Engine v2 is engine v1 with three changes, each tied to a documented v1 failure in study 1: (1) DEPI from the DVA when the DFC does not give DEPI; (2) the standardized Benford deviation as a new signal, in both groups; (3) the alert by score, on 10% of the year within the group, instead of the fixed cut-offs. Everything else is v1's: the "as it was at the time" base, the samples, the exclusions, the groups and the formulas of the signals that already existed. v2 is evaluated as one more arm in study 2's secondary evaluation (amendment 5) and, later, in a prospective test of its own with fiscal years 2026, with its own pre-registration.
+Engine v2 is engine v1 with three changes, each tied to a documented v1 failure in study 1: (1) DEPI from the DVA when the DFC does not give DEPI; (2) the standardized Benford deviation as a new signal, in both groups; (3) the alert by score, on 10% of the year within the group, instead of the fixed cut-offs. Everything else is v1's: the "as it was at the time" base, the samples, the exclusions, the groups and the formulas of the signals that already existed. v2 is evaluated as one more arm in study 2's secondary evaluation (amendment 5) and, later, in a prospective test of its own with fiscal years 2026, with its own pre-registration. The product stays on v1; switching to v2 is a separate decision, after the 2027 evaluation.
 
 ## 2. Sample, groups and version used
 
@@ -38,19 +38,20 @@ Earnings not backed by cash stay on the alert sheet, outside the score, as in v1
 
 - **The figures:** the non-zero values in the fiscal-year column of BPA, BPP, DRE and DFC of the version used, the four statements that exist in the open data and in ENET. From each, the first significant digit of |value|.
 - **The deviation:** the mean absolute deviation between the frequency of each digit from 1 to 9 and Benford's law, log10(1 + 1/d), summed and divided by 9.
-- **The bins:** the quintiles of the number of figures, within the fiscal year and the group (pandas `qcut` over `rank(method="first")`, 5 bins).
+- **The bins:** the quintiles of the number of figures, within the fiscal year and the group, among the company-years with at least 20 figures (pandas `qcut` over `rank(method="first")`, 5 bins).
 - **The standardization (Chakrabarty et al.'s, 2025):** (deviation - mean deviation in the bin) ÷ standard deviation of the deviation in the bin (sample, n - 1). The article's coefficients, estimated with US AAERs, are not used.
-- **Computable** if the company-year has at least one figure and the bin has a standard deviation above zero.
+- **Computable** if the company-year has at least 20 figures (no company-year from 2010 to 2023 has fewer than 23) and the bin has a standard deviation above zero.
 - **In the descriptions (2010 to 2023):** the top of the standardized deviation stays between 18.0% and 21.3% in each quintile of the number of figures among non-financial companies; it does not concentrate in companies with few figures.
 
 ## 4. Score, alert and ranking
 
 - **Percentile of each signal:** within the fiscal year and the group, among the company-years where the signal can be computed, by pandas `rank(pct=True)` (ties get the average position).
-- **Score:** the highest percentile among the company-year's computable signals.
+- **Score:** the highest percentile among the company-year's computable signals. It was chosen, against that highest percentile raised to the number of computable signals, by the label-free description in section 7 of the descriptions, with the criterion written by Roberto before running (the version with the smaller of the largest distances between the rate by number of computable signals and the group rate stays; in a tie, the simple highest percentile): the largest distance was 6.8 pp with the highest percentile and 12.9 pp with the version raised to the number of signals.
 - **Evaluated:** a company-year with at least one computable signal.
 - **Alert:** score greater than or equal to the 90% quantile of the score among the evaluated company-years of the fiscal year and group, by pandas `quantile(0.9)`, with linear interpolation, like v1's decile. The rate stays close to 10% by construction; ties at the threshold can push it slightly above.
 - **Ranking for study 2's ranking metrics:** the score, from highest to lowest, with company-years without a score after; ties broken by CVM code, in ascending order, and, between the two company-years of the same company, by fiscal year, in ascending order (study 2, amendment 2, item 3(b)).
 - **Alert sheet:** each signal with its value, its percentile and which one sets the score; earnings not backed by cash appear without entering the score.
+- **Known characteristics, with no correction.** (1) The alert rate varies with the number of computable signals: among non-financial companies from 2010 to 2023, 7.0% with one signal, 16.9% with two, 14.5% with three and 9.1% with four. (2) The top concentrates in companies with few figures: 32.0% of the alerts in the quintile with the fewest figures and 11.1% in the quintile with the most, among non-financial companies. This comes from the M-score, the DPO and implied interest, not from Benford: without Benford, the first quintile would hold 31.5% of the alerts, and the top of the standardized Benford stays between 18.0% and 21.3% in each quintile. In the 2027 report, the distribution of v2's alerts by quintile of the number of figures enters only in aggregate, as description.
 
 ## 5. Development rule
 
@@ -84,7 +85,7 @@ Earnings not backed by cash stay on the alert sheet, outside the score, as in v1
 
 | Step | Deadline | If it slips |
 | --- | --- | --- |
-| Registration of this pre-registration and of amendment 5 to study 2 | 2026-12-20 | The dates below do not change. Without both registered before the seal session, v2 does not enter study 2. |
+| Registration of this pre-registration and of amendment 5 to study 2, with the OpenTimestamps stamp | 2026-12-20 | The dates below do not change. Without both registered before the seal session, v2 does not enter study 2. |
 | Target: v2 frozen (SHA-256 registry, hand-computed example, invariant) | 2027-01-25 | The fallback applies. |
 | Target: seal session of v2's list | 2027-01-31 | The fallback applies. |
 | Fallback: v2 frozen | 2027-03-31 | It does not enter, with no further extension. |
@@ -101,3 +102,4 @@ The 3.06.02 sub-accounts in implied interest; discretionary accruals and the Dec
 
 - Date: to be filled in at registration.
 - Commit: the one that introduces the approved version. Its hash is noted in the next commit, without changing any rule above.
+- Timestamp, as in study 2: a file in `docs/carimbos/` with the hash of the registration commit of this pre-registration and that of amendment 5 to study 2, and the SHA-256 of the two registered files, stamped with OpenTimestamps; the `.ots` goes into the repository, and `ots upgrade` is run after confirmation on Bitcoin. If the calendars do not respond, Roberto stamps through the opentimestamps.org website and returns the `.ots`.

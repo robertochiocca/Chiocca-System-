@@ -6,7 +6,7 @@
 
 ## 1. O que é o v2
 
-O motor v2 é o motor v1 com três mudanças, cada uma ligada a uma falha documentada do v1 no estudo 1: (1) o DEPI pela DVA quando a DFC não dá o DEPI; (2) o desvio de Benford padronizado como sinal novo, nos dois grupos; (3) o alerta pelo escore, nos 10% do ano dentro do grupo, no lugar dos cortes fixos. Todo o resto é o do v1: a base "como era na época", as amostras, as exclusões, os grupos e as fórmulas dos sinais que já existiam. O v2 é avaliado como um braço a mais na avaliação secundária do estudo 2 (emenda 5) e, depois, num teste prospectivo próprio com os exercícios de 2026, com pré-registro próprio.
+O motor v2 é o motor v1 com três mudanças, cada uma ligada a uma falha documentada do v1 no estudo 1: (1) o DEPI pela DVA quando a DFC não dá o DEPI; (2) o desvio de Benford padronizado como sinal novo, nos dois grupos; (3) o alerta pelo escore, nos 10% do ano dentro do grupo, no lugar dos cortes fixos. Todo o resto é o do v1: a base "como era na época", as amostras, as exclusões, os grupos e as fórmulas dos sinais que já existiam. O v2 é avaliado como um braço a mais na avaliação secundária do estudo 2 (emenda 5) e, depois, num teste prospectivo próprio com os exercícios de 2026, com pré-registro próprio. O produto continua com o v1; a troca para o v2 é uma decisão separada, depois da avaliação de 2027.
 
 ## 2. Amostra, grupos e versão usada
 
@@ -38,19 +38,20 @@ O lucro que não vira caixa continua na ficha, fora do escore, como no v1 (pré-
 
 - **Os números:** os valores diferentes de zero na coluna do exercício de BPA, BPP, DRE e DFC da versão usada, os quatro demonstrativos que existem nos dados abertos e no ENET. De cada um, o primeiro dígito significativo de |valor|.
 - **O desvio:** o desvio médio absoluto entre a frequência de cada dígito de 1 a 9 e a lei de Benford, log10(1 + 1/d), somado e dividido por 9.
-- **As faixas:** os quintis da quantidade de números, dentro do exercício e do grupo (`qcut` do pandas sobre `rank(method="first")`, 5 faixas).
+- **As faixas:** os quintis da quantidade de números, dentro do exercício e do grupo, entre as empresa-anos com pelo menos 20 números (`qcut` do pandas sobre `rank(method="first")`, 5 faixas).
 - **A padronização (a do artigo de Chakrabarty et al., 2025):** (desvio - média do desvio na faixa) ÷ desvio-padrão do desvio na faixa (amostral, n - 1). Os coeficientes do artigo, estimados com AAER dos EUA, não são usados.
-- **Calculável** se a empresa-ano tem pelo menos um número e a faixa tem desvio-padrão maior que zero.
+- **Calculável** se a empresa-ano tem pelo menos 20 números (nenhuma empresa-ano de 2010 a 2023 tem menos de 23) e a faixa tem desvio-padrão maior que zero.
 - **Nas descrições (2010 a 2023):** o topo do desvio padronizado fica entre 18,0% e 21,3% em cada quintil de quantidade de números nas não financeiras; ele não se concentra nas empresas com poucos números.
 
 ## 4. Escore, alerta e ranking
 
 - **Percentil de cada sinal:** dentro do exercício e do grupo, entre as empresa-anos com o sinal calculável, pelo `rank(pct=True)` do pandas (empates recebem a média das posições).
-- **Escore:** o maior percentil entre os sinais calculáveis da empresa-ano.
+- **Escore:** o maior percentil entre os sinais calculáveis da empresa-ano. Foi escolhido, contra esse maior percentil elevado ao número de sinais calculáveis, pela descrição sem rótulo da seção 7 das descrições, com o critério escrito por Roberto antes de rodar (fica a versão com a menor das maiores distâncias entre a taxa por número de sinais calculáveis e a taxa do grupo; em empate, o maior percentil simples): a maior distância foi de 6,8 p.p. com o maior percentil e de 12,9 p.p. com a versão elevada ao número de sinais.
 - **Avaliada:** a empresa-ano com pelo menos um sinal calculável.
 - **Alerta:** escore maior ou igual ao quantil de 90% do escore entre as avaliadas do exercício e do grupo, pelo `quantile(0.9)` do pandas, com interpolação linear, como o decil do v1. A taxa fica perto de 10% por construção; empates no limite podem levá-la um pouco acima.
 - **Ranking das métricas de ranking do estudo 2:** o escore, do maior para o menor, e as empresa-anos sem escore depois; desempate pelo código CVM, em ordem crescente, e, entre as duas empresa-anos da mesma companhia, pelo exercício, em ordem crescente (emenda 2, item 3(b), do estudo 2).
 - **Ficha:** cada sinal com o valor, o percentil e qual define o escore; o lucro que não vira caixa aparece sem entrar no escore.
+- **Características conhecidas, sem correção.** (1) A taxa de alerta varia com o número de sinais calculáveis: nas não financeiras de 2010 a 2023, 7,0% com um sinal, 16,9% com dois, 14,5% com três e 9,1% com quatro. (2) O topo se concentra nas empresas com poucos números: 32,0% dos alertas no quintil com menos números e 11,1% no quintil com mais, nas não financeiras. Isso vem do M-score, do DPO e do juro implícito, não do Benford: sem o Benford, o primeiro quintil teria 31,5% dos alertas, e o topo do Benford padronizado fica entre 18,0% e 21,3% em cada quintil. No relatório de 2027, a distribuição dos alertas do v2 por quintil de quantidade de números entra só agregada, como descrição.
 
 ## 5. Regra de desenvolvimento
 
@@ -84,7 +85,7 @@ O lucro que não vira caixa continua na ficha, fora do escore, como no v1 (pré-
 
 | Etapa | Data-limite | Se atrasar |
 | --- | --- | --- |
-| Registro deste pré-registro e da emenda 5 ao estudo 2 | 20/12/2026 | As datas abaixo não mudam. Sem os dois registrados antes da sessão do lacre, o v2 não entra no estudo 2. |
+| Registro deste pré-registro e da emenda 5 ao estudo 2, com o carimbo do OpenTimestamps | 20/12/2026 | As datas abaixo não mudam. Sem os dois registrados antes da sessão do lacre, o v2 não entra no estudo 2. |
 | Meta: v2 congelado (registro de SHA-256, exemplo à mão, invariante) | 25/01/2027 | Vale a reserva. |
 | Meta: sessão do lacre da lista do v2 | 31/01/2027 | Vale a reserva. |
 | Reserva: v2 congelado | 31/03/2027 | Não entra, sem outra prorrogação. |
@@ -101,3 +102,4 @@ As subcontas de 3.06.02 no juro implícito; os accruals discricionários e o F-s
 
 - Data: a preencher no registro.
 - Commit: o que introduzir a versão aprovada. O hash é anotado no commit seguinte, sem mudar nenhuma regra acima.
+- Carimbo de tempo, como no estudo 2: um arquivo em `docs/carimbos/` com o hash do commit de registro deste pré-registro e o da emenda 5 ao estudo 2, e o SHA-256 dos dois arquivos registrados, carimbado com o OpenTimestamps; o `.ots` vai para o repositório, e o `ots upgrade` é feito depois da confirmação no Bitcoin. Se os calendários não responderem, Roberto carimba pelo site opentimestamps.org e devolve o `.ots`.
