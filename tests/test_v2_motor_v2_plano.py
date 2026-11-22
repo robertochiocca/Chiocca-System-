@@ -85,11 +85,12 @@ def test_entradas_datas_e_constantes(lang: str) -> None:
         assert data(d, lang) in doc, d
 
 
-def test_rascunho_nao_muda_o_pre_registro_nem_o_registro_do_codigo() -> None:
-    """O rascunho só cita o pré-registro do estudo 2; a emenda 5 é texto do plano, não do pré-registro, e registra
-    que a emenda 4 (contingência do ENET) não foi usada nem registrada."""
+def test_plano_guarda_o_rascunho_da_emenda_5_e_o_motor_v2_so_entra_no_estudo_2_pela_emenda() -> None:
+    """A seção 4 do plano guarda o rascunho da etapa; no pré-registro do estudo 2, o motor v2 só aparece na emenda 5,
+    registrada em 22/11/2026, que diz que a emenda 4 (contingência do ENET) não foi usada nem registrada."""
     pre = (RAIZ / "docs/pre-registro-estudo-2.md").read_text(encoding="utf-8")
-    assert "motor v2" not in pre.lower() and "Emenda 5" not in pre and "Emenda 4" not in pre
+    antes, emenda_5 = pre.split("\n### Emenda 5 ·", 1)
+    assert "motor v2" not in antes.lower() and "Emenda 4" not in antes and "motor v2" in emenda_5
     pt, en = DOCS["pt"].read_text(encoding="utf-8"), DOCS["en"].read_text(encoding="utf-8")
     assert "**Emenda 5 ·" in pt and "não foi usada nem registrada" in pt
     assert "**Amendment 5 ·" in en and "neither used nor registered" in en

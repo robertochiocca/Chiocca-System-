@@ -1,6 +1,6 @@
-# Pré-registro do motor v2 (rascunho)
+# Pré-registro do motor v2
 
-> **Rascunho de 22/11/2026, para revisão de Roberto e do Claude (claude.ai). Ainda não é registro.** O registro será o commit que introduzir a versão aprovada, com outro nome de arquivo ou sem a palavra "rascunho", até 20/12/2026, com o hash anotado no commit seguinte, sem mudar nenhuma regra, como no estudo 1, no leitor e no estudo 2. A emenda 5 ao estudo 2, que acrescenta o braço do v2, está ao lado, também em rascunho: [`docs/estudo-2-emenda-5-rascunho.md`](estudo-2-emenda-5-rascunho.md).
+> **Registrado em 22/11/2026.** Redigido pelo agente com as decisões de Roberto e revisado por Roberto com o Claude (claude.ai), que aprovou o texto sem mudanças (seção 12). O commit que introduz esta versão é o registro, e o hash dele é anotado no commit seguinte, sem mudar nenhuma regra, como no estudo 1, no leitor e no estudo 2. A emenda 5 ao estudo 2, que acrescenta o braço do v2, foi registrada no mesmo commit, na seção 13 do [pré-registro do estudo 2](pre-registro-estudo-2.md).
 >
 > Base: o [plano do motor v2](motor-v2-plano.md), com as decisões de Roberto de 22/11/2026, e as [descrições sem rótulo](motor-v2-descricoes.md), só com exercícios até 2023. Nenhum valor de exercício de 2024 em diante foi lido; das DFP de 2024 em diante, só metadados.
 
@@ -100,6 +100,19 @@ As subcontas de 3.06.02 no juro implícito; os accruals discricionários e o F-s
 
 ## 11. Registro
 
-- Data: a preencher no registro.
-- Commit: o que introduzir a versão aprovada. O hash é anotado no commit seguinte, sem mudar nenhuma regra acima.
-- Carimbo de tempo, como no estudo 2: um arquivo em `docs/carimbos/` com o hash do commit de registro deste pré-registro e o da emenda 5 ao estudo 2, e o SHA-256 dos dois arquivos registrados, carimbado com o OpenTimestamps; o `.ots` vai para o repositório, e o `ots upgrade` é feito depois da confirmação no Bitcoin. Se os calendários não responderem, Roberto carimba pelo site opentimestamps.org e devolve o `.ots`.
+- Data: 22/11/2026.
+- Commit: o que introduz esta versão com este nome, o mesmo que registra a emenda 5 ao estudo 2. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+- Carimbo de tempo, como no estudo 2: `docs/carimbos/motor-v2-registro.txt`, com o hash do commit de registro e o SHA-256 dos dois arquivos registrados (este pré-registro e o do estudo 2 com a emenda 5), carimbado com o OpenTimestamps; o `.ots` vai para o repositório, e o `ots upgrade` é feito depois da confirmação no Bitcoin. Se os calendários não responderem, Roberto carimba pelo site opentimestamps.org e devolve o `.ots`.
+
+## 12. Revisão de Roberto (22/11/2026)
+
+Roberto leu o texto inteiro, na versão do commit `fbb9bb2f11eaebc03dfedf2c68d671e299e9d9de`, e o da emenda 5, na versão do commit `31866e6f00d2004021a506bdb9f56b8a93bb7d5c`, com o Claude (claude.ai), e aprovou os dois sem mudanças:
+
+1. As três mudanças: o DEPI pela DVA, o desvio de Benford padronizado como sinal nos dois grupos e o alerta pelo escore.
+2. O escore pelo maior percentil simples, uma versão só para o motor inteiro, também nas financeiras, com o alerta nos 10% do ano dentro do grupo.
+3. O Benford com no mínimo 20 números e a padronização por faixa de quantidade de números.
+4. As previsões da seção 7.
+5. O rótulo prospectivo por empresa-ano.
+6. As partes 2a e 2b.
+7. O calendário com a meta e a reserva.
+8. O produto continuando com o v1; a troca para o v2 é uma decisão separada, depois da avaliação de 2027.

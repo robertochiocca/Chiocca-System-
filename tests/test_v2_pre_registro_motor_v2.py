@@ -3,6 +3,7 @@ descrições sem rótulo e das constantes do estudo 2; nada é digitado à mão,
 
 from __future__ import annotations
 
+import hashlib
 import json
 from math import sqrt
 from pathlib import Path
@@ -16,7 +17,18 @@ from chiocca.v2 import motor_v2_descricoes as md
 
 RAIZ = Path(__file__).resolve().parents[1]
 PRE = {"pt": RAIZ / "docs/pre-registro-motor-v2.md", "en": RAIZ / "docs/en/engine-v2-preregistration.md"}
-EMENDA = {"pt": RAIZ / "docs/estudo-2-emenda-5-rascunho.md", "en": RAIZ / "docs/en/study-2-amendment-5-draft.md"}
+ESTUDO_2 = {"pt": RAIZ / "docs/pre-registro-estudo-2.md", "en": RAIZ / "docs/en/study-2-preregistration.md"}
+CABECALHO_EMENDA_5 = {"pt": "\n### Emenda 5 · 22/11/2026 ·", "en": "\n### Amendment 5 · 2026-11-22 ·"}
+# SHA-256 do pré-registro do estudo 2 antes da emenda 5 (o arquivo inteiro no commit 31866e6): a emenda só acrescenta.
+ESTUDO_2_ANTES_DA_EMENDA_5 = {
+    "pt": "4d3e206d27496b0e4393f21a8ba82b04f831bf5a7538955ad75af91eade1cc43",
+    "en": "875fdb06ab5a6d561f0ebfd9897888a3fdf3e79166e0c8e3e5f57661ef19895e",
+}
+
+
+def _emenda_5(lang: str) -> str:
+    """O texto registrado da emenda 5, na seção 13 do pré-registro do estudo 2."""
+    return CABECALHO_EMENDA_5[lang] + ESTUDO_2[lang].read_text(encoding="utf-8").split(CABECALHO_EMENDA_5[lang], 1)[1]
 
 
 def _poder(razao: float, n: int = 1200, fracao: float = 0.10, p0: float = 0.047) -> float:
@@ -71,7 +83,7 @@ def test_previsoes_com_o_poder_recalculado(lang: str) -> None:
 def test_calendario_constantes_e_rotulos(lang: str) -> None:
     from chiocca.v2.estudo2 import secundaria
 
-    pre, emenda = PRE[lang].read_text(encoding="utf-8"), EMENDA[lang].read_text(encoding="utf-8")
+    pre, emenda = PRE[lang].read_text(encoding="utf-8"), _emenda_5(lang)
     inv = json.loads((RAIZ / "docs/invariante_numeros.json").read_text(encoding="utf-8"))
     assert inteiro(sum(v["empresa_anos_iguais"] for v in inv["exercicios"].values()), lang) in pre
     for d in ("2026-12-20", "2027-01-25", "2027-01-31", "2027-03-31", "2027-04-15", "2027-04-30", "2026-11-19",
@@ -80,15 +92,35 @@ def test_calendario_constantes_e_rotulos(lang: str) -> None:
     assert data(secundaria.DATA_MINIMA.isoformat(), lang) in pre
     assert str(secundaria.SEMENTE) in emenda and inteiro(secundaria.REAMOSTRAGENS, lang) in emenda
     assert "DT_RECEB" in pre and "DT_RECEB" in emenda
-    rascunho = ("Ainda não é registro", "Emenda 5 ·", "não foi usada nem registrada") if lang == "pt" else (
-        "It is not yet a registration", "Amendment 5 ·", "neither used nor registered")  # fmt: skip
-    assert rascunho[0] in pre and rascunho[0] in emenda
-    assert rascunho[1] in emenda and rascunho[2] in emenda
+    registro = ("**Registrado em 22/11/2026.**", "Emenda 5 ·", "não foi usada nem registrada") if lang == "pt" else (
+        "**Registered on 2026-11-22.**", "Amendment 5 ·", "neither used nor registered")  # fmt: skip
+    assert registro[0] in pre and registro[1] in emenda and registro[2] in emenda
 
 
-def test_pre_registro_do_estudo_2_nao_tem_a_emenda_5() -> None:
-    pre = (RAIZ / "docs/pre-registro-estudo-2.md").read_text(encoding="utf-8")
-    assert "Emenda 5" not in pre and "motor v2" not in pre.lower()
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_emenda_5_registrada_sem_mudar_o_resto_do_estudo_2(lang: str) -> None:
+    """Registro de 22/11/2026: a emenda 5 entra na seção 13 do pré-registro do estudo 2, depois da emenda 3, e o texto
+    anterior a ela fica igual, byte a byte, ao arquivo de antes do registro."""
+    texto = ESTUDO_2[lang].read_text(encoding="utf-8")
+    antes = texto.split(CABECALHO_EMENDA_5[lang], 1)[0]
+    assert hashlib.sha256(antes.encode("utf-8")).hexdigest() == ESTUDO_2_ANTES_DA_EMENDA_5[lang]
+    assert texto.count("### Emenda 5") + texto.count("### Amendment 5") == 1
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_pre_registro_do_v2_registrado_com_a_revisao_de_roberto(lang: str) -> None:
+    doc = PRE[lang].read_text(encoding="utf-8")
+    assert ("rascunho" if lang == "pt" else "draft") not in doc.lower()
+    if lang == "pt":
+        assert "# Pré-registro do motor v2\n" in doc and "- Data: 22/11/2026." in doc
+        assert "## 12. Revisão de Roberto (22/11/2026)" in doc
+    else:
+        assert "# Engine v2 pre-registration\n" in doc and "- Date: 2026-11-22." in doc
+        assert "## 12. Roberto's review (2026-11-22)" in doc
+    revisao = doc.split("\n## 12.", 1)[1]
+    assert revisao.count("\n1. ") == 1 and "\n8. " in revisao
+    aviso = RAIZ / ("docs/estudo-2-emenda-5-rascunho.md" if lang == "pt" else "docs/en/study-2-amendment-5-draft.md")
+    assert ("seção 13" if lang == "pt" else "section 13") in aviso.read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("lang", ["pt", "en"])
@@ -119,8 +151,8 @@ def test_revisoes_antes_do_registro(lang: str) -> None:
 def test_emenda_5_item_3_alerta_da_lista_inteira_medidas_no_conjunto_do_v1(lang: str) -> None:
     """Pedido de 22/11/2026: o alerta do v2 sai da lista do v2 inteira, e todas as medidas do braço são calculadas só
     nas empresa-anos avaliadas pelo v1."""
-    emenda = EMENDA[lang].read_text(encoding="utf-8")
-    item_3 = emenda.split("> 3. ", 1)[1].split("\n> 4. ", 1)[0]
+    emenda = _emenda_5(lang)
+    item_3 = emenda.split("\n3. ", 1)[1].split("\n4. ", 1)[0]
     if lang == "pt":
         frases = ("O alerta do v2 sai da lista do v2 inteira", "entre todas as empresa-anos que o v2 avalia",
                   "são calculadas só nas empresa-anos que a seção 7.2 avalia para o v1", "subconjunto prospectivo",

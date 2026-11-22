@@ -1,6 +1,6 @@
-# Engine v2 pre-registration (draft)
+# Engine v2 pre-registration
 
-> **Draft of 2026-11-22, for review by Roberto and Claude (claude.ai). It is not yet a registration.** The registration will be the commit that introduces the approved version, under another file name or without the word "draft", by 2026-12-20, with its hash noted in the next commit, without changing any rule, as in study 1, the reader and study 2. Amendment 5 to study 2, which adds the v2 arm, sits next to it, also in draft: [`docs/en/study-2-amendment-5-draft.md`](study-2-amendment-5-draft.md).
+> **Registered on 2026-11-22.** Written by the agent with Roberto's decisions and reviewed by Roberto with Claude (claude.ai), who approved the text without changes (section 12). The commit that introduces this version is the registration, and its hash is noted in the next commit, without changing any rule, as in study 1, the reader and study 2. Amendment 5 to study 2, which adds the v2 arm, was registered in the same commit, in section 13 of the [study 2 pre-registration](study-2-preregistration.md).
 >
 > Basis: the [engine v2 plan](engine-v2-plan.md), with Roberto's decisions of 2026-11-22, and the [label-free descriptions](engine-v2-descriptions.md), with fiscal years up to 2023 only. No value from fiscal year 2024 onward was read; of the DFPs from 2024 onward, only metadata.
 
@@ -100,6 +100,19 @@ The 3.06.02 sub-accounts in implied interest; discretionary accruals and the Dec
 
 ## 11. Registration
 
-- Date: to be filled in at registration.
-- Commit: the one that introduces the approved version. Its hash is noted in the next commit, without changing any rule above.
-- Timestamp, as in study 2: a file in `docs/carimbos/` with the hash of the registration commit of this pre-registration and that of amendment 5 to study 2, and the SHA-256 of the two registered files, stamped with OpenTimestamps; the `.ots` goes into the repository, and `ots upgrade` is run after confirmation on Bitcoin. If the calendars do not respond, Roberto stamps through the opentimestamps.org website and returns the `.ots`.
+- Date: 2026-11-22.
+- Commit: the one that introduces this version under this name, the same one that registers amendment 5 to study 2. Its hash is noted here in the next commit, without changing any rule above.
+- Timestamp, as in study 2: `docs/carimbos/motor-v2-registro.txt`, with the hash of the registration commit and the SHA-256 of the two registered files (this pre-registration and study 2's with amendment 5), stamped with OpenTimestamps; the `.ots` goes into the repository, and `ots upgrade` is run after confirmation on Bitcoin. If the calendars do not respond, Roberto stamps through the opentimestamps.org website and returns the `.ots`.
+
+## 12. Roberto's review (2026-11-22)
+
+Roberto read the whole text, in the version of commit `fbb9bb2f11eaebc03dfedf2c68d671e299e9d9de`, and amendment 5's, in the version of commit `31866e6f00d2004021a506bdb9f56b8a93bb7d5c`, with Claude (claude.ai), and approved both without changes:
+
+1. The three changes: DEPI from the DVA, the standardized Benford deviation as a signal in both groups and the alert by score.
+2. The score by the simple highest percentile, one version for the whole engine, financial companies included, with the alert on 10% of the year within the group.
+3. Benford with at least 20 figures and the standardization by bin of the number of figures.
+4. The predictions in section 7.
+5. The prospective label by company-year.
+6. Parts 2a and 2b.
+7. The calendar with the target and the fallback.
+8. The product staying on v1; switching to v2 is a separate decision, after the 2027 evaluation.
