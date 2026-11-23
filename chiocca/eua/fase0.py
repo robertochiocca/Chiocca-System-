@@ -169,7 +169,7 @@ T: dict[str, dict[str, Any]] = {
         "parte foi entregue em 2024.",
         "cab_10k": "| Exercício | Companhias com 10-K | 10-K | 10-K/A | 10-K/A com números | 10-K emendados depois | Prazo mediano (dias) | Prazo, 10% a 90% (dias) | Até 90 dias |",
         "s_versao": "### 2.3 A versão pública numa data de corte",
-        "txt_versao": "Por exercício, em 31/12 do ano seguinte (t+1) e do outro (t+2), só cortes até 31/12/2023: quantas "
+        "txt_versao": "Por exercício, em 31 de dezembro do ano seguinte (t+1) e do outro (t+2), só cortes até 31/12/2023: quantas "
         "companhias têm uma versão pública e em quantas ela já é uma emenda com números, e não o 10-K original.",
         "cab_versao": "| Exercício | Companhias em t+1 | Emenda em t+1 | Companhias em t+2 | Emenda em t+2 |",
         "s_mapa": "### 2.4 O mapa das contas para as tags us-gaap e a cobertura por ano",

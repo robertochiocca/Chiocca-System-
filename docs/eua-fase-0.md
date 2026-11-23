@@ -51,7 +51,7 @@ Por exercício fiscal declarado pela companhia (`fy`). O prazo é a diferença e
 
 ### 2.3 A versão pública numa data de corte
 
-Por exercício, em 31/12 do ano seguinte (t+1) e do outro (t+2), só cortes até 31/12/2023: quantas companhias têm uma versão pública e em quantas ela já é uma emenda com números, e não o 10-K original.
+Por exercício, em 31 de dezembro do ano seguinte (t+1) e do outro (t+2), só cortes até 31/12/2023: quantas companhias têm uma versão pública e em quantas ela já é uma emenda com números, e não o 10-K original.
 
 | Exercício | Companhias em t+1 | Emenda em t+1 | Companhias em t+2 | Emenda em t+2 |
 | --- | ---: | ---: | ---: | ---: |
