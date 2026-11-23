@@ -26,6 +26,10 @@ PARES = [
     ("README.md", "README.en.md"),
     ("docs/historico.md", "docs/en/history.md"),
     ("docs/como-reproduzir.md", "docs/en/how-to-reproduce.md"),
+    ("docs/motor-v2-plano.md", "docs/en/engine-v2-plan.md"),
+    ("docs/motor-v2-descricoes.md", "docs/en/engine-v2-descriptions.md"),
+    ("docs/pre-registro-motor-v2.md", "docs/en/engine-v2-preregistration.md"),
+    ("docs/estudo-2-emenda-5-rascunho.md", "docs/en/study-2-amendment-5-draft.md"),
 ]
 README = {"pt": "README.md", "en": "README.en.md"}
 AVISO_PT = "Sinal estatístico baseado em demonstrações públicas. Não é acusação, não é recomendação de investimento."
@@ -220,3 +224,16 @@ def test_imagens_citadas_nos_readmes_existem_no_repositorio() -> None:
 def test_imagens_citadas_reconhece_markdown_e_html() -> None:
     md = '![a](docs/x.png "título") texto <img width="9" src="docs/y.png" alt="b"> e [link](docs/z.md)'
     assert _imagens_citadas(md) == ["docs/x.png", "docs/y.png"]
+
+
+def test_readme_lucro_sem_caixa_sem_alerta_sozinho() -> None:
+    """Pedido de 22/11/2026: a seção de sinais diz que o lucro que não vira caixa aparece na ficha, mas não dispara
+    alerta sozinho, como na seção 4 do pré-registro do estudo 1."""
+    pre = (RAIZ / "docs/pre-registro.md").read_text(encoding="utf-8")
+    secao_4 = pre.split("## 4. Sinais e regras de alerta", 1)[1].split("\n## 5.", 1)[0]
+    assert "O lucro sem caixa aparece na ficha, mas não dispara alerta sozinho" in secao_4
+    pt = (RAIZ / README["pt"]).read_text(encoding="utf-8")
+    en = (RAIZ / README["en"]).read_text(encoding="utf-8")
+    assert "O lucro que não vira caixa aparece na ficha, mas não dispara alerta sozinho" in pt
+    assert "Earnings not backed by cash appear on the alert sheet but do not trigger an alert on their own" in en
+    assert all("](docs/pre-registro.md), section 4" in x or "](docs/pre-registro.md), seção 4" in x for x in (pt, en))

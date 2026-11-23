@@ -4,6 +4,7 @@ Noted for later, with no commitment. Nothing here goes into the v2 product witho
 
 ## Study 2 (with fiscal years 2024 onward, sealed today)
 
+- **Status (2026-11-22):** engine v1, unchanged, computed the list for the sealed fiscal years, sealed on 2026-11-21. The [engine v2 pre-registration](engine-v2-preregistration.md) (DEPI from the DVA, standardized Benford and the alert by score) and amendment 5 to study 2, which adds v2 as an arm of the secondary evaluation, were registered on 2026-11-22 (commit `313c52db5df2f11b0a4f9d7920e486e688a9f381`; hash noted in commit `29e472b130a61f1358b97694eddbeaba6e9bbb88`; OpenTimestamps stamp in commit `13564a22074aca81a7b96dcdf9c8cda4fe3a9c81`). v2's code starts later, in a separate round.
 - Run engine v1 unchanged on the sealed fiscal years, as a clean test, before any improvement.
 - DEPI without a depreciation line in the cash flow statement: the value-added statement (DVA) has a fixed account "Depreciação, Amortização e Exaustão" (depreciation, amortization and depletion; reconnaissance, part 1.7), which may solve the direct-method cases. It requires a new pre-registration.
 - Implied interest rate: separate exchange differences and lease interest from finance costs, using the notes to the financial statements, before comparing with the CDI rate.
