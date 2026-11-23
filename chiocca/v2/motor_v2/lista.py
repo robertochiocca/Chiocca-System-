@@ -13,6 +13,11 @@ do v1 sem os alertas por sinal do v1 (o v2 não os tem), mais as do v2; `avaliad
 percentis e o escore vão com `CASAS_ESCORE` casas, para o arredondamento não criar empates no ranking; o resto, com as
 casas da lista do v1.
 
+Ordem: as empresa-anos de cada exercício entram no v2 na ordem do índice da DFP (a primeira linha de cada par código
+CVM e data de referência no `dfp_cia_aberta_<ano>.csv` do zip arquivado no branch `estudo-2-dados`), e é essa a ordem
+que desfaz os empates de quantidade de números nas faixas do Benford (`benford.py`); a ordenação por código CVM é só a
+do arquivo gravado, depois do cálculo.
+
 Lacre: cada exercício passa por `abertura.garantir_exercicio` antes de qualquer leitura. Acima de 2023, só os que o
 commit da sessão do lacre da lista do v2 puser na constante do v2 (`abertura.CONSTANTE`).
 

@@ -5,7 +5,11 @@
   primeiro dígito significativo de |valor|.
 - **O desvio:** (1/9) Σ |p_d − log10(1 + 1/d)|, d = 1..9, com p_d a frequência do dígito d.
 - **As faixas:** os quintis da quantidade de números, dentro do exercício e do grupo, entre as empresa-anos com pelo
-  menos 20 números (`qcut` do pandas sobre `rank(method="first")`, 5 faixas; empates pela ordem de entrada).
+  menos 20 números (`qcut` do pandas sobre `rank(method="first")`, 5 faixas). Os empates de quantidade são desfeitos
+  pela ordem de entrada das empresa-anos, que é a ordem do índice da DFP do exercício: a primeira linha de cada par
+  (código CVM, data de referência) no `dfp_cia_aberta_<ano>.csv` do zip da DFP; na lista do estudo 2, o arquivo
+  arquivado no branch `estudo-2-dados`. Com os mesmos arquivos, o recálculo é determinístico (decisão de Roberto,
+  23/11/2026).
 - **A padronização:** (desvio − média do desvio na faixa) ÷ desvio-padrão amostral (n − 1) do desvio na faixa.
   Calculável com pelo menos 20 números e desvio-padrão da faixa maior que zero.
 """

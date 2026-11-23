@@ -279,8 +279,13 @@ def test_tudo_ligado_tira_os_alertas_por_sinal_do_v1() -> None:
 PROIBIDOS = (
     "chiocca.metricas", "chiocca.avaliacao", "chiocca.relatorio_resultados", "chiocca.textos_resultados",
     "chiocca.textos_resumo", "chiocca.robustez", "chiocca.descritiva", "chiocca.emenda5", "chiocca.americanas",
-    "chiocca.v2.analises_pos_estudo_1", "chiocca.v2.estudo2.gabarito", "chiocca.v2.estudo2.secundaria",
+    "chiocca.v2.analises_pos_estudo_1", "chiocca.v2.estudo2.gabarito",
 )  # fmt: skip
+# Do estudo 2, a lista do v2 reaproveita a lista do v1, e a avaliação do braço do v2, a avaliação secundária (decisão de
+# Roberto, 23/11/2026); o motor em si não importa nada do estudo.
+IMPORTA_DO_ESTUDO = {"lista.py": {"chiocca.v2.estudo2.lista"},
+                     "avaliacao.py": {"chiocca.v2.estudo2.abertura", "chiocca.v2.estudo2.lista",
+                                      "chiocca.v2.estudo2.secundaria"}}  # fmt: skip
 
 
 def _modulos_do_pacote() -> list[str]:
@@ -296,6 +301,16 @@ def test_codigo_do_v2_nao_le_o_gabarito_nem_importa_as_metricas() -> None:
                 importados |= {n.module} | {f"{n.module}.{a.name}" for a in n.names}
         assert not {m for m in importados if m.startswith(PROIBIDOS)}, p.name
         assert "gabarito_casos" not in p.read_text(encoding="utf-8"), p.name
+
+
+def test_do_estudo_2_so_a_lista_e_a_avaliacao_do_braco() -> None:
+    for p in sorted(PACOTE.glob("*.py")):
+        arvore = ast.parse(p.read_text(encoding="utf-8"))
+        do_estudo = {n.module for n in ast.walk(arvore) if isinstance(n, ast.ImportFrom) and n.module}
+        do_estudo = {f"{m}.{a.name}" for n in ast.walk(arvore) if isinstance(n, ast.ImportFrom) and n.module
+                     for m in [n.module] for a in n.names if m == "chiocca.v2.estudo2"} | {
+            m for m in do_estudo if m.startswith("chiocca.v2.estudo2.")}  # fmt: skip
+        assert do_estudo == IMPORTA_DO_ESTUDO.get(p.name, set()), p.name
 
 
 def test_nem_pelo_que_importa() -> None:

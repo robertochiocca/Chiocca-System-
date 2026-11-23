@@ -90,9 +90,10 @@ def test_abertura_so_pela_constante(monkeypatch: pytest.MonkeyPatch) -> None:
     assert lacre.ULTIMO_EXERCICIO_LIBERADO == 2023  # o produto não muda
 
 
-# Emenda 5 do estudo 2, item 4: o teste passa a aceitar o script do v2, e só ele. A lista do v2 reaproveita a do v1
-# por importação, e o lacre do v2 lê, por getattr, só a constante própria dele (tests/test_v2_motor_v2.py).
-SCRIPT_DO_V2 = "chiocca/v2/motor_v2/lista.py"
+# Emenda 5 do estudo 2, item 4: o teste passa a aceitar o script do v2, e só ele. A lista e a avaliação do braço do v2
+# reaproveitam as do estudo por importação, e o lacre do v2 lê, por getattr, só a constante própria dele
+# (tests/test_v2_motor_v2.py).
+SCRIPT_DO_V2 = ("chiocca/v2/motor_v2/lista.py", "chiocca/v2/motor_v2/avaliacao.py")
 LACRE_DO_V2 = "chiocca/v2/motor_v2/abertura.py"
 
 
@@ -105,7 +106,7 @@ def test_constantes_do_estudo_e_o_script_fora_do_produto() -> None:
         no_estudo = caminho.startswith("chiocca/v2/estudo2/")
         if not no_estudo and caminho != "chiocca/v2/lacre.py":
             assert abertura.CONSTANTE not in texto and abertura.CONSTANTE_SEGUNDA not in texto, caminho
-        if not no_estudo and caminho != SCRIPT_DO_V2:
+        if not no_estudo and caminho not in SCRIPT_DO_V2:
             assert not importa_o_estudo.search(texto), caminho
         for no in ast.walk(ast.parse(texto)):
             assert not (isinstance(no, ast.Attribute) and no.attr.startswith("ESTUDO_2")), caminho
