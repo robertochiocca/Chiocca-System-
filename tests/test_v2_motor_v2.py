@@ -413,3 +413,23 @@ def test_celula_do_v2() -> None:
     assert lista.celula("escore", 0.9) == "0.900000000000" and lista.celula("benford", -0.0000001) == "0.000000"
     assert lista.celula("marca_depreciacao_dva", True) == "1" and lista.celula("n_sinais_calculaveis", 2.0) == "2"
     assert lista.celula("mscore", -1.5) == "-1.500000" and lista.celula("pct_dpo", float("nan")) == ""
+
+
+# ---- invariante (item 3, com o armazém, fora do CI; aqui, o registro do resultado) ----
+
+
+def test_invariante_registrado() -> None:
+    """Com as três mudanças desligadas, a lista do v2 sobre o armazém é igual ao estudo 1 nas 9.474 empresa-anos de 2010
+    a 2023, em todas as colunas comparadas pelo invariante do v1 (`docs/motor_v2_invariante.json`)."""
+    d = json.loads((RAIZ / "docs" / "motor_v2_invariante.json").read_text(encoding="utf-8"))
+    v1 = json.loads((RAIZ / "docs" / "invariante_numeros.json").read_text(encoding="utf-8"))["exercicios"]
+    assert d["mudancas"] == {"depi_dva": False, "benford": False, "escore": False}
+    assert d["codigo_sem_alteracao_local"] is True and re.fullmatch(r"[0-9a-f]{40}", d["commit"])
+    t = d["total"]
+    assert t["empresa_anos_estudo"] == t["empresa_anos_v2"] == t["empresa_anos_iguais"] == 9474
+    assert t["empresa_anos_iguais"] == sum(r["empresa_anos_iguais"] for r in v1.values())
+    assert t["colunas_com_diferenca"] == [] and t["exercicios_com_as_mesmas_empresa_anos"] == 14
+    assert set(d["exercicios"]) == {str(a) for a in range(2010, 2024)}
+    for ano, r in d["exercicios"].items():
+        assert r["empresa_anos_iguais"] == r["empresa_anos_estudo"] == v1[ano]["empresa_anos_iguais"], ano
+        assert r["colunas_comparadas"] == v1[ano]["colunas_comparadas"] and not r["colunas_com_diferenca"], ano
