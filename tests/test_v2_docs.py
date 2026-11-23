@@ -28,6 +28,7 @@ PARES = [
     ("docs/como-reproduzir.md", "docs/en/how-to-reproduce.md"),
     ("docs/motor-v2-plano.md", "docs/en/engine-v2-plan.md"),
     ("docs/motor-v2-descricoes.md", "docs/en/engine-v2-descriptions.md"),
+    ("docs/motor-v2-dentro-da-amostra.md", "docs/en/engine-v2-in-sample.md"),
     ("docs/pre-registro-motor-v2.md", "docs/en/engine-v2-preregistration.md"),
     ("docs/estudo-2-emenda-5-rascunho.md", "docs/en/study-2-amendment-5-draft.md"),
 ]
