@@ -90,22 +90,29 @@ def test_abertura_so_pela_constante(monkeypatch: pytest.MonkeyPatch) -> None:
     assert lacre.ULTIMO_EXERCICIO_LIBERADO == 2023  # o produto não muda
 
 
+# Emenda 5 do estudo 2, item 4: o teste passa a aceitar o script do v2, e só ele. A lista e a avaliação do braço do v2
+# reaproveitam as do estudo por importação, e o lacre do v2 lê, por getattr, só a constante própria dele
+# (tests/test_v2_motor_v2.py).
+SCRIPT_DO_V2 = ("chiocca/v2/motor_v2/lista.py", "chiocca/v2/motor_v2/avaliacao.py", "chiocca/v2/motor_v2/registro.py")
+LACRE_DO_V2 = "chiocca/v2/motor_v2/abertura.py"
+
+
 def test_constantes_do_estudo_e_o_script_fora_do_produto() -> None:
     """Só o script do estudo usa as constantes da abertura (e só `abertura`, por getattr); o produto não importa o
-    script."""
+    script. Do v2, só o script da lista importa o do estudo, e só o lacre do v2 lê o `lacre` por getattr."""
     importa_o_estudo = re.compile(r"chiocca\.v2\.estudo2(?!\w)|from chiocca\.v2 import [^\n]*\bestudo2(?!\w)")
     for p in sorted((RAIZ / "chiocca").rglob("*.py")):
         caminho, texto = p.relative_to(RAIZ).as_posix(), p.read_text(encoding="utf-8")
         no_estudo = caminho.startswith("chiocca/v2/estudo2/")
         if not no_estudo and caminho != "chiocca/v2/lacre.py":
             assert abertura.CONSTANTE not in texto and abertura.CONSTANTE_SEGUNDA not in texto, caminho
-        if not no_estudo:
+        if not no_estudo and caminho not in SCRIPT_DO_V2:
             assert not importa_o_estudo.search(texto), caminho
         for no in ast.walk(ast.parse(texto)):
             assert not (isinstance(no, ast.Attribute) and no.attr.startswith("ESTUDO_2")), caminho
             if isinstance(no, ast.Call) and isinstance(no.func, ast.Name) and no.func.id == "getattr" and no.args:
                 if isinstance(no.args[0], ast.Name) and no.args[0].id == "lacre":
-                    assert caminho == "chiocca/v2/estudo2/abertura.py", caminho
+                    assert caminho in ("chiocca/v2/estudo2/abertura.py", LACRE_DO_V2), caminho
 
 
 def test_sem_o_bloco_da_abertura() -> None:
