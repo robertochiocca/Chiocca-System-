@@ -93,7 +93,7 @@ def test_abertura_so_pela_constante(monkeypatch: pytest.MonkeyPatch) -> None:
 # Emenda 5 do estudo 2, item 4: o teste passa a aceitar o script do v2, e só ele. A lista e a avaliação do braço do v2
 # reaproveitam as do estudo por importação, e o lacre do v2 lê, por getattr, só a constante própria dele
 # (tests/test_v2_motor_v2.py).
-SCRIPT_DO_V2 = ("chiocca/v2/motor_v2/lista.py", "chiocca/v2/motor_v2/avaliacao.py")
+SCRIPT_DO_V2 = ("chiocca/v2/motor_v2/lista.py", "chiocca/v2/motor_v2/avaliacao.py", "chiocca/v2/motor_v2/registro.py")
 LACRE_DO_V2 = "chiocca/v2/motor_v2/abertura.py"
 
 

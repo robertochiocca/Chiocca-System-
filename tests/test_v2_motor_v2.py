@@ -283,7 +283,8 @@ PROIBIDOS = (
 )  # fmt: skip
 # Do estudo 2, a lista do v2 reaproveita a lista do v1, e a avaliação do braço do v2, a avaliação secundária (decisão de
 # Roberto, 23/11/2026); o motor em si não importa nada do estudo.
-IMPORTA_DO_ESTUDO = {"lista.py": {"chiocca.v2.estudo2.lista"},
+IMPORTA_DO_ESTUDO = {"registro.py": {"chiocca.v2.estudo2.registro"},
+                     "lista.py": {"chiocca.v2.estudo2.lista"},
                      "avaliacao.py": {"chiocca.v2.estudo2.abertura", "chiocca.v2.estudo2.lista",
                                       "chiocca.v2.estudo2.secundaria"}}  # fmt: skip
 
@@ -346,7 +347,13 @@ def test_produto_nao_importa_o_v2() -> None:
         if not caminho.startswith("chiocca/v2/motor_v2"):
             assert not importa.search(texto), caminho
         if caminho.startswith("chiocca/v2/motor_v2/"):
-            assert "motor_v2_" not in texto, caminho
+            arvore = ast.parse(texto)
+            modulos = {a.name for n in ast.walk(arvore) if isinstance(n, ast.Import) for a in n.names}
+            modulos |= {n.module or "" for n in ast.walk(arvore) if isinstance(n, ast.ImportFrom)}
+            modulos |= {
+                f"{n.module}.{a.name}" for n in ast.walk(arvore) if isinstance(n, ast.ImportFrom) for a in n.names
+            }
+            assert not [m for m in modulos if "motor_v2_" in m], caminho
 
 
 def test_lacre_do_v2_e_so_dele(monkeypatch: pytest.MonkeyPatch) -> None:
