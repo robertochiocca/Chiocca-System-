@@ -1,4 +1,4 @@
-# Plano do Chiocca System v2: fases B a F
+# Plano do Chiocca v2: fases B a F
 
 Proposta da Fase A. Cada fase termina com código e testes passando, documentação em PT e EN, hash do commit e `git ls-remote`. Depois para e espera a sua autorização por escrito.
 
@@ -8,7 +8,7 @@ As estimativas são ordens de grandeza para comparar as fases (linhas de código
 
 - `chiocca/v2/`: o produto em Python. Não altera nenhum módulo do estudo 1; só os chama.
 - `web/`: a interface em Next.js (Fase E).
-- Cada arquivo trazido de outro projeto leva no topo o projeto de origem, o caminho, o commit e "adaptado para o Chiocca System", e entra em [`docs/origem-do-codigo.md`](origem-do-codigo.md).
+- Cada arquivo trazido de outro projeto leva no topo o projeto de origem, o caminho, o commit e "adaptado para o Chiocca System" (o nome antigo do projeto, que os cabeçalhos mantêm), e entra em [`docs/origem-do-codigo.md`](origem-do-codigo.md).
 - Dependências novas só quando a fase precisar: DuckDB (C), FastAPI e Pydantic (D), Node e Next.js (E), leitor de PDF (F).
 
 ## Fase B: motor de confiança

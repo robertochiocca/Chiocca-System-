@@ -1,6 +1,6 @@
 # Referências do produto (v2)
 
-Obras usadas no Chiocca System v2: no produto, no plano das fases e no roadmap. As referências do estudo 1 continuam no README.
+Obras usadas no Chiocca v2: no produto, no plano das fases e no roadmap. As referências do estudo 1 continuam no README.
 
 - **PDFs fora do Git.** Os arquivos ficam em `referencias/`, que está no `.gitignore`: é material com direitos autorais, só para uso local. Nenhum PDF entra no repositório.
 - **Palavras próprias.** A coluna "onde é usada" resume com palavras próprias o que o produto tira de cada obra; nenhum trecho é copiado.

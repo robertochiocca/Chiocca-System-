@@ -1,6 +1,6 @@
 # Origin of the code brought from other projects
 
-Every file brought from Carchuna, Calahonda or DireitoAberto (all by Roberto Chiocca, MIT license) goes into this table and carries at the top the origin project, the path, the commit and the sentence "adapted for the Chiocca System". No project is installed as a package.
+Every file brought from Carchuna, Calahonda or DireitoAberto (all by Roberto Chiocca, MIT license) goes into this table and carries at the top the origin project, the path, the commit and the sentence "adapted for the Chiocca System" (the project's former name, which the headers keep). No project is installed as a package.
 
 Commits inspected in Phase A (details in [`docs/en/inventory.md`](inventory.md)):
 
@@ -19,9 +19,9 @@ Commits inspected in Phase A (details in [`docs/en/inventory.md`](inventory.md))
 
 **Not from other projects.** `tests/referencia/gerar_exemplo_resolvido.py` came from the planning conversation (claude.ai, with Claude), written before the engine, and was handed over by Roberto on 2026-11-08. Its origin is in the file's own docstring. Changes: black formatting, a type annotation required by mypy and, on 2026-11-09, by Roberto's decision, the rounding of three values (`DPO_t_dias`, `variacao_dias` and `spread_pp`) from 2 to 4 decimals, to follow commit 70d71a5; no calculation changed.
 
-**Phase D.** No file came from another project: `chiocca/v2/api.py`, `chiocca/v2/modelos.py`, `chiocca/v2/busca.py` and `tests/test_v2_api.py` were written for Chiocca System. FastAPI, Pydantic, uvicorn and httpx are installed dependencies, pinned in `pyproject.toml` and `requirements-lock.txt`, not copied code.
+**Phase D.** No file came from another project: `chiocca/v2/api.py`, `chiocca/v2/modelos.py`, `chiocca/v2/busca.py` and `tests/test_v2_api.py` were written for Chiocca. FastAPI, Pydantic, uvicorn and httpx are installed dependencies, pinned in `pyproject.toml` and `requirements-lock.txt`, not copied code.
 
-**Phase E.** From DireitoAberto (`web/`, commit `102e3e2d9d70e87249d8df9215737e2d98b6358d`, MIT license), with an origin header in each file. The four files below; `web/tsconfig.json` follows DireitoAberto's configuration, which is Next's default. The rest of `web/` was written for Chiocca System.
+**Phase E.** From DireitoAberto (`web/`, commit `102e3e2d9d70e87249d8df9215737e2d98b6358d`, MIT license), with an origin header in each file. The four files below; `web/tsconfig.json` follows DireitoAberto's configuration, which is Next's default. The rest of `web/` was written for Chiocca.
 
 - `web/next.config.mjs`, from `web/next.config.mjs`: the same security policy and the same `/api` rewrite to FastAPI; no `blob:` (there is no user PDF) and a longer proxy timeout for the investigation.
 - `web/app/globals.css`, from `web/app/globals.css`: only the color tokens, the dark theme and the sticky bar; Chiocca's palette and components.
@@ -38,4 +38,4 @@ Commits inspected in Phase A (details in [`docs/en/inventory.md`](inventory.md))
 
 **Phase F2a.** No file came from another project: the IPE list (`chiocca/v2/ipe.py`) and the monitor (`chiocca/v2/monitor.py`, with the reading of a single file from inside the remote zip by byte ranges) were written here; the name detector is the F1 reader's, unchanged.
 
-**Phase F1.** No file came from another project. The adversarial-set evaluator (`chiocca/v2/leitor/avaliacao.py`) follows DireitoAberto's idea (hand-written declarative ground truth and checking of every citation), rewritten for Chiocca System, with no copied code. pypdf is an installed dependency, pinned in `pyproject.toml` and `requirements-lock.txt`, not copied code.
+**Phase F1.** No file came from another project. The adversarial-set evaluator (`chiocca/v2/leitor/avaliacao.py`) follows DireitoAberto's idea (hand-written declarative ground truth and checking of every citation), rewritten for Chiocca, with no copied code. pypdf is an installed dependency, pinned in `pyproject.toml` and `requirements-lock.txt`, not copied code.

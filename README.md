@@ -1,8 +1,10 @@
 <div align="center">
 
-# Chiocca System
+# Chiocca
 
 **Alertas de manipulação contábil em companhias abertas brasileiras, calculados só com o que era público na época.**
+
+Antes chamado Chiocca System.
 
 [English](README.en.md) · [Demonstração](https://robertochiocca.github.io/Chiocca-System-/)
 
@@ -12,7 +14,7 @@
 
 ## Em 30 segundos
 
-O Chiocca System calcula sinais de manipulação contábil (o M-score de Beneish e sinais adaptados ao Brasil) para as companhias abertas brasileiras, com os dados abertos da CVM.
+O Chiocca calcula sinais de manipulação contábil (o M-score de Beneish e sinais adaptados ao Brasil) para as companhias abertas brasileiras, com os dados abertos da CVM.
 Cada cálculo usa só a versão da demonstração que era pública na data, e as regras de alerta foram fixadas antes de olhar os dados.
 Para uma companhia e uma data, o produto mostra a investigação como era naquela data, com a origem de cada número.
 

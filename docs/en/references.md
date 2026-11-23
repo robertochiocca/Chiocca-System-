@@ -1,6 +1,6 @@
 # Product references (v2)
 
-Works used in Chiocca System v2: in the product, in the phase plan and in the roadmap. The study 1 references remain in the README.
+Works used in Chiocca v2: in the product, in the phase plan and in the roadmap. The study 1 references remain in the README.
 
 - **PDFs outside Git.** The files live in `referencias/`, which is in `.gitignore`: it is copyrighted material, for local use only. No PDF enters the repository.
 - **Own words.** The "where it is used" column summarizes in our own words what the product takes from each work; no passage is copied.

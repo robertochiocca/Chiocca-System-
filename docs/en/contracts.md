@@ -1,4 +1,4 @@
-# Chiocca System v2 data contracts
+# Chiocca v2 data contracts
 
 Phase A proposal, for your approval. Only the seal (section 1) is already in the code; the rest is specification. Field names stay in Portuguese, as in the rest of the repository; user-facing text comes in PT and EN.
 

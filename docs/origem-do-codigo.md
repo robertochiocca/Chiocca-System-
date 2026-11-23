@@ -1,6 +1,6 @@
 # Origem do código trazido de outros projetos
 
-Todo arquivo trazido da Carchuna, da Calahonda ou do DireitoAberto (todos de Roberto Chiocca, licença MIT) entra nesta tabela e leva no topo o projeto de origem, o caminho, o commit e a frase "adaptado para o Chiocca System". Nenhum projeto é instalado como pacote.
+Todo arquivo trazido da Carchuna, da Calahonda ou do DireitoAberto (todos de Roberto Chiocca, licença MIT) entra nesta tabela e leva no topo o projeto de origem, o caminho, o commit e a frase "adaptado para o Chiocca System" (o nome antigo do projeto, que os cabeçalhos mantêm). Nenhum projeto é instalado como pacote.
 
 Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.md)):
 
@@ -19,9 +19,9 @@ Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.m
 
 **Fora de outros projetos.** `tests/referencia/gerar_exemplo_resolvido.py` veio da conversa de planejamento (claude.ai, com o Claude), escrito antes do motor, e foi entregue por Roberto em 08/11/2026. A origem está no docstring do próprio arquivo. Mudanças: a formatação do black, uma anotação de tipo pedida pelo mypy e, em 09/11/2026, por decisão de Roberto, o arredondamento de três valores (`DPO_t_dias`, `variacao_dias` e `spread_pp`) de 2 para 4 casas, para seguir o commit 70d71a5; nenhuma conta mudou.
 
-**Fase D.** Nenhum arquivo veio de outro projeto: `chiocca/v2/api.py`, `chiocca/v2/modelos.py`, `chiocca/v2/busca.py` e `tests/test_v2_api.py` foram escritos para o Chiocca System. FastAPI, Pydantic, uvicorn e httpx são dependências instaladas, fixadas no `pyproject.toml` e no `requirements-lock.txt`, não código copiado.
+**Fase D.** Nenhum arquivo veio de outro projeto: `chiocca/v2/api.py`, `chiocca/v2/modelos.py`, `chiocca/v2/busca.py` e `tests/test_v2_api.py` foram escritos para o Chiocca. FastAPI, Pydantic, uvicorn e httpx são dependências instaladas, fixadas no `pyproject.toml` e no `requirements-lock.txt`, não código copiado.
 
-**Fase E.** Do DireitoAberto (`web/`, commit `102e3e2d9d70e87249d8df9215737e2d98b6358d`, licença MIT), com cabeçalho de origem em cada arquivo. Os quatro arquivos abaixo; `web/tsconfig.json` segue a configuração do DireitoAberto, que é a padrão do Next. O resto do `web/` foi escrito para o Chiocca System.
+**Fase E.** Do DireitoAberto (`web/`, commit `102e3e2d9d70e87249d8df9215737e2d98b6358d`, licença MIT), com cabeçalho de origem em cada arquivo. Os quatro arquivos abaixo; `web/tsconfig.json` segue a configuração do DireitoAberto, que é a padrão do Next. O resto do `web/` foi escrito para o Chiocca.
 
 - `web/next.config.mjs`, de `web/next.config.mjs`: a mesma política de segurança e o mesmo rewrite de `/api` para a FastAPI; sem `blob:` (não há PDF do usuário) e com tempo maior no proxy para a investigação.
 - `web/app/globals.css`, de `web/app/globals.css`: só os tokens de cor, o tema escuro e a barra fixa; paleta e componentes do Chiocca.
@@ -38,4 +38,4 @@ Commits inspecionados na Fase A (detalhes em [`docs/inventario.md`](inventario.m
 
 **Fase F2a.** Nenhum arquivo veio de outro projeto: a lista do IPE (`chiocca/v2/ipe.py`) e o monitor (`chiocca/v2/monitor.py`, com a leitura de um só arquivo de dentro do zip remoto por faixas de bytes) foram escritos aqui; o detector de nomes é o do leitor F1, sem mudança.
 
-**Fase F1.** Nenhum arquivo veio de outro projeto. O avaliador do conjunto adversarial (`chiocca/v2/leitor/avaliacao.py`) segue a ideia do DireitoAberto (gabarito declarativo escrito à mão e conferência de toda citação), reescrita para o Chiocca System, sem código copiado. O pypdf é dependência instalada, fixada no `pyproject.toml` e no `requirements-lock.txt`, não código copiado.
+**Fase F1.** Nenhum arquivo veio de outro projeto. O avaliador do conjunto adversarial (`chiocca/v2/leitor/avaliacao.py`) segue a ideia do DireitoAberto (gabarito declarativo escrito à mão e conferência de toda citação), reescrita para o Chiocca, sem código copiado. O pypdf é dependência instalada, fixada no `pyproject.toml` e no `requirements-lock.txt`, não código copiado.

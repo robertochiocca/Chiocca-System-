@@ -1,4 +1,4 @@
-# Contratos de dados do Chiocca System v2
+# Contratos de dados do Chiocca v2
 
 Proposta da Fase A, para sua aprovação. Só o lacre (seção 1) já está no código; o resto é especificação. Os nomes de campo ficam em português, como no resto do repositório; os textos ao usuário vêm em PT e EN.
 

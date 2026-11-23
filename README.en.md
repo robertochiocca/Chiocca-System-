@@ -1,8 +1,10 @@
 <div align="center">
 
-# Chiocca System
+# Chiocca
 
 **Accounting-manipulation alerts for Brazilian listed companies, computed only from what was public at the time.**
+
+Formerly called Chiocca System.
 
 [Português](README.md) · [Demo](https://robertochiocca.github.io/Chiocca-System-/)
 
@@ -12,7 +14,7 @@
 
 ## In 30 seconds
 
-Chiocca System computes accounting-manipulation signals (the Beneish M-score and Brazil-specific signals) for Brazilian listed companies, from CVM open data.
+Chiocca computes accounting-manipulation signals (the Beneish M-score and Brazil-specific signals) for Brazilian listed companies, from CVM open data.
 Every calculation uses only the filing version that was public on the date, and the alert rules were fixed before looking at the data.
 For a company and a date, the product shows the investigation as it was on that date, with the source of every figure.
 

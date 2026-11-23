@@ -3,7 +3,7 @@ import type { Idioma } from "./tipos";
 
 export const TEXTOS = {
   pt: {
-    marca: "Chiocca System",
+    marca: "Chiocca",
     nav_buscar: "Buscar",
     nav_testado: "Como o motor foi testado",
     idioma: "English",
@@ -153,7 +153,7 @@ export const TEXTOS = {
     correcao_nao_prova:
       "O software estar correto não faz os alertas acertarem, e um acerto não mostra que o cálculo está certo.",
     voltar: "Voltar à busca",
-    rodape: "Chiocca System — sinal estatístico, não acusação",
+    rodape: "Chiocca — sinal estatístico, não acusação",
     // ---- Fase E2: experiência e explicação ----
     idioma_rotulo: "Idioma",
     idioma_pt: "Português",
@@ -340,7 +340,7 @@ export const TEXTOS = {
     pre_registro: "Pré-registro (em português)",
   },
   en: {
-    marca: "Chiocca System",
+    marca: "Chiocca",
     nav_buscar: "Search",
     nav_testado: "How the engine was tested",
     idioma: "Português",
@@ -488,7 +488,7 @@ export const TEXTOS = {
     correcao_nao_prova:
       "Correct software does not make the alerts right, and a detection does not show that the calculation is correct.",
     voltar: "Back to search",
-    rodape: "Chiocca System — statistical signal, not accusation",
+    rodape: "Chiocca — statistical signal, not accusation",
     // ---- Phase E2: experience and explanation ----
     idioma_rotulo: "Language",
     idioma_pt: "Português",

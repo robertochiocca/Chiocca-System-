@@ -64,7 +64,7 @@ function Barra() {
       <header className="topo">
         <div className="wrap topo-in">
           <Link href="/" className="logo">
-            Chiocca <span>System</span>
+            Chiocca
           </Link>
           <nav className="nav-principal" aria-label={t.menu}>
             <Link href="/" aria-current={caminho === "/" ? "page" : undefined}>
@@ -122,7 +122,7 @@ function Barra() {
         >
           <div className="menu-celular-topo" onClick={(e) => e.target === e.currentTarget && fechar()}>
             <span className="logo">
-              Chiocca <span>System</span>
+              Chiocca
             </span>
             <button ref={botaoFechar} type="button" className="botao-icone" aria-label={t.fechar_menu} onClick={() => fechar(true)}>
               <span aria-hidden="true">✕</span>
