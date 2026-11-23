@@ -1,10 +1,12 @@
 <div align="center">
 
-# Chiocca System
+# Chiocca
 
 **Accounting-manipulation alerts for Brazilian listed companies, computed only from what was public at the time.**
 
-[Português](README.md) · [Demo](https://robertochiocca.github.io/Chiocca-System-/)
+Formerly called Chiocca System.
+
+[Português](README.md) · [Demo](https://robertochiocca.github.io/chiocca/)
 
 </div>
 
@@ -12,7 +14,7 @@
 
 ## In 30 seconds
 
-Chiocca System computes accounting-manipulation signals (the Beneish M-score and Brazil-specific signals) for Brazilian listed companies, from CVM open data.
+Chiocca computes accounting-manipulation signals (the Beneish M-score and Brazil-specific signals) for Brazilian listed companies, from CVM open data.
 Every calculation uses only the filing version that was public on the date, and the alert rules were fixed before looking at the data.
 For a company and a date, the product shows the investigation as it was on that date, with the source of every figure.
 
@@ -24,7 +26,7 @@ For a company and a date, the product shows the investigation as it was on that 
 
 **Stack:** Python 3.12+ (pandas, DuckDB over Parquet, FastAPI), Next.js with TypeScript and GitHub Actions; open data from the CVM and Banco Central.
 
-**Demo:** [robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/).
+**Demo:** [robertochiocca.github.io/chiocca](https://robertochiocca.github.io/chiocca/).
 
 ## The problem
 
@@ -32,7 +34,7 @@ The CVM (Brazil's securities regulator) updates its open-data base when a compan
 
 ## Demo
 
-[https://robertochiocca.github.io/Chiocca-System-/](https://robertochiocca.github.io/Chiocca-System-/) is a static site, with no API, holding investigations generated beforehand by the product itself: the 32 ground-truth companies included in demo mode, on fixed dates (the cut-off date of each fiscal year of the affected period, the one of the previous fiscal year and 2024-12-31), in PT and EN, with the PDF. Search is only by name, CVM code or CNPJ. It does not show other companies, other dates or fiscal years from 2024 onward, reserved for study 2.
+[https://robertochiocca.github.io/chiocca/](https://robertochiocca.github.io/chiocca/) is a static site, with no API, holding investigations generated beforehand by the product itself: the 32 ground-truth companies included in demo mode, on fixed dates (the cut-off date of each fiscal year of the affected period, the one of the previous fiscal year and 2024-12-31), in PT and EN, with the PDF. Search is only by name, CVM code or CNPJ. It does not show other companies, other dates or fiscal years from 2024 onward, reserved for study 2.
 
 ## First-version signals
 

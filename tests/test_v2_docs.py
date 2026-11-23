@@ -29,6 +29,7 @@ PARES = [
     ("docs/motor-v2-plano.md", "docs/en/engine-v2-plan.md"),
     ("docs/motor-v2-descricoes.md", "docs/en/engine-v2-descriptions.md"),
     ("docs/motor-v2-dentro-da-amostra.md", "docs/en/engine-v2-in-sample.md"),
+    ("docs/eua-fase-0.md", "docs/en/us-phase-0.md"),
     ("docs/pre-registro-motor-v2.md", "docs/en/engine-v2-preregistration.md"),
     ("docs/estudo-2-emenda-5-rascunho.md", "docs/en/study-2-amendment-5-draft.md"),
 ]
@@ -137,8 +138,8 @@ def test_readme_demonstracao_com_o_numero_de_companhias_do_modo_demonstracao() -
         readme = (RAIZ / README[lingua]).read_text(encoding="utf-8")
         topo = readme.split(h_topo, 1)[1].split("\n## ", 1)[0]
         demo = readme.split(h_demo, 1)[1].split("\n## ", 1)[0]
-        assert "https://robertochiocca.github.io/Chiocca-System-/" in demo and companhias in demo
-        assert "https://robertochiocca.github.io/Chiocca-System-/" in topo
+        assert "https://robertochiocca.github.io/chiocca/" in demo and companhias in demo
+        assert "https://robertochiocca.github.io/chiocca/" in topo
         # as capturas de npm run capturas -- --readme, na língua do README, no topo: computador e celular
         assert re.findall(r'src="(docs/imagens/[^"]+)"', readme) == [
             f"docs/imagens/demonstracao-computador-{lingua}.png",

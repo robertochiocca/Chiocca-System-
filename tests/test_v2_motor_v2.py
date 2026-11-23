@@ -357,17 +357,20 @@ def test_produto_nao_importa_o_v2() -> None:
 
 
 def test_lacre_do_v2_e_so_dele(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A constante da lista do v1 não abre nada para o v2; só a constante própria, no commit da sessão do lacre."""
-    assert not hasattr(lacre, abertura.CONSTANTE) and abertura.exercicios_do_v2() == ()
+    """Só a constante própria do v2, posta no bloco do estudo pelo commit da sessão do lacre da lista do v2
+    (23/11/2026), abre 2024 e 2025 para o v2; a constante da lista do v1 não abre nada para ele."""
+    assert abertura.exercicios_do_v2() == (2024, 2025) and abertura.garantir_exercicio(2025) == 2025
     assert hasattr(lacre, "ESTUDO_2_EXERCICIOS")  # a do v1 existe e não vale para o v2
+    monkeypatch.delattr(lacre, abertura.CONSTANTE)
+    assert abertura.exercicios_do_v2() == ()
     for ano in (2024, 2025):
         with pytest.raises(lacre.ExercicioLacrado):
             abertura.garantir_exercicio(ano)
     assert abertura.garantir_exercicio(2023) == 2023
     monkeypatch.setattr(lacre, abertura.CONSTANTE, (2024, 2025), raising=False)
-    assert abertura.garantir_exercicio(2025) == 2025
     with pytest.raises(lacre.ExercicioLacrado):
         abertura.garantir_exercicio(2026)
+    assert lacre.ULTIMO_EXERCICIO_LIBERADO == 2023 and str(lacre.DATA_REFERENCIA_MAXIMA) == "2024-12-31"
     for p in sorted((RAIZ / "chiocca").rglob("*.py")):
         caminho, texto = p.relative_to(RAIZ).as_posix(), p.read_text(encoding="utf-8")
         if caminho.startswith("chiocca/v2/motor_v2/"):
@@ -381,7 +384,12 @@ class FontesProibidas:
         raise AssertionError(f"leitura de dados antes do lacre: {nome}")
 
 
-def test_lista_e_dva_recusam_exercicio_lacrado_antes_de_ler() -> None:
+def test_lista_e_dva_recusam_exercicio_lacrado_antes_de_ler(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Sem a constante do v2, 2024 e 2025 são recusados antes de qualquer leitura; 2026 é recusado sempre."""
+    for ano in (2026,):
+        with pytest.raises(lacre.ExercicioLacrado):
+            lista.calcular(FontesProibidas(), [ano])  # type: ignore[arg-type]
+    monkeypatch.delattr(lacre, abertura.CONSTANTE)
     for ano in (2024, 2025):
         with pytest.raises(lacre.ExercicioLacrado):
             lista.calcular(FontesProibidas(), [ano])  # type: ignore[arg-type]

@@ -1,0 +1,171 @@
+"""Os Financial Statement Data Sets da SEC (Fase 0 dos EUA): os números das demonstrações em XBRL, por trimestre de
+entrega, desde 2009.
+
+Cada trimestre é um zip com arquivos de texto separados por tabulação; os dois que o reconhecimento usa são `sub.txt`
+(uma linha por entrega: o número da entrega, o CIK, o formulário, a data de referência, o exercício fiscal, as datas de
+entrega e se a entrega foi depois emendada) e `num.txt` (uma linha por número: a tag, a versão da taxonomia, a data, os
+trimestres cobertos, a unidade e o valor). As colunas usadas são conferidas em cada arquivo antes de qualquer conta
+(`exige`); a estrutura completa de cada arquivo é registrada como veio (`estrutura`).
+
+Nada de 2024 em diante: só os trimestres de entrega até 2023T4 (`TRIMESTRES`). Os 10-K dos exercícios de 2023, quase
+todos entregues em 2024, ficam de fora, e a cobertura de 2023 sai incompleta.
+
+O código foi escrito e testado com um arquivo sintético no formato descrito acima; ainda não rodou nos arquivos da SEC,
+que só podem ser baixados com o User-Agent da variável de ambiente (`chiocca.eua.sec`).
+"""
+
+from __future__ import annotations
+
+import io
+import zipfile
+from collections import defaultdict
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any
+
+import pandas as pd
+
+from chiocca.eua.sec import DADOS, Cliente
+
+URL = "https://www.sec.gov/files/dera/data/financial-statement-data-sets/{t}.zip"
+TRIMESTRES = [f"{a}q{q}" for a in range(2009, 2024) for q in range(1, 5)]
+PASTA = DADOS / "fsds"
+COLUNAS_SUB = ["adsh", "cik", "form", "period", "fy", "fp", "filed", "prevrpt"]
+COLUNAS_NUM = ["adsh", "tag", "version", "ddate", "qtrs", "uom"]
+FORMULARIOS = ("10-K", "10-K/A", "10-KT", "10-KT/A")
+
+# As contas que os sinais do v1 e do v2 usam, com as tags us-gaap candidatas, na ordem de preferência (proposta da
+# Fase 0, a ser conferida pela cobertura). Benford usa todos os números da entrega e não precisa de mapa; a DVA não
+# existe nos EUA (a depreciação vem da DFC). O peso de ganhos não recorrentes das financeiras não tem mapa aqui: os
+# bancos
+# usam outras linhas da taxonomia.
+MAPA: dict[str, tuple[str, ...]] = {
+    "ativo_total": ("Assets",),
+    "ativo_circulante": ("AssetsCurrent",),
+    "contas_a_receber": ("AccountsReceivableNetCurrent", "ReceivablesNetCurrent"),
+    "imobilizado": ("PropertyPlantAndEquipmentNet",),
+    "passivo_circulante": ("LiabilitiesCurrent",),
+    "fornecedores": ("AccountsPayableCurrent", "AccountsPayableAndAccruedLiabilitiesCurrent"),
+    "emprestimos_cp": ("DebtCurrent", "LongTermDebtCurrent", "ShortTermBorrowings"),
+    "emprestimos_lp": ("LongTermDebtNoncurrent", "LongTermDebtAndCapitalLeaseObligations"),
+    "patrimonio_liquido": (
+        "StockholdersEquity",
+        "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+    ),
+    "receita_liquida": ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "SalesRevenueNet"),
+    "custo_vendas": ("CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"),
+    "resultado_bruto": ("GrossProfit",),
+    "despesas_vendas_gerais_adm": ("SellingGeneralAndAdministrativeExpense",),
+    "despesas_financeiras": ("InterestExpense",),
+    "lucro_operacoes_continuadas": (
+        "IncomeLossFromContinuingOperations",
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+    ),
+    "lucro_liquido": ("NetIncomeLoss", "ProfitLoss"),
+    "caixa_operacional": ("NetCashProvidedByUsedInOperatingActivities",),
+    "depreciacao": ("DepreciationDepletionAndAmortization", "DepreciationAndAmortization", "Depreciation"),
+    "juros_pagos": ("InterestPaidNet", "InterestPaid"),
+}
+TAGS = sorted({t for ts in MAPA.values() for t in ts})
+
+
+class ColunaAusente(ValueError):
+    pass
+
+
+def exige(colunas: Iterable[str], esperadas: list[str], arquivo: str) -> None:
+    faltam = [c for c in esperadas if c not in set(colunas)]
+    if faltam:
+        raise ColunaAusente(f"{arquivo}: faltam as colunas {faltam}")
+
+
+def baixar(cliente: Cliente, trimestres: Iterable[str] = TRIMESTRES, pasta: Path = PASTA) -> list[dict[str, Any]]:
+    """Baixa os zips que ainda não estão na pasta e devolve as linhas do manifesto (os que não existem na SEC entram
+    como erro, sem parar o resto)."""
+    linhas = []
+    for t in trimestres:
+        if not t[:4].isdigit() or int(t[:4]) > 2023:
+            raise ValueError(f"{t}: nada de 2024 em diante")
+        destino = pasta / f"{t}.zip"
+        if not destino.exists():
+            linhas.append(cliente.baixar(URL.format(t=t), destino))
+    return linhas
+
+
+def estrutura(zip_caminho: Path) -> dict[str, Any]:
+    """Os arquivos do zip, com as colunas e o número de linhas de cada arquivo de texto."""
+    out: dict[str, Any] = {}
+    with zipfile.ZipFile(zip_caminho) as z:
+        for nome in sorted(z.namelist()):
+            if not nome.endswith(".txt"):
+                out[nome] = {"bytes": z.getinfo(nome).file_size}
+                continue
+            with z.open(nome) as f:
+                cabecalho = f.readline().decode("utf-8").rstrip("\r\n").split("\t")
+                linhas = sum(1 for _ in f)
+            out[nome] = {"colunas": cabecalho, "linhas": linhas, "bytes": z.getinfo(nome).file_size}
+    return out
+
+
+def submissoes(zip_caminho: Path) -> pd.DataFrame:
+    """As entregas de 10-K (e emendas) do trimestre, com as colunas usadas."""
+    with zipfile.ZipFile(zip_caminho) as z:
+        sub = pd.read_csv(io.BytesIO(z.read("sub.txt")), sep="\t", dtype=str, keep_default_na=False)
+    exige(sub.columns, COLUNAS_SUB, f"{zip_caminho.name}/sub.txt")
+    sub = sub[sub.form.isin(FORMULARIOS)][COLUNAS_SUB].copy()
+    sub["trimestre"] = zip_caminho.stem
+    return sub
+
+
+def resumo(sub: pd.DataFrame) -> dict[str, Any]:
+    """Por exercício fiscal: companhias com 10-K original, emendas, entregas emendadas depois e o prazo de entrega."""
+    entrega, referencia = pd.to_datetime(sub.filed, format="%Y%m%d"), pd.to_datetime(sub.period, format="%Y%m%d")
+    s = sub.assign(fy=pd.to_numeric(sub.fy, errors="coerce"), prazo=(entrega - referencia).dt.days)
+    original = s[s.form == "10-K"]
+    out: dict[str, Any] = {}
+    for fy, g in original.dropna(subset=["fy"]).groupby("fy"):
+        emendas = s[(s.form == "10-K/A") & (s.fy == fy)]
+        out[str(int(fy))] = {"companhias_com_10k": int(g.cik.nunique()), "entregas_10k": len(g),
+                             "entregas_10k_a": len(emendas), "10k_emendados_depois": int((g.prevrpt == "1").sum()),
+                             "prazo_mediano_dias": float(g.prazo.median())}  # fmt: skip
+    return out
+
+
+def cobertura_tags(zip_caminho: Path, sub: pd.DataFrame, tags: list[str] = TAGS) -> pd.DataFrame:
+    """Para cada 10-K original do trimestre, as tags (das candidatas) com valor em dólar na data de referência da
+    entrega,
+    da companhia (sem co-registrante), na taxonomia us-gaap."""
+    alvo = sub[sub.form == "10-K"].set_index("adsh")
+    with zipfile.ZipFile(zip_caminho) as z:
+        with z.open("num.txt") as f:
+            cabecalho = f.readline().decode("utf-8").rstrip("\r\n").split("\t")
+    exige(cabecalho, COLUNAS_NUM, f"{zip_caminho.name}/num.txt")
+    usar = COLUNAS_NUM + (["coreg"] if "coreg" in cabecalho else []) + (["segments"] if "segments" in cabecalho else [])
+    presentes: dict[str, set[str]] = defaultdict(set)
+    with zipfile.ZipFile(zip_caminho) as z:
+        for bloco in pd.read_csv(z.open("num.txt"), sep="\t", dtype=str, keep_default_na=False, usecols=usar,
+                                 chunksize=500_000):  # fmt: skip
+            b = bloco[bloco.adsh.isin(alvo.index) & bloco.tag.isin(tags) & bloco.version.str.startswith("us-gaap")
+                      & (bloco.uom == "USD")]  # fmt: skip
+            for col in ("coreg", "segments"):
+                if col in b.columns:
+                    b = b[b[col] == ""]
+            b = b[b.ddate.values == alvo.loc[b.adsh, "period"].values]
+            for a, t in zip(b.adsh, b.tag):
+                presentes[a].add(t)
+    return pd.DataFrame(
+        [{"adsh": a, "fy": alvo.at[a, "fy"], **{t: t in presentes[a] for t in tags}} for a in alvo.index]
+    )
+
+
+def cobertura_por_ano(tabela: pd.DataFrame, mapa: dict[str, tuple[str, ...]] = MAPA) -> dict[str, Any]:
+    """Por exercício: a fração dos 10-K com cada conta (alguma das tags candidatas) e com cada tag."""
+    out: dict[str, Any] = {}
+    t = tabela.assign(fy=pd.to_numeric(tabela.fy, errors="coerce")).dropna(subset=["fy"])
+    for fy, g in t.groupby("fy"):
+        out[str(int(fy))] = {
+            "10k": len(g),
+            "contas": {c: float(g[list(ts)].any(axis=1).mean()) for c, ts in mapa.items()},
+            "tags": {tag: float(g[tag].mean()) for ts in mapa.values() for tag in ts},
+        }
+    return out

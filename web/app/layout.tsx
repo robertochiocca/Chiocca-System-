@@ -8,7 +8,7 @@ import Topo from "@/components/Topo";
 import { ProvedorIdioma } from "@/lib/idioma";
 
 export const metadata: Metadata = {
-  title: "Chiocca System — alerta, não acusação",
+  title: "Chiocca — alerta, não acusação",
   description:
     "Sinais estatísticos sobre demonstrações financeiras públicas de companhias abertas brasileiras, como eram em cada data. Não é acusação, não é recomendação de investimento.",
 };

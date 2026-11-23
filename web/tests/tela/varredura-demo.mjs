@@ -18,7 +18,7 @@ if (!existsSync(join(out, "demo", "manifesto.json"))) {
   process.exit(2);
 }
 const indice = JSON.parse(readFileSync(join(out, "demo", "indice.json"), "utf-8"));
-// o prefixo do build (NEXT_PUBLIC_BASE_PATH), lido do próprio site exportado: "/Chiocca-System-" no GitHub Pages
+// o prefixo do build (NEXT_PUBLIC_BASE_PATH), lido do próprio site exportado: "/chiocca" no GitHub Pages
 const prefixo = prefixoDoBuild(out);
 const { url, fechar } = await servir(out, prefixo);
 const navegador = await chromium.launch();

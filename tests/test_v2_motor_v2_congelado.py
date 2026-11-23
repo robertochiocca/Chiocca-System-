@@ -38,13 +38,14 @@ def test_congelado_antes_da_meta() -> None:
 
 
 def test_lacre_entra_sem_o_bloco_do_estudo() -> None:
-    """A constante do v2 no bloco do estudo (como no commit da sessão do lacre) não muda o SHA-256 registrado."""
+    """A constante do v2, posta no bloco do estudo pelo commit da sessão do lacre, não muda o SHA-256 registrado: o
+    texto sem o bloco é o mesmo com ou sem ela."""
     texto = (RAIZ / LACRE).read_text(encoding="utf-8")
-    assert abertura.MARCA_FIM in texto and abertura_v2.CONSTANTE not in texto
-    aberto = texto.replace(f"\n{abertura.MARCA_FIM}", f"\n{abertura_v2.CONSTANTE} = (2024, 2025)\n{abertura.MARCA_FIM}")
-    assert aberto != texto and abertura_v2.CONSTANTE in aberto
-    sem_o_bloco = abertura.sem_o_bloco_da_abertura(aberto)
-    assert sem_o_bloco == abertura.sem_o_bloco_da_abertura(texto) and abertura_v2.CONSTANTE not in sem_o_bloco
+    linha = f"{abertura_v2.CONSTANTE} = (2024, 2025)\n"
+    assert abertura.MARCA_FIM in texto and linha in texto
+    fechado = texto.replace(linha, "")
+    sem_o_bloco = abertura.sem_o_bloco_da_abertura(texto)
+    assert sem_o_bloco == abertura.sem_o_bloco_da_abertura(fechado) and abertura_v2.CONSTANTE not in sem_o_bloco
     esperado = hashlib.sha256(sem_o_bloco.encode("utf-8")).hexdigest()
     for nome in registro.CONJUNTOS:
         assert GRAVADO["conjuntos"][nome][LACRE] == esperado

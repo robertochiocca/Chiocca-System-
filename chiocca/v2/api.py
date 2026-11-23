@@ -1,4 +1,4 @@
-"""API do Chiocca System v2 (Fase D): FastAPI em `/api/v1`, espelhando o JSON do contrato (`docs/contratos.md`).
+"""API do Chiocca v2 (Fase D): FastAPI em `/api/v1`, espelhando o JSON do contrato (`docs/contratos.md`).
 
 Rotas (todas GET, todas com a data de referência e o aviso fixo):
 - `/saude`: lacre, intervalo de datas e o armazém;
@@ -141,7 +141,7 @@ def criar_app(
         return estado["fontes"]
 
     cache = Cache(CACHE_INVESTIGACOES)
-    app = FastAPI(title="Chiocca System v2", version="1", docs_url=f"{PREFIXO}/docs",
+    app = FastAPI(title="Chiocca v2", version="1", docs_url=f"{PREFIXO}/docs",
                   openapi_url=f"{PREFIXO}/openapi.json", redoc_url=None)  # fmt: skip
     app.state.fontes = fontes  # a demonstração estática usa as mesmas fontes para montar o plano e o índice
 

@@ -14,8 +14,8 @@ export default function Rodape() {
         <strong>{t.aviso_rotulo}:</strong> {AVISO[idioma]}
       </p>
       <div className="wrap rodape">
-        <span>Chiocca System</span>
-        <a href="https://github.com/robertochiocca/Chiocca-System-" rel="noopener noreferrer" target="_blank">
+        <span>Chiocca</span>
+        <a href="https://github.com/robertochiocca/chiocca" rel="noopener noreferrer" target="_blank">
           {t.rodape_repositorio} ↗
         </a>
         <a href={linkFicha(idioma)} rel="noopener noreferrer" target="_blank">
