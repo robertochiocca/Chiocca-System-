@@ -76,4 +76,8 @@ def garantir_data_referencia(data: str | date) -> date:
 # Lido só pelo script do estudo (abertura.exercicios_do_estudo). O produto continua com ULTIMO_EXERCICIO_LIBERADO =
 # 2023 e com a data máxima de 31/12/2024: a interface, a API, a demonstração e o monitor não mudam.
 ESTUDO_2_EXERCICIOS = (2024, 2025)
+# Emenda 5 do estudo 2, item 4: a constante própria do script do motor v2 (chiocca/v2/motor_v2/abertura.py), lida só
+# por ele, na sessão do lacre da lista do v2 (23/11/2026). Fica fora dos registros de SHA-256 do v1 e do v2, como todo
+# este bloco.
+ESTUDO_2_MOTOR_V2_EXERCICIOS = (2024, 2025)
 # <<< estudo 2
