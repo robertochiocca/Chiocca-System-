@@ -9,7 +9,7 @@ Uso, da raiz do repositório, com a árvore limpa no commit de origem e uma cóp
 (`git worktree add DESTINO gh-pages`, ou `git worktree add --orphan -b gh-pages DESTINO` na primeira vez):
 
     python -m chiocca.v2.demonstracao_estatica --processos 4
-    cd web && NEXT_PUBLIC_BASE_PATH=/Chiocca-System- npm run build:estatico
+    cd web && NEXT_PUBLIC_BASE_PATH=/chiocca npm run build:estatico
     npm run -s varrer:demo > ../varredura.json && cd ..
     python -m chiocca.v2.gh_pages DESTINO --varredura varredura.json
 
@@ -29,7 +29,7 @@ from typing import Any
 
 from chiocca import base
 
-BASE_PATH = "/Chiocca-System-"
+BASE_PATH = "/chiocca"  # o repositório chiocca (antes Chiocca-System-), decisão de 23/11/2026
 SITE = base.RAIZ / "web" / "out"
 COMANDOS = [
     "python -m chiocca.v2.demonstracao_estatica --processos 4",
@@ -110,7 +110,7 @@ def main(argv: list[str]) -> None:
     if _git("status", "--porcelain"):
         raise SystemExit("a árvore tem mudanças: a demonstração sai de um commit, com a árvore limpa")
     varredura = json.loads(Path(argv[argv.index("--varredura") + 1]).read_text(encoding="utf-8"))
-    origem = {"repositorio": "robertochiocca/Chiocca-System-", "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
+    origem = {"repositorio": "robertochiocca/chiocca", "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
               "commit": _git("rev-parse", "HEAD")}  # fmt: skip
     data = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     m = montar(SITE, destino, origem, data, varredura)

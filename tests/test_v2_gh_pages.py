@@ -12,11 +12,11 @@ import pytest
 from chiocca.v2 import gh_pages
 
 DEMO = {"empresas": 2, "investigacoes": 3, "arquivos": 9, "bytes": 100, "segundos": 1.0}
-VARREDURA = {"prefixo": "/Chiocca-System-", "empresas": 2, "investigacoes_abertas": 6, "com_aviso_de_diferenca": 1,
+VARREDURA = {"prefixo": "/chiocca", "empresas": 2, "investigacoes_abertas": 6, "com_aviso_de_diferenca": 1,
              "problemas": {}}  # fmt: skip
 
 
-def _site(raiz: Path, base_path: str = "/Chiocca-System-") -> Path:
+def _site(raiz: Path, base_path: str = "/chiocca") -> Path:
     site = raiz / "out"
     (site / "demo" / "investigacoes").mkdir(parents=True)
     (site / "index.html").write_text(f'<script src="{base_path}/_next/static/a.js"></script>', encoding="utf-8")
@@ -32,7 +32,7 @@ def test_monta_o_site_com_nojekyll_e_manifesto(tmp_path: Path) -> None:
     destino.mkdir()
     (destino / ".git").write_text("gitdir: ../.git/worktrees/gh-pages", encoding="utf-8")
     (destino / "velho.html").write_text("sai", encoding="utf-8")  # arquivo da montagem anterior
-    origem = {"repositorio": "robertochiocca/Chiocca-System-", "branch": "b", "commit": "c" * 40}
+    origem = {"repositorio": "robertochiocca/chiocca", "branch": "b", "commit": "c" * 40}
     m = gh_pages.montar(site, destino, origem, "2026-11-10T00:00:00+00:00", VARREDURA)
     assert (destino / ".git").read_text(encoding="utf-8").startswith("gitdir:") and not (
         destino / "velho.html"

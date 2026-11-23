@@ -110,7 +110,7 @@ const INV_LEITURA_CD = "777";
 export const INV_LEITURA = `/investigacao/?cd=${INV_LEITURA_CD}&ex=2021&data=2024-12-31`;
 
 /** Serve uma pasta (o site exportado) em http://127.0.0.1:<porta>, debaixo de `prefixo` (o NEXT_PUBLIC_BASE_PATH
- * do build, por exemplo "/Chiocca-System-", como no GitHub Pages). Porta 0: uma porta livre (os testes). */
+ * do build, por exemplo "/chiocca", como no GitHub Pages). Porta 0: uma porta livre (os testes). */
 export async function servir(raiz, prefixo = "", porta = 0) {
   const servidor = createServer((req, res) => {
     const pedido = decodeURIComponent(new URL(req.url, "http://x").pathname);
@@ -132,7 +132,7 @@ export async function servir(raiz, prefixo = "", porta = 0) {
   return { url: `http://127.0.0.1:${port}${prefixo}`, fechar: () => new Promise((ok) => servidor.close(ok)) };
 }
 
-/** O prefixo do build (NEXT_PUBLIC_BASE_PATH), lido do próprio site exportado: "/Chiocca-System-" no build que vai para
+/** O prefixo do build (NEXT_PUBLIC_BASE_PATH), lido do próprio site exportado: "/chiocca" no build que vai para
  * o GitHub Pages, "" no build sem prefixo. */
 export function prefixoDoBuild(pasta) {
   return /(?:src|href)="([^"]*)\/_next\//.exec(readFileSync(join(pasta, "index.html"), "utf-8"))?.[1] ?? "";

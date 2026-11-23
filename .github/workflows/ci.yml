@@ -4,7 +4,7 @@
 # contrato e npm audit); na resposta à Fase E, o build da demonstração estática e o teste de tela (Playwright); na
 # Fase E2, o axe no teste de tela e as capturas para revisão, guardadas como artefato; em 15/11/2026, as actions nas
 # versões que rodam em Node.js 24 (sem mudar o que os jobs fazem) e o teste de tela e as capturas no build com o prefixo
-# do GitHub Pages (/Chiocca-System-), o mesmo que é publicado; em 21/11/2026, o job demo, que confere o make demo.
+# do GitHub Pages (/chiocca), o mesmo que é publicado; em 21/11/2026, o job demo, que confere o make demo.
 # Não usa segredos nem faz deploy; só lê o repositório. Os testes rodam sem rede e sem os dados brutos da CVM
 # (data/brutos, data/base e resultados/ ficam fora do git): os documentos gerados são conferidos contra os JSON
 # versionados.
@@ -84,7 +84,7 @@ jobs:
         run: npm run build:estatico
         env:
           NEXT_TELEMETRY_DISABLED: "1"
-          NEXT_PUBLIC_BASE_PATH: /Chiocca-System-
+          NEXT_PUBLIC_BASE_PATH: /chiocca
       - name: Navegador do teste de tela
         run: npx playwright install --with-deps chromium
       - name: Teste de tela (PT e EN, com axe)
