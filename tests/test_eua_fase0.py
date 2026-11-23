@@ -108,11 +108,11 @@ def test_nada_de_2024_em_diante() -> None:
 # ---- inventário dos Financial Statement Data Sets, num arquivo sintético ----
 
 SUB = (
-    "adsh\tcik\tname\tform\tperiod\tfy\tfp\tfiled\tprevrpt\n"
-    "0001\t100\tALFA CORP\t10-K\t20201231\t2020\tFY\t20210301\t1\n"
-    "0002\t200\tBETA INC\t10-K\t20201231\t2020\tFY\t20210315\t0\n"
-    "0003\t100\tALFA CORP\t10-K/A\t20201231\t2020\tFY\t20210601\t0\n"
-    "0004\t300\tGAMA CO\t10-Q\t20210331\t2021\tQ1\t20210510\t0\n"
+    "adsh\tcik\tname\tsic\tform\tperiod\tfy\tfp\tfiled\tprevrpt\n"
+    "0001\t100\tALFA CORP\t2834\t10-K\t20201231\t2020\tFY\t20210301\t1\n"
+    "0002\t200\tBETA INC\t6770\t10-K\t20201231\t2020\tFY\t20210315\t0\n"
+    "0003\t100\tALFA CORP\t2834\t10-K/A\t20201231\t2020\tFY\t20210601\t0\n"
+    "0004\t300\tGAMA CO\t\t10-Q\t20210331\t2021\tQ1\t20210510\t0\n"
 )
 NUM = (
     "adsh\ttag\tversion\tcoreg\tddate\tqtrs\tuom\tvalue\tfootnote\n"
@@ -145,7 +145,8 @@ def test_estrutura_e_submissoes(tmp_path: Path) -> None:
     assert sorted(s.form) == ["10-K", "10-K", "10-K/A"] and set(s.trimestre) == {"2021q1"}
     r = fsds.resumo(s)
     assert r == {"2020": {"companhias_com_10k": 2, "entregas_10k": 2, "entregas_10k_a": 1, "10k_emendados_depois": 1,
-                          "prazo_mediano_dias": 67.0}}  # fmt: skip
+                          "prazo_mediano_dias": 67.0, "prazo_p10_dias": 61.4, "prazo_p90_dias": 72.6,
+                          "ate_90_dias": 1.0}}  # fmt: skip
 
 
 def test_cobertura_das_tags_so_da_companhia_em_dolar_na_data(tmp_path: Path) -> None:
@@ -175,3 +176,101 @@ def test_anos_afetados_e_ligacao_ao_cik() -> None:
     ligacoes = pd.DataFrame({"gvkey": ["A", "B"], "cik": [1, 2], "first_date": [date(2010, 3, 1), date(2013, 1, 1)],
                              "last_date": [date(2020, 1, 1), date(2020, 1, 1)]})  # fmt: skip
     assert rotulos.ligadas_ao_cik(fy, ligacoes).tolist() == [False, True, False]
+
+
+# ---- 8-K com o item 4.02, num submissions.zip sintético ----
+
+
+def _submissions(tmp_path: Path) -> Path:
+    def bloco(linhas: list[tuple[str, str, str, str]]) -> dict[str, list[str]]:
+        return {"accessionNumber": [x[0] for x in linhas], "filingDate": [x[1] for x in linhas],
+                "form": [x[2] for x in linhas], "items": [x[3] for x in linhas]}  # fmt: skip
+
+    z = tmp_path / "submissions.zip"
+    with zipfile.ZipFile(z, "w") as f:
+        f.writestr("CIK0000000100.json", json.dumps({"cik": "100", "filings": {"recent": bloco([
+            ("a1", "2012-03-01", "8-K", "4.02,9.01"),
+            ("a2", "2012-05-01", "8-K/A", "4.02"),
+            ("a3", "2011-03-01", "10-K", ""),
+            ("a4", "2024-02-01", "8-K", "4.02"),  # depois de 2023: fora
+            ("a5", "2012-06-01", "10-K/A", ""),
+        ])}}))  # fmt: skip
+        f.writestr("CIK0000000100-submissions-001.json", json.dumps(bloco([
+            ("a0", "2010-01-05", "8-K", "4.02"),
+            ("b0", "2010-02-05", "8-K", "2.02,4.021"),  # não é 4.02
+        ])))  # fmt: skip
+        f.writestr("CIK0000000200.json", json.dumps({"cik": "200", "filings": {"recent": bloco([
+            ("c1", "2012-07-01", "8-K", " 4.02"),
+            ("c2", "2012-08-01", "8-K", "4.02"),
+        ])}}))  # fmt: skip
+    return z
+
+
+def test_8k_402_por_ano(tmp_path: Path) -> None:
+    from chiocca.eua import itens
+
+    assert itens.tem_item("4.02,9.01") and itens.tem_item(" 4.02") and not itens.tem_item("4.021,2.02")
+    linhas = list(itens.entregas(_submissions(tmp_path)))
+    assert {x["adsh"] for x in linhas} == {"a0", "a1", "a2", "a3", "a5", "b0", "c1", "c2"}
+    c = itens.contagens(linhas, {100: "20110301"}, sic_6770={200})
+    assert c["2010"]["8k_402"] == 1 and c["2010"]["companhias_com_10k_fsds_antes"] == 0
+    assert c["2012"] == {"8k_402": 3, "8k_a_402": 1, "companhias_8k_402": 2, "companhias_8k_402_sic_6770": 1,
+                         "companhias_novas_8k_402": 1,
+                         "companhias_com_10k_fsds": 1, "companhias_com_10k_fsds_antes": 1, "10k_edgar": 0,
+                         "10k_a_edgar": 1}  # fmt: skip
+    assert c["2011"]["10k_edgar"] == 1 and "2024" not in c
+
+
+def test_versao_publica_e_aaers_com_10k(tmp_path: Path) -> None:
+    z = _zip(tmp_path)
+    s = fsds.submissoes(z)
+    assert list(s.ano) == [2020, 2020, 2020]
+    v = fsds.versao_publica(s, {"0003"}, "20210701").set_index("cik")
+    assert v.at["100", "form"] == "10-K/A" and v.at["200", "form"] == "10-K"
+    assert fsds.versao_publica(s, set(), "20210701").set_index("cik").at["100", "form"] == "10-K"  # emenda sem números
+    assert fsds.versao_publica(s, {"0003"}, "20210305").cik.tolist() == ["100"]
+    t = fsds.cobertura_tags(z, s, formularios=("10-K", "10-K/A"))
+    assert sorted(t.form) == ["10-K", "10-K", "10-K/A"] and fsds.cobertura_por_ano(t)["2020"]["10k"] == 2
+    from datetime import date
+
+    f = pd.DataFrame({"p_aaer": ["1", "2"], "gvkey": ["A", "B"], "min_year": [2008, 2012], "max_year": [2010, 2012]})
+    ligacoes = pd.DataFrame({"gvkey": ["A", "B"], "cik": [1, 2], "first_date": [date(2000, 1, 1)] * 2,
+                             "last_date": [date(2020, 1, 1)] * 2})  # fmt: skip
+    r = rotulos.com_10k(f, ligacoes, {(1, 2010), (1, 2008)})
+    assert r["empresa_anos_com_10k_por_ano"] == {"2009": 0, "2010": 1, "2012": 0}
+    assert r["casos_com_10k"] == 1 and r["casos_com_10k_por_primeiro_ano"] == {"2010": 1}
+
+
+def test_numeros_da_sec_coerentes_e_dentro_do_limite() -> None:
+    f = D["fsds"]
+    assert f is not None and D["acesso_sec"]["fsds_baixados"] == D["acesso_sec"]["fsds_previstos"] == 60
+    assert f["trimestres_baixados"] == 60 and f["trimestres_sem_entregas"] == ["2009q1"]
+    for chave in ("por_exercicio", "versoes", "cobertura", "companhias_com_10k_por_ano_compustat"):
+        assert all(2009 <= int(a) <= 2023 for a in f[chave]), chave
+    assert all(2009 <= int(a) <= 2023 for a in f["itens_8k"]) and all(2009 <= int(a) <= 2023 for a in f["por_entrega"])
+    for a, x in f["itens_8k"].items():
+        assert x["companhias_com_10k_fsds_antes"] <= x["companhias_com_10k_fsds"] <= x["companhias_8k_402"]
+        assert x["companhias_8k_402"] <= x["8k_402"] and x["companhias_novas_8k_402"] <= x["companhias_8k_402"]
+        assert x["companhias_8k_402_sic_6770"] <= x["companhias_8k_402"]
+        assert f["por_entrega"][a]["10k_a"] <= x["10k_a_edgar"]  # os 10-K/A com XBRL estão entre os do EDGAR
+    for a, x in f["por_exercicio"].items():
+        assert x["entregas_10k_a_com_numeros"] <= x["entregas_10k_a"] and x["companhias_com_10k"] <= x["entregas_10k"]
+        assert x["prazo_p10_dias"] <= x["prazo_mediano_dias"] <= x["prazo_p90_dias"]
+    for a, v in f["versoes"].items():
+        assert all(k["emenda"] <= k["companhias"] for k in v.values()) and all(int(a) + int(k[2]) <= 2023 for k in v)
+    for a, c in f["cobertura"].items():
+        assert set(c["contas"]) == set(fsds.MAPA) and all(
+            0 <= x <= 1 for x in [*c["contas"].values(), *c["tags"].values()]
+        )
+    aa, b = f["aaer"], D["rotulos"]["bao_et_al"]
+    assert sum(aa["empresa_anos_com_10k_por_ano"].values()) == aa["empresa_anos_com_10k"]
+    assert all(aa["empresa_anos_com_10k_por_ano"][a] <= n for a, n in b["empresa_anos_xbrl_ligadas_por_ano"].items())
+    assert sum(aa["casos_com_10k_por_primeiro_ano"].values()) == aa["casos_com_10k"] <= aa["empresa_anos_com_10k"]
+
+
+def test_manifesto_tem_os_arquivos_da_sec() -> None:
+    linhas = {x["arquivo"]: x for x in sec.le_manifesto()}
+    assert all(f"fsds/{t}.zip" in linhas for t in fsds.TRIMESTRES) and "edgar/submissions.zip" in linhas
+    ed = D["acesso_sec"]["edgar_submissions"]
+    assert ed["sha256"] == linhas["edgar/submissions.zip"]["sha256"]
+    assert D["acesso_sec"]["fsds_bytes"] == sum(int(linhas[f"fsds/{t}.zip"]["bytes"]) for t in fsds.TRIMESTRES)

@@ -78,6 +78,42 @@ def ligadas_ao_cik(fy: pd.DataFrame, ligacoes: pd.DataFrame) -> pd.Series:
                      index=fy.index)  # fmt: skip
 
 
+def ciks_ligados(fy: pd.DataFrame, ligacoes: pd.DataFrame) -> pd.Series:
+    """Os CIKs ligados ao gvkey de cada empresa-ano num período que cruza o ano (a mesma regra de `ligadas_ao_cik`)."""
+    por_gvkey: dict[str, list[tuple[date, date, int]]] = {}
+    for g, c, ini, fim in zip(ligacoes.gvkey, ligacoes.cik, ligacoes.first_date, ligacoes.last_date):
+        por_gvkey.setdefault(str(g), []).append((ini, fim, int(c)))
+    return pd.Series([sorted({c for ini, fim, c in por_gvkey.get(str(g), [])
+                              if ini <= date(int(a), 12, 31) and fim >= date(int(a), 1, 1)})
+                      for g, a in zip(fy.gvkey, fy.ano)], index=fy.index)  # fmt: skip
+
+
+def com_10k(firmas: pd.DataFrame, ligacoes: pd.DataFrame, anos_10k: set[tuple[int, int]],
+            primeiro: int = PRIMEIRO_ANO_XBRL, ultimo: int = ULTIMO_ANO) -> dict[str, Any]:  # fmt: skip
+    """As empresa-anos de Bao et al. de `primeiro` a `ultimo` com um 10-K nos dados da SEC (`anos_10k`: pares
+    (CIK, ano pela convenção da Compustat) com 10-K original), por ano; e os casos (AAERs) com pelo menos um desses
+    anos, cada caso contado uma vez, pelo primeiro ano afetado com 10-K."""
+    linhas = [(p, g, a) for p, g, ini, fim in zip(firmas.p_aaer, firmas.gvkey, firmas.min_year, firmas.max_year)
+              for a in range(max(int(ini), primeiro), min(int(fim), ultimo) + 1)]  # fmt: skip
+    t = pd.DataFrame(linhas, columns=["p_aaer", "gvkey", "ano"])
+    t["ciks"] = ciks_ligados(t, ligacoes)
+    t["com_10k"] = [any((c, int(a)) in anos_10k for c in cs) for cs, a in zip(t.ciks, t.ano)]
+    ea = t.drop_duplicates(["gvkey", "ano"]).assign(com_10k=t.groupby(["gvkey", "ano"]).com_10k.transform("max"))
+    casos = t[t.com_10k].groupby("p_aaer").ano.min()
+    return {
+        "empresa_anos_com_10k_por_ano": {str(a): int(n) for a, n in ea.groupby("ano").com_10k.sum().items()},
+        "empresa_anos_com_10k": int(ea.com_10k.sum()),
+        "casos_com_10k": int(casos.size),
+        "casos_com_10k_por_primeiro_ano": {str(a): int(n) for a, n in casos.value_counts().sort_index().items()},
+        "companhias_com_10k": int(t[t.com_10k].gvkey.nunique()),
+    }
+
+
+def tabelas(roda: Path = RODA) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """As empresa-anos de Bao et al. e a ligação gvkey–CIK (sem a descrição dos AAERs)."""
+    return _tabela("aaer_firm_year", roda)[0], _tabela("gvkey_ciks", roda)[0]
+
+
 def contagens(roda: Path = RODA) -> dict[str, Any]:
     datas, meta_datas = _tabela("aaer_dates", roda)
     datas = datas[datas.year <= ULTIMO_ANO]

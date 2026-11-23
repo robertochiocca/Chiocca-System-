@@ -13,11 +13,74 @@ import sys
 from typing import Any
 
 from chiocca.base import RAIZ
-from chiocca.eua import fsds, rotulos, sec
-from chiocca.formato import data, inteiro
+from chiocca.eua import fsds, itens, rotulos, sec
+from chiocca.formato import data, decimal, inteiro, pct
 
 SAIDA = RAIZ / "docs" / "eua_fase0_numeros.json"
 DOCS = {"pt": RAIZ / "docs" / "eua-fase-0.md", "en": RAIZ / "docs" / "en" / "us-phase-0.md"}
+
+
+def _colunas_por_trimestre(estruturas: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    """Os conjuntos de colunas de sub.txt e num.txt ao longo dos trimestres, com o primeiro e o último de cada um."""
+    out: list[dict[str, Any]] = []
+    for t, e in estruturas.items():
+        cols = {n: e[n]["colunas"] for n in ("sub.txt", "num.txt")}
+        if out and out[-1]["colunas"] == cols:
+            out[-1]["ate"] = t
+        else:
+            out.append({"de": t, "ate": t, "colunas": cols})
+    return out
+
+
+def _no_periodo(por_ano: dict[str, Any]) -> dict[str, Any]:
+    """Só os exercícios de 2009 a 2023 (um exercício declarado fora disso, numa entrega até 2023, fica de fora)."""
+    return {a: v for a, v in por_ano.items() if rotulos.PRIMEIRO_ANO_XBRL <= int(a) <= rotulos.ULTIMO_ANO}
+
+
+def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
+    """Com os arquivos da SEC: estrutura, 10-K e 10-K/A por exercício, versões públicas, cobertura das tags, AAERs com
+    10-K e os 8-K com o item 4.02."""
+    import pandas as pd
+
+    estruturas = {z.stem: fsds.estrutura(z) for z in baixados}
+    subs = pd.concat([fsds.submissoes(z) for z in baixados], ignore_index=True)
+    tabela = pd.concat(
+        [fsds.cobertura_tags(z, subs[subs.trimestre == z.stem], formularios=("10-K", "10-K/A")) for z in baixados],
+        ignore_index=True,
+    )
+    emendas = tabela[tabela.form == "10-K/A"]
+    com_numeros = set(emendas.adsh[emendas[fsds.TAGS].any(axis=1)])
+    por_exercicio = fsds.resumo(subs)
+    a_fy = subs.assign(fy=pd.to_numeric(subs.fy, errors="coerce"))
+    for fy, linha in por_exercicio.items():
+        linha["entregas_10k_a_com_numeros"] = int(
+            ((a_fy.form == "10-K/A") & (a_fy.fy == int(fy)) & a_fy.adsh.isin(com_numeros)).sum()
+        )
+    originais = subs[subs.form == "10-K"].dropna(subset=["ano"])
+    anos_10k = {(int(c), int(a)) for c, a in zip(originais.cik, originais.ano)}
+    firmas, ligacoes = rotulos.tabelas()
+    primeiro_10k = originais.groupby(originais.cik.astype(int)).filed.min().to_dict()
+    ultimo = estruturas[baixados[-1].stem]
+    return {
+        "trimestres_baixados": len(baixados),
+        "trimestres_sem_entregas": [t for t, e in estruturas.items() if e["sub.txt"]["linhas"] == 0],
+        "estrutura_do_ultimo": {"trimestre": baixados[-1].stem, "arquivos": ultimo},
+        "colunas_por_trimestre": _colunas_por_trimestre(estruturas),
+        "linhas_por_trimestre": {t: {n: e[n]["linhas"] for n in ("sub.txt", "num.txt")} for t, e in estruturas.items()},
+        "por_exercicio": _no_periodo(por_exercicio),
+        "por_entrega": {
+            ano: {"10k": int((g.form == "10-K").sum()), "10k_a": int((g.form == "10-K/A").sum())}
+            for ano, g in subs.groupby(subs.filed.str[:4])
+        },
+        "versoes": _no_periodo(fsds.versoes_por_ano(subs, com_numeros)),
+        "cobertura": _no_periodo(fsds.cobertura_por_ano(tabela)),
+        "companhias_com_10k_por_ano_compustat": _no_periodo(
+            {str(int(a)): int(n) for a, n in originais.groupby("ano").cik.nunique().items()}
+        ),
+        "aaer": rotulos.com_10k(firmas, ligacoes, anos_10k),
+        "itens_8k": itens.contagens(itens.entregas(), {int(c): d for c, d in primeiro_10k.items()},
+                                    sic_6770={int(c) for c in subs.cik[subs.sic == "6770"]}),  # fmt: skip
+    }
 
 
 def calcula() -> dict[str, Any]:
@@ -26,6 +89,11 @@ def calcula() -> dict[str, Any]:
     if roda not in manifesto or sec.sha256(rotulos.RODA) != manifesto[roda]["sha256"]:
         raise SystemExit("a roda do era-py não confere com o manifesto: rode com --baixar")
     baixados = sorted(fsds.PASTA.glob("*.zip")) if fsds.PASTA.exists() else []
+    for z in baixados + ([itens.ARQUIVO] if itens.ARQUIVO.exists() else []):
+        nome = z.relative_to(sec.DADOS).as_posix()
+        if nome not in manifesto or int(manifesto[nome]["bytes"]) != z.stat().st_size:
+            raise SystemExit(f"{nome} não confere com o manifesto")
+    edgar = itens.ARQUIVO.relative_to(sec.DADOS).as_posix()
     out: dict[str, Any] = {
         "o_que_e": "Fase 0 dos EUA (pedido de 23/11/2026): só inventário e contagens, sem nenhum sinal",
         "limite": {"ultimo_ano": rotulos.ULTIMO_ANO, "trimestres_fsds": [fsds.TRIMESTRES[0], fsds.TRIMESTRES[-1]]},
@@ -33,38 +101,41 @@ def calcula() -> dict[str, Any]:
             "variavel": sec.VARIAVEL,
             "fsds_baixados": len(baixados),
             "fsds_previstos": len(fsds.TRIMESTRES),
+            "fsds_bytes": sum(z.stat().st_size for z in baixados),
+            "edgar_submissions": (
+                {k: manifesto[edgar][k] for k in ("bytes", "sha256", "baixado_em_utc")} if edgar in manifesto else None
+            ),
         },
         "era_py": {"arquivo": roda, "sha256": manifesto[roda]["sha256"], "bytes": int(manifesto[roda]["bytes"])},
         "rotulos": rotulos.contagens(),
         "mapa": {c: list(ts) for c, ts in fsds.MAPA.items()},
-        "fsds": None,
+        "fsds": calcula_fsds(baixados) if baixados and itens.ARQUIVO.exists() else None,
     }
-    if baixados:  # com os arquivos da SEC: estrutura, 10-K por ano e cobertura das tags
-        import pandas as pd
-
-        subs = pd.concat([fsds.submissoes(z) for z in baixados], ignore_index=True)
-        tabela = pd.concat(
-            [fsds.cobertura_tags(z, subs[subs.trimestre == z.stem]) for z in baixados], ignore_index=True
-        )
-        out["fsds"] = {"estrutura_do_primeiro": fsds.estrutura(baixados[0]), "por_exercicio": fsds.resumo(subs),
-                       "cobertura": fsds.cobertura_por_ano(tabela)}  # fmt: skip
     return out
 
+
+ANOS = [str(a) for a in range(rotulos.PRIMEIRO_ANO_XBRL, rotulos.ULTIMO_ANO + 1)]
 
 T: dict[str, dict[str, Any]] = {
     "pt": {
         "titulo": "# Fase 0 dos EUA: reconhecimento dos dados",
         "aviso": "> **Reconhecimento, sem nenhum sinal calculado.** Objetivo: saber se dá para fazer, nos EUA, um estudo "
-        "pré-registrado com os dados como eram na época, testando os sinais do v1 e do v2 do Chiocca e a regra boba contra os "
-        "AAERs (Accounting and Auditing Enforcement Releases) da SEC. Só inventário e contagens; nada de 2024 em diante; "
-        "nenhum nome de pessoa física. A frente dos EUA fica fora do README e do produto até decisão de Roberto.",
+        "pré-registrado com os dados como eram na época, testando os sinais do v1 e do v2 do Chiocca e a regra boba contra um "
+        "rótulo público de demonstrações erradas. Só inventário e contagens; nada de 2024 em diante; nenhum nome de pessoa "
+        "física nem de companhia; nenhum valor de sinal, acerto, alerta ou ranking. A frente dos EUA fica fora do README e do "
+        "produto até decisão de Roberto.",
         "s_acesso": "## 1. Acesso à SEC",
         "acesso": "A SEC pede um User-Agent com nome e contato e no máximo 10 pedidos por segundo; sem o contato, recusa o "
-        "pedido (HTTP 403, conferido nesta sessão). Os scripts leem o User-Agent da variável de ambiente `{var}`, que nenhum "
-        "arquivo versionado nem log guarda. Nesta sessão a variável não estava definida, e a ferramenta de privacidade do "
-        "ambiente não deixa o agente escrever o contato num comando: **{baixados} de {previstos} arquivos trimestrais da SEC "
-        "foram baixados**. Para completar a Fase 0, Roberto define `{var}` nas configurações do ambiente (variável de "
-        "ambiente) e uma sessão nova roda `python -m chiocca.eua.fase0 --baixar`.",
+        "pedido (HTTP 403). Os scripts leem o User-Agent da variável de ambiente `{var}`, que nenhum arquivo versionado nem "
+        "log guarda, e esperam pelo menos 0,11 segundo entre pedidos. Em 23/11/2026, com a variável definida nas "
+        "configurações do ambiente, foram baixados os **{baixados} de {previstos} arquivos trimestrais** dos Financial "
+        "Statement Data Sets ({gb} GB) e o histórico de entregas do EDGAR (`submissions.zip`, {gb_edgar} GB, retrato da SEC "
+        "baixado em {dia_edgar}). Os arquivos ficam em `data/eua/`, fora do Git, com o tamanho e o SHA-256 de cada um em "
+        "`data/eua_manifesto.csv`.",
+        "acesso_pendente": "A SEC pede um User-Agent com nome e contato e no máximo 10 pedidos por segundo; sem o contato, "
+        "recusa o pedido (HTTP 403). Os scripts leem o User-Agent da variável de ambiente `{var}`, que nenhum arquivo "
+        "versionado nem log guarda. **{baixados} de {previstos} arquivos trimestrais da SEC foram baixados**: com a "
+        "variável definida, rode `python -m chiocca.eua.fase0 --baixar`.",
         "s_fsds": "## 2. Balanços: os Financial Statement Data Sets da SEC",
         "fsds": "Os números das demonstrações em XBRL, num zip por trimestre de entrega desde 2009 (aqui, de {t0} a {t1}: "
         "os 10-K dos exercícios de 2023, quase todos entregues em 2024, ficam de fora). Os dois arquivos usados são "
@@ -73,18 +144,48 @@ T: dict[str, dict[str, Any]] = {
         "e valor).",
         "versoes": "- **10-K e 10-K/A:** a entrega original e cada emenda são entregas separadas, cada uma com a sua data; "
         "`prevrpt` marca a entrega que foi emendada depois.\n- **A versão pública numa data de corte:** por companhia e "
-        'exercício, a última entrega (original ou emenda com números em XBRL) entregue até a data, como o "como era" '
-        "do Chiocca no Brasil; o comparativo do exercício seguinte traz os números de t-1 como apresentados depois.",
+        "exercício, a última entrega entregue até a data, entre o 10-K original e os 10-K/A com números das contas do mapa, "
+        'como o "como era" do Chiocca no Brasil. Uma emenda sem esses números (só a parte III do 10-K, por exemplo) não muda '
+        "a versão. O comparativo do exercício seguinte traz os números de t-1 como apresentados depois.",
         "pendente": "**Pendente (sem os arquivos da SEC):** a estrutura conferida nos arquivos, a cobertura de 10-K por ano, "
         "as emendas, os prazos de entrega e a cobertura de cada tag por ano. O código já está pronto e testado com um "
         "arquivo sintético (`chiocca/eua/fsds.py`).",
-        "s_mapa": "### O mapa das contas para as tags us-gaap (proposta)",
+        "s_estrutura": "### 2.1 Estrutura dos arquivos",
+        "estrutura": "Cada zip traz `sub.txt`, `num.txt`, `pre.txt` e `tag.txt` (texto separado por tabulação) e um "
+        "`readme.htm`. As colunas usadas foram conferidas em todos os {n} trimestres antes de qualquer conta. "
+        "{vazios} não tem nenhuma entrega (só os cabeçalhos): os primeiros 10-K em XBRL entram a partir de 2009q2. O "
+        "último trimestre ({ultimo}):",
+        "cab_estrutura": "| Arquivo | Colunas | Linhas |",
+        "colunas_mudam": "As colunas mudam ao longo dos trimestres: {mudancas}. O código usa `coreg` (co-registrante) quando "
+        "existe e `segments` quando existe, e em ambos os casos só conta o número da própria companhia, sem segmento.",
+        "colunas_iguais": "As colunas de `sub.txt` ({n_sub}) e de `num.txt` ({n_num}) são as mesmas nos {n} trimestres. "
+        "`num.txt` traz `coreg` (co-registrante) e `segments` (segmento): o código só conta o número da própria companhia, "
+        "com as duas vazias.",
+        "trecho_mudanca": "de {de} a {ate}, `num.txt` com {n} colunas ({extra})",
+        "s_10k": "### 2.2 10-K e 10-K/A por exercício e datas de entrega",
+        "txt_10k": "Por exercício fiscal declarado pela companhia (`fy`). O prazo é a diferença em dias entre a data de "
+        "referência e a entrega do 10-K original. As emendas com números são os 10-K/A com alguma tag do mapa na data de "
+        "referência; as demais (a maioria) só trazem a parte III ou a capa. O exercício de 2023 está incompleto: a maior "
+        "parte foi entregue em 2024.",
+        "cab_10k": "| Exercício | Companhias com 10-K | 10-K | 10-K/A | 10-K/A com números | 10-K emendados depois | Prazo mediano (dias) | Prazo, 10% a 90% (dias) | Até 90 dias |",
+        "s_versao": "### 2.3 A versão pública numa data de corte",
+        "txt_versao": "Por exercício, em 31/12 do ano seguinte (t+1) e do outro (t+2), só cortes até 31/12/2023: quantas "
+        "companhias têm uma versão pública e em quantas ela já é uma emenda com números, e não o 10-K original.",
+        "cab_versao": "| Exercício | Companhias em t+1 | Emenda em t+1 | Companhias em t+2 | Emenda em t+2 |",
+        "s_mapa": "### 2.4 O mapa das contas para as tags us-gaap e a cobertura por ano",
         "mapa_txt": "As contas que os sinais do v1 e do v2 usam, com as tags candidatas na ordem de preferência. Benford usa "
         "todos os números e não precisa de mapa; a DVA não existe nos EUA (a depreciação vem da DFC); nos EUA, despesas "
         "de vendas e administrativas costumam vir juntas (SG&A), e muitas companhias não apresentam o resultado bruto. As "
         "financeiras (peso de ganhos não recorrentes) ficam sem mapa nesta fase.",
         "cab_mapa": "| Conta | Tags us-gaap candidatas |",
-        "s_rotulos": "## 3. Rótulos: os AAERs",
+        "cobertura_txt": "A cobertura é a fração dos 10-K originais de cada exercício com valor em dólar na data de "
+        "referência, da própria companhia (sem co-registrante nem segmento), na taxonomia us-gaap. Por conta (alguma das "
+        "tags candidatas):",
+        "cobertura_tag_txt": "Por tag:",
+        "cab_conta": "Conta",
+        "cab_tag": "Tag",
+        "s_rotulos": "## 3. Rótulos",
+        "s_aaer": "### 3.1 Os AAERs",
         "era": "**era-py {v}** (PyPI, de Ian Gow, os dados do livro *Empirical Research in Accounting: Tools and Methods*): "
         "licença do pacote {lic}; as tabelas não trazem licença própria, e a origem da ligação gvkey–CIK não é informada. "
         "Por isso nada delas é copiado para o repositório: a roda fica em `data/eua/`, com o SHA-256 no manifesto "
@@ -102,63 +203,150 @@ T: dict[str, dict[str, Any]] = {
         "a terceiros, exceto coautores; cobre 4.581 AAERs emitidos de 17/05/1982 a 31/12/2025, com o nome e os "
         "identificadores da companhia, as contas afetadas e os anos e trimestres errados (a página não diz quais "
         "identificadores). Só as condições de acesso foram lidas.",
-        "sec_lista": "- **A lista pública de AAERs no site da SEC:** não foi lida diretamente (o site exige o User-Agent "
-        "com contato); o índice do era-py é uma cópia dela, com a data da atualização.",
+        "sec_lista": "- **A lista pública de AAERs no site da SEC:** não foi lida diretamente; o índice do era-py é uma "
+        "cópia dela, com a data da atualização.",
         "ligar": "**Como ligar cada AAER ao CIK sem a Compustat.** Até 2014, pelas empresa-anos de Bao et al. e pela "
         "ligação gvkey–CIK do era-py. Depois de 2014, não há base livre com os anos errados: o caminho é ler cada AAER "
-        "no site da SEC (a companhia é parte do processo) e casar o nome com o arquivo de nomes e CIKs da SEC (`cik-lookup-data.txt`, a "
-        "conferir quando o acesso estiver configurado), guardando só a companhia e o CIK.",
+        "no site da SEC (a companhia é parte do processo) e casar o nome com o arquivo de nomes e CIKs da SEC, guardando "
+        "só a companhia e o CIK.",
+        "s_402": "### 3.2 Um rótulo novo: os 8-K com o item 4.02",
+        "txt_402": "Desde agosto de 2004, a companhia entrega um 8-K com o item 4.02 (*Non-Reliance on Previously Issued "
+        "Financial Statements or a Related Audit Report or Completed Interim Review*) quando ela, ou o auditor, conclui que "
+        "demonstrações já publicadas não devem mais ser usadas por causa de um erro; a republicação vem depois. É o mesmo "
+        "conceito da republicação do estudo 2 no Brasil: a informação publicada estava errada, por erro ou de propósito, "
+        "sem dizer qual. A fonte é o campo de itens (`items`) do histórico de entregas de cada companhia no EDGAR "
+        "(`submissions.zip`), que lista os itens de cada 8-K; só a data, o formulário, os itens e o CIK são lidos, em "
+        "memória, sem o texto do 8-K nem o nome da companhia (`chiocca/eua/itens.py`). Uma entrega de várias companhias "
+        "conta uma vez nas contagens de entregas.",
         "s_contagens": "## 4. Contagens",
-        "cab_cont": "| Exercício | Empresa-anos com AAER (Bao et al.) | Ligadas a um CIK | Com 10-K nos dados da SEC | Empresa-anos com 10-K |",
+        "s_cont_aaer": "### 4.1 AAERs de Bao et al. com 10-K nos dados da SEC",
+        "cab_cont": "| Exercício | Empresa-anos com AAER (Bao et al.) | Ligadas a um CIK | Com 10-K nos dados da SEC | Empresa-anos com 10-K (todas as companhias) |",
         "pendente_curto": "pendente",
-        "cont_txt": "Nos exercícios com XBRL (de 2009 a 2014, o fim dos anos afetados de Bao et al.): {fy} empresa-anos "
-        "com AAER, das quais {lig} se ligam a um CIK. Os anos mais recentes têm menos casos porque um AAER costuma sair "
-        "anos depois da fraude, e a base termina em 2014. O índice da SEC tem {n_xbrl} AAERs emitidos de 2009 a 2023, de "
-        "todos os tipos (não só balanço errado).",
+        "total": "**Total**",
+        "cont_txt": "O exercício é o da convenção da Compustat, usada por Bao et al.: o ano da data de referência, ou o "
+        "anterior quando o exercício termina de janeiro a maio. Uma empresa-ano de Bao et al. tem 10-K nos dados da SEC "
+        "quando algum CIK ligado ao gvkey naquele ano entregou um 10-K original com XBRL para aquele exercício. **De 2009 a "
+        "2014, {fy} empresa-anos com AAER, {lig} ligadas a um CIK e {com} com 10-K nos dados da SEC**, contra cerca de "
+        "{denom} companhias com 10-K por ano de 2011 a 2014, quando o XBRL já valia para todas. Contando cada caso (AAER) uma vez: **{casos} casos**, de {cias} "
+        "companhias, com pelo menos um exercício afetado com 10-K de 2009 a 2014 (pelo primeiro desses exercícios: "
+        "{por_ano}). Os anos mais recentes têm menos casos porque um AAER costuma sair anos depois dos fatos, e a base "
+        "termina em 2014. O índice da SEC tem {n_xbrl} AAERs emitidos de 2009 a 2023, de todos os tipos (não só balanço "
+        "errado).",
+        "s_cont_402": "### 4.2 8-K com o item 4.02 e 10-K/A por ano de entrega",
+        "cab_402": "| Ano de entrega | 8-K 4.02 | 8-K/A 4.02 | Companhias com 8-K 4.02 | Delas com SIC 6770 (SPACs) | Primeira vez desde 2009 | Com 10-K nos dados da SEC | Com 10-K nos dados da SEC antes do 8-K | 10-K (EDGAR) | 10-K/A (EDGAR) | 10-K/A com XBRL (dados da SEC) |",
+        "txt_402_cont": 'Uma companhia conta uma vez por ano; "primeira vez desde 2009" conta cada companhia uma vez no '
+        'período. "Com 10-K nos dados da SEC" quer dizer que o CIK tem um 10-K original nos Financial Statement Data Sets '
+        'de 2009q1 a 2023q4; "antes do 8-K", que o primeiro desses 10-K foi entregue até a data do 8-K (há demonstrações em '
+        "XBRL da época para comparar). **De 2009 a 2023: {n8k} 8-K com o item 4.02, de {cias} companhias-ano; {novas} "
+        "companhias distintas; {com} companhias-ano com 10-K nos dados da SEC, {antes} delas com o 10-K antes do 8-K.** Os "
+        "10-K/A são de todos os tipos (a maioria só completa a parte III); a última coluna conta os que estão nos dados da "
+        "SEC, por ano de entrega. O pico de 2021 coincide com a declaração da equipe da SEC de 12/04/2021 sobre a "
+        "contabilização de warrants das SPACs (companhias de aquisição, sem operação), seguida de muitas republicações: "
+        "{spac_2021} das {cias_2021} companhias com 8-K 4.02 em 2021 têm o código SIC 6770 (blank checks) nos dados da SEC; "
+        "de 2009 a 2023, {spac} companhias-ano.",
         "s_decisoes": "## 5. Decisões para Roberto",
-        "decisoes": [
-            "**Período possível.** Balanços em XBRL desde 2009 (todas as companhias desde 2011). Com rótulos livres, os anos "
-            "afetados vão só até 2014: a interseção é de 2009 a 2014. Para ir além de 2014, comprar a base da CFRM (até "
-            "2025) ou classificar os AAERs da SEC à mão.",
-            "**Tamanho esperado.** {fy} empresa-anos com AAER nos exercícios com XBRL, {lig} ligadas a um CIK, contra "
-            "os 10-K de cada ano (o número sai dos arquivos da SEC). Com fraudes de vários anos "
-            "contadas uma vez, o número de casos é menor ainda: o poder será baixo, como no estudo 1.",
-            "**O que não dá sem dados pagos.** Os anos errados depois de 2014 (CFRM); o gvkey e os dados da Compustat "
-            "(WRDS); as republicações da Audit Analytics. A ligação gvkey–CIK do era-py não informa a origem.",
-            "**Fraudes de vários anos.** Walker (2021) mostrou que, em Bao et al. (2020), fraudes que atravessam o período "
-            "de treino e o de teste inflam a medida; a errata (JAR, 2022) reconheceu um erro de código que deixou cerca de "
-            "10% desses casos sem recodificar, Walker (2022) criticou a errata, e Gow (2022) discutiu se o artigo deveria "
-            "ser retratado. Proposta: o desfecho por caso (uma fraude, uma vez), como o acerto do estudo 1, com o "
-            "bootstrap por companhia, como no estudo 2; os sinais são regras fixas, sem treino.",
+        "s_opcoes": "### 5.1 As opções de rótulo",
+        "cab_opcoes": "| Opção | Período | Tamanho | Custo | O que mede |",
+        "opcoes": [
+            (
+                "AAER gratuito (Bao et al., pelo era-py)",
+                "exercícios afetados até 2014; com XBRL, de 2009 a 2014",
+                "{casos_aaer} casos ({ea_aaer} empresa-anos) com 10-K nos dados da SEC",
+                "nenhum (a ligação gvkey–CIK não " "informa a origem)",
+                "uma ação da SEC que alega demonstrações erradas: rara, grave, quase sempre com "
+                "intenção alegada, e anos depois dos fatos",
+            ),
+            (
+                "8-K com o item 4.02",
+                "entregas de 2009 a 2023 (o item existe desde agosto de 2004)",
+                "{cias_402} companhias distintas; {com_402} companhias-ano com 10-K nos dados da SEC",
+                "nenhum (EDGAR, " "público)",
+                "a própria companhia ou o auditor declara que demonstrações publicadas não valem mais por causa "
+                "de um erro relevante, intencional ou não: o conceito da republicação do estudo 2",
+            ),
+            (
+                "Base da CFRM (USC)",
+                "AAERs emitidos de 1982 a 2025",
+                "4.581 AAERs no total; quantos com XBRL não se " "sabe sem comprar",
+                "pago (preço não publicado); termos proíbem passar a base adiante",
+                "o mesmo que o AAER, " "com os anos e as contas afetadas",
+            ),
+            (
+                "Classificação manual dos AAERs depois de 2014",
+                "AAERs emitidos de 2015 a 2023",
+                "{n_manual} AAERs a ler, de todos os tipos; só uma parte é de balanço errado",
+                "horas de leitura, com " "regra escrita antes e leitura cega aos sinais",
+                "o mesmo que o AAER, com risco de erro de classificação",
+            ),
         ],
-        "s_calendario": "### Rascunho de calendário até maio de 2027",
+        "recomendacao": "**Recomendação do Claude (claude.ai), para Roberto decidir:** o 8-K com o item 4.02 como desfecho "
+        "principal, o mesmo conceito da republicação do estudo 2, e os AAERs de 2009 a 2014 como descrição à parte, sem "
+        "teste. O 8-K 4.02 é público, gratuito, cobre o período inteiro com XBRL e tem casos suficientes para medir alguma "
+        "coisa; o AAER é raro demais de 2009 a 2014 para um teste e mede outra coisa (a ação da SEC).",
+        "decisoes": [
+            "**O desfecho por caso.** Walker (2021) mostrou que, em Bao et al. (2020), fraudes que atravessam o período de "
+            "treino e o de teste inflam a medida; a errata (JAR, 2022) reconheceu um erro de código que deixou cerca de 10% "
+            "desses casos sem recodificar, Walker (2022) criticou a errata, e Gow (2022) discutiu se o artigo deveria ser "
+            "retratado. Proposta: cada caso contado uma vez (uma companhia, um episódio de 8-K 4.02, com os 8-K e 8-K/A do "
+            "mesmo episódio juntos), como o acerto do estudo 1, com o bootstrap por companhia, como no estudo 2; os sinais "
+            "são regras fixas, sem treino.",
+            "**Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. Para o "
+            "pré-registro: o último 10-K entregue antes do 8-K, na versão pública na data (seção 2.3), ou a leitura do 8-K "
+            "para os exercícios citados, guardando só o CIK e os anos. A regra é escrita antes de qualquer sinal.",
+            "**As SPACs.** O pico de 2021 vem de uma mudança de interpretação contábil que atingiu companhias sem "
+            "operação, para as quais os sinais do v1 e do v2 não fazem sentido. Proposta: excluí-las da amostra pelo "
+            "código SIC 6770 (blank checks) dos dados da SEC, regra escrita antes de qualquer sinal.",
+            "**Período.** Com o 8-K 4.02, de 2009 (exercícios com XBRL; todas as companhias desde 2011) a 2023 (os 8-K "
+            "entregues até 31/12/2023). Os AAERs ficam de 2009 a 2014, só como descrição.",
+            "**O que não dá sem dados pagos.** Os anos errados dos AAERs depois de 2014 (CFRM); o gvkey e os dados da "
+            "Compustat (WRDS); as republicações da Audit Analytics, que incluiriam as republicações sem 8-K 4.02 "
+            '("little r"). A ligação gvkey–CIK do era-py não informa a origem.',
+        ],
+        "s_calendario": "### 5.2 Rascunho de calendário até maio de 2027",
         "cab_cal": "| Até | Etapa |",
         "calendario": [
             (
                 "2026-12-15",
-                "Roberto define o User-Agent; a Fase 0 termina com os arquivos da SEC (estrutura, 10-K por ano, cobertura das tags).",
+                "Decisão de Roberto: o rótulo (recomendação: 8-K 4.02 como desfecho, AAERs como descrição) e o "
+                "período.",
             ),
-            ("2027-01-15", "Decisão dos rótulos (até 2014, ou comprar a CFRM, ou classificar à mão) e do período."),
-            ("2027-02-28", "Rascunho do pré-registro dos EUA: amostra, desfecho por caso, métricas e regra boba."),
+            (
+                "2027-01-15",
+                "Mapa das contas fechado com a cobertura da seção 2.4; regra do caso e do exercício afetado "
+                "escrita; nenhum sinal calculado.",
+            ),
+            (
+                "2027-02-28",
+                "Rascunho do pré-registro dos EUA: amostra, desfecho por caso, métricas, regra boba e poder "
+                "esperado com as contagens da seção 4.2.",
+            ),
             ("2027-03-31", "Revisão de Roberto, registro e carimbo; código congelado."),
-            ("2027-05-31", "Cálculo único e relatório, separado do estudo 2 do Brasil."),
+            ("2027-04-30", "Cálculo único, depois do carimbo."),
+            ("2027-05-31", "Relatório em PT e EN, separado do estudo 2 do Brasil."),
         ],
         "fontes": "Fontes das condições e da crítica: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
-        "econjwatch.org (Walker, 2021 e 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022).",
+        "econjwatch.org (Walker, 2021 e 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form 8-K, "
+        "item 4.02; Financial Statement Data Sets; EDGAR, submissions.zip).",
     },
     "en": {
         "titulo": "# US Phase 0: data reconnaissance",
         "aviso": "> **Reconnaissance, with no signal computed.** Goal: find out whether a pre-registered US study is feasible, "
-        "with the data as they were at the time, testing Chiocca's v1 and v2 signals and the naive rule against the SEC's "
-        "AAERs (Accounting and Auditing Enforcement Releases). Inventory and counts only; nothing from 2024 on; no names of "
-        "individuals. The US front stays out of the README and the product until Roberto decides.",
+        "with the data as they were at the time, testing Chiocca's v1 and v2 signals and the naive rule against a public "
+        "label of misstated financial statements. Inventory and counts only; nothing from 2024 on; no names of individuals "
+        "or companies; no signal value, hit, alert or ranking. The US front stays out of the README and the product until "
+        "Roberto decides.",
         "s_acesso": "## 1. Access to the SEC",
         "acesso": "The SEC asks for a User-Agent with a name and contact and at most 10 requests per second; without the "
-        "contact it refuses the request (HTTP 403, checked in this session). The scripts read the User-Agent from the "
-        "environment variable `{var}`, which no versioned file or log keeps. In this session the variable was not set, and "
-        "the environment's privacy tool does not let the agent write the contact into a command: **{baixados} of "
-        "{previstos} quarterly SEC files were downloaded**. To finish Phase 0, Roberto sets `{var}` in the environment "
-        "settings (environment variable) and a new session runs `python -m chiocca.eua.fase0 --baixar`.",
+        "contact it refuses the request (HTTP 403). The scripts read the User-Agent from the environment variable `{var}`, "
+        "which no versioned file or log keeps, and wait at least 0.11 second between requests. On 2026-11-23, with the "
+        "variable set in the environment settings, **all {baixados} of {previstos} quarterly files** of the Financial "
+        "Statement Data Sets ({gb} GB) and the EDGAR filing history (`submissions.zip`, {gb_edgar} GB, the SEC snapshot "
+        "downloaded on {dia_edgar}) were downloaded. The files stay in `data/eua/`, outside Git, with each file's size and "
+        "SHA-256 in `data/eua_manifesto.csv`.",
+        "acesso_pendente": "The SEC asks for a User-Agent with a name and contact and at most 10 requests per second; "
+        "without the contact it refuses the request (HTTP 403). The scripts read the User-Agent from the environment "
+        "variable `{var}`, which no versioned file or log keeps. **{baixados} of {previstos} quarterly SEC files were "
+        "downloaded**: with the variable set, run `python -m chiocca.eua.fase0 --baixar`.",
         "s_fsds": "## 2. Balance sheets: the SEC Financial Statement Data Sets",
         "fsds": "The financial statement numbers in XBRL, one zip per filing quarter since 2009 (here, from {t0} to {t1}: "
         "the 10-Ks for fiscal 2023, almost all filed in 2024, are left out). The two files used are `sub.txt` (one row per "
@@ -166,18 +354,49 @@ T: dict[str, dict[str, Any]] = {
         "(one row per number: tag, taxonomy, date, quarters covered, unit and value).",
         "versoes": "- **10-K and 10-K/A:** the original filing and each amendment are separate filings, each with its "
         "date; `prevrpt` flags a filing that was later amended.\n- **The public version at a cutoff date:** per company "
-        "and fiscal year, the last filing (original or amendment with XBRL numbers) filed by that date, like Chiocca's "
-        '"as it was" in Brazil; the next year\'s comparative column shows the t-1 numbers as presented later.',
+        "and fiscal year, the last filing made by that date, between the original 10-K and the 10-K/As with numbers for "
+        'the mapped accounts, like Chiocca\'s "as it was" in Brazil. An amendment without those numbers (only Part III of '
+        "the 10-K, for example) does not change the version. The next year's comparative column shows the t-1 numbers as "
+        "presented later.",
         "pendente": "**Pending (without the SEC files):** the structure checked on the files, 10-K coverage by year, "
         "amendments, filing lags and the coverage of each tag by year. The code is ready and tested on a synthetic file "
         "(`chiocca/eua/fsds.py`).",
-        "s_mapa": "### The map from accounts to us-gaap tags (proposal)",
+        "s_estrutura": "### 2.1 File structure",
+        "estrutura": "Each zip has `sub.txt`, `num.txt`, `pre.txt` and `tag.txt` (tab-separated text) and a "
+        "`readme.htm`. The columns used were checked in all {n} quarters before any count. {vazios} has no filing (headers "
+        "only): the first XBRL 10-Ks come in from 2009q2. The last quarter ({ultimo}):",
+        "cab_estrutura": "| File | Columns | Rows |",
+        "colunas_mudam": "The columns change over the quarters: {mudancas}. The code uses `coreg` (co-registrant) where it "
+        "exists and `segments` where it exists, and in both cases counts only the company's own number, with no segment.",
+        "colunas_iguais": "The columns of `sub.txt` ({n_sub}) and `num.txt` ({n_num}) are the same in all {n} quarters. "
+        "`num.txt` has `coreg` (co-registrant) and `segments`: the code counts only the company's own number, with both "
+        "empty.",
+        "trecho_mudanca": "from {de} to {ate}, `num.txt` with {n} columns ({extra})",
+        "s_10k": "### 2.2 10-K and 10-K/A by fiscal year and filing dates",
+        "txt_10k": "By the fiscal year the company declares (`fy`). The lag is the number of days between the report date "
+        "and the filing of the original 10-K. Amendments with numbers are the 10-K/As with some mapped tag at the report "
+        "date; the others (most of them) carry only Part III or the cover page. Fiscal 2023 is incomplete: most of it was "
+        "filed in 2024.",
+        "cab_10k": "| Fiscal year | Companies with a 10-K | 10-K | 10-K/A | 10-K/A with numbers | 10-Ks later amended | Median lag (days) | Lag, 10% to 90% (days) | Within 90 days |",
+        "s_versao": "### 2.3 The public version at a cutoff date",
+        "txt_versao": "By fiscal year, on December 31 of the next year (t+1) and of the one after (t+2), only cutoffs "
+        "through 2023-12-31: how many companies have a public version and in how many it is already an amendment with "
+        "numbers, not the original 10-K.",
+        "cab_versao": "| Fiscal year | Companies at t+1 | Amendment at t+1 | Companies at t+2 | Amendment at t+2 |",
+        "s_mapa": "### 2.4 The map from accounts to us-gaap tags and coverage by year",
         "mapa_txt": "The accounts the v1 and v2 signals use, with candidate tags in order of preference. Benford uses all "
         "numbers and needs no map; the DVA does not exist in the US (depreciation comes from the cash flow statement); in "
         "the US, selling and administrative expenses usually come together (SG&A), and many companies do not present "
         "gross profit. Financial companies (weight of non-recurring gains) have no map in this phase.",
         "cab_mapa": "| Account | Candidate us-gaap tags |",
-        "s_rotulos": "## 3. Labels: the AAERs",
+        "cobertura_txt": "Coverage is the share of each fiscal year's original 10-Ks with a dollar value at the report "
+        "date, for the company itself (no co-registrant or segment), in the us-gaap taxonomy. By account (any of the "
+        "candidate tags):",
+        "cobertura_tag_txt": "By tag:",
+        "cab_conta": "Account",
+        "cab_tag": "Tag",
+        "s_rotulos": "## 3. Labels",
+        "s_aaer": "### 3.1 The AAERs",
         "era": "**era-py {v}** (PyPI, by Ian Gow, the data for the book *Empirical Research in Accounting: Tools and "
         "Methods*): package license {lic}; the tables carry no license of their own, and the source of the gvkey–CIK link "
         "is not stated. So nothing from them is copied into the repository: the wheel stays in `data/eua/`, with its "
@@ -195,69 +414,210 @@ T: dict[str, dict[str, Any]] = {
         "data to third parties, except co-authors; it covers 4,581 AAERs issued from 1982-05-17 to 2025-12-31, with the "
         "company's name and identifiers, the affected accounts and the misstated years and quarters (the page does not "
         "say which identifiers). Only the access conditions were read.",
-        "sec_lista": "- **The public AAER list on the SEC site:** not read directly (the site requires the User-Agent "
-        "with a contact); the era-py index is a copy of it, with the refresh date.",
+        "sec_lista": "- **The public AAER list on the SEC site:** not read directly; the era-py index is a copy of it, "
+        "with the refresh date.",
         "ligar": "**How to link each AAER to the CIK without Compustat.** Through 2014, through the Bao et al. "
         "company-years and the era-py gvkey–CIK link. After 2014, there is no free database with the misstated years: the "
         "path is to read each AAER on the SEC site (the company is a party) and match the name against the SEC file of "
-        "names and CIKs (`cik-lookup-data.txt`, to be checked once access is set up), keeping only the company and the CIK.",
+        "names and CIKs, keeping only the company and the CIK.",
+        "s_402": "### 3.2 A new label: 8-Ks with Item 4.02",
+        "txt_402": "Since August 2004, a company files an 8-K with Item 4.02 (*Non-Reliance on Previously Issued Financial "
+        "Statements or a Related Audit Report or Completed Interim Review*) when it, or its auditor, concludes that "
+        "previously issued statements should no longer be relied upon because of an error; the restatement follows. It is "
+        "the same concept as the restatement in Brazil's study 2: the published information was wrong, by error or on "
+        "purpose, without saying which. The source is the items field (`items`) of each company's filing history on EDGAR "
+        "(`submissions.zip`), which lists the items of each 8-K; only the date, form, items and CIK are read, in memory, "
+        "with no 8-K text or company name (`chiocca/eua/itens.py`). A filing by several companies counts once in the "
+        "filing counts.",
         "s_contagens": "## 4. Counts",
-        "cab_cont": "| Fiscal year | Company-years with an AAER (Bao et al.) | Linked to a CIK | With a 10-K in the SEC data | Company-years with a 10-K |",
+        "s_cont_aaer": "### 4.1 Bao et al. AAERs with a 10-K in the SEC data",
+        "cab_cont": "| Fiscal year | Company-years with an AAER (Bao et al.) | Linked to a CIK | With a 10-K in the SEC data | Company-years with a 10-K (all companies) |",
         "pendente_curto": "pending",
-        "cont_txt": "In the fiscal years with XBRL (2009 to 2014, the end of the Bao et al. affected years): {fy} "
-        "company-years with an AAER, of which {lig} link to a CIK. The most recent years have fewer cases because an "
-        "AAER usually comes out years after the fraud, and the database ends in 2014. The SEC index has {n_xbrl} "
-        "AAERs issued from 2009 to 2023, of all kinds (not only misstatements).",
+        "total": "**Total**",
+        "cont_txt": "The fiscal year follows the Compustat convention used by Bao et al.: the year of the report date, or "
+        "the previous one when the fiscal year ends from January to May. A Bao et al. company-year has a 10-K in the SEC "
+        "data when some CIK linked to the gvkey in that year filed an original XBRL 10-K for that fiscal year. **From 2009 "
+        "to 2014, {fy} company-years with an AAER, {lig} linked to a CIK and {com} with a 10-K in the SEC data**, against "
+        "about {denom} companies with a 10-K a year from 2011 to 2014, when XBRL already applied to all. Counting each case (AAER) once: **{casos} cases**, from {cias} "
+        "companies, with at least one affected fiscal year with a 10-K from 2009 to 2014 (by the first such year: "
+        "{por_ano}). The most recent years have fewer cases because an AAER usually comes out years after the facts, and "
+        "the database ends in 2014. The SEC index has {n_xbrl} AAERs issued from 2009 to 2023, of all kinds (not only "
+        "misstatements).",
+        "s_cont_402": "### 4.2 8-Ks with Item 4.02 and 10-K/As by filing year",
+        "cab_402": "| Filing year | 8-K 4.02 | 8-K/A 4.02 | Companies with an 8-K 4.02 | Of them with SIC 6770 (SPACs) | First time since 2009 | With a 10-K in the SEC data | With a 10-K in the SEC data before the 8-K | 10-K (EDGAR) | 10-K/A (EDGAR) | 10-K/A with XBRL (SEC data) |",
+        "txt_402_cont": 'A company counts once per year; "first time since 2009" counts each company once in the period. '
+        '"With a 10-K in the SEC data" means the CIK has an original 10-K in the Financial Statement Data Sets from 2009q1 '
+        'to 2023q4; "before the 8-K", that the first of those 10-Ks was filed by the date of the 8-K (there are XBRL '
+        "statements from the time to compare). **From 2009 to 2023: {n8k} 8-Ks with Item 4.02, from {cias} company-years; "
+        "{novas} distinct companies; {com} company-years with a 10-K in the SEC data, {antes} of them with the 10-K before "
+        "the 8-K.** The 10-K/As are of all kinds (most only complete Part III); the last column counts those in the SEC "
+        "data, by filing year. The 2021 peak coincides with the SEC staff statement of 2021-04-12 on the accounting for "
+        "SPAC warrants (acquisition companies with no operations), followed by many restatements: "
+        "{spac_2021} of the {cias_2021} companies with an 8-K 4.02 in 2021 have SIC code 6770 (blank checks) in the SEC "
+        "data; from 2009 to 2023, {spac} company-years.",
         "s_decisoes": "## 5. Decisions for Roberto",
-        "decisoes": [
-            "**Possible period.** XBRL balance sheets since 2009 (all companies since 2011). With free labels, the affected "
-            "years only go to 2014: the overlap is 2009 to 2014. To go beyond 2014, buy the CFRM database (through 2025) or "
-            "classify the SEC AAERs by hand.",
-            "**Expected size.** {fy} company-years with an AAER in the XBRL fiscal years, {lig} linked to a CIK, against "
-            "the 10-Ks of each year (the number comes from the SEC files). With multi-year frauds counted once, "
-            "the number of cases is smaller still: power will be low, as in study 1.",
-            "**What cannot be done without paid data.** Misstated years after 2014 (CFRM); the gvkey and Compustat data "
-            "(WRDS); Audit Analytics restatements. The era-py gvkey–CIK link does not state its source.",
-            "**Multi-year frauds.** Walker (2021) showed that, in Bao et al. (2020), frauds spanning the training and test "
-            "periods inflate the metric; the erratum (JAR, 2022) acknowledged a code error that left about 10% of these "
-            "cases unrecoded, Walker (2022) criticized the erratum, and Gow (2022) discussed whether the paper should be "
-            "retracted. Proposal: the outcome per case (one fraud, counted once), like the study 1 detection, with the "
-            "bootstrap by company, as in study 2; the signals are fixed rules, with no training.",
+        "s_opcoes": "### 5.1 The label options",
+        "cab_opcoes": "| Option | Period | Size | Cost | What it measures |",
+        "opcoes": [
+            (
+                "Free AAERs (Bao et al., through era-py)",
+                "affected fiscal years through 2014; with XBRL, 2009 to 2014",
+                "{casos_aaer} cases ({ea_aaer} company-years) with a 10-K in the SEC data",
+                "none (the gvkey–CIK link does " "not state its source)",
+                "an SEC action alleging misstated statements: rare, severe, almost always with "
+                "alleged intent, and years after the facts",
+            ),
+            (
+                "8-K with Item 4.02",
+                "filings from 2009 to 2023 (the item exists since August 2004)",
+                "{cias_402} distinct companies; {com_402} company-years with a 10-K in the SEC data",
+                "none (EDGAR, " "public)",
+                "the company or its auditor declares that published statements can no longer be relied upon "
+                "because of a material error, intentional or not: the concept of study 2's restatement",
+            ),
+            (
+                "CFRM database (USC)",
+                "AAERs issued from 1982 to 2025",
+                "4,581 AAERs in all; how many with XBRL is " "unknown without buying",
+                "paid (price not published); terms forbid passing the data on",
+                "the same as the " "AAER, with the affected years and accounts",
+            ),
+            (
+                "Hand classification of AAERs after 2014",
+                "AAERs issued from 2015 to 2023",
+                "{n_manual} AAERs to read, of all kinds; only some are misstatements",
+                "hours of reading, with the rule " "written beforehand and reading blind to the signals",
+                "the same as the AAER, with a risk of " "classification error",
+            ),
         ],
-        "s_calendario": "### Draft timeline through May 2027",
+        "recomendacao": "**Recommendation from Claude (claude.ai), for Roberto to decide:** the 8-K with Item 4.02 as the "
+        "main outcome, the same concept as study 2's restatement, and the 2009 to 2014 AAERs as a separate description, "
+        "with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to measure "
+        "something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC action).",
+        "decisoes": [
+            "**The outcome per case.** Walker (2021) showed that, in Bao et al. (2020), frauds spanning the training and "
+            "test periods inflate the metric; the erratum (JAR, 2022) acknowledged a code error that left about 10% of "
+            "these cases unrecoded, Walker (2022) criticized the erratum, and Gow (2022) discussed whether the paper should "
+            "be retracted. Proposal: each case counted once (one company, one 8-K 4.02 episode, with the 8-Ks and 8-K/As "
+            "of the same episode together), like the study 1 detection, with the bootstrap by company, as in study 2; the "
+            "signals are fixed rules, with no training.",
+            "**Which fiscal year the case affects.** The items field does not say which statements stopped being "
+            "reliable. For the pre-registration: the last 10-K filed before the 8-K, in the public version at the date "
+            "(section 2.3), or reading the 8-K for the fiscal years it cites, keeping only the CIK and the years. The "
+            "rule is written before any signal.",
+            "**SPACs.** The 2021 peak comes from a change in accounting interpretation that hit companies with no "
+            "operations, for which the v1 and v2 signals make no sense. Proposal: exclude them from the sample by SIC code "
+            "6770 (blank checks) in the SEC data, a rule written before any signal.",
+            "**Period.** With the 8-K 4.02, from 2009 (fiscal years with XBRL; all companies since 2011) to 2023 (8-Ks "
+            "filed through 2023-12-31). The AAERs stay at 2009 to 2014, as description only.",
+            "**What cannot be done without paid data.** Misstated years of AAERs after 2014 (CFRM); the gvkey and "
+            "Compustat data (WRDS); Audit Analytics restatements, which would include restatements without an 8-K 4.02 "
+            '("little r"). The era-py gvkey–CIK link does not state its source.',
+        ],
+        "s_calendario": "### 5.2 Draft timeline through May 2027",
         "cab_cal": "| By | Step |",
         "calendario": [
             (
                 "2026-12-15",
-                "Roberto sets the User-Agent; Phase 0 ends with the SEC files (structure, 10-Ks by year, tag coverage).",
+                "Roberto's decision: the label (recommendation: 8-K 4.02 as the outcome, AAERs as "
+                "description) and the period.",
             ),
-            ("2027-01-15", "Decision on labels (through 2014, buy the CFRM, or classify by hand) and on the period."),
-            ("2027-02-28", "Draft of the US pre-registration: sample, outcome per case, metrics and naive rule."),
+            (
+                "2027-01-15",
+                "Account map closed with the coverage in section 2.4; rule for the case and the affected "
+                "fiscal year written; no signal computed.",
+            ),
+            (
+                "2027-02-28",
+                "Draft of the US pre-registration: sample, outcome per case, metrics, naive rule and expected "
+                "power from the counts in section 4.2.",
+            ),
             ("2027-03-31", "Roberto's review, registration and timestamp; code frozen."),
-            ("2027-05-31", "Single computation and report, separate from Brazil's study 2."),
+            ("2027-04-30", "Single computation, after the timestamp."),
+            ("2027-05-31", "Report in PT and EN, separate from Brazil's study 2."),
         ],
         "fontes": "Sources for the conditions and the critique: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
-        "econjwatch.org (Walker, 2021 and 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022).",
+        "econjwatch.org (Walker, 2021 and 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form "
+        "8-K, Item 4.02; Financial Statement Data Sets; EDGAR, submissions.zip).",
     },
 }
 
 
+def _tabela(cab: str, linhas: list[list[str]], alinhamento: str) -> list[str]:
+    regua = "| " + " | ".join("---" if c == "-" else "---:" for c in alinhamento) + " |"
+    return [cab, regua, *("| " + " | ".join(x) + " |" for x in linhas)]
+
+
+def _secao_fsds(d: dict[str, Any], lang: str) -> list[str]:
+    t, i, f = T[lang], (lambda v: inteiro(int(v), lang)), d["fsds"]
+    p0 = lambda x: pct(x, lang, 0)  # noqa: E731
+    e = f["estrutura_do_ultimo"]
+    linhas = [t["s_estrutura"], "", t["estrutura"].format(n=i(f["trimestres_baixados"]),
+              vazios=", ".join(f["trimestres_sem_entregas"]), ultimo=e["trimestre"]), ""]  # fmt: skip
+    linhas += _tabela(t["cab_estrutura"], [[f"`{n}`", i(len(a["colunas"])) if "colunas" in a else "—",
+                                            i(a["linhas"]) if "linhas" in a else "—"]
+                                           for n, a in e["arquivos"].items()], "-::")  # fmt: skip
+    base = set(f["colunas_por_trimestre"][0]["colunas"]["num.txt"])
+    trechos = []
+    for c in f["colunas_por_trimestre"]:
+        num = c["colunas"]["num.txt"]
+        extra = ", ".join(f"`{x}`" for x in num if x not in base) or ", ".join(f"`{x}`" for x in num if x == "coreg")
+        trechos.append(t["trecho_mudanca"].format(de=c["de"], ate=c["ate"], n=len(num), extra=extra))
+    if len(f["colunas_por_trimestre"]) == 1:
+        c = f["colunas_por_trimestre"][0]["colunas"]
+        colunas = t["colunas_iguais"].format(n_sub=i(len(c["sub.txt"])), n_num=i(len(c["num.txt"])),
+                                            n=i(f["trimestres_baixados"]))  # fmt: skip
+    else:
+        colunas = t["colunas_mudam"].format(mudancas="; ".join(trechos))
+    linhas += ["", colunas, "", t["s_10k"], "", t["txt_10k"], ""]
+    pe = f["por_exercicio"]
+    linhas += _tabela(t["cab_10k"], [[a, i(pe[a]["companhias_com_10k"]), i(pe[a]["entregas_10k"]),
+                                      i(pe[a]["entregas_10k_a"]), i(pe[a]["entregas_10k_a_com_numeros"]),
+                                      i(pe[a]["10k_emendados_depois"]), i(pe[a]["prazo_mediano_dias"]),
+                                      f"{i(pe[a]['prazo_p10_dias'])}–{i(pe[a]['prazo_p90_dias'])}",
+                                      p0(pe[a]["ate_90_dias"])] for a in ANOS if a in pe], "-::::::::")  # fmt: skip
+    v = f["versoes"]
+    cel = lambda a, k: [i(v[a][k]["companhias"]), i(v[a][k]["emenda"])] if k in v[a] else ["—", "—"]  # noqa: E731
+    linhas += ["", t["s_versao"], "", t["txt_versao"], ""]
+    linhas += _tabela(t["cab_versao"], [[a, *cel(a, "t+1"), *cel(a, "t+2")] for a in ANOS if a in v], "-::::")
+    cob = f["cobertura"]
+    anos = [a for a in ANOS if a in cob]
+    linhas += ["", t["s_mapa"], "", t["mapa_txt"], "", t["cab_mapa"], "| --- | --- |"]
+    linhas += [f"| `{c}` | " + ", ".join(f"`{x}`" for x in ts) + " |" for c, ts in d["mapa"].items()]
+    linhas += ["", t["cobertura_txt"], ""]
+    cab = lambda nome: "| " + nome + " | " + " | ".join(anos) + " |"  # noqa: E731
+    linhas += _tabela(cab(t["cab_conta"]), [[f"`{c}`", *(p0(cob[a]["contas"][c]) for a in anos)] for c in d["mapa"]],
+                      "-" + ":" * len(anos))  # fmt: skip
+    tags = [x for ts in d["mapa"].values() for x in ts]
+    linhas += ["", t["cobertura_tag_txt"], ""]
+    linhas += _tabela(cab(t["cab_tag"]), [[f"`{x}`", *(p0(cob[a]["tags"][x]) for a in anos)] for x in tags],
+                      "-" + ":" * len(anos))  # fmt: skip
+    return linhas + [""]
+
+
 def render(d: dict[str, Any], lang: str) -> str:
     t, i = T[lang], (lambda v: inteiro(int(v), lang))
-    r, b, li = d["rotulos"], d["rotulos"]["bao_et_al"], d["rotulos"]["ligacao_gvkey_cik"]
+    r, b, li, f = d["rotulos"], d["rotulos"]["bao_et_al"], d["rotulos"]["ligacao_gvkey_cik"], d["fsds"]
     fy, lig = b["empresa_anos_xbrl"], b["empresa_anos_xbrl_ligadas_ao_cik"]
-    pend = t["pendente_curto"]
-    linhas = [t["titulo"], "", t["aviso"], "", t["s_acesso"], "",
-              t["acesso"].format(var=d["acesso_sec"]["variavel"], baixados=i(d["acesso_sec"]["fsds_baixados"]),
-                                 previstos=i(d["acesso_sec"]["fsds_previstos"])),
-              "", t["s_fsds"], "", t["fsds"].format(t0=d["limite"]["trimestres_fsds"][0], t1=d["limite"]["trimestres_fsds"][1]),
-              "", t["versoes"], ""]  # fmt: skip
-    if d["fsds"] is None:
-        linhas += [t["pendente"], ""]
-    linhas += [t["s_mapa"], "", t["mapa_txt"], "", t["cab_mapa"], "| --- | --- |"]
-    linhas += [f"| `{c}` | " + ", ".join(f"`{x}`" for x in ts) + " |" for c, ts in d["mapa"].items()]
+    a = d["acesso_sec"]
+    if f is None:
+        acesso = t["acesso_pendente"].format(var=a["variavel"], baixados=i(a["fsds_baixados"]),
+                                             previstos=i(a["fsds_previstos"]))  # fmt: skip
+    else:
+        ed = a["edgar_submissions"]
+        acesso = t["acesso"].format(var=a["variavel"], baixados=i(a["fsds_baixados"]), previstos=i(a["fsds_previstos"]),
+                                    gb=decimal(a["fsds_bytes"] / 1e9, lang), gb_edgar=decimal(int(ed["bytes"]) / 1e9, lang),
+                                    dia_edgar=data(ed["baixado_em_utc"][:10], lang))  # fmt: skip
+    linhas = [t["titulo"], "", t["aviso"], "", t["s_acesso"], "", acesso, "", t["s_fsds"], "",
+              t["fsds"].format(t0=d["limite"]["trimestres_fsds"][0], t1=d["limite"]["trimestres_fsds"][1]), "",
+              t["versoes"], ""]  # fmt: skip
+    if f is None:
+        linhas += [t["pendente"], "", t["s_mapa"], "", t["mapa_txt"], "", t["cab_mapa"], "| --- | --- |"]
+        linhas += [f"| `{c}` | " + ", ".join(f"`{x}`" for x in ts) + " |" for c, ts in d["mapa"].items()] + [""]
+    else:
+        linhas += _secao_fsds(d, lang)
     idx = r["indice_sec"]
-    linhas += ["", t["s_rotulos"], "",
+    linhas += [t["s_rotulos"], "", t["s_aaer"], "",
                t["era"].format(v=r["pacote"]["versao"], lic=r["pacote"]["licenca"], sha=d["era_py"]["sha256"]), "",
                t["indice"].format(atual=data(r["pacote"]["indice_atualizado"], lang), n=i(idx["aaers"]),
                                   distintos=i(idx["numeros_distintos"]), a0=idx["primeiro_ano"], a1=idx["ultimo_ano"]),
@@ -265,13 +625,57 @@ def render(d: dict[str, Any], lang: str) -> str:
                                a0=b["primeiro_ano_afetado"], a1=b["ultimo_ano_afetado"], fy=i(b["empresa_anos"]),
                                multi=i(b["aaers_de_mais_de_um_ano"])),
                t["ligacao"].format(linhas=i(li["linhas"]), gvkeys=i(li["gvkeys"]), ciks=i(li["ciks"])),
-               t["cfrm"], t["sec_lista"], "", t["ligar"], "", t["s_contagens"], "", t["cab_cont"],
-               "| --- | ---: | ---: | ---: | ---: |"]  # fmt: skip
-    for ano, n in b["empresa_anos_xbrl_por_ano"].items():
-        linhas.append(f"| {ano} | {i(n)} | {i(b['empresa_anos_xbrl_ligadas_por_ano'][ano])} | {pend} | {pend} |")
-    n_xbrl = sum(v for a, v in idx["por_ano"].items() if int(a) >= rotulos.PRIMEIRO_ANO_XBRL)
-    linhas += ["", t["cont_txt"].format(fy=i(fy), lig=i(lig), n_xbrl=i(n_xbrl)), "", t["s_decisoes"], ""]
-    linhas += [f"{k}. " + x.format(fy=i(fy), lig=i(lig)) for k, x in enumerate(t["decisoes"], start=1)]
+               t["cfrm"], t["sec_lista"], "", t["ligar"], "", t["s_402"], "", t["txt_402"], "",
+               t["s_contagens"], "", t["s_cont_aaer"], ""]  # fmt: skip
+    n_xbrl = sum(v for ano, v in idx["por_ano"].items() if int(ano) >= rotulos.PRIMEIRO_ANO_XBRL)
+    n_manual = sum(v for ano, v in idx["por_ano"].items() if int(ano) > b["ultimo_ano_afetado"])
+    pend = t["pendente_curto"]
+    anos_aaer = list(b["empresa_anos_xbrl_por_ano"])
+    if f is None:
+        tab = [[ano, i(n), i(b["empresa_anos_xbrl_ligadas_por_ano"][ano]), pend, pend]
+               for ano, n in b["empresa_anos_xbrl_por_ano"].items()]  # fmt: skip
+        linhas += _tabela(t["cab_cont"], tab, "-::::") + [""]
+        return "\n".join(linhas + [t["fontes"]]) + "\n"
+    aa, den = f["aaer"], f["companhias_com_10k_por_ano_compustat"]
+    tab = [[ano, i(b["empresa_anos_xbrl_por_ano"][ano]), i(b["empresa_anos_xbrl_ligadas_por_ano"][ano]),
+            i(aa["empresa_anos_com_10k_por_ano"].get(ano, 0)), i(den.get(ano, 0))] for ano in anos_aaer]  # fmt: skip
+    tab.append([t["total"], f"**{i(fy)}**", f"**{i(lig)}**", f"**{i(aa['empresa_anos_com_10k'])}**",
+                i(sum(den.get(ano, 0) for ano in anos_aaer))])  # fmt: skip
+    linhas += _tabela(t["cab_cont"], tab, "-::::")
+    todas = [ano for ano in anos_aaer if int(ano) >= 2011]  # o XBRL valeu para todas as companhias a partir de 2011
+    media = sum(den.get(ano, 0) for ano in todas) / len(todas)
+    por_ano = ", ".join(f"{ano}: {i(n)}" for ano, n in aa["casos_com_10k_por_primeiro_ano"].items())
+    linhas += ["", t["cont_txt"].format(fy=i(fy), lig=i(lig), com=i(aa["empresa_anos_com_10k"]),
+                                        denom=i(round(media, -2)), casos=i(aa["casos_com_10k"]),
+                                        cias=i(aa["companhias_com_10k"]), por_ano=por_ano, n_xbrl=i(n_xbrl)),
+               "", t["s_cont_402"], ""]  # fmt: skip
+    it, pe = f["itens_8k"], f["por_entrega"]
+    tab = [[ano, i(x["8k_402"]), i(x["8k_a_402"]), i(x["companhias_8k_402"]),
+            i(x["companhias_8k_402_sic_6770"]), i(x["companhias_novas_8k_402"]),
+            i(x["companhias_com_10k_fsds"]), i(x["companhias_com_10k_fsds_antes"]), i(x["10k_edgar"]),
+            i(x["10k_a_edgar"]), i(pe.get(ano, {}).get("10k_a", 0))] for ano, x in it.items()]  # fmt: skip
+    soma = {k: sum(x[k] for x in it.values()) for k in next(iter(it.values()))}
+    tab.append([t["total"], *(f"**{i(soma[k])}**" for k in ("8k_402", "8k_a_402", "companhias_8k_402",
+                                                            "companhias_8k_402_sic_6770",
+                                                            "companhias_novas_8k_402", "companhias_com_10k_fsds",
+                                                            "companhias_com_10k_fsds_antes", "10k_edgar", "10k_a_edgar")),
+                f"**{i(sum(x.get('10k_a', 0) for x in pe.values()))}**"])  # fmt: skip
+    linhas += _tabela(t["cab_402"], tab, "-" + ":" * 10)
+    linhas += ["", t["txt_402_cont"].format(n8k=i(soma["8k_402"]), cias=i(soma["companhias_8k_402"]),
+                                            novas=i(soma["companhias_novas_8k_402"]),
+                                            com=i(soma["companhias_com_10k_fsds"]),
+                                            antes=i(soma["companhias_com_10k_fsds_antes"]),
+                                            spac=i(soma["companhias_8k_402_sic_6770"]),
+                                            spac_2021=i(it.get("2021", {}).get("companhias_8k_402_sic_6770", 0)),
+                                            cias_2021=i(it.get("2021", {}).get("companhias_8k_402", 0))),
+               "", t["s_decisoes"], "", t["s_opcoes"], ""]  # fmt: skip
+    valores = {"casos_aaer": i(aa["casos_com_10k"]), "ea_aaer": i(aa["empresa_anos_com_10k"]),
+               "cias_402": i(soma["companhias_novas_8k_402"]), "com_402": i(soma["companhias_com_10k_fsds"]),
+               "n_manual": i(n_manual)}  # fmt: skip
+    linhas += _tabela(t["cab_opcoes"], [[f"**{o}**", per, tam.format(**valores), custo, mede]
+                                        for o, per, tam, custo, mede in t["opcoes"]], "-----")  # fmt: skip
+    linhas += ["", t["recomendacao"], ""]
+    linhas += [f"{k}. {x}" for k, x in enumerate(t["decisoes"], start=1)]
     linhas += ["", t["s_calendario"], "", t["cab_cal"], "| --- | --- |"]
     linhas += [f"| {data(dia, lang)} | {etapa} |" for dia, etapa in t["calendario"]]
     linhas += ["", t["fontes"]]
@@ -282,7 +686,9 @@ def main(argv: list[str]) -> None:
     if "--baixar" in argv:
         sec.grava_manifesto([rotulos.baixar()])
         try:
-            sec.grava_manifesto(fsds.baixar(sec.Cliente()))
+            cliente = sec.Cliente()
+            sec.grava_manifesto(fsds.baixar(cliente))
+            sec.grava_manifesto(itens.baixar(cliente))
         except sec.SemUserAgent as e:
             print(f"arquivos da SEC não baixados: {e}")
     d = calcula()
