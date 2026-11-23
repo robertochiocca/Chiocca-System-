@@ -44,3 +44,21 @@ def test_dentro_da_meta_do_calendario() -> None:
     )
     assert congelado <= calculada <= date(2027, 1, 31)
     assert R["calendario"] == {"meta_do_lacre": "2027-01-31", "dentro_da_meta": True, "rotulo_nao_prospectivo": False}
+
+
+CARIMBO = RAIZ / "docs" / "carimbos" / "motor-v2-lista.txt"
+CABECALHO_OTS = b"\x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94"
+
+
+def test_carimbo_da_lista_do_v2() -> None:
+    """O arquivo de hashes tem os dois commits (o do cálculo e o do SHA-256) e os SHA-256 da lista, do manifesto e do
+    registro do código; o .ots carimba o SHA-256 desse arquivo (o `ots upgrade` fica para depois)."""
+    linhas = [x.split("  ", 1) for x in CARIMBO.read_text(encoding="utf-8").splitlines() if not x.startswith("#")]
+    hashes = {nome: h for h, nome in linhas}
+    assert linhas[0] == [R["commit_do_calculo"], "commit do cálculo da lista do v2"]
+    assert re.fullmatch(r"[0-9a-f]{40}", linhas[1][0]) and linhas[1][1] == "commit com o SHA-256 da lista do v2"
+    assert hashes["lista_motor_v2.csv"] == R["sha256"] and hashes[R["manifesto"]] == R["manifesto_sha256"]
+    assert hashes[R["registro_do_codigo"]] == R["registro_do_codigo_sha256"]
+    ots = CARIMBO.with_name(CARIMBO.name + ".ots").read_bytes()
+    assert ots.startswith(CABECALHO_OTS) and ots[len(CABECALHO_OTS)] == 1 and ots[len(CABECALHO_OTS) + 1] == 0x08
+    assert ots[len(CABECALHO_OTS) + 2 : len(CABECALHO_OTS) + 34] == hashlib.sha256(CARIMBO.read_bytes()).digest()
