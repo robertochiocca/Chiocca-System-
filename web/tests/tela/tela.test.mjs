@@ -31,7 +31,7 @@ const INV_2024 = "/investigacao/?cd=20990&ex=2021&data=2024-12-31";
 const INV_2022 = "/investigacao/?cd=20990&ex=2021&data=2022-04-30";
 const EMPRESA = "/empresa/?cd=20990";
 const TESTADO = "/como-o-motor-foi-testado/";
-const REPOSITORIO = "https://github.com/robertochiocca/Chiocca-System-/blob/main/";
+const REPOSITORIO = "https://github.com/robertochiocca/chiocca/blob/main/";
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CELULAR = { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true };
 const COMPUTADOR = { viewport: { width: 1280, height: 900 } };
@@ -129,7 +129,7 @@ for (const idioma of ["pt", "en"]) {
     // repositório e a ficha do motor
     assert.match(await texto(p.locator("footer #aviso-completo")), pt ? /Not an accusation, not investment advice\./ : /Não é acusação, não é recomendação de investimento\./);
     const rodape = await p.locator("footer a").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
-    assert.ok(rodape.includes("https://github.com/robertochiocca/Chiocca-System-"));
+    assert.ok(rodape.includes("https://github.com/robertochiocca/chiocca"));
     assert.ok(rodape.some((h) => /ficha-do-motor\.md|engine-card\.md/.test(h)));
     await contexto.close();
   });

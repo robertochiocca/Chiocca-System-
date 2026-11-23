@@ -6,7 +6,7 @@
 
 Antes chamado Chiocca System.
 
-[English](README.en.md) · [Demonstração](https://robertochiocca.github.io/Chiocca-System-/)
+[English](README.en.md) · [Demonstração](https://robertochiocca.github.io/chiocca/)
 
 </div>
 
@@ -26,7 +26,7 @@ Para uma companhia e uma data, o produto mostra a investigação como era naquel
 
 **Stack:** Python 3.12+ (pandas, DuckDB sobre Parquet, FastAPI), Next.js com TypeScript e GitHub Actions; dados abertos da CVM e do Banco Central.
 
-**Demonstração:** [robertochiocca.github.io/Chiocca-System-](https://robertochiocca.github.io/Chiocca-System-/).
+**Demonstração:** [robertochiocca.github.io/chiocca](https://robertochiocca.github.io/chiocca/).
 
 ## O problema
 
@@ -34,7 +34,7 @@ A base de dados abertos da CVM é atualizada quando uma empresa reapresenta suas
 
 ## Demonstração
 
-[https://robertochiocca.github.io/Chiocca-System-/](https://robertochiocca.github.io/Chiocca-System-/) é um site estático, sem API, com as investigações geradas antes pelo próprio produto: as 32 companhias do gabarito que entram no modo demonstração, em datas fixas (a data de corte de cada exercício do período afetado, a do exercício anterior e 31/12/2024), em PT e EN, com o PDF. A busca é só por nome, código CVM ou CNPJ. Não mostra outras companhias, outras datas nem exercícios de 2024 em diante, reservados ao estudo 2.
+[https://robertochiocca.github.io/chiocca/](https://robertochiocca.github.io/chiocca/) é um site estático, sem API, com as investigações geradas antes pelo próprio produto: as 32 companhias do gabarito que entram no modo demonstração, em datas fixas (a data de corte de cada exercício do período afetado, a do exercício anterior e 31/12/2024), em PT e EN, com o PDF. A busca é só por nome, código CVM ou CNPJ. Não mostra outras companhias, outras datas nem exercícios de 2024 em diante, reservados ao estudo 2.
 
 ## Sinais da primeira versão
 

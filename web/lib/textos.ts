@@ -689,4 +689,4 @@ export function fmt(modelo: string, valores: Record<string, string | number>): s
   return modelo.replace(/\{(\w+)\}/g, (_, k: string) => String(valores[k] ?? `{${k}}`));
 }
 
-export const REPOSITORIO = "https://github.com/robertochiocca/Chiocca-System-/blob/main/";
+export const REPOSITORIO = "https://github.com/robertochiocca/chiocca/blob/main/";

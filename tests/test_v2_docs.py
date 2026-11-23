@@ -137,8 +137,8 @@ def test_readme_demonstracao_com_o_numero_de_companhias_do_modo_demonstracao() -
         readme = (RAIZ / README[lingua]).read_text(encoding="utf-8")
         topo = readme.split(h_topo, 1)[1].split("\n## ", 1)[0]
         demo = readme.split(h_demo, 1)[1].split("\n## ", 1)[0]
-        assert "https://robertochiocca.github.io/Chiocca-System-/" in demo and companhias in demo
-        assert "https://robertochiocca.github.io/Chiocca-System-/" in topo
+        assert "https://robertochiocca.github.io/chiocca/" in demo and companhias in demo
+        assert "https://robertochiocca.github.io/chiocca/" in topo
         # as capturas de npm run capturas -- --readme, na língua do README, no topo: computador e celular
         assert re.findall(r'src="(docs/imagens/[^"]+)"', readme) == [
             f"docs/imagens/demonstracao-computador-{lingua}.png",
