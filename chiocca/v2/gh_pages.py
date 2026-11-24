@@ -14,6 +14,17 @@ Uso, da raiz do repositório, com a árvore limpa no commit de origem e uma cóp
     python -m chiocca.v2.gh_pages DESTINO --varredura varredura.json
 
 Depois, em DESTINO: git add -A, git commit e git push (sem --force).
+
+Com a demonstração já publicada, sem regenerar nada (pedido de 24/11/2026): copie a pasta `demo/` do gh-pages atual
+para `web/public/demo/`, construa e varra o site como acima e passe `--demonstracao-publicada`. Antes de trocar o
+conteúdo de DESTINO, a montagem confere que cada arquivo de `demo/` do site novo é idêntico, byte a byte (SHA-256), ao
+publicado, e que não sobra nem falta nenhum; o manifesto registra o commit do gh-pages de onde a demonstração veio e o
+commit que a gerou (`demonstracao_publicada`), e os comandos dessa rota (`COMANDOS_PUBLICADA`).
+
+    cp -a DESTINO/demo web/public/demo
+    cd web && NEXT_PUBLIC_BASE_PATH=/chiocca npm run build:estatico
+    npm run -s varrer:demo > VARREDURA && cd ..
+    python -m chiocca.v2.gh_pages DESTINO --varredura VARREDURA --demonstracao-publicada
 """
 
 from __future__ import annotations
@@ -36,6 +47,12 @@ COMANDOS = [
     f"cd web && NEXT_PUBLIC_BASE_PATH={BASE_PATH} npm run build:estatico",
     "cd web && npm run -s varrer:demo",
     "python -m chiocca.v2.gh_pages DESTINO --varredura varredura.json",
+]
+COMANDOS_PUBLICADA = [
+    "cp -a DESTINO/demo web/public/demo",
+    f"cd web && NEXT_PUBLIC_BASE_PATH={BASE_PATH} npm run build:estatico",
+    "cd web && npm run -s varrer:demo",
+    "python -m chiocca.v2.gh_pages DESTINO --varredura varredura.json --demonstracao-publicada",
 ]
 MANIFESTO = "manifesto.json"
 
@@ -74,10 +91,31 @@ def conferir_varredura(varredura: dict[str, Any], demo: dict[str, Any], base_pat
     return {k: varredura[k] for k in ("prefixo", "empresas", "investigacoes_abertas", "com_aviso_de_diferenca")}
 
 
-def montar(site: Path, destino: Path, origem: dict[str, str], data: str, varredura: dict[str, Any]) -> dict[str, Any]:
-    """Troca o conteúdo de `destino` (menos o .git) pelo site, com o .nojekyll e o manifesto; devolve o manifesto."""
+def hashes_da_demo(raiz: Path) -> dict[str, str]:
+    """SHA-256 de cada arquivo da pasta `demo/` de um site (caminho relativo à raiz do site)."""
+    return {p.relative_to(raiz).as_posix(): _sha256(p) for p in sorted((raiz / "demo").rglob("*")) if p.is_file()}
+
+
+def conferir_demonstracao_publicada(site: Path, destino: Path, commit_publicado: str) -> dict[str, Any]:
+    """A pasta `demo/` do site novo tem de ser idêntica, byte a byte, à publicada em `destino` (antes da troca)."""
+    antes, depois = hashes_da_demo(destino), hashes_da_demo(site)
+    if not antes or antes != depois:
+        diferentes = sorted(set(antes) ^ set(depois) | {a for a in set(antes) & set(depois) if antes[a] != depois[a]})
+        raise SystemExit(
+            f"a demonstração do site não é a publicada: {len(diferentes)} arquivos diferem {diferentes[:5]}"
+        )
+    anterior = json.loads((destino / MANIFESTO).read_text(encoding="utf-8")) if (destino / MANIFESTO).exists() else {}
+    return {"gh_pages_commit": commit_publicado, "gerada_do_commit": anterior.get("origem", {}).get("commit"),
+            "arquivos_identicos": len(antes), "bytes": sum((site / a).stat().st_size for a in antes)}  # fmt: skip
+
+
+def montar(site: Path, destino: Path, origem: dict[str, str], data: str, varredura: dict[str, Any],
+           publicada: str | None = None) -> dict[str, Any]:  # fmt: skip
+    """Troca o conteúdo de `destino` (menos o .git) pelo site, com o .nojekyll e o manifesto; devolve o manifesto. Com
+    `publicada` (o commit do gh-pages em `destino`), a demonstração tem de ser a já publicada, byte a byte."""
     demo = conferir_site(site)
     resumo_varredura = conferir_varredura(varredura, demo)
+    reaproveitada = conferir_demonstracao_publicada(site, destino, publicada) if publicada else None
     for item in destino.iterdir():
         if item.name == ".git":
             continue
@@ -89,11 +127,12 @@ def montar(site: Path, destino: Path, origem: dict[str, str], data: str, varredu
     manifesto = {
         "gerado_por": "python -m chiocca.v2.gh_pages",
         "origem": origem,
-        "comandos": COMANDOS,
+        "comandos": COMANDOS_PUBLICADA if reaproveitada else COMANDOS,
         "data": data,
         "base_path": BASE_PATH,
         "demonstracao": {k: demo[k] for k in ("empresas", "investigacoes", "arquivos", "bytes", "segundos")},
         "varredura": resumo_varredura,
+        **({"demonstracao_publicada": reaproveitada} if reaproveitada else {}),
         "total": {"arquivos": len(arquivos), "bytes": sum((destino / a).stat().st_size for a in arquivos)},
         "arquivos": arquivos,
     }
@@ -113,7 +152,11 @@ def main(argv: list[str]) -> None:
     origem = {"repositorio": "robertochiocca/chiocca", "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
               "commit": _git("rev-parse", "HEAD")}  # fmt: skip
     data = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-    m = montar(SITE, destino, origem, data, varredura)
+    publicada = None
+    if "--demonstracao-publicada" in argv:
+        publicada = subprocess.run(["git", "rev-parse", "HEAD"], cwd=destino, check=True, capture_output=True,
+                                   text=True).stdout.strip()  # fmt: skip
+    m = montar(SITE, destino, origem, data, varredura, publicada)
     print(json.dumps({k: v for k, v in m.items() if k != "arquivos"}, ensure_ascii=False, indent=1))
 
 
