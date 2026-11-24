@@ -98,6 +98,7 @@ SCRIPT_DO_V2 = ("chiocca/v2/motor_v2/lista.py", "chiocca/v2/motor_v2/avaliacao.p
 # nenhuma linha, e confere o próprio registro de congelamento com `sha256_registrado`; fora do produto, e só essas
 # importações do estudo 2.
 ESTUDO_DOS_EUA = "chiocca/eua/estudo.py"
+REGISTRO_DOS_EUA = "chiocca/eua/registro.py"  # o registro de congelamento dos EUA: só sha256_registrado
 LACRE_DO_V2 = "chiocca/v2/motor_v2/abertura.py"
 
 
@@ -117,6 +118,10 @@ def test_constantes_do_estudo_e_o_script_fora_do_produto() -> None:
                 ("chiocca.v2.estudo2", "secundaria"),
                 ("chiocca.v2.estudo2.registro", "sha256_registrado"),
             }
+        elif caminho == REGISTRO_DOS_EUA:
+            de_onde = {(n.module, a.name) for n in ast.walk(ast.parse(texto)) if isinstance(n, ast.ImportFrom)
+                       for a in n.names if "estudo2" in (n.module or "")}  # fmt: skip
+            assert de_onde == {("chiocca.v2.estudo2.registro", "sha256_registrado")}, caminho
         elif not no_estudo and caminho not in SCRIPT_DO_V2:
             assert not importa_o_estudo.search(texto), caminho
         for no in ast.walk(ast.parse(texto)):
