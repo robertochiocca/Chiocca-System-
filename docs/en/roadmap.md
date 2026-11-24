@@ -27,6 +27,10 @@ Recorded on 2026-11-08, for the new study 2 pre-registration, before opening fis
 - A 24-month gap between the calibration period and the test period.
 - A pre-registration rule for cases spanning several years, with an automatic test for a missing year of data and for a changed case identifier: this was the error Walker pointed out in 2021 in Bao et al. (2020) and that the 2022 erratum acknowledged.
 
+## US study (outside the product)
+
+- **Status (2026-11-24):** [Phase 0](us-phase-0.md) counted the SEC data and the labels, and the [US study pre-registration](us-preregistration.md) was registered on 2026-11-24 (commit `a527b9eca9ab0f087b04f1c97ed737bc63188456`; hash noted in commit `14b78c5897083ee47cc962704230b55db47d7e55`; OpenTimestamps stamp in commit `7c45d5344acc60f871d1f59747968938a386923b`), before any US signal. Main outcome: the 8-K with Item 4.02, per episode; the 2009 to 2014 AAERs as description only. Next steps, in the registered order: the hand-computed example, the code tested only on synthetic data and on the example, the freeze (target 2027-01-15), the single computation (target 2027-01-31) and the report (target 2027-02-28). Nothing from the US goes into the README or the product before the single computation and the "US in the product" phase, in the [plan](plan-v2.md).
+
 ## Product: context indicators (recorded on 2026-11-08)
 
 Context only, with no alert, and only after they are specified in the plan:
