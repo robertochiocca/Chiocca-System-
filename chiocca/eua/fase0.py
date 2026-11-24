@@ -52,9 +52,10 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
             fsds.cobertura_tags(
                 z,
                 subs[subs.trimestre == z.stem],
-                tags=[*fsds.TAGS, *fsds.TAGS_EXTRAS],
+                tags=[*fsds.TAGS, *fsds.TAGS_EXTRAS, *(t for t in fsds.TAGS_AMPLIACOES if t not in fsds.TAGS)],
                 formularios=("10-K", "10-K/A"),
                 receitas_anuais=True,
+                tags_anuais=fsds.TAGS_AMPLIACOES,
             )
             for z in baixados
         ],
@@ -138,19 +139,47 @@ REGRAS_RASCUNHO: dict[str, tuple[tuple[str, ...], ...]] = {
 ANOS_AMOSTRA = [str(a) for a in range(2011, ULTIMO_EXERCICIO + 1)]  # a amostra do rascunho: exercícios de 2011 a 2024
 
 
-def _cobre(linha: Any, conta: str, receita_ok: bool) -> bool:
+def _cobre(
+    linha: Any, conta: str, receita_ok: bool, regras: dict[str, tuple[tuple[str, ...], ...]] | None = None
+) -> bool:
     """Se a entrega cobre a conta pelas regras do rascunho (alguma alternativa com todas as partes presentes)."""
+    regras = REGRAS_RASCUNHO if regras is None else regras
 
     def parte(x: str) -> bool:
         if x == "receita":
             return receita_ok
-        if x in REGRAS_RASCUNHO:
-            return _cobre(linha, x, receita_ok)
+        if x in regras:
+            return _cobre(linha, x, receita_ok, regras)
         return bool(linha[x])
 
     if conta == "receita_liquida":
         return receita_ok
-    return any(all(parte(x) for x in alternativa) for alternativa in REGRAS_RASCUNHO[conta])
+    return any(all(parte(x) for x in alternativa) for alternativa in regras[conta])
+
+
+def _juros_e_caixa(amostra: Any) -> tuple[dict[str, Any], dict[str, tuple[tuple[str, ...], ...]]]:
+    """Terceira rodada (24/11/2026), só contagens, nos 10-K da amostra: o uso de cada tag (a base e as candidatas de
+    `fsds.AMPLIACOES`) por ano, pelo valor anual na data de referência; a regra gulosa da receita aplicada a cada conta;
+    a cobertura antes e depois, por ano, e quantas entregas só ficam cobertas por uma tag de conceito mais largo. Devolve
+    também as regras do rascunho com as tags que entraram."""
+    out: dict[str, Any] = {"conceito_largo": list(fsds.CONCEITO_LARGO), "ganho_minimo": fsds.GANHO_MINIMO, "contas": {}}
+    regras = dict(REGRAS_RASCUNHO)
+    for conta, a in fsds.AMPLIACOES.items():
+        tags = (*a["base"], *a["candidatas"])
+        uso = {t: {str(fy): int(sum(t in d for d in g.anuais_extras)) for fy, g in amostra.groupby("fy")} for t in tags}
+        amp = fsds.ampliar_receita(amostra.anuais_extras, base=a["base"], candidatas=a["candidatas"])
+        estreitas = [t for t in amp["ordem"] if t not in fsds.CONCEITO_LARGO]
+        cobertura = {
+            str(fy): {"10k": len(g), "antes": int(sum(bool(set(d) & set(a["base"])) for d in g.anuais_extras)),
+                      "depois": int(sum(bool(set(d) & set(amp["ordem"])) for d in g.anuais_extras)),
+                      "so_conceito_largo": int(sum(bool(set(d) & set(amp["ordem"])) and not set(d) & set(estreitas)
+                                                   for d in g.anuais_extras))}
+            for fy, g in amostra.groupby("fy")
+        }  # fmt: skip
+        out["contas"][conta] = {"base": list(a["base"]), "candidatas": list(a["candidatas"]), "uso_por_ano": uso,
+                                "ampliacao": amp, "cobertura_por_ano": cobertura}  # fmt: skip
+        regras[conta] = tuple((t,) for t in amp["ordem"])
+    return out, regras
 
 
 def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: Any) -> dict[str, Any]:
@@ -162,9 +191,10 @@ def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: 
     originais = tabela[tabela.form == "10-K"].set_index("adsh")
     k = dez_k.set_index("adsh")
     k = k.join(originais.drop(columns=["form", "fy", "receita"]), how="left")
-    for c in [*fsds.TAGS, *fsds.TAGS_EXTRAS]:
+    for c in dict.fromkeys([*fsds.TAGS, *fsds.TAGS_EXTRAS, *fsds.TAGS_AMPLIACOES]):
         k[c] = k[c].astype("boolean").fillna(False).astype(bool)
     k["receitas_anuais"] = [d if isinstance(d, dict) else {} for d in k.receitas_anuais]
+    k["anuais_extras"] = [d if isinstance(d, dict) else {} for d in k.anuais_extras]
     amostra = k[k.fy.isin(ANOS_AMOSTRA) & ~k.financeira & ~k.spac]
     amp = fsds.ampliar_receita(amostra.receitas_anuais)
     base = set(fsds.MAPA["receita_liquida"])
@@ -174,12 +204,19 @@ def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: 
     k["sem_receita_ampliada"] = fsds.sem_receita(k.receita_ampliada)
     amostra = k[k.fy.isin(ANOS_AMOSTRA) & ~k.financeira & ~k.spac]
     contas = ["receita_liquida", *REGRAS_RASCUNHO]
+    juros_caixa, regras_novas = _juros_e_caixa(amostra)
     cobertura: dict[str, Any] = {}
+    cobertura_nova: dict[str, Any] = {}
     for fy, g in amostra.groupby("fy"):
         ok = ~g.sem_receita_ampliada
+        linhas = list(zip((linha for _, linha in g.iterrows()), ok))
         cobertura[str(fy)] = {"10k": len(g)} | {
-            c: float(sum(_cobre(linha, c, bool(r)) for (_, linha), r in zip(g.iterrows(), ok)) / len(g)) for c in contas
+            c: float(sum(_cobre(linha, c, bool(r)) for linha, r in linhas) / len(g)) for c in contas
         }
+        cobertura_nova[str(fy)] = {"10k": len(g)} | {
+            c: float(sum(_cobre(linha, c, bool(r), regras_novas) for linha, r in linhas) / len(g)) for c in contas
+        }
+    juros_caixa["cobertura_por_ano_regras_novas"] = cobertura_nova
     sem_receita = {
         str(fy): {"10k": len(g), "sem_receita_fase0": int(g.sem_receita.sum()),
                   "sem_receita_ampliada": int(g.sem_receita_ampliada.sum())}
@@ -207,6 +244,7 @@ def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: 
         "cobertura_por_ano": cobertura,
         "sem_receita_por_ano": sem_receita,
         "exclusoes_8k": {a: {c: x[c] for c in chaves} for a, x in it.items()},
+        "juros_e_caixa": juros_caixa,
     }
 
 

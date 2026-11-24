@@ -384,3 +384,47 @@ def test_mapa_ampliado_coerente() -> None:
     for a, x in m["exclusoes_8k"].items():
         assert x["companhias_com_10k_fsds_antes"] == D["fsds"]["itens_8k"][a]["companhias_com_10k_fsds_antes"]
         assert x["antes_restantes"] >= D["fsds"]["itens_8k"][a]["antes_restantes"]  # o mapa ampliado só devolve
+
+
+# ---- ampliação de despesas_financeiras e de caixa_operacional (pedido de 24/11/2026, terceira rodada) ----
+
+
+def test_tags_anuais_e_candidatas_de_juros_e_caixa(tmp_path: Path) -> None:
+    z = _zip(tmp_path)
+    t = fsds.cobertura_tags(z, fsds.submissoes(z), tags_anuais=("Revenues", "Assets")).set_index("adsh")
+    assert t.at["0001", "anuais_extras"] == {"Revenues": 500.0}  # o ativo é de saldo (qtrs 0), não anual
+    a = fsds.AMPLIACOES
+    assert a["despesas_financeiras"]["base"] == ("InterestExpense",)
+    assert a["caixa_operacional"]["candidatas"] == ("NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",)
+    assert set(fsds.CONCEITO_LARGO) <= set(a["despesas_financeiras"]["candidatas"])
+    for proibida in ("InterestPaidNet", "InterestIncomeExpenseNet", "InterestExpenseLongTermDebt"):
+        assert proibida not in fsds.TAGS_AMPLIACOES  # outro conceito ou componente
+    anuais = pd.Series(
+        [{"InterestExpense": 1.0}, {"InterestExpenseNonoperating": 2.0}, {"InterestAndDebtExpense": 3.0}]
+    )
+    r = fsds.ampliar_receita(anuais, base=a["despesas_financeiras"]["base"],
+                             candidatas=a["despesas_financeiras"]["candidatas"], ganho_minimo=0.3)  # fmt: skip
+    assert r["escolhidas"] == ["InterestExpenseNonoperating", "InterestAndDebtExpense"]
+
+
+def test_juros_e_caixa_coerente() -> None:
+    jc = D["fsds"]["mapa_ampliado"]["juros_e_caixa"]
+    sr = D["fsds"]["mapa_ampliado"]["sem_receita_por_ano"]
+    for conta, x in jc["contas"].items():
+        amp = x["ampliacao"]
+        assert amp["ordem"][: len(x["base"])] == x["base"] and set(amp["escolhidas"]) <= set(x["candidatas"])
+        assert all(g >= jc["ganho_minimo"] * amp["entregas"] for g in amp["ganhos"].values())
+        for a, c in x["cobertura_por_ano"].items():
+            assert (
+                c["10k"] == sr[a]["10k"]
+                and c["antes"] <= c["depois"] <= c["10k"]
+                and c["so_conceito_largo"] <= c["depois"]
+            )
+            assert all(x["uso_por_ano"][t][a] <= c["10k"] for t in x["uso_por_ano"])
+    for a, c in jc["cobertura_por_ano_regras_novas"].items():
+        velha = D["fsds"]["mapa_ampliado"]["cobertura_por_ano"][a]
+        assert (
+            c["despesas_financeiras"] >= velha["despesas_financeiras"]
+            and c["caixa_operacional"] >= velha["caixa_operacional"]
+        )
+        assert c["receita_liquida"] == velha["receita_liquida"]
