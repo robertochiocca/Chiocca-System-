@@ -7,11 +7,17 @@ entrega e se a entrega foi depois emendada) e `num.txt` (uma linha por número: 
 trimestres cobertos, a unidade e o valor). As colunas usadas são conferidas em cada arquivo antes de qualquer conta
 (`exige`); a estrutura completa de cada arquivo é registrada como veio (`estrutura`).
 
-Nada de 2024 em diante: só os trimestres de entrega até 2023T4 (`TRIMESTRES`). Os 10-K dos exercícios de 2023, quase
-todos entregues em 2024, ficam de fora, e a cobertura de 2023 sai incompleta.
+Limite (decisão de Roberto de 24/11/2026): os exercícios dos EUA vão até 2024 (data de referência até 31/12/2024); os
+trimestres de entrega vão até 2025T4 (`TRIMESTRES`), para pegar os 10-K do exercício de 2024 entregues com atraso e
+as emendas. O lacre dos exercícios brasileiros de 2024 em diante não trata dos dados dos EUA.
 
-O código foi escrito e testado com um arquivo sintético no formato descrito acima; ainda não rodou nos arquivos da SEC,
-que só podem ser baixados com o User-Agent da variável de ambiente (`chiocca.eua.sec`).
+O código foi escrito e testado com um arquivo sintético no formato descrito acima e rodou nos trimestres da SEC,
+baixados com o User-Agent da variável de ambiente (`chiocca.eua.sec`): de 2009T1 a 2023T4 em 23/11/2026 e de 2024T1
+a 2025T4 em 24/11/2026.
+
+O ano de cada 10-K para ligar aos AAERs (`ano`) segue a convenção da Compustat, usada por Bao et al. (2020): o ano da
+data de referência, ou o ano anterior quando o exercício termina de janeiro a maio. O exercício fiscal declarado pela
+companhia (`fy`) é usado nas contagens por exercício.
 """
 
 from __future__ import annotations
@@ -28,9 +34,10 @@ import pandas as pd
 from chiocca.eua.sec import DADOS, Cliente
 
 URL = "https://www.sec.gov/files/dera/data/financial-statement-data-sets/{t}.zip"
-TRIMESTRES = [f"{a}q{q}" for a in range(2009, 2024) for q in range(1, 5)]
+ULTIMO_TRIMESTRE_ANO = 2025  # entregas até 31/12/2025 (exercícios até 2024 e as entregas atrasadas)
+TRIMESTRES = [f"{a}q{q}" for a in range(2009, ULTIMO_TRIMESTRE_ANO + 1) for q in range(1, 5)]
 PASTA = DADOS / "fsds"
-COLUNAS_SUB = ["adsh", "cik", "form", "period", "fy", "fp", "filed", "prevrpt"]
+COLUNAS_SUB = ["adsh", "cik", "sic", "form", "period", "fy", "fp", "filed", "prevrpt"]
 COLUNAS_NUM = ["adsh", "tag", "version", "ddate", "qtrs", "uom"]
 FORMULARIOS = ("10-K", "10-K/A", "10-KT", "10-KT/A")
 
@@ -68,6 +75,31 @@ MAPA: dict[str, tuple[str, ...]] = {
 }
 TAGS = sorted({t for ts in MAPA.values() for t in ts})
 
+# Ampliação do mapa da receita (decisão de Roberto de 24/11/2026: as tags são escolhidas só pelas contagens de
+# cobertura). Escritas antes de qualquer contagem: as tags us-gaap de receita total (não componentes, custos nem
+# saldos) que podem entrar depois das três da proposta da Fase 0. A regra (`ampliar_receita`): entram em ordem gulosa,
+# pelo maior ganho de cobertura nos 10-K da amostra (não financeiras, sem as SPACs, exercícios de 2011 a 2024), e cada
+# uma só entra se acrescentar pelo menos `GANHO_MINIMO` dessas entregas.
+RECEITA_CANDIDATAS: tuple[str, ...] = (
+    "RevenueFromContractWithCustomerIncludingAssessedTax",
+    "SalesRevenueGoodsNet",
+    "SalesRevenueServicesNet",
+    "SalesRevenueGoodsGross",
+    "RevenuesExcludingInterestAndDividends",
+    "RegulatedAndUnregulatedOperatingRevenue",
+    "ElectricUtilityRevenue",
+    "OilAndGasRevenue",
+    "RevenueMineralSales",
+    "RealEstateRevenueNet",
+    "OperatingLeasesIncomeStatementLeaseRevenue",
+    "OperatingLeaseLeaseIncome",
+    "HealthCareOrganizationRevenue",
+    "ContractsRevenue",
+)
+GANHO_MINIMO = 0.005
+# Tags fora do mapa dos sinais, só para a cobertura das regras do rascunho (passivo total da regra boba).
+TAGS_EXTRAS: tuple[str, ...] = ("Liabilities", "LiabilitiesAndStockholdersEquity")
+
 
 class ColunaAusente(ValueError):
     pass
@@ -84,8 +116,8 @@ def baixar(cliente: Cliente, trimestres: Iterable[str] = TRIMESTRES, pasta: Path
     como erro, sem parar o resto)."""
     linhas = []
     for t in trimestres:
-        if not t[:4].isdigit() or int(t[:4]) > 2023:
-            raise ValueError(f"{t}: nada de 2024 em diante")
+        if not t[:4].isdigit() or int(t[:4]) > ULTIMO_TRIMESTRE_ANO:
+            raise ValueError(f"{t}: depois do limite de {ULTIMO_TRIMESTRE_ANO}")
         destino = pasta / f"{t}.zip"
         if not destino.exists():
             linhas.append(cliente.baixar(URL.format(t=t), destino))
@@ -114,7 +146,15 @@ def submissoes(zip_caminho: Path) -> pd.DataFrame:
     exige(sub.columns, COLUNAS_SUB, f"{zip_caminho.name}/sub.txt")
     sub = sub[sub.form.isin(FORMULARIOS)][COLUNAS_SUB].copy()
     sub["trimestre"] = zip_caminho.stem
+    sub["ano"] = ano_compustat(sub.period)
     return sub
+
+
+def ano_compustat(period: pd.Series) -> pd.Series:
+    """O ano do exercício pela convenção da Compustat: o ano da data de referência, ou o anterior se o exercício
+    termina de janeiro a maio."""
+    p = pd.to_datetime(period, format="%Y%m%d", errors="coerce")
+    return (p.dt.year - (p.dt.month <= 5).astype(int)).astype("Int64")
 
 
 def resumo(sub: pd.DataFrame) -> dict[str, Any]:
@@ -127,41 +167,146 @@ def resumo(sub: pd.DataFrame) -> dict[str, Any]:
         emendas = s[(s.form == "10-K/A") & (s.fy == fy)]
         out[str(int(fy))] = {"companhias_com_10k": int(g.cik.nunique()), "entregas_10k": len(g),
                              "entregas_10k_a": len(emendas), "10k_emendados_depois": int((g.prevrpt == "1").sum()),
-                             "prazo_mediano_dias": float(g.prazo.median())}  # fmt: skip
+                             "prazo_mediano_dias": float(g.prazo.median()),
+                             "prazo_p10_dias": float(g.prazo.quantile(0.1)),
+                             "prazo_p90_dias": float(g.prazo.quantile(0.9)),
+                             "ate_90_dias": float((g.prazo <= 90).mean())}  # fmt: skip
     return out
 
 
-def cobertura_tags(zip_caminho: Path, sub: pd.DataFrame, tags: list[str] = TAGS) -> pd.DataFrame:
-    """Para cada 10-K original do trimestre, as tags (das candidatas) com valor em dólar na data de referência da
-    entrega,
-    da companhia (sem co-registrante), na taxonomia us-gaap."""
-    alvo = sub[sub.form == "10-K"].set_index("adsh")
+def versao_publica(sub: pd.DataFrame, com_numeros: set[str], corte: str) -> pd.DataFrame:
+    """A versão pública numa data de corte (AAAAMMDD): por companhia e exercício (`fy`), a última entrega até a data,
+    entre o 10-K original e os 10-K/A com números das contas (`com_numeros`, os adsh das emendas com alguma tag do
+    mapa); emendas sem números (só a parte III, por exemplo) não mudam a versão. Só companhia e exercício com o 10-K
+    original entregue até a data."""
+    s = sub[(sub.form == "10-K") | ((sub.form == "10-K/A") & sub.adsh.isin(com_numeros))]
+    s = s[(s.filed <= corte) & (s.fy != "")].sort_values(["cik", "fy", "filed", "form"])
+    com_original = set(zip(s.cik[s.form == "10-K"], s.fy[s.form == "10-K"]))  # só com o 10-K original
+    s = s[pd.Series([par in com_original for par in zip(s.cik, s.fy)], index=s.index, dtype=bool)]
+    return s.groupby(["cik", "fy"], as_index=False).last()
+
+
+def versoes_por_ano(sub: pd.DataFrame, com_numeros: set[str], anos_depois: tuple[int, ...] = (1, 2),
+                    ultimo_corte: str = "20251231") -> dict[str, Any]:  # fmt: skip
+    """Por exercício e por corte em 31/12 de t+1 e de t+2 (só cortes até 2025): quantas companhias têm uma versão
+    pública e em quantas ela é uma emenda, e não o 10-K original."""
+    out: dict[str, Any] = {}
+    fys = sorted({int(x) for x in sub[sub.form == "10-K"].fy if x.isdigit()})
+    for fy in fys:
+        linha = {}
+        for k in anos_depois:
+            corte = f"{fy + k}1231"
+            if corte > ultimo_corte:
+                continue
+            v = versao_publica(sub[sub.fy == str(fy)], com_numeros, corte)
+            linha[f"t+{k}"] = {"companhias": len(v), "emenda": int((v.form == "10-K/A").sum())}
+        out[str(fy)] = linha
+    return out
+
+
+def cobertura_tags(
+    zip_caminho: Path,
+    sub: pd.DataFrame,
+    tags: list[str] = TAGS,
+    formularios: tuple[str, ...] = ("10-K",),
+    receitas_anuais: bool = False,
+) -> pd.DataFrame:
+    """Para cada entrega do trimestre nos formulários pedidos (o 10-K original, por padrão), as tags (das candidatas)
+    com valor em dólar na data de referência da entrega, da companhia (sem co-registrante), na taxonomia us-gaap; e a
+    receita do exercício (`receita`: o valor anual, de quatro trimestres, da primeira tag de `receita_liquida` do mapa
+    que a entrega traz, ou vazio), para a regra das sem receita, a mesma do estudo 1: receita ausente ou zero. Com
+    `receitas_anuais`, também o valor anual de cada tag us-gaap cujo nome tem "Revenue" ou "Sales" (`receitas_anuais`,
+    um dicionário tag -> valor), para a ampliação do mapa da receita pela cobertura (só contagens)."""
+    alvo = sub[sub.form.isin(formularios)].set_index("adsh")
     with zipfile.ZipFile(zip_caminho) as z:
         with z.open("num.txt") as f:
             cabecalho = f.readline().decode("utf-8").rstrip("\r\n").split("\t")
     exige(cabecalho, COLUNAS_NUM, f"{zip_caminho.name}/num.txt")
-    usar = COLUNAS_NUM + (["coreg"] if "coreg" in cabecalho else []) + (["segments"] if "segments" in cabecalho else [])
+    usar = COLUNAS_NUM + ["value"] + [c for c in ("coreg", "segments") if c in cabecalho]
     presentes: dict[str, set[str]] = defaultdict(set)
+    receitas: dict[str, dict[str, float]] = defaultdict(dict)
+    anuais: dict[str, dict[str, float]] = defaultdict(dict)
+    tags_receita = MAPA["receita_liquida"]
     with zipfile.ZipFile(zip_caminho) as z:
         for bloco in pd.read_csv(z.open("num.txt"), sep="\t", dtype=str, keep_default_na=False, usecols=usar,
                                  chunksize=500_000):  # fmt: skip
-            b = bloco[bloco.adsh.isin(alvo.index) & bloco.tag.isin(tags) & bloco.version.str.startswith("us-gaap")
+            nome = bloco.tag.isin(tags) | (bloco.tag.str.contains(r"Revenue|Sales") if receitas_anuais else False)
+            b = bloco[bloco.adsh.isin(alvo.index) & nome & bloco.version.str.startswith("us-gaap")
                       & (bloco.uom == "USD")]  # fmt: skip
             for col in ("coreg", "segments"):
                 if col in b.columns:
                     b = b[b[col] == ""]
             b = b[b.ddate.values == alvo.loc[b.adsh, "period"].values]
+            if receitas_anuais:
+                ra = b[b.tag.str.contains(r"Revenue|Sales") & (b.qtrs == "4")]
+                for a, t, v in zip(ra.adsh, ra.tag, pd.to_numeric(ra.value, errors="coerce")):
+                    if pd.notna(v):
+                        anuais[a].setdefault(t, float(v))
+                b = b[b.tag.isin(tags)]
             for a, t in zip(b.adsh, b.tag):
                 presentes[a].add(t)
+            r = b[b.tag.isin(tags_receita) & (b.qtrs == "4")]
+            for a, t, v in zip(r.adsh, r.tag, pd.to_numeric(r.value, errors="coerce")):
+                if pd.notna(v):
+                    receitas[a].setdefault(t, float(v))
+
+    def receita(a: str) -> float | None:
+        return next((receitas[a][t] for t in tags_receita if t in receitas[a]), None)
+
     return pd.DataFrame(
-        [{"adsh": a, "fy": alvo.at[a, "fy"], **{t: t in presentes[a] for t in tags}} for a in alvo.index]
-    )
+        [
+            {"adsh": a, "form": alvo.at[a, "form"], "fy": alvo.at[a, "fy"], **{t: t in presentes[a] for t in tags},
+             "receita": receita(a), **({"receitas_anuais": dict(anuais[a])} if receitas_anuais else {})}
+            for a in alvo.index
+        ],
+        columns=["adsh", "form", "fy", *tags, "receita", *(["receitas_anuais"] if receitas_anuais else [])],
+    )  # fmt: skip
+
+
+def ampliar_receita(anuais: pd.Series, base: tuple[str, ...] = MAPA["receita_liquida"],
+                    candidatas: tuple[str, ...] = RECEITA_CANDIDATAS, ganho_minimo: float = GANHO_MINIMO
+                    ) -> dict[str, Any]:  # fmt: skip
+    """A regra gulosa da ampliação, sobre os dicionários tag -> valor anual de cada 10-K da amostra: parte das tags de
+    `base` e, a cada passo, acrescenta a candidata que cobre mais entregas ainda sem receita, se o ganho for de pelo
+    menos `ganho_minimo` das entregas. Devolve a ordem final, o ganho de cada tag que entrou e o de cada candidata no
+    primeiro passo (só contagens)."""
+    tem = [set(d) for d in anuais]
+    n = len(tem)
+    cobertas = [bool(t & set(base)) for t in tem]
+    escolhidas: list[str] = []
+    ganhos: dict[str, int] = {}
+    primeiro_passo: dict[str, int] = {}
+    restantes = list(candidatas)
+    while restantes:
+        ganho = {c: sum(1 for t, cob in zip(tem, cobertas) if not cob and c in t) for c in restantes}
+        if not primeiro_passo:
+            primeiro_passo = dict(ganho)
+        melhor = max(restantes, key=lambda c: (ganho[c], -restantes.index(c)))
+        if n == 0 or ganho[melhor] < ganho_minimo * n:
+            break
+        escolhidas.append(melhor)
+        ganhos[melhor] = ganho[melhor]
+        cobertas = [cob or melhor in t for t, cob in zip(tem, cobertas)]
+        restantes.remove(melhor)
+    return {"ordem": [*base, *escolhidas], "escolhidas": escolhidas, "ganhos": ganhos,
+            "ganho_no_primeiro_passo": primeiro_passo, "entregas": n}  # fmt: skip
+
+
+def receita_ampliada(anuais: dict[str, float], ordem: list[str]) -> float | None:
+    """O valor anual da primeira tag da ordem final que a entrega traz."""
+    return next((anuais[t] for t in ordem if t in anuais), None)
+
+
+def sem_receita(receita: pd.Series) -> pd.Series:
+    """A regra das sem receita do estudo 1 (`chiocca.montar_base`): receita ausente ou igual a zero."""
+    return receita.isna() | (receita == 0)
 
 
 def cobertura_por_ano(tabela: pd.DataFrame, mapa: dict[str, tuple[str, ...]] = MAPA) -> dict[str, Any]:
     """Por exercício: a fração dos 10-K com cada conta (alguma das tags candidatas) e com cada tag."""
     out: dict[str, Any] = {}
-    t = tabela.assign(fy=pd.to_numeric(tabela.fy, errors="coerce")).dropna(subset=["fy"])
+    t = tabela[tabela.form == "10-K"] if "form" in tabela.columns else tabela
+    t = t.assign(fy=pd.to_numeric(t.fy, errors="coerce")).dropna(subset=["fy"])
     for fy, g in t.groupby("fy"):
         out[str(int(fy))] = {
             "10k": len(g),

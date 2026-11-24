@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -59,3 +60,27 @@ def test_recusa_site_sem_subpasta_ou_varredura_com_problema(tmp_path: Path) -> N
         gh_pages.montar(site, destino, origem, "d", VARREDURA | {"problemas": {"x": ["erro"]}})
     with pytest.raises(SystemExit, match="todas as investigações"):
         gh_pages.montar(site, destino, origem, "d", VARREDURA | {"investigacoes_abertas": 2})
+
+
+def test_demonstracao_publicada_tem_de_ser_identica(tmp_path: Path) -> None:
+    """Com --demonstracao-publicada, a pasta demo/ do site novo é a do gh-pages atual, byte a byte (pedido de
+    24/11/2026); o manifesto registra de onde ela veio, e um arquivo diferente recusa a montagem antes da troca."""
+    site, destino = _site(tmp_path), tmp_path / "gh-pages"
+    destino.mkdir()
+    (destino / ".git").write_text("gitdir: x", encoding="utf-8")
+    shutil.copytree(site / "demo", destino / "demo")
+    anterior = {"origem": {"commit": "a" * 40}}
+    (destino / "manifesto.json").write_text(json.dumps(anterior), encoding="utf-8")
+    origem = {"repositorio": "robertochiocca/chiocca", "branch": "b", "commit": "c" * 40}
+    m = gh_pages.montar(site, destino, origem, "2026-11-24T00:00:00+00:00", VARREDURA, publicada="d" * 40)
+    assert m["comandos"] == gh_pages.COMANDOS_PUBLICADA
+    assert m["demonstracao_publicada"] == {
+        "gh_pages_commit": "d" * 40,
+        "gerada_do_commit": "a" * 40,
+        "arquivos_identicos": 2,
+        "bytes": m["demonstracao_publicada"]["bytes"],
+    }
+    (site / "demo" / "investigacoes" / "pt.pdf").write_bytes(b"%PDF-1.4 outro")
+    with pytest.raises(SystemExit, match="não é a publicada"):
+        gh_pages.montar(site, destino, origem, "d", VARREDURA, publicada="d" * 40)
+    assert (destino / "demo" / "investigacoes" / "pt.pdf").read_bytes() == b"%PDF-1.4 teste"  # nada foi trocado

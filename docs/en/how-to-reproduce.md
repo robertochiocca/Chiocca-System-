@@ -24,13 +24,15 @@ Study 1 was generated with pandas 3.0.5 and numpy 2.5.3. Every dependency, inclu
 
 ## Commands
 
+> **Warning.** Outside the study scripts, the base build is always called with the years 2010 to 2023 (`python -m chiocca.montar_base 2010 2023`). Without the years, the script uses the default of 2010 to 2025 and processes sealed fiscal years; `chiocca/montar_base.py` is frozen and does not change, and a test checks that no unfrozen code or documented command calls it without the years.
+
 ```
 python -m pip install -r requirements-lock.txt && python -m pip install -e . --no-deps
 python -m chiocca.dados baixar        # downloads CVM DFP, FCA and registry files to data/brutos/ and writes the manifest
 python -m chiocca.dados verificar     # checks the files against the manifest hashes
-python -m chiocca.montar_base         # builds the base and lists the point-in-time versions that need ENET
+python -m chiocca.montar_base 2010 2023   # builds the base and lists the point-in-time versions that need ENET
 python -m chiocca.enet data/cache/enet/pendentes.txt   # downloads those versions (consolidated only)
-python -m chiocca.montar_base         # builds again, now with the ENET versions
+python -m chiocca.montar_base 2010 2023   # builds again, now with the ENET versions
 python -m chiocca.relatorio_base      # generates docs/base.md and docs/en/base.md
 python -m chiocca.sinais_amostra      # signals and alerts for every company-year, in resultados/ (not in git)
 python -m chiocca.emenda5             # amendment 5 secondary analysis, in resultados/
