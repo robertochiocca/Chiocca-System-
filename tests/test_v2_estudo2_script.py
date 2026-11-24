@@ -94,6 +94,10 @@ def test_abertura_so_pela_constante(monkeypatch: pytest.MonkeyPatch) -> None:
 # reaproveitam as do estudo por importação, e o lacre do v2 lê, por getattr, só a constante própria dele
 # (tests/test_v2_motor_v2.py).
 SCRIPT_DO_V2 = ("chiocca/v2/motor_v2/lista.py", "chiocca/v2/motor_v2/avaliacao.py", "chiocca/v2/motor_v2/registro.py")
+# O código do estudo dos EUA (pré-registro dos EUA, seção 6) chama as medidas congeladas de `secundaria`, sem mudar
+# nenhuma linha, e confere o próprio registro de congelamento com `sha256_registrado`; fora do produto, e só essas
+# importações do estudo 2.
+ESTUDO_DOS_EUA = "chiocca/eua/estudo.py"
 LACRE_DO_V2 = "chiocca/v2/motor_v2/abertura.py"
 
 
@@ -106,7 +110,14 @@ def test_constantes_do_estudo_e_o_script_fora_do_produto() -> None:
         no_estudo = caminho.startswith("chiocca/v2/estudo2/")
         if not no_estudo and caminho != "chiocca/v2/lacre.py":
             assert abertura.CONSTANTE not in texto and abertura.CONSTANTE_SEGUNDA not in texto, caminho
-        if not no_estudo and caminho not in SCRIPT_DO_V2:
+        if caminho == ESTUDO_DOS_EUA:
+            de_onde = {(n.module, a.name) for n in ast.walk(ast.parse(texto)) if isinstance(n, ast.ImportFrom)
+                       for a in n.names if "estudo2" in (n.module or "")}  # fmt: skip
+            assert de_onde == {
+                ("chiocca.v2.estudo2", "secundaria"),
+                ("chiocca.v2.estudo2.registro", "sha256_registrado"),
+            }
+        elif not no_estudo and caminho not in SCRIPT_DO_V2:
             assert not importa_o_estudo.search(texto), caminho
         for no in ast.walk(ast.parse(texto)):
             assert not (isinstance(no, ast.Attribute) and no.attr.startswith("ESTUDO_2")), caminho

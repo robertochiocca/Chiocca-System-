@@ -339,12 +339,17 @@ def test_calculo_do_v2_nao_abre_o_gabarito(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 def test_produto_nao_importa_o_v2() -> None:
-    """Só o pacote do v2 e as conferências dele, fora do pacote (`chiocca/v2/motor_v2_*.py`), importam o v2; o pacote
+    """Só o pacote do v2 e as conferências dele, fora do pacote (`chiocca/v2/motor_v2_*.py`), importam o v2, e o código
+    do estudo dos EUA, fora do produto (pré-registro dos EUA, seção 2), importa o motor, o Benford e o escore; o pacote
     não importa as conferências."""
     importa = re.compile(r"chiocca\.v2\.motor_v2(?![\w])|from chiocca\.v2 import [^\n]*\bmotor_v2(?![\w])")
     for p in sorted((RAIZ / "chiocca").rglob("*.py")):
         caminho, texto = p.relative_to(RAIZ).as_posix(), p.read_text(encoding="utf-8")
-        if not caminho.startswith("chiocca/v2/motor_v2"):
+        if caminho == "chiocca/eua/estudo.py":  # o estudo dos EUA: o motor, o Benford e o escore, sem mudar nada
+            de_onde = {(n.module, a.name) for n in ast.walk(ast.parse(texto)) if isinstance(n, ast.ImportFrom)
+                       for a in n.names if "motor_v2" in (n.module or "")}  # fmt: skip
+            assert de_onde == {("chiocca.v2.motor_v2", x) for x in ("benford", "escore", "motor")}, caminho
+        elif not caminho.startswith("chiocca/v2/motor_v2"):
             assert not importa.search(texto), caminho
         if caminho.startswith("chiocca/v2/motor_v2/"):
             arvore = ast.parse(texto)
