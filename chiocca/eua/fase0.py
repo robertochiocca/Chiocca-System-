@@ -339,6 +339,8 @@ T: dict[str, dict[str, Any]] = {
         "suficientes para medir alguma coisa; o AAER é raro demais de 2009 a 2014 para um teste e mede outra coisa (a ação "
         "da SEC).",
         "s_pendentes": "### 5.3 Para o rascunho do pré-registro",
+        "rascunho": "O [rascunho do pré-registro dos EUA](pre-registro-eua-rascunho.md), de 24/11/2026, trata destes "
+        "pontos; não é registro.",
         "decisoes": [
             "**Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. A regra é "
             "escrita antes de qualquer sinal, com a versão pública na data (seção 2.3).",
@@ -559,6 +561,8 @@ T: dict[str, dict[str, Any]] = {
         "measure something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC "
         "action).",
         "s_pendentes": "### 5.3 For the pre-registration draft",
+        "rascunho": "The [draft US pre-registration](us-preregistration-draft.md), of 2026-11-24, takes up these points; "
+        "it is not a registration.",
         "decisoes": [
             "**Which fiscal year the case affects.** The items field does not say which statements stopped being "
             "reliable. The rule is written before any signal, with the public version at the date (section 2.3).",
@@ -745,7 +749,7 @@ def render(d: dict[str, Any], lang: str) -> str:
                "n_manual": i(n_manual)}  # fmt: skip
     linhas += _tabela(t["cab_opcoes"], [[f"**{o}**", per, tam.format(**valores), custo, mede]
                                         for o, per, tam, custo, mede in t["opcoes"]], "-----")  # fmt: skip
-    linhas += ["", t["recomendacao"], "", t["s_pendentes"], ""]
+    linhas += ["", t["recomendacao"], "", t["s_pendentes"], "", t["rascunho"], ""]
     linhas += [f"{k}. {x}" for k, x in enumerate(t["decisoes"], start=1)]
     linhas += ["", t["s_calendario"], "", t["cab_cal"], "| --- | --- |"]
     linhas += [f"| {data(dia, lang)} | {etapa} |" for dia, etapa in t["calendario"]]

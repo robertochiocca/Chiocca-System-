@@ -282,6 +282,8 @@ Company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K (sectio
 
 ### 5.3 For the pre-registration draft
 
+The [draft US pre-registration](us-preregistration-draft.md), of 2026-11-24, takes up these points; it is not a registration.
+
 1. **Which fiscal year the case affects.** The items field does not say which statements stopped being reliable. The rule is written before any signal, with the public version at the date (section 2.3).
 2. **Period.** With the 8-K 4.02, from 2009 (fiscal years with XBRL; all companies since 2011) to 2023 (8-Ks filed through 2023-12-31). The AAERs stay at 2009 to 2014, as description only.
 3. **What cannot be done without paid data.** Misstated years of AAERs after 2014 (CFRM); the gvkey and Compustat data (WRDS); Audit Analytics restatements, which would include restatements without an 8-K 4.02 ("little r"). The era-py gvkey–CIK link does not state its source.

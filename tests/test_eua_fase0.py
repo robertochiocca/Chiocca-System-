@@ -94,6 +94,7 @@ def test_fora_do_produto_e_do_readme() -> None:
     for readme in ("README.md", "README.en.md"):
         texto = (RAIZ / readme).read_text(encoding="utf-8")
         assert "eua-fase-0" not in texto and "us-phase-0" not in texto and "AAER" not in texto
+        assert "pre-registro-eua" not in texto and "us-preregistration" not in texto
 
 
 def test_nada_de_2024_em_diante() -> None:
@@ -316,3 +317,25 @@ def test_exclusoes_dos_8k_pelo_ultimo_10k_antes() -> None:
     assert (c["antes_sem_receita"], c["antes_sic_6770"], c["antes_sic_6770_sem_receita"], c["antes_restantes"]) == (
         1, 1, 0, 2,
     )  # fmt: skip
+
+
+# ---- rascunho do pré-registro dos EUA (pedido de 24/11/2026, item 4) ----
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_rascunho_igual_a_saida_do_script(lang: str) -> None:
+    from chiocca.eua import rascunho
+
+    texto = rascunho.DOCS[lang].read_text(encoding="utf-8")
+    assert texto == rascunho.render(D, lang)
+    assert ("Rascunho, não é registro" if lang == "pt" else "Draft, not a registration") in texto
+    assert not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", texto)  # nenhum e-mail
+    for proibido in ("fraude comprovada", "proven fraud", "recomendação de compra", "buy recommendation"):
+        assert proibido not in texto.lower(), proibido
+
+
+def test_rascunho_antes_de_qualquer_sinal_americano() -> None:
+    """Nenhum módulo da frente dos EUA importa as funções de sinal ou o motor antes do registro."""
+    for p in sorted((RAIZ / "chiocca" / "eua").glob("*.py")):
+        texto = p.read_text(encoding="utf-8")
+        assert not re.search(r"chiocca\.sinais|chiocca\.v2\.motor_v2|from chiocca import sinais", texto), p.name

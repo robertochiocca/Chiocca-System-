@@ -282,6 +282,8 @@ Companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K (seção 4.2), 
 
 ### 5.3 Para o rascunho do pré-registro
 
+O [rascunho do pré-registro dos EUA](pre-registro-eua-rascunho.md), de 24/11/2026, trata destes pontos; não é registro.
+
 1. **Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. A regra é escrita antes de qualquer sinal, com a versão pública na data (seção 2.3).
 2. **Período.** Com o 8-K 4.02, de 2009 (exercícios com XBRL; todas as companhias desde 2011) a 2023 (os 8-K entregues até 31/12/2023). Os AAERs ficam de 2009 a 2014, só como descrição.
 3. **O que não dá sem dados pagos.** Os anos errados dos AAERs depois de 2014 (CFRM); o gvkey e os dados da Compustat (WRDS); as republicações da Audit Analytics, que incluiriam as republicações sem 8-K 4.02 ("little r"). A ligação gvkey–CIK do era-py não informa a origem.
