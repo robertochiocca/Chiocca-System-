@@ -48,10 +48,10 @@ def _colunas(bloco: dict[str, Any]) -> Iterator[tuple[str, str, str, str]]:
     yield from zip(bloco["accessionNumber"], bloco["filingDate"], bloco["form"], itens)
 
 
-def entregas(caminho: Path = ARQUIVO, formularios: Iterable[str] = ("8-K", "8-K/A", "10-K", "10-K/A")
-             ) -> Iterator[dict[str, Any]]:  # fmt: skip
-    """As entregas dos formulários pedidos, de 2009 a 2023, uma linha por companhia e entrega (uma entrega de várias
-    companhias aparece uma vez para cada CIK)."""
+def entregas(caminho: Path = ARQUIVO, formularios: Iterable[str] = ("8-K", "8-K/A", "10-K", "10-K/A"),
+             primeiro_ano: int = PRIMEIRO_ANO) -> Iterator[dict[str, Any]]:  # fmt: skip
+    """As entregas dos formulários pedidos, de `primeiro_ano` (2009, na Fase 0) até `ULTIMA_DATA`, uma linha por
+    companhia e entrega (uma entrega de várias companhias aparece uma vez para cada CIK)."""
     alvo = set(formularios)
     with zipfile.ZipFile(caminho) as z:
         for nome in z.namelist():
@@ -63,7 +63,7 @@ def entregas(caminho: Path = ARQUIVO, formularios: Iterable[str] = ("8-K", "8-K/
             else:  # arquivo complementar: CIK##########-submissions-NNN.json
                 cik, bloco = int(nome[3:13]), dados
             for adsh, dia, form, itens in _colunas(bloco):
-                if form in alvo and PRIMEIRO_ANO <= int(dia[:4]) and dia[:10] <= ULTIMA_DATA:
+                if form in alvo and primeiro_ano <= int(dia[:4]) and dia[:10] <= ULTIMA_DATA:
                     yield {"cik": cik, "adsh": adsh, "data": dia, "form": form, "itens": itens or ""}
 
 

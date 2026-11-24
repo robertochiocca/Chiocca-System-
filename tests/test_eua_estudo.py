@@ -442,3 +442,48 @@ def test_data_invalida_fica_fora_da_contagem_de_t1() -> None:
     contagem = pd.Series({("a", "20210231"): 9, ("a", "2021123"): 9, ("a", "20211231"): 1})
     assert mapa.datas_anteriores(contagem, {"a": "20221231"}) == {"a": "20211231"}
     assert mapa.datas_anteriores(contagem, {"a": "2022XX31"}) == {"a": None}
+
+
+def test_baixa_de_novo_e_confere_o_dia(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from chiocca.eua import itens, sec
+
+    monkeypatch.setattr(sec, "DADOS", tmp_path)
+    monkeypatch.setattr(fsds, "PASTA", tmp_path / "fsds")
+    monkeypatch.setattr(fsds, "TRIMESTRES", ["2023q1", "2023q2"])
+    monkeypatch.setattr(itens, "ARQUIVO", tmp_path / "edgar" / "submissions.zip")
+    pedidos: list[str] = []
+
+    class Falso:
+        def baixar(self, url: str, destino: Path) -> dict[str, Any]:
+            pedidos.append(url)
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_bytes(url.encode())
+            return {"arquivo": destino.relative_to(tmp_path).as_posix(), "url": url, "bytes": len(url),
+                    "sha256": sec.sha256(destino), "baixado_em_utc": "2027-01-31T10:00:00Z"}  # fmt: skip
+
+    manifesto = tmp_path / "manifesto.csv"
+    linhas = estudo.baixar_de_novo(Falso(), manifesto)  # type: ignore[arg-type]
+    assert len(linhas) == 3 and pedidos[-1] == itens.URL and all("2023q" in u for u in pedidos[:2])
+    arquivos = [fsds.PASTA / "2023q1.zip", fsds.PASTA / "2023q2.zip", itens.ARQUIVO]
+    assert len(estudo.confere_baixados_hoje(arquivos, date(2027, 1, 31), manifesto)) == 3
+    with pytest.raises(SystemExit, match="baixado de novo hoje"):
+        estudo.confere_baixados_hoje(arquivos, date(2027, 2, 1), manifesto)
+    (fsds.PASTA / "2023q2.zip").write_bytes(b"outro")
+    with pytest.raises(SystemExit, match="2023q2.zip"):
+        estudo.confere_baixados_hoje(arquivos, date(2027, 1, 31), manifesto)
+
+
+def test_8k_desde_2004_no_estudo(tmp_path: Path) -> None:
+    from chiocca.eua import itens
+
+    z = tmp_path / "submissions.zip"
+    recentes = {"accessionNumber": ["a1", "a2", "a3", "a4"],
+                "filingDate": ["2005-03-01", "2008-12-01", "2026-04-30", "2026-05-01"],
+                "form": ["8-K", "8-K", "8-K/A", "8-K"], "items": ["4.02", "4.02,9.01", "4.02", "4.02"]}  # fmt: skip
+    with zipfile.ZipFile(z, "w") as f:
+        f.writestr("CIK0000000042.json", json.dumps({"cik": "42", "filings": {"recent": recentes}}))
+    desde_2004 = estudo.datas_dos_8k(itens.entregas(z, ("8-K", "8-K/A"), primeiro_ano=estudo.PRIMEIRO_ANO_DO_ITEM))
+    assert desde_2004 == {"42": ["2005-03-01", "2008-12-01", "2026-04-30"]}
+    assert estudo.datas_dos_8k(itens.entregas(z, ("8-K", "8-K/A"))) == {"42": ["2026-04-30"]}  # a Fase 0, desde 2009
+    ep = estudo.episodios(desde_2004)
+    assert [x.isoformat() for x in ep.abertura] == ["2005-03-01", "2008-12-01", "2026-04-30"]

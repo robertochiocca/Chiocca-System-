@@ -26,16 +26,19 @@ calculado à mão, `tests/referencia/gerar_exemplo_eua.py`):
 (viii) os exercícios de 2009 e 2010 são calculados só para a descrição dos AAERs (seção 8), com as mesmas regras; as
        medidas e as contagens da amostra são de 2011 a 2024;
 (ix)   "sem nenhum sinal calculável" (exclusão 5): não avaliada pelo v1 nem pelo v2. As medidas são nas avaliadas pelo
-       v1 (seção 6); as que só o v2 avalia ficam à parte, só contadas.
+       v1 (seção 6); as que só o v2 avalia ficam à parte, só contadas;
+(x)    os episódios partem de todos os 8-K com o item 4.02 do histórico do EDGAR desde 2004, o ano em que o item passou
+       a existir (o "primeiro 8-K" da seção 5 é o primeiro da companhia, não o primeiro desde 2009), até 30/04/2026.
 
 O cálculo único (`main`) só começa com a autorização de Roberto, depois do PR e da release do congelamento: exige a
 opção `--calculo-unico`, o registro de SHA-256 do estudo conferido (`docs/eua_codigo_congelado.json`), os arquivos da
-SEC baixados de novo no dia, conferidos pelo manifesto, e não regrava um resultado que já existe. Só agregados vão para
+SEC baixados de novo no dia (com `--baixar`, por cima dos antigos, um de cada vez, com o User-Agent da variável
+`SEC_USER_AGENT`), conferidos pelo manifesto, e não regrava um resultado que já existe. Só agregados vão para
 o resultado versionado; a tabela por empresa-ano fica em `resultados/eua/`, fora do Git, e nenhuma lista de companhias
 por alerta é publicada. Alerta, não acusação; nada disso é chamado de fraude.
 
 Uso, no dia do cálculo único, com a autorização de Roberto:
-  python -m chiocca.eua.estudo --calculo-unico
+  python -m chiocca.eua.estudo --calculo-unico --baixar
 """
 
 from __future__ import annotations
@@ -74,6 +77,7 @@ FORMULARIOS = ("10-K", "10-K/A")
 SEMENTE = 20270430  # decisão de Roberto de 24/11/2026
 REAMOSTRAGENS = 10_000
 DIAS_DO_EPISODIO = 365
+PRIMEIRO_ANO_DO_ITEM = 2004  # o item 4.02 do 8-K existe desde 23/08/2004
 ULTIMA_DATA_8K = itens.ULTIMA_DATA
 V1 = motor.NENHUMA
 V2 = motor.Mudancas(depi_dva=False, benford=True, escore=True)
@@ -562,12 +566,21 @@ def confere_congelamento(registro: Path | None = None) -> None:
         raise SystemExit(f"arquivos diferentes do registro de congelamento: {diferentes}")
 
 
-def confere_baixados_hoje(arquivos: Iterable[Path], hoje: date) -> list[dict[str, str]]:
+def baixar_de_novo(cliente: sec.Cliente, manifesto: Path | None = None) -> list[dict[str, Any]]:
+    """Baixa de novo, no dia do cálculo, cada trimestre dos Financial Statement Data Sets e o `submissions.zip`, por
+    cima dos arquivos antigos (um de cada vez), e grava as linhas no manifesto dos EUA."""
+    linhas = [cliente.baixar(fsds.URL.format(t=t), fsds.PASTA / f"{t}.zip") for t in fsds.TRIMESTRES]
+    linhas.append(cliente.baixar(itens.URL, itens.ARQUIVO))
+    sec.grava_manifesto(linhas, sec.MANIFESTO if manifesto is None else manifesto)
+    return linhas
+
+
+def confere_baixados_hoje(arquivos: Iterable[Path], hoje: date, manifesto: Path | None = None) -> list[dict[str, str]]:
     """Cada arquivo da SEC baixado de novo no dia do cálculo, com o SHA-256 do manifesto (seção 10)."""
-    manifesto = {x["arquivo"]: x for x in sec.le_manifesto()}
+    linhas_do_manifesto = {x["arquivo"]: x for x in sec.le_manifesto(sec.MANIFESTO if manifesto is None else manifesto)}
     linhas = []
     for p in arquivos:
-        x = manifesto.get(p.relative_to(sec.DADOS).as_posix())
+        x = linhas_do_manifesto.get(p.relative_to(sec.DADOS).as_posix())
         if x is None or x["sha256"] != sec.sha256(p) or not x["baixado_em_utc"].startswith(hoje.isoformat()):
             raise SystemExit(f"{p.name}: não foi baixado de novo hoje com o SHA-256 do manifesto")
         linhas.append(x)
@@ -581,6 +594,7 @@ def _git(*args: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     a = argparse.ArgumentParser(description="O cálculo único do estudo dos EUA (seção 10).")
     a.add_argument("--calculo-unico", action="store_true", help="com a autorização de Roberto, depois do congelamento")
+    a.add_argument("--baixar", action="store_true", help="baixa de novo os arquivos da SEC antes do cálculo")
     a.add_argument("--saida", type=Path, default=SAIDA)
     args = a.parse_args(argv)
     if not args.calculo_unico:
@@ -588,6 +602,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.saida.exists():
         raise SystemExit(f"{args.saida} já existe: o cálculo é único")
     confere_congelamento()
+    if args.baixar:
+        baixar_de_novo(sec.Cliente())
     inicio = datetime.now(timezone.utc)
     zips = [fsds.PASTA / f"{t}.zip" for t in fsds.TRIMESTRES]
     baixados = confere_baixados_hoje([*zips, itens.ARQUIVO], inicio.date())
@@ -596,7 +612,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("o arquivo do era-py não tem o SHA-256 do manifesto")
     baixados.append(roda)
     e = junta(le_trimestre(z) for z in zips)
-    datas = datas_dos_8k(itens.entregas(formularios=("8-K", "8-K/A")))
+    datas = datas_dos_8k(itens.entregas(formularios=("8-K", "8-K/A"), primeiro_ano=PRIMEIRO_ANO_DO_ITEM))
     firmas, ligacoes = rotulos.tabelas()
     resultado, s = calcula(e, datas, firmas, ligacoes)
     TABELA.parent.mkdir(parents=True, exist_ok=True)
