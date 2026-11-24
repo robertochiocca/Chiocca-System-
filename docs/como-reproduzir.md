@@ -24,13 +24,15 @@ O estudo 1 foi gerado com pandas 3.0.5 e numpy 2.5.3. Todas as dependências, in
 
 ## Comandos
 
+> **Aviso.** Fora dos scripts dos estudos, a montagem da base é sempre chamada com os anos de 2010 a 2023 (`python -m chiocca.montar_base 2010 2023`). Sem os anos, o script usa o padrão de 2010 a 2025 e processa exercícios lacrados; o `chiocca/montar_base.py` é congelado e não muda, e um teste confere que nenhum código não congelado nem comando documentado o chama sem os anos.
+
 ```
 python -m pip install -r requirements-lock.txt && python -m pip install -e . --no-deps
 python -m chiocca.dados baixar        # baixa DFP, FCA e cadastro da CVM para data/brutos/ e grava o manifesto
 python -m chiocca.dados verificar     # confere os arquivos contra os hashes do manifesto
-python -m chiocca.montar_base         # monta a base e lista as versões da época que precisam do ENET
+python -m chiocca.montar_base 2010 2023   # monta a base e lista as versões da época que precisam do ENET
 python -m chiocca.enet data/cache/enet/pendentes.txt   # baixa essas versões (só consolidado)
-python -m chiocca.montar_base         # monta de novo, agora com as versões do ENET
+python -m chiocca.montar_base 2010 2023   # monta de novo, agora com as versões do ENET
 python -m chiocca.relatorio_base      # gera docs/base.md e docs/en/base.md
 python -m chiocca.sinais_amostra      # sinais e alertas de todas as empresa-anos, em resultados/ (fora do git)
 python -m chiocca.emenda5             # secundária da emenda 5, em resultados/
