@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import subprocess
@@ -468,3 +469,29 @@ def test_hash_do_commit_de_registro_anotado(lang: str) -> None:
     assert pre_registro.COMMIT_DE_REGISTRO == COMMIT_DE_REGISTRO_EUA
     rotulo = "Hash do commit de registro" if lang == "pt" else "Hash of the registration commit"
     assert doc.count(f"{rotulo}: `{COMMIT_DE_REGISTRO_EUA}`") == 1
+
+
+# ---- carimbo OpenTimestamps do registro (docs/carimbos/eua-registro.txt e o .ots; `ots upgrade` depois) ----
+CARIMBO_EUA = RAIZ / "docs" / "carimbos" / "eua-registro.txt"
+CABECALHO_OTS = b"\x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94"
+
+
+def _pre_registro_como_no_registro() -> bytes:
+    """O texto em PT como estava no commit de registro: tira só a anotação do hash, feita no commit seguinte."""
+    from chiocca.eua import pre_registro
+
+    doc = pre_registro.DOCS["pt"].read_text(encoding="utf-8")
+    anotacao = pre_registro.ANOTACAO["pt"].format(c=COMMIT_DE_REGISTRO_EUA)
+    assert doc.count(anotacao) == 1
+    return doc.replace(anotacao, "").encode("utf-8")
+
+
+def test_carimbo_do_registro_dos_eua() -> None:
+    linhas = [x.split("  ", 1) for x in CARIMBO_EUA.read_text(encoding="utf-8").splitlines() if not x.startswith("#")]
+    assert linhas[0][0] == COMMIT_DE_REGISTRO_EUA
+    assert {c: h for h, c in linhas[1:]} == {
+        "docs/pre-registro-eua.md": hashlib.sha256(_pre_registro_como_no_registro()).hexdigest()
+    }
+    ots = CARIMBO_EUA.with_name(CARIMBO_EUA.name + ".ots").read_bytes()
+    assert ots.startswith(CABECALHO_OTS) and ots[len(CABECALHO_OTS)] == 1 and ots[len(CABECALHO_OTS) + 1] == 0x08
+    assert ots[len(CABECALHO_OTS) + 2 : len(CABECALHO_OTS) + 34] == hashlib.sha256(CARIMBO_EUA.read_bytes()).digest()
