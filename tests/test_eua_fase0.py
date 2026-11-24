@@ -455,3 +455,16 @@ def test_juros_e_caixa_coerente() -> None:
             and c["caixa_operacional"] >= velha["caixa_operacional"]
         )
         assert c["receita_liquida"] == velha["receita_liquida"]
+
+
+COMMIT_DE_REGISTRO_EUA = "a527b9eca9ab0f087b04f1c97ed737bc63188456"  # o registro do pré-registro do estudo dos EUA
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_hash_do_commit_de_registro_anotado(lang: str) -> None:
+    from chiocca.eua import pre_registro
+
+    doc = pre_registro.DOCS[lang].read_text(encoding="utf-8")
+    assert pre_registro.COMMIT_DE_REGISTRO == COMMIT_DE_REGISTRO_EUA
+    rotulo = "Hash do commit de registro" if lang == "pt" else "Hash of the registration commit"
+    assert doc.count(f"{rotulo}: `{COMMIT_DE_REGISTRO_EUA}`") == 1

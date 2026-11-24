@@ -27,7 +27,7 @@ AVISOS = {
     "en": "# Draft pre-registration of the US study\n\n> This draft was registered on 2026-11-24. The text in force is the "
     "[US study pre-registration](us-preregistration.md); the draft's history stays in Git.\n",
 }
-COMMIT_DE_REGISTRO: str | None = None  # anotado no commit seguinte ao de registro, sem mudar nenhuma regra
+COMMIT_DE_REGISTRO: str | None = "a527b9eca9ab0f087b04f1c97ed737bc63188456"  # anotado no commit seguinte ao de registro
 ANOTACAO = {
     "pt": "- Hash do commit de registro: `{c}` (anotado no commit seguinte, sem mudar nenhuma regra acima).\n",
     "en": "- Hash of the registration commit: `{c}` (noted in the next commit, without changing any rule above).\n",

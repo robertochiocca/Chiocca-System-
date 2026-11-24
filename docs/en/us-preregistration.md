@@ -229,6 +229,7 @@ Financial companies, the DVA and the reader (section 3.4); any list or ordering 
 
 - Date: 2026-11-24.
 - Commit: the one that introduces this version under this name. Its hash is noted here in the next commit, without changing any rule above.
+- Hash of the registration commit: `a527b9eca9ab0f087b04f1c97ed737bc63188456` (noted in the next commit, without changing any rule above).
 - Timestamp, as in study 2 and engine v2: `docs/carimbos/eua-registro.txt`, with the hash of the registration commit and the SHA-256 of this file in PT, as it is in the registration commit, stamped with OpenTimestamps; the `.ots` goes into the repository, and `ots upgrade` is run after confirmation on Bitcoin.
 - Freeze: the study code and the script of the section 7 example go into a SHA-256 registry of the study's own, before the single computation (section 10).
 

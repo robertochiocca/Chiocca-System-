@@ -229,6 +229,7 @@ As financeiras, a DVA e o leitor (seção 3.4); qualquer lista ou ordem de compa
 
 - Data: 24/11/2026.
 - Commit: o que introduz esta versão com este nome. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+- Hash do commit de registro: `a527b9eca9ab0f087b04f1c97ed737bc63188456` (anotado no commit seguinte, sem mudar nenhuma regra acima).
 - Carimbo de tempo, como no estudo 2 e no motor v2: `docs/carimbos/eua-registro.txt`, com o hash do commit de registro e o SHA-256 deste arquivo em PT, como está no commit de registro, carimbado com o OpenTimestamps; o `.ots` vai para o repositório, e o `ots upgrade` é feito depois da confirmação no Bitcoin.
 - Congelamento: o código do estudo e o script do exemplo da seção 7 entram num registro de SHA-256 próprio do estudo, antes do cálculo único (seção 10).
 
