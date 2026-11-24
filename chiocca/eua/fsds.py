@@ -179,14 +179,18 @@ def versoes_por_ano(sub: pd.DataFrame, com_numeros: set[str], anos_depois: tuple
 def cobertura_tags(zip_caminho: Path, sub: pd.DataFrame, tags: list[str] = TAGS,
                    formularios: tuple[str, ...] = ("10-K",)) -> pd.DataFrame:  # fmt: skip
     """Para cada entrega do trimestre nos formulários pedidos (o 10-K original, por padrão), as tags (das candidatas)
-    com valor em dólar na data de referência da entrega, da companhia (sem co-registrante), na taxonomia us-gaap."""
+    com valor em dólar na data de referência da entrega, da companhia (sem co-registrante), na taxonomia us-gaap; e a
+    receita do exercício (`receita`: o valor anual, de quatro trimestres, da primeira tag de `receita_liquida` do mapa
+    que a entrega traz, ou vazio), para a regra das sem receita, a mesma do estudo 1: receita ausente ou zero."""
     alvo = sub[sub.form.isin(formularios)].set_index("adsh")
     with zipfile.ZipFile(zip_caminho) as z:
         with z.open("num.txt") as f:
             cabecalho = f.readline().decode("utf-8").rstrip("\r\n").split("\t")
     exige(cabecalho, COLUNAS_NUM, f"{zip_caminho.name}/num.txt")
-    usar = COLUNAS_NUM + (["coreg"] if "coreg" in cabecalho else []) + (["segments"] if "segments" in cabecalho else [])
+    usar = COLUNAS_NUM + ["value"] + [c for c in ("coreg", "segments") if c in cabecalho]
     presentes: dict[str, set[str]] = defaultdict(set)
+    receitas: dict[str, dict[str, float]] = defaultdict(dict)
+    tags_receita = MAPA["receita_liquida"]
     with zipfile.ZipFile(zip_caminho) as z:
         for bloco in pd.read_csv(z.open("num.txt"), sep="\t", dtype=str, keep_default_na=False, usecols=usar,
                                  chunksize=500_000):  # fmt: skip
@@ -198,13 +202,27 @@ def cobertura_tags(zip_caminho: Path, sub: pd.DataFrame, tags: list[str] = TAGS,
             b = b[b.ddate.values == alvo.loc[b.adsh, "period"].values]
             for a, t in zip(b.adsh, b.tag):
                 presentes[a].add(t)
+            r = b[b.tag.isin(tags_receita) & (b.qtrs == "4")]
+            for a, t, v in zip(r.adsh, r.tag, pd.to_numeric(r.value, errors="coerce")):
+                if pd.notna(v):
+                    receitas[a].setdefault(t, float(v))
+
+    def receita(a: str) -> float | None:
+        return next((receitas[a][t] for t in tags_receita if t in receitas[a]), None)
+
     return pd.DataFrame(
         [
-            {"adsh": a, "form": alvo.at[a, "form"], "fy": alvo.at[a, "fy"], **{t: t in presentes[a] for t in tags}}
+            {"adsh": a, "form": alvo.at[a, "form"], "fy": alvo.at[a, "fy"], **{t: t in presentes[a] for t in tags},
+             "receita": receita(a)}
             for a in alvo.index
         ],
-        columns=["adsh", "form", "fy", *tags],
-    )
+        columns=["adsh", "form", "fy", *tags, "receita"],
+    )  # fmt: skip
+
+
+def sem_receita(receita: pd.Series) -> pd.Series:
+    """A regra das sem receita do estudo 1 (`chiocca.montar_base`): receita ausente ou igual a zero."""
+    return receita.isna() | (receita == 0)
 
 
 def cobertura_por_ano(tabela: pd.DataFrame, mapa: dict[str, tuple[str, ...]] = MAPA) -> dict[str, Any]:

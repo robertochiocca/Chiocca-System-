@@ -61,6 +61,18 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
     firmas, ligacoes = rotulos.tabelas()
     primeiro_10k = originais.groupby(originais.cik.astype(int)).filed.min().to_dict()
     ultimo = estruturas[baixados[-1].stem]
+    dez_k = originais.merge(tabela[tabela.form == "10-K"][["adsh", "receita"]], on="adsh", how="left")
+    dez_k = dez_k.assign(sem_receita=fsds.sem_receita(dez_k.receita), spac=dez_k.sic == "6770",
+                         financeira=dez_k.sic.str.match(r"^6\d{3}$") & (dez_k.sic != "6770"))  # fmt: skip
+    historico: dict[int, list[tuple[str, bool, bool]]] = {}
+    for c, f, s_rec, s_6770 in sorted(zip(dez_k.cik.astype(int), dez_k.filed, dez_k.sem_receita, dez_k.spac)):
+        historico.setdefault(c, []).append((f, bool(s_rec), bool(s_6770)))
+    itens_8k = itens.contagens(
+        itens.entregas(),
+        {int(c): d for c, d in primeiro_10k.items()},
+        sic_6770={int(c) for c in subs.cik[subs.sic == "6770"]},
+        historico=historico,
+    )
     return {
         "trimestres_baixados": len(baixados),
         "trimestres_sem_entregas": [t for t, e in estruturas.items() if e["sub.txt"]["linhas"] == 0],
@@ -78,9 +90,25 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
             {str(int(a)): int(n) for a, n in originais.groupby("ano").cik.nunique().items()}
         ),
         "aaer": rotulos.com_10k(firmas, ligacoes, anos_10k),
-        "itens_8k": itens.contagens(itens.entregas(), {int(c): d for c, d in primeiro_10k.items()},
-                                    sic_6770={int(c) for c in subs.cik[subs.sic == "6770"]}),  # fmt: skip
+        "itens_8k": itens_8k,
+        "exclusoes_10k": _no_periodo(_exclusoes_10k(dez_k)),
     }
+
+
+def _exclusoes_10k(dez_k: Any) -> dict[str, Any]:
+    """Por exercício (`fy`), só contagens: os 10-K originais, os sem receita (receita ausente ou zero, a regra do
+    estudo 1), os das financeiras pela SIC (6000 a 6999, sem as SPACs), os das SPACs (SIC 6770) e quantas SPACs a regra
+    das sem receita já tira."""
+    out: dict[str, Any] = {}
+    for fy, g in dez_k[dez_k.fy.str.isdigit()].groupby("fy"):
+        out[str(fy)] = {
+            "10k": len(g),
+            "sem_receita": int(g.sem_receita.sum()),
+            "sem_receita_financeiras": int((g.sem_receita & g.financeira).sum()),
+            "sic_6770": int(g.spac.sum()),
+            "sic_6770_sem_receita": int((g.spac & g.sem_receita).sum()),
+        }
+    return out
 
 
 def calcula() -> dict[str, Any]:
@@ -244,8 +272,34 @@ T: dict[str, dict[str, Any]] = {
         "contabilização de warrants das SPACs (companhias de aquisição, sem operação), seguida de muitas republicações: "
         "{spac_2021} das {cias_2021} companhias com 8-K 4.02 em 2021 têm o código SIC 6770 (blank checks) nos dados da SEC; "
         "de 2009 a 2023, {spac} companhias-ano.",
-        "s_decisoes": "## 5. Decisões para Roberto",
-        "s_opcoes": "### 5.1 As opções de rótulo",
+        "s_decisoes": "## 5. Decisões",
+        "s_decididas": "### 5.1 Decisões de Roberto (24/11/2026)",
+        "decididas": [
+            "**Desfecho principal: o 8-K com o item 4.02**, o mesmo conceito da republicação do estudo 2. Os AAERs de "
+            "2009 a 2014 ficam só como descrição, sem teste.",
+            "**Desfecho por caso:** cada episódio contado uma vez (uma companhia, um episódio de 8-K 4.02, com os 8-K e "
+            "8-K/A do mesmo episódio juntos), com bootstrap por companhia, como no estudo 2. É a resposta à crítica de "
+            "Walker (2021 e 2022) e de Gow (2022) a Bao et al. (2020), em que fraudes de vários anos que atravessam o "
+            "treino e o teste inflam a medida; aqui os sinais são regras fixas, sem treino, e cada caso conta uma vez.",
+            "**Exclusões por regra explícita:** as SPACs (código SIC 6770, blank checks, nos dados da SEC), além das sem "
+            "receita (receita ausente ou zero, a regra do estudo 1). As contagens abaixo dizem quantas SPACs a regra das "
+            "sem receita já tiraria; nenhum valor de sinal, acerto ou alerta.",
+        ],
+        "txt_excl_10k": "10-K originais por exercício declarado (`fy`). A receita é o valor anual (quatro trimestres) da "
+        "primeira tag de `receita_liquida` do mapa que a entrega traz. As financeiras pela SIC (6000 a 6999, sem as SPACs) "
+        "aparecem à parte porque o mapa desta fase não tem a receita delas; no Brasil, a regra das sem receita vale só "
+        "para as não financeiras. **A contagem das sem receita é um teto:** inclui as companhias cuja receita está em "
+        "tags fora do mapa (a cobertura da conta `receita_liquida` fica entre {cob_min} e {cob_max} dos 10-K, seção 2.4); o mapa da "
+        "receita é ampliado no pré-registro, antes de qualquer sinal.",
+        "cab_excl_10k": "| Exercício | 10-K | Sem receita | Delas financeiras (SIC 6000 a 6999) | SPACs (SIC 6770) | SPACs já sem receita | SPACs que só a regra nova tira |",
+        "txt_excl_8k": "Companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K (seção 4.2), pelo último 10-K "
+        "entregue até o primeiro 8-K 4.02 do ano posterior ao primeiro 10-K da companhia (a receita e o SIC são os desse 10-K):",
+        "cab_excl_8k": "| Ano de entrega | Com 10-K antes do 8-K | Sem receita | SPACs (SIC 6770) | SPACs já sem receita | Ficam depois das duas regras |",
+        "txt_excl_resumo": "**De 2009 a 2023, {spac} companhias-ano de SPACs com 8-K 4.02 e 10-K antes; a regra das sem "
+        "receita já tiraria {spac_sem}, e a regra explícita tira as outras {spac_resto}. Ficam {ficam} das {total} "
+        "companhias-ano.** Nos 10-K de 2009 a 2023, a regra das sem receita tiraria {sem_10k} das {spac_10k} entregas de "
+        "SPACs.",
+        "s_opcoes": "### 5.2 As opções de rótulo comparadas na Fase 0",
         "cab_opcoes": "| Opção | Período | Tamanho | Custo | O que mede |",
         "opcoes": [
             (
@@ -279,48 +333,31 @@ T: dict[str, dict[str, Any]] = {
                 "o mesmo que o AAER, com risco de erro de classificação",
             ),
         ],
-        "recomendacao": "**Recomendação do Claude (claude.ai), para Roberto decidir:** o 8-K com o item 4.02 como desfecho "
-        "principal, o mesmo conceito da republicação do estudo 2, e os AAERs de 2009 a 2014 como descrição à parte, sem "
-        "teste. O 8-K 4.02 é público, gratuito, cobre o período inteiro com XBRL e tem casos suficientes para medir alguma "
-        "coisa; o AAER é raro demais de 2009 a 2014 para um teste e mede outra coisa (a ação da SEC).",
+        "recomendacao": "**Recomendação do Claude (claude.ai), acolhida por Roberto em 24/11/2026:** o 8-K com o item "
+        "4.02 como desfecho principal, o mesmo conceito da republicação do estudo 2, e os AAERs de 2009 a 2014 como "
+        "descrição à parte, sem teste. O 8-K 4.02 é público, gratuito, cobre o período inteiro com XBRL e tem casos "
+        "suficientes para medir alguma coisa; o AAER é raro demais de 2009 a 2014 para um teste e mede outra coisa (a ação "
+        "da SEC).",
+        "s_pendentes": "### 5.3 Para o rascunho do pré-registro",
         "decisoes": [
-            "**O desfecho por caso.** Walker (2021) mostrou que, em Bao et al. (2020), fraudes que atravessam o período de "
-            "treino e o de teste inflam a medida; a errata (JAR, 2022) reconheceu um erro de código que deixou cerca de 10% "
-            "desses casos sem recodificar, Walker (2022) criticou a errata, e Gow (2022) discutiu se o artigo deveria ser "
-            "retratado. Proposta: cada caso contado uma vez (uma companhia, um episódio de 8-K 4.02, com os 8-K e 8-K/A do "
-            "mesmo episódio juntos), como o acerto do estudo 1, com o bootstrap por companhia, como no estudo 2; os sinais "
-            "são regras fixas, sem treino.",
-            "**Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. Para o "
-            "pré-registro: o último 10-K entregue antes do 8-K, na versão pública na data (seção 2.3), ou a leitura do 8-K "
-            "para os exercícios citados, guardando só o CIK e os anos. A regra é escrita antes de qualquer sinal.",
-            "**As SPACs.** O pico de 2021 vem de uma mudança de interpretação contábil que atingiu companhias sem "
-            "operação, para as quais os sinais do v1 e do v2 não fazem sentido. Proposta: excluí-las da amostra pelo "
-            "código SIC 6770 (blank checks) dos dados da SEC, regra escrita antes de qualquer sinal.",
+            "**Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. A regra é "
+            "escrita antes de qualquer sinal, com a versão pública na data (seção 2.3).",
             "**Período.** Com o 8-K 4.02, de 2009 (exercícios com XBRL; todas as companhias desde 2011) a 2023 (os 8-K "
             "entregues até 31/12/2023). Os AAERs ficam de 2009 a 2014, só como descrição.",
             "**O que não dá sem dados pagos.** Os anos errados dos AAERs depois de 2014 (CFRM); o gvkey e os dados da "
             "Compustat (WRDS); as republicações da Audit Analytics, que incluiriam as republicações sem 8-K 4.02 "
             '("little r"). A ligação gvkey–CIK do era-py não informa a origem.',
         ],
-        "s_calendario": "### 5.2 Rascunho de calendário até maio de 2027",
+        "s_calendario": "### 5.4 Calendário até maio de 2027",
         "cab_cal": "| Até | Etapa |",
         "calendario": [
+            ("2026-11-24", "Decisões de Roberto: o rótulo, o desfecho por caso e as exclusões (seção 5.1)."),
+            ("2026-12-15", "Rascunho do pré-registro dos EUA revisado por Roberto; nenhum sinal calculado."),
             (
-                "2026-12-15",
-                "Decisão de Roberto: o rótulo (recomendação: 8-K 4.02 como desfecho, AAERs como descrição) e o "
-                "período.",
+                "2027-01-31",
+                "Código do estudo escrito e testado só em dados sintéticos; nenhum sinal americano calculado.",
             ),
-            (
-                "2027-01-15",
-                "Mapa das contas fechado com a cobertura da seção 2.4; regra do caso e do exercício afetado "
-                "escrita; nenhum sinal calculado.",
-            ),
-            (
-                "2027-02-28",
-                "Rascunho do pré-registro dos EUA: amostra, desfecho por caso, métricas, regra boba e poder "
-                "esperado com as contagens da seção 4.2.",
-            ),
-            ("2027-03-31", "Revisão de Roberto, registro e carimbo; código congelado."),
+            ("2027-03-31", "Registro do pré-registro e carimbo; código congelado."),
             ("2027-04-30", "Cálculo único, depois do carimbo."),
             ("2027-05-31", "Relatório em PT e EN, separado do estudo 2 do Brasil."),
         ],
@@ -455,8 +492,34 @@ T: dict[str, dict[str, Any]] = {
         "SPAC warrants (acquisition companies with no operations), followed by many restatements: "
         "{spac_2021} of the {cias_2021} companies with an 8-K 4.02 in 2021 have SIC code 6770 (blank checks) in the SEC "
         "data; from 2009 to 2023, {spac} company-years.",
-        "s_decisoes": "## 5. Decisions for Roberto",
-        "s_opcoes": "### 5.1 The label options",
+        "s_decisoes": "## 5. Decisions",
+        "s_decididas": "### 5.1 Roberto's decisions (2026-11-24)",
+        "decididas": [
+            "**Main outcome: the 8-K with Item 4.02**, the same concept as study 2's restatement. The 2009 to 2014 AAERs "
+            "stay as description only, with no test.",
+            "**Outcome per case:** each episode counted once (one company, one 8-K 4.02 episode, with the 8-Ks and 8-K/As "
+            "of the same episode together), with the bootstrap by company, as in study 2. It answers the critique by "
+            "Walker (2021 and 2022) and Gow (2022) of Bao et al. (2020), where multi-year frauds spanning training and test "
+            "inflate the metric; here the signals are fixed rules, with no training, and each case counts once.",
+            "**Exclusions by explicit rule:** SPACs (SIC code 6770, blank checks, in the SEC data), on top of the companies "
+            "without revenue (revenue missing or zero, the study 1 rule). The counts below say how many SPACs the "
+            "no-revenue rule would already remove; no signal value, hit or alert.",
+        ],
+        "txt_excl_10k": "Original 10-Ks by declared fiscal year (`fy`). Revenue is the annual value (four quarters) of the "
+        "first `receita_liquida` tag in the map that the filing has. Financial companies by SIC (6000 to 6999, without "
+        "SPACs) appear separately because this phase's map has no revenue for them; in Brazil, the no-revenue rule applies "
+        "to non-financial companies only. **The no-revenue count is a ceiling:** it includes companies whose revenue sits "
+        "in tags outside the map (coverage of the `receita_liquida` account is between {cob_min} and {cob_max} of 10-Ks, section 2.4); "
+        "the revenue map is widened in the pre-registration, before any signal.",
+        "cab_excl_10k": "| Fiscal year | 10-K | No revenue | Of them financial (SIC 6000 to 6999) | SPACs (SIC 6770) | SPACs already without revenue | SPACs only the new rule removes |",
+        "txt_excl_8k": "Company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K (section 4.2), by the last "
+        "10-K filed by the year's first 8-K 4.02 after the company's first 10-K (revenue and SIC are those of that 10-K):",
+        "cab_excl_8k": "| Filing year | With a 10-K before the 8-K | No revenue | SPACs (SIC 6770) | SPACs already without revenue | Remaining after both rules |",
+        "txt_excl_resumo": "**From 2009 to 2023, {spac} SPAC company-years with an 8-K 4.02 and a 10-K before; the no-revenue "
+        "rule would already remove {spac_sem}, and the explicit rule removes the other {spac_resto}. {ficam} of the "
+        "{total} company-years remain.** In the 2009 to 2023 10-Ks, the no-revenue rule would remove {sem_10k} of the "
+        "{spac_10k} SPAC filings.",
+        "s_opcoes": "### 5.2 The label options compared in Phase 0",
         "cab_opcoes": "| Option | Period | Size | Cost | What it measures |",
         "opcoes": [
             (
@@ -490,49 +553,28 @@ T: dict[str, dict[str, Any]] = {
                 "the same as the AAER, with a risk of " "classification error",
             ),
         ],
-        "recomendacao": "**Recommendation from Claude (claude.ai), for Roberto to decide:** the 8-K with Item 4.02 as the "
-        "main outcome, the same concept as study 2's restatement, and the 2009 to 2014 AAERs as a separate description, "
-        "with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to measure "
-        "something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC action).",
+        "recomendacao": "**Recommendation from Claude (claude.ai), accepted by Roberto on 2026-11-24:** the 8-K with Item "
+        "4.02 as the main outcome, the same concept as study 2's restatement, and the 2009 to 2014 AAERs as a separate "
+        "description, with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to "
+        "measure something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC "
+        "action).",
+        "s_pendentes": "### 5.3 For the pre-registration draft",
         "decisoes": [
-            "**The outcome per case.** Walker (2021) showed that, in Bao et al. (2020), frauds spanning the training and "
-            "test periods inflate the metric; the erratum (JAR, 2022) acknowledged a code error that left about 10% of "
-            "these cases unrecoded, Walker (2022) criticized the erratum, and Gow (2022) discussed whether the paper should "
-            "be retracted. Proposal: each case counted once (one company, one 8-K 4.02 episode, with the 8-Ks and 8-K/As "
-            "of the same episode together), like the study 1 detection, with the bootstrap by company, as in study 2; the "
-            "signals are fixed rules, with no training.",
             "**Which fiscal year the case affects.** The items field does not say which statements stopped being "
-            "reliable. For the pre-registration: the last 10-K filed before the 8-K, in the public version at the date "
-            "(section 2.3), or reading the 8-K for the fiscal years it cites, keeping only the CIK and the years. The "
-            "rule is written before any signal.",
-            "**SPACs.** The 2021 peak comes from a change in accounting interpretation that hit companies with no "
-            "operations, for which the v1 and v2 signals make no sense. Proposal: exclude them from the sample by SIC code "
-            "6770 (blank checks) in the SEC data, a rule written before any signal.",
+            "reliable. The rule is written before any signal, with the public version at the date (section 2.3).",
             "**Period.** With the 8-K 4.02, from 2009 (fiscal years with XBRL; all companies since 2011) to 2023 (8-Ks "
             "filed through 2023-12-31). The AAERs stay at 2009 to 2014, as description only.",
             "**What cannot be done without paid data.** Misstated years of AAERs after 2014 (CFRM); the gvkey and "
             "Compustat data (WRDS); Audit Analytics restatements, which would include restatements without an 8-K 4.02 "
             '("little r"). The era-py gvkey–CIK link does not state its source.',
         ],
-        "s_calendario": "### 5.2 Draft timeline through May 2027",
+        "s_calendario": "### 5.4 Timeline through May 2027",
         "cab_cal": "| By | Step |",
         "calendario": [
-            (
-                "2026-12-15",
-                "Roberto's decision: the label (recommendation: 8-K 4.02 as the outcome, AAERs as "
-                "description) and the period.",
-            ),
-            (
-                "2027-01-15",
-                "Account map closed with the coverage in section 2.4; rule for the case and the affected "
-                "fiscal year written; no signal computed.",
-            ),
-            (
-                "2027-02-28",
-                "Draft of the US pre-registration: sample, outcome per case, metrics, naive rule and expected "
-                "power from the counts in section 4.2.",
-            ),
-            ("2027-03-31", "Roberto's review, registration and timestamp; code frozen."),
+            ("2026-11-24", "Roberto's decisions: the label, the outcome per case and the exclusions (section 5.1)."),
+            ("2026-12-15", "Draft of the US pre-registration reviewed by Roberto; no signal computed."),
+            ("2027-01-31", "Study code written and tested on synthetic data only; no US signal computed."),
+            ("2027-03-31", "Pre-registration registered and timestamped; code frozen."),
             ("2027-04-30", "Single computation, after the timestamp."),
             ("2027-05-31", "Report in PT and EN, separate from Brazil's study 2."),
         ],
@@ -593,6 +635,33 @@ def _secao_fsds(d: dict[str, Any], lang: str) -> list[str]:
     linhas += _tabela(cab(t["cab_tag"]), [[f"`{x}`", *(p0(cob[a]["tags"][x]) for a in anos)] for x in tags],
                       "-" + ":" * len(anos))  # fmt: skip
     return linhas + [""]
+
+
+def _secao_exclusoes(f: dict[str, Any], lang: str) -> list[str]:
+    """As contagens das exclusões decididas em 24/11/2026: SPACs (SIC 6770) e sem receita, nos 10-K e nos 8-K 4.02."""
+    t, i = T[lang], (lambda v: inteiro(int(v), lang))
+    ex, it = f["exclusoes_10k"], f["itens_8k"]
+    cob = [v["contas"]["receita_liquida"] for v in f["cobertura"].values()]
+    linhas = ["", t["txt_excl_10k"].format(cob_min=pct(min(cob), lang, 0), cob_max=pct(max(cob), lang, 0)), ""]
+    tab = [[a, i(x["10k"]), i(x["sem_receita"]), i(x["sem_receita_financeiras"]), i(x["sic_6770"]),
+            i(x["sic_6770_sem_receita"]), i(x["sic_6770"] - x["sic_6770_sem_receita"])]
+           for a, x in ex.items()]  # fmt: skip
+    soma = {k: sum(x[k] for x in ex.values()) for k in next(iter(ex.values()))}
+    tab.append([t["total"], *(f"**{i(soma[k])}**" for k in ("10k", "sem_receita", "sem_receita_financeiras",
+                                                            "sic_6770", "sic_6770_sem_receita")),
+                f"**{i(soma['sic_6770'] - soma['sic_6770_sem_receita'])}**"])  # fmt: skip
+    linhas += _tabela(t["cab_excl_10k"], tab, "-::::::") + ["", t["txt_excl_8k"], ""]
+    chaves = ("companhias_com_10k_fsds_antes", "antes_sem_receita", "antes_sic_6770", "antes_sic_6770_sem_receita",
+              "antes_restantes")  # fmt: skip
+    tab = [[a, *(i(x[k]) for k in chaves)] for a, x in it.items()]
+    s8 = {k: sum(x[k] for x in it.values()) for k in chaves}
+    tab.append([t["total"], *(f"**{i(s8[k])}**" for k in chaves)])
+    linhas += _tabela(t["cab_excl_8k"], tab, "-:::::")
+    resumo = t["txt_excl_resumo"].format(spac=i(s8["antes_sic_6770"]), spac_sem=i(s8["antes_sic_6770_sem_receita"]),
+                                         spac_resto=i(s8["antes_sic_6770"] - s8["antes_sic_6770_sem_receita"]),
+                                         ficam=i(s8["antes_restantes"]), total=i(s8["companhias_com_10k_fsds_antes"]),
+                                         sem_10k=i(soma["sic_6770_sem_receita"]), spac_10k=i(soma["sic_6770"]))  # fmt: skip
+    return linhas + ["", resumo, ""]
 
 
 def render(d: dict[str, Any], lang: str) -> str:
@@ -668,13 +737,15 @@ def render(d: dict[str, Any], lang: str) -> str:
                                             spac=i(soma["companhias_8k_402_sic_6770"]),
                                             spac_2021=i(it.get("2021", {}).get("companhias_8k_402_sic_6770", 0)),
                                             cias_2021=i(it.get("2021", {}).get("companhias_8k_402", 0))),
-               "", t["s_decisoes"], "", t["s_opcoes"], ""]  # fmt: skip
+               "", t["s_decisoes"], "", t["s_decididas"], ""]  # fmt: skip
+    linhas += [f"{k}. {x}" for k, x in enumerate(t["decididas"], start=1)]
+    linhas += _secao_exclusoes(f, lang) + [t["s_opcoes"], ""]
     valores = {"casos_aaer": i(aa["casos_com_10k"]), "ea_aaer": i(aa["empresa_anos_com_10k"]),
                "cias_402": i(soma["companhias_novas_8k_402"]), "com_402": i(soma["companhias_com_10k_fsds"]),
                "n_manual": i(n_manual)}  # fmt: skip
     linhas += _tabela(t["cab_opcoes"], [[f"**{o}**", per, tam.format(**valores), custo, mede]
                                         for o, per, tam, custo, mede in t["opcoes"]], "-----")  # fmt: skip
-    linhas += ["", t["recomendacao"], ""]
+    linhas += ["", t["recomendacao"], "", t["s_pendentes"], ""]
     linhas += [f"{k}. {x}" for k, x in enumerate(t["decisoes"], start=1)]
     linhas += ["", t["s_calendario"], "", t["cab_cal"], "| --- | --- |"]
     linhas += [f"| {data(dia, lang)} | {etapa} |" for dia, etapa in t["calendario"]]

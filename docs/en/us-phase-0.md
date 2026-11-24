@@ -217,9 +217,59 @@ The fiscal year follows the Compustat convention used by Bao et al.: the year of
 
 A company counts once per year; "first time since 2009" counts each company once in the period. "With a 10-K in the SEC data" means the CIK has an original 10-K in the Financial Statement Data Sets from 2009q1 to 2023q4; "before the 8-K", that the first of those 10-Ks was filed by the date of the 8-K (there are XBRL statements from the time to compare). **From 2009 to 2023: 4,100 8-Ks with Item 4.02, from 3,699 company-years; 3,055 distinct companies; 3,264 company-years with a 10-K in the SEC data, 2,029 of them with the 10-K before the 8-K.** The 10-K/As are of all kinds (most only complete Part III); the last column counts those in the SEC data, by filing year. The 2021 peak coincides with the SEC staff statement of 2021-04-12 on the accounting for SPAC warrants (acquisition companies with no operations), followed by many restatements: 492 of the 678 companies with an 8-K 4.02 in 2021 have SIC code 6770 (blank checks) in the SEC data; from 2009 to 2023, 753 company-years.
 
-## 5. Decisions for Roberto
+## 5. Decisions
 
-### 5.1 The label options
+### 5.1 Roberto's decisions (2026-11-24)
+
+1. **Main outcome: the 8-K with Item 4.02**, the same concept as study 2's restatement. The 2009 to 2014 AAERs stay as description only, with no test.
+2. **Outcome per case:** each episode counted once (one company, one 8-K 4.02 episode, with the 8-Ks and 8-K/As of the same episode together), with the bootstrap by company, as in study 2. It answers the critique by Walker (2021 and 2022) and Gow (2022) of Bao et al. (2020), where multi-year frauds spanning training and test inflate the metric; here the signals are fixed rules, with no training, and each case counts once.
+3. **Exclusions by explicit rule:** SPACs (SIC code 6770, blank checks, in the SEC data), on top of the companies without revenue (revenue missing or zero, the study 1 rule). The counts below say how many SPACs the no-revenue rule would already remove; no signal value, hit or alert.
+
+Original 10-Ks by declared fiscal year (`fy`). Revenue is the annual value (four quarters) of the first `receita_liquida` tag in the map that the filing has. Financial companies by SIC (6000 to 6999, without SPACs) appear separately because this phase's map has no revenue for them; in Brazil, the no-revenue rule applies to non-financial companies only. **The no-revenue count is a ceiling:** it includes companies whose revenue sits in tags outside the map (coverage of the `receita_liquida` account is between 66% and 80% of 10-Ks, section 2.4); the revenue map is widened in the pre-registration, before any signal.
+
+| Fiscal year | 10-K | No revenue | Of them financial (SIC 6000 to 6999) | SPACs (SIC 6770) | SPACs already without revenue | SPACs only the new rule removes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2009 | 425 | 85 | 26 | 0 | 0 | 0 |
+| 2010 | 1,310 | 341 | 114 | 2 | 2 | 0 |
+| 2011 | 6,546 | 2,808 | 977 | 195 | 178 | 17 |
+| 2012 | 6,928 | 2,957 | 951 | 174 | 165 | 9 |
+| 2013 | 6,934 | 2,899 | 929 | 166 | 152 | 14 |
+| 2014 | 6,833 | 2,754 | 895 | 150 | 135 | 15 |
+| 2015 | 6,463 | 2,562 | 854 | 136 | 127 | 9 |
+| 2016 | 5,982 | 2,301 | 767 | 111 | 99 | 12 |
+| 2017 | 5,912 | 2,272 | 758 | 115 | 106 | 9 |
+| 2018 | 5,772 | 1,933 | 660 | 124 | 112 | 12 |
+| 2019 | 5,607 | 1,840 | 624 | 140 | 126 | 14 |
+| 2020 | 5,751 | 1,963 | 607 | 280 | 274 | 6 |
+| 2021 | 6,497 | 2,426 | 610 | 633 | 629 | 4 |
+| 2022 | 6,220 | 2,204 | 588 | 442 | 437 | 5 |
+| 2023 | 685 | 214 | 47 | 11 | 10 | 1 |
+| **Total** | **77,865** | **29,559** | **9,407** | **2,679** | **2,552** | **127** |
+
+Company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K (section 4.2), by the last 10-K filed by the year's first 8-K 4.02 after the company's first 10-K (revenue and SIC are those of that 10-K):
+
+| Filing year | With a 10-K before the 8-K | No revenue | SPACs (SIC 6770) | SPACs already without revenue | Remaining after both rules |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 2009 | 0 | 0 | 0 | 0 | 0 |
+| 2010 | 0 | 0 | 0 | 0 | 0 |
+| 2011 | 13 | 1 | 0 | 0 | 12 |
+| 2012 | 139 | 57 | 3 | 2 | 81 |
+| 2013 | 219 | 92 | 7 | 7 | 127 |
+| 2014 | 170 | 68 | 7 | 6 | 101 |
+| 2015 | 166 | 52 | 2 | 1 | 113 |
+| 2016 | 140 | 58 | 1 | 1 | 82 |
+| 2017 | 115 | 51 | 2 | 1 | 63 |
+| 2018 | 117 | 42 | 1 | 1 | 75 |
+| 2019 | 87 | 30 | 2 | 2 | 57 |
+| 2020 | 85 | 30 | 2 | 1 | 54 |
+| 2021 | 382 | 297 | 214 | 214 | 85 |
+| 2022 | 189 | 94 | 56 | 56 | 95 |
+| 2023 | 207 | 103 | 35 | 34 | 103 |
+| **Total** | **2,029** | **975** | **332** | **326** | **1,048** |
+
+**From 2009 to 2023, 332 SPAC company-years with an 8-K 4.02 and a 10-K before; the no-revenue rule would already remove 326, and the explicit rule removes the other 6. 1,048 of the 2,029 company-years remain.** In the 2009 to 2023 10-Ks, the no-revenue rule would remove 2,552 of the 2,679 SPAC filings.
+
+### 5.2 The label options compared in Phase 0
 
 | Option | Period | Size | Cost | What it measures |
 | --- | --- | --- | --- | --- |
@@ -228,22 +278,22 @@ A company counts once per year; "first time since 2009" counts each company once
 | **CFRM database (USC)** | AAERs issued from 1982 to 2025 | 4,581 AAERs in all; how many with XBRL is unknown without buying | paid (price not published); terms forbid passing the data on | the same as the AAER, with the affected years and accounts |
 | **Hand classification of AAERs after 2014** | AAERs issued from 2015 to 2023 | 863 AAERs to read, of all kinds; only some are misstatements | hours of reading, with the rule written beforehand and reading blind to the signals | the same as the AAER, with a risk of classification error |
 
-**Recommendation from Claude (claude.ai), for Roberto to decide:** the 8-K with Item 4.02 as the main outcome, the same concept as study 2's restatement, and the 2009 to 2014 AAERs as a separate description, with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to measure something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC action).
+**Recommendation from Claude (claude.ai), accepted by Roberto on 2026-11-24:** the 8-K with Item 4.02 as the main outcome, the same concept as study 2's restatement, and the 2009 to 2014 AAERs as a separate description, with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to measure something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC action).
 
-1. **The outcome per case.** Walker (2021) showed that, in Bao et al. (2020), frauds spanning the training and test periods inflate the metric; the erratum (JAR, 2022) acknowledged a code error that left about 10% of these cases unrecoded, Walker (2022) criticized the erratum, and Gow (2022) discussed whether the paper should be retracted. Proposal: each case counted once (one company, one 8-K 4.02 episode, with the 8-Ks and 8-K/As of the same episode together), like the study 1 detection, with the bootstrap by company, as in study 2; the signals are fixed rules, with no training.
-2. **Which fiscal year the case affects.** The items field does not say which statements stopped being reliable. For the pre-registration: the last 10-K filed before the 8-K, in the public version at the date (section 2.3), or reading the 8-K for the fiscal years it cites, keeping only the CIK and the years. The rule is written before any signal.
-3. **SPACs.** The 2021 peak comes from a change in accounting interpretation that hit companies with no operations, for which the v1 and v2 signals make no sense. Proposal: exclude them from the sample by SIC code 6770 (blank checks) in the SEC data, a rule written before any signal.
-4. **Period.** With the 8-K 4.02, from 2009 (fiscal years with XBRL; all companies since 2011) to 2023 (8-Ks filed through 2023-12-31). The AAERs stay at 2009 to 2014, as description only.
-5. **What cannot be done without paid data.** Misstated years of AAERs after 2014 (CFRM); the gvkey and Compustat data (WRDS); Audit Analytics restatements, which would include restatements without an 8-K 4.02 ("little r"). The era-py gvkey–CIK link does not state its source.
+### 5.3 For the pre-registration draft
 
-### 5.2 Draft timeline through May 2027
+1. **Which fiscal year the case affects.** The items field does not say which statements stopped being reliable. The rule is written before any signal, with the public version at the date (section 2.3).
+2. **Period.** With the 8-K 4.02, from 2009 (fiscal years with XBRL; all companies since 2011) to 2023 (8-Ks filed through 2023-12-31). The AAERs stay at 2009 to 2014, as description only.
+3. **What cannot be done without paid data.** Misstated years of AAERs after 2014 (CFRM); the gvkey and Compustat data (WRDS); Audit Analytics restatements, which would include restatements without an 8-K 4.02 ("little r"). The era-py gvkey–CIK link does not state its source.
+
+### 5.4 Timeline through May 2027
 
 | By | Step |
 | --- | --- |
-| 2026-12-15 | Roberto's decision: the label (recommendation: 8-K 4.02 as the outcome, AAERs as description) and the period. |
-| 2027-01-15 | Account map closed with the coverage in section 2.4; rule for the case and the affected fiscal year written; no signal computed. |
-| 2027-02-28 | Draft of the US pre-registration: sample, outcome per case, metrics, naive rule and expected power from the counts in section 4.2. |
-| 2027-03-31 | Roberto's review, registration and timestamp; code frozen. |
+| 2026-11-24 | Roberto's decisions: the label, the outcome per case and the exclusions (section 5.1). |
+| 2026-12-15 | Draft of the US pre-registration reviewed by Roberto; no signal computed. |
+| 2027-01-31 | Study code written and tested on synthetic data only; no US signal computed. |
+| 2027-03-31 | Pre-registration registered and timestamped; code frozen. |
 | 2027-04-30 | Single computation, after the timestamp. |
 | 2027-05-31 | Report in PT and EN, separate from Brazil's study 2. |
 

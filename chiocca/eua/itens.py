@@ -65,14 +65,18 @@ def entregas(caminho: Path = ARQUIVO, formularios: Iterable[str] = ("8-K", "8-K/
                     yield {"cik": cik, "adsh": adsh, "data": dia, "form": form, "itens": itens or ""}
 
 
-def contagens(linhas: Iterable[dict[str, Any]], ciks_10k: dict[int, str], sic_6770: set[int] | None = None
-              ) -> dict[str, Any]:  # fmt: skip
+def contagens(linhas: Iterable[dict[str, Any]], ciks_10k: dict[int, str], sic_6770: set[int] | None = None,
+              historico: dict[int, list[tuple[str, bool, bool]]] | None = None) -> dict[str, Any]:  # fmt: skip
     """Por ano de entrega: os 8-K e 8-K/A com o item 4.02, as companhias e os casos novos, quantos se ligam a um CIK
     com 10-K nos dados da SEC (`ciks_10k`: CIK -> data, AAAAMMDD, do primeiro 10-K nos Financial Statement Data Sets)
     e quantos 10-K e 10-K/A. Um caso é uma companhia com 8-K 4.02 num ano; o primeiro caso da companhia desde 2009 é
     contado à parte (cada companhia uma vez). `sic_6770`: os CIKs com o código SIC 6770 (blank checks, as SPACs) nos
-    dados da SEC."""
+    dados da SEC. `historico`: por CIK, os 10-K originais nos dados da SEC em ordem de entrega, com a data (AAAAMMDD),
+    se o exercício está sem receita e se a entrega tem o SIC 6770; com ele, para cada companhia-ano com 10-K antes do
+    8-K, o último 10-K entregue até o primeiro 8-K 4.02 do ano posterior ao primeiro 10-K diz quantas a regra das sem
+    receita e a regra das SPACs tirariam (só contagens)."""
     sic_6770 = sic_6770 or set()
+    primeiro_do_ano: dict[tuple[str, int], str] = {}
     por_ano: dict[str, dict[str, Any]] = defaultdict(lambda: defaultdict(set))
     primeiro: dict[int, str] = {}
     for x in linhas:
@@ -86,6 +90,9 @@ def contagens(linhas: Iterable[dict[str, Any]], ciks_10k: dict[int, str], sic_67
                 a["ciks"].add(x["cik"])
                 if x["data"][:10].replace("-", "") >= ciks_10k.get(x["cik"], "99999999"):
                     a["ciks_com_10k_antes"].add(x["cik"])
+                    chave = (ano, x["cik"])  # o primeiro 8-K 4.02 do ano entregue depois do primeiro 10-K
+                    if chave not in primeiro_do_ano or x["data"] < primeiro_do_ano[chave]:
+                        primeiro_do_ano[chave] = x["data"]
                 if x["cik"] not in primeiro or x["data"] < primeiro[x["cik"]]:
                     primeiro[x["cik"]] = x["data"]
     novos: dict[str, int] = defaultdict(int)
@@ -105,4 +112,26 @@ def contagens(linhas: Iterable[dict[str, Any]], ciks_10k: dict[int, str], sic_67
             "10k_edgar": len(a["10-K"]),
             "10k_a_edgar": len(a["10-K/A"]),
         }
+        if historico is not None:
+            out[ano] |= _exclusoes(ano, a["ciks_com_10k_antes"], primeiro_do_ano, historico)
     return out
+
+
+def _exclusoes(ano: str, ciks: set[int], primeiro_do_ano: dict[tuple[str, int], str],
+               historico: dict[int, list[tuple[str, bool, bool]]]) -> dict[str, int]:  # fmt: skip
+    """Das companhias-ano com 10-K antes do 8-K, pelo último 10-K entregue até o primeiro 8-K 4.02 do ano posterior ao
+    primeiro 10-K: quantas estão sem receita, quantas têm o SIC 6770, quantas das SPACs a regra das sem receita já tira
+    e quantas sobram."""
+    sem, spac, spac_sem, sobram = 0, 0, 0, 0
+    for c in ciks:
+        dia = primeiro_do_ano[(ano, c)].replace("-", "")
+        anteriores = [h for h in historico.get(c, []) if h[0] <= dia]
+        if not anteriores:
+            continue
+        _, s_rec, s_6770 = anteriores[-1]
+        sem += s_rec
+        spac += s_6770
+        spac_sem += s_rec and s_6770
+        sobram += not (s_rec or s_6770)
+    return {"antes_sem_receita": sem, "antes_sic_6770": spac, "antes_sic_6770_sem_receita": spac_sem,
+            "antes_restantes": sobram}  # fmt: skip

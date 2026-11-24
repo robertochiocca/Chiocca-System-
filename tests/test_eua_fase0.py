@@ -262,6 +262,15 @@ def test_numeros_da_sec_coerentes_e_dentro_do_limite() -> None:
         assert set(c["contas"]) == set(fsds.MAPA) and all(
             0 <= x <= 1 for x in [*c["contas"].values(), *c["tags"].values()]
         )
+    for a, x in f["exclusoes_10k"].items():  # decisões de 24/11/2026: só contagens
+        assert 2009 <= int(a) <= 2023 and x["10k"] == f["por_exercicio"][a]["entregas_10k"]
+        assert x["sic_6770_sem_receita"] <= min(x["sic_6770"], x["sem_receita"]) and x["sem_receita"] <= x["10k"]
+        assert x["sem_receita_financeiras"] <= x["sem_receita"]
+    for a, x in f["itens_8k"].items():
+        assert x["antes_sic_6770_sem_receita"] <= min(x["antes_sic_6770"], x["antes_sem_receita"])
+        assert x["antes_restantes"] == x["companhias_com_10k_fsds_antes"] - x["antes_sem_receita"] - (
+            x["antes_sic_6770"] - x["antes_sic_6770_sem_receita"]
+        )
     aa, b = f["aaer"], D["rotulos"]["bao_et_al"]
     assert sum(aa["empresa_anos_com_10k_por_ano"].values()) == aa["empresa_anos_com_10k"]
     assert all(aa["empresa_anos_com_10k_por_ano"][a] <= n for a, n in b["empresa_anos_xbrl_ligadas_por_ano"].items())
@@ -274,3 +283,36 @@ def test_manifesto_tem_os_arquivos_da_sec() -> None:
     ed = D["acesso_sec"]["edgar_submissions"]
     assert ed["sha256"] == linhas["edgar/submissions.zip"]["sha256"]
     assert D["acesso_sec"]["fsds_bytes"] == sum(int(linhas[f"fsds/{t}.zip"]["bytes"]) for t in fsds.TRIMESTRES)
+
+
+def test_receita_e_regra_das_sem_receita(tmp_path: Path) -> None:
+    z = _zip(tmp_path)
+    t = fsds.cobertura_tags(z, fsds.submissoes(z), formularios=("10-K", "10-K/A")).set_index("adsh")
+    assert t.at["0001", "receita"] == 500.0 and t.at["0002", "receita"] == 70.0  # anual (quatro trimestres)
+    assert pd.isna(t.at["0003", "receita"])  # a emenda só traz o ativo
+    assert fsds.sem_receita(pd.Series([None, 0.0, 10.0])).tolist() == [True, True, False]
+
+
+def test_exclusoes_dos_8k_pelo_ultimo_10k_antes() -> None:
+    from chiocca.eua import itens
+
+    linhas = [
+        {"cik": 1, "adsh": "x1", "data": "2021-05-01", "form": "8-K", "itens": "4.02"},
+        {"cik": 1, "adsh": "x2", "data": "2021-09-01", "form": "8-K", "itens": "4.02"},
+        {"cik": 2, "adsh": "y1", "data": "2021-06-01", "form": "8-K", "itens": "4.02"},
+        {"cik": 3, "adsh": "z1", "data": "2021-07-01", "form": "8-K", "itens": "4.02"},
+        {"cik": 4, "adsh": "w1", "data": "2021-02-01", "form": "8-K", "itens": "4.02"},  # antes do 1º 10-K dela
+        {"cik": 4, "adsh": "w2", "data": "2021-10-01", "form": "8-K", "itens": "4.02"},  # depois: este conta
+    ]
+    historico = {
+        1: [("20200301", False, True), ("20210801", True, True)],  # SPAC; o 10-K de agosto vem depois do 1º 8-K
+        2: [("20210301", True, False)],  # sem receita
+        3: [("20210301", False, False)],  # fica
+        4: [("20210301", False, False)],  # fica, pelo 8-K de outubro
+    }
+    primeiros = {1: "20200301", 2: "20210301", 3: "20210301", 4: "20210301"}
+    c = itens.contagens(linhas, primeiros, {1}, historico)["2021"]
+    assert c["companhias_com_10k_fsds_antes"] == 4
+    assert (c["antes_sem_receita"], c["antes_sic_6770"], c["antes_sic_6770_sem_receita"], c["antes_restantes"]) == (
+        1, 1, 0, 2,
+    )  # fmt: skip
