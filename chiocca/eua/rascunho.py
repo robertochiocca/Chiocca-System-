@@ -24,7 +24,7 @@ SEMENTE = 20270430
 
 PT = """# Rascunho do pré-registro do estudo dos EUA
 
-> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente e atualizado no mesmo dia com as decisões de Roberto sobre os pontos em aberto ([Fase 0, seção 5.1](eua-fase-0.md)), antes de qualquer sinal americano calculado. Continua rascunho, para a revisão do Claude (claude.ai) e de Roberto; nada aqui vale até o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte), com meta de 31/01/2027 e reserva de 31/03/2027. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
+> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente e atualizado no mesmo dia com as decisões de Roberto sobre os pontos em aberto ([Fase 0, seção 5.1](eua-fase-0.md)), antes de qualquer sinal americano calculado. Continua rascunho, para a revisão final do Claude (claude.ai) e de Roberto; nada aqui vale até o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte), com meta de 31/01/2027 e reserva de 31/03/2027. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
 
 Base: a [Fase 0 dos EUA](eua-fase-0.md), com os números de [`docs/eua_fase0_numeros.json`](eua_fase0_numeros.json), e os pré-registros do [estudo 1](pre-registro.md), do [estudo 2](pre-registro-estudo-2.md) e do [motor v2](pre-registro-motor-v2.md), cujas regras valem aqui com só as adaptações da seção 3.
 
@@ -48,14 +48,15 @@ Valores da própria companhia (sem co-registrante nem segmento), em dólar, na t
 
 | Conta | Tags e regra | Motivo |
 | --- | --- | --- |
-| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | as da proposta da Fase 0, na ordem de preferência | o mesmo conceito da conta da DFP |
+| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `depreciacao`, `custo_vendas`, `lucro_liquido` | as da proposta da Fase 0, na ordem de preferência | o mesmo conceito da conta da DFP |
+| `caixa_operacional` | {ordem_caixa}, nessa ordem (seção 3.1.3) | a variante só de operações continuadas cobre os 10-K que não trazem o total; exclui o caixa das operações descontinuadas |
 | `receita_liquida` | {ordem_receita}, nessa ordem: as três da Fase 0 e as que a regra da seção 3.1.1 escolheu | com as três tags, a receita cobre de {rec_min} a {rec_max} dos 10-K de {primeiro} a {ultimo}, e a regra das sem receita tiraria companhias que têm receita em outra tag |
 | `resultado_bruto` | `GrossProfit`; se ausente, receita menos custo das vendas | na DFP a linha 3.03 é obrigatória; no US GAAP o lucro bruto é opcional (cobertura de {bruto_min} a {bruto_max}) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, que já junta as duas | o v1 soma as duas contas; no US GAAP elas vêm juntas |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; se ausente, o lucro líquido menos `IncomeLossFromDiscontinuedOperationsNetOfTax`, quando houver | a conta 3.09 é depois dos impostos; a tag antes dos impostos da proposta da Fase 0 sai, por ser outro conceito |
 | `emprestimos_cp` | `DebtCurrent`; se ausente, a soma de `LongTermDebtCurrent` e `ShortTermBorrowings` presentes | no US GAAP a dívida de curto prazo pode vir em linhas separadas |
 | `emprestimos_lp` | `LongTermDebtNoncurrent`; se ausente, `LongTermDebtAndCapitalLeaseObligations` | o mesmo conceito, com a segunda tag como reserva |
-| `despesas_financeiras` | `InterestExpense` | limite registrado: a despesa financeira da DFP inclui variação cambial e outros encargos; a tag americana é só de juros |
+| `despesas_financeiras` | {ordem_juros}, nessa ordem (seção 3.1.3); as marcadas com (*) são de conceito mais largo e entram com a marca | limite registrado: a despesa financeira da DFP inclui variação cambial e outros encargos; as tags americanas são de juros |
 | `fornecedores` | `AccountsPayableCurrent`; se ausente, `AccountsPayableAndAccruedLiabilitiesCurrent`, com a marca de que inclui provisões | a segunda tag é mais larga |
 | `passivo_total` (regra boba) | `Liabilities`; se ausente, `LiabilitiesAndStockholdersEquity` menos o patrimônio líquido com minoritários | a regra boba usa passivo total ÷ ativo total, e muitas companhias não apresentam o total do passivo |
 
@@ -79,7 +80,21 @@ A fração dos 10-K da amostra com cada conta pelas regras da seção 3.1: prese
 
 {tabela_cobertura}
 
-Com o mapa ampliado, a regra das sem receita tira {sem_amp} dos {n_am} 10-K da amostra, contra {sem_f0} com as três tags da Fase 0.
+Com o mapa ampliado, a regra das sem receita tira {sem_amp} dos {n_am} 10-K da amostra, contra {sem_f0} com as três tags da Fase 0. A despesa financeira e o caixa operacional já estão com as tags da seção 3.1.3.
+
+### 3.1.3 A ampliação da despesa financeira e do caixa operacional
+
+Pedido de Roberto de 24/11/2026: a mesma regra da receita para as duas contas que perdiam cobertura. As candidatas de cada conta foram escritas no código (`AMPLIACOES` e `CONCEITO_LARGO`, em `chiocca/eua/fsds.py`) antes de qualquer contagem, todas do mesmo conceito contábil: juros da dívida; caixa líquido das atividades operacionais, inclusive a variante só de operações continuadas. As de conceito mais largo (`InterestAndDebtExpense`, juros e outros encargos da dívida, e `InterestCostsIncurred`, que inclui os juros capitalizados) entram com uma marca, como a de fornecedores. Ficam fora os juros líquidos de receita de juros e os juros pagos (outros conceitos) e as tags de componentes. Entram pela ordem de maior ganho, com pelo menos {ganho_min} dos 10-K da amostra, pelo valor anual (quatro trimestres) na data de referência.
+
+**Antes, o uso de cada tag por ano** (fração dos 10-K da amostra com o valor anual da tag), para ver se as quedas vêm de troca de tag na taxonomia:
+
+{tabela_uso}
+
+{leitura_uso}
+
+{tabela_juros_caixa}
+
+{resumo_juros_caixa}
 
 ### 3.2 A taxa que substitui o CDI
 
@@ -122,10 +137,10 @@ Para os {casos} casos de Bao et al. ({ea} empresa-anos) com 10-K nos dados da SE
 
 ## 8. Previsões escritas antes dos dados
 
-Revistas em 24/11/2026 para o período novo ({primeiro} a {ultimo}) e o mapa ampliado. Nenhuma faixa mudou; o motivo de cada uma vem ao lado.
+Revistas em 24/11/2026 para o período novo ({primeiro} a {ultimo}) e o mapa ampliado, e de novo depois da ampliação da despesa financeira e do caixa operacional (seção 3.1.3). Nenhuma faixa mudou; o motivo de cada uma vem ao lado.
 
-1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial. **Sem ajuste:** o período novo acrescenta exercícios de juros altos (2022 a 2024), em que o juro implícito dispara menos (o corte sobe com a taxa de referência), mas o M-score e o DPO não dependem dos juros, e a faixa já cobre essa variação.
-2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício. **Sem ajuste:** vem da construção do decil.
+1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial. **Sem ajuste:** o período novo acrescenta exercícios de juros altos (2022 a 2024), em que o juro implícito dispara menos (o corte sobe com a taxa de referência), mas o M-score e o DPO não dependem dos juros, e a faixa já cobre essa variação. **Sem ajuste depois da seção 3.1.3:** com mais juros e mais caixa operacional calculáveis, o juro implícito e o M-score passam a ser calculados em mais empresa-anos (o juro implícito, sobretudo em {df_ano}), o que pode subir um pouco a taxa de alerta nesses anos, dentro da faixa.
+2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício. **Sem ajuste:** vem da construção do decil, com qualquer cobertura.
 3. **Taxa do desfecho:** entre 1,5% e 4% das empresa-anos avaliadas. **Sem ajuste:** com o mapa ampliado, ficam {antes_ficam_amp} companhias-ano com 8-K 4.02 e 10-K antes (seção 5), de {ficam_amp_min} a {ficam_amp_max} por ano de entrega, contra cerca de {media_am} 10-K da amostra por exercício antes da regra das sem receita: perto de 2% a 3%.
 4. **DR do v1:** positiva, com razão de taxas entre 1,1 e 1,5, e "associação positiva" mais provável que não. **Sem ajuste:** a amostra maior só reforça o poder.
 5. **DR do v2:** positiva, com razão de taxas entre 1,2 e 2,0, e "associação positiva". **Sem ajuste.**
@@ -152,7 +167,7 @@ Para a revisão do Claude (claude.ai) e de Roberto, antes do registro:
 
 1. As tags da contagem de descoberta fora das candidatas (seção 3.1.1): nenhuma entra sem decisão de Roberto.
 2. O exercício pela data de referência, como na DFP; as contagens da Fase 0 usam o exercício declarado pela companhia (`fy`), e a diferença entre os dois é pequena.
-3. Duas contas com queda de cobertura, provavelmente por troca de tag na taxonomia (a conferir): `despesas_financeiras` cai para {df_min} em {df_ano}, e `caixa_operacional` fica abaixo de 80% de {co_ini} a {co_fim} (mínimo de {co_min}, em {co_ano}). Sem ampliação, o juro implícito e o TATA do M-score ficam não calculáveis nessas companhias-ano. Recomendação, para Roberto decidir antes do registro: a mesma regra da receita (candidatas escritas antes de contar, ganho mínimo de {ganho_min}), com candidatas como `InterestExpenseNonoperating` e `InterestExpenseDebt` para a despesa financeira e `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` para o caixa operacional.
+3. As quedas de cobertura da despesa financeira e do caixa operacional: tratadas na seção 3.1.3, pela mesma regra da receita (terceira rodada, 24/11/2026).
 4. A leitura do texto inteiro, que é registrado como estiver depois da revisão.
 
 ## 11. O que fica de fora
@@ -162,7 +177,7 @@ As financeiras, a DVA e o leitor (seção 3.4); qualquer lista ou ordem de compa
 
 EN = """# Draft pre-registration of the US study
 
-> **Draft, not a registration.** Written on 2026-11-24 by the agent and updated on the same day with Roberto's decisions on the open points ([Phase 0, section 5.1](us-phase-0.md)), before any US signal was computed. It is still a draft, for review by Claude (claude.ai) and Roberto; nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit), with a target of 2027-01-31 and a fallback of 2027-03-31. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
+> **Draft, not a registration.** Written on 2026-11-24 by the agent and updated on the same day with Roberto's decisions on the open points ([Phase 0, section 5.1](us-phase-0.md)), before any US signal was computed. It is still a draft, for the final review by Claude (claude.ai) and Roberto; nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit), with a target of 2027-01-31 and a fallback of 2027-03-31. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
 
 Basis: [US Phase 0](us-phase-0.md), with the numbers in [`docs/eua_fase0_numeros.json`](../eua_fase0_numeros.json), and the pre-registrations of [study 1](../pre-registro.md), [study 2](study-2-preregistration.md) and [engine v2](engine-v2-preregistration.md), whose rules hold here with only the adaptations in section 3.
 
@@ -186,14 +201,15 @@ The company's own values (no co-registrant or segment), in dollars, in the us-ga
 
 | Account | Tags and rule | Reason |
 | --- | --- | --- |
-| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | those of the Phase 0 proposal, in order of preference | the same concept as the DFP account |
+| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `depreciacao`, `custo_vendas`, `lucro_liquido` | those of the Phase 0 proposal, in order of preference | the same concept as the DFP account |
+| `caixa_operacional` | {ordem_caixa}, in this order (section 3.1.3) | the continuing-operations variant covers the 10-Ks that do not report the total; it excludes discontinued-operations cash flows |
 | `receita_liquida` | {ordem_receita}, in this order: the three Phase 0 tags and those the rule in section 3.1.1 chose | with the three tags, revenue covers {rec_min} to {rec_max} of the {primeiro} to {ultimo} 10-Ks, and the no-revenue rule would remove companies that have revenue in another tag |
 | `resultado_bruto` | `GrossProfit`; if missing, revenue minus cost of sales | in the DFP line 3.03 is mandatory; under US GAAP gross profit is optional (coverage of {bruto_min} to {bruto_max}) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, which already joins both | v1 adds the two accounts; under US GAAP they come together |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; if missing, net income minus `IncomeLossFromDiscontinuedOperationsNetOfTax`, when present | account 3.09 is after taxes; the pre-tax tag of the Phase 0 proposal is dropped, being a different concept |
 | `emprestimos_cp` | `DebtCurrent`; if missing, the sum of `LongTermDebtCurrent` and `ShortTermBorrowings` present | under US GAAP short-term debt may come in separate lines |
 | `emprestimos_lp` | `LongTermDebtNoncurrent`; if missing, `LongTermDebtAndCapitalLeaseObligations` | the same concept, with the second tag as a fallback |
-| `despesas_financeiras` | `InterestExpense` | recorded limitation: the DFP's financial expense includes FX variation and other charges; the US tag is interest only |
+| `despesas_financeiras` | {ordem_juros}, in this order (section 3.1.3); those marked (*) have a wider concept and enter with the flag | recorded limitation: the DFP's financial expense includes FX variation and other charges; the US tags are interest |
 | `fornecedores` | `AccountsPayableCurrent`; if missing, `AccountsPayableAndAccruedLiabilitiesCurrent`, flagged as including accruals | the second tag is wider |
 | `passivo_total` (naive rule) | `Liabilities`; if missing, `LiabilitiesAndStockholdersEquity` minus equity including noncontrolling interest | the naive rule uses total liabilities ÷ total assets, and many companies do not present total liabilities |
 
@@ -217,7 +233,21 @@ The share of sample 10-Ks with each account under the rules in section 3.1: pres
 
 {tabela_cobertura}
 
-With the widened map, the no-revenue rule removes {sem_amp} of the {n_am} sample 10-Ks, against {sem_f0} with the three Phase 0 tags.
+With the widened map, the no-revenue rule removes {sem_amp} of the {n_am} sample 10-Ks, against {sem_f0} with the three Phase 0 tags. Financial expense and operating cash flow already use the tags of section 3.1.3.
+
+### 3.1.3 Widening financial expense and operating cash flow
+
+Roberto's request of 2026-11-24: the same rule as for revenue, for the two accounts that were losing coverage. Each account's candidates were written in the code (`AMPLIACOES` and `CONCEITO_LARGO`, in `chiocca/eua/fsds.py`) before any count, all of the same accounting concept: interest on debt; net cash from operating activities, including the continuing-operations-only variant. Those with a wider concept (`InterestAndDebtExpense`, interest and other debt charges, and `InterestCostsIncurred`, which includes capitalized interest) enter with a flag, like the accounts payable one. Net interest (net of interest income) and interest paid (other concepts) and component tags are left out. They enter in order of largest gain, with at least {ganho_min} of the sample 10-Ks, by the annual value (four quarters) at the report date.
+
+**First, the use of each tag by year** (share of sample 10-Ks with the tag's annual value), to see whether the drops come from a tag change in the taxonomy:
+
+{tabela_uso}
+
+{leitura_uso}
+
+{tabela_juros_caixa}
+
+{resumo_juros_caixa}
 
 ### 3.2 The rate that replaces the CDI
 
@@ -260,10 +290,10 @@ For the {casos} Bao et al. cases ({ea} company-years) with a 10-K in the SEC dat
 
 ## 8. Predictions written before the data
 
-Revised on 2026-11-24 for the new period ({primeiro} to {ultimo}) and the widened map. No range changed; the reason for each is given next to it.
+Revised on 2026-11-24 for the new period ({primeiro} to {ultimo}) and the widened map, and again after widening financial expense and operating cash flow (section 3.1.3). No range changed; the reason for each is given next to it.
 
-1. **v1 alert rate:** between 25% and 45% of the evaluated non-financial companies in each fiscal year. Reason: the M-score above -1.78 flags a relevant share of US companies, and the DPO decile adds 10%; implied interest fires less than in Brazil, because US interest expense does not include FX variation. **No adjustment:** the new period adds high-rate fiscal years (2022 to 2024), in which implied interest fires less (the cut-off rises with the reference rate), but the M-score and the DPO do not depend on rates, and the range already covers that variation.
-2. **v2 alert rate:** between 10.0% and 11.0% in each fiscal year. **No adjustment:** it comes from the construction of the decile.
+1. **v1 alert rate:** between 25% and 45% of the evaluated non-financial companies in each fiscal year. Reason: the M-score above -1.78 flags a relevant share of US companies, and the DPO decile adds 10%; implied interest fires less than in Brazil, because US interest expense does not include FX variation. **No adjustment:** the new period adds high-rate fiscal years (2022 to 2024), in which implied interest fires less (the cut-off rises with the reference rate), but the M-score and the DPO do not depend on rates, and the range already covers that variation. **No adjustment after section 3.1.3:** with more interest and more operating cash flow available, implied interest and the M-score are computed in more company-years (implied interest above all in {df_ano}), which may raise the alert rate a little in those years, within the range.
+2. **v2 alert rate:** between 10.0% and 11.0% in each fiscal year. **No adjustment:** it comes from the construction of the decile, whatever the coverage.
 3. **Outcome rate:** between 1.5% and 4% of the evaluated company-years. **No adjustment:** with the widened map, {antes_ficam_amp} company-years with an 8-K 4.02 and a 10-K before remain (section 5), from {ficam_amp_min} to {ficam_amp_max} a year by filing year, against about {media_am} sample 10-Ks per fiscal year before the no-revenue rule: about 2% to 3%.
 4. **v1 DR:** positive, with a rate ratio between 1.1 and 1.5, and "positive association" more likely than not. **No adjustment:** the larger sample only adds power.
 5. **v2 DR:** positive, with a rate ratio between 1.2 and 2.0, and "positive association". **No adjustment.**
@@ -290,7 +320,7 @@ For review by Claude (claude.ai) and Roberto, before registration:
 
 1. The discovery-count tags outside the candidates (section 3.1.1): none enters without a decision by Roberto.
 2. The fiscal year by the report date, as in the DFP; Phase 0 counts use the fiscal year declared by the company (`fy`), and the difference between the two is small.
-3. Two accounts with a drop in coverage, probably from a tag change in the taxonomy (to be checked): `despesas_financeiras` falls to {df_min} in {df_ano}, and `caixa_operacional` stays below 80% from {co_ini} to {co_fim} (minimum of {co_min}, in {co_ano}). Without widening, implied interest and the M-score's TATA are not computable in those company-years. Recommendation, for Roberto to decide before registration: the same rule as for revenue (candidates written before counting, minimum gain of {ganho_min}), with candidates such as `InterestExpenseNonoperating` and `InterestExpenseDebt` for financial expense and `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` for operating cash flow.
+3. The coverage drops of financial expense and operating cash flow: handled in section 3.1.3, by the same rule as for revenue (third round, 2026-11-24).
 4. Reading the whole text, which is registered as it stands after the review.
 
 ## 11. What is left out
@@ -328,7 +358,7 @@ def _tabelas(m: dict[str, Any], lang: str) -> dict[str, str]:
     descoberta += [f"| `{t}` | {i(n)} | {c['sim'] if t in m['candidatas'] or t in fsds.MAPA['receita_liquida'] else c['nao']} |"
                    for t, n in m["descoberta"]]  # fmt: skip
     anos = [str(a) for a in range(PRIMEIRO, ULTIMO + 1)]
-    cob = m["cobertura_por_ano"]
+    cob = m["juros_e_caixa"]["cobertura_por_ano_regras_novas"]
     n = sum(cob[a]["10k"] for a in anos)
     cobertura = [c["cobertura"].format(primeiro=PRIMEIRO, ultimo=ULTIMO), "| --- | ---: | ---: | ---: |"]
     for conta in CONTAS_COBERTURA:
@@ -337,6 +367,84 @@ def _tabelas(m: dict[str, Any], lang: str) -> dict[str, str]:
                          f"{p1(max(cob[a][conta] for a in anos))} |")  # fmt: skip
     return {"tabela_receita": "\n".join(linhas), "tabela_descoberta": "\n".join(descoberta),
             "tabela_cobertura": "\n".join(cobertura)}  # fmt: skip
+
+
+TEXTOS_JC = {
+    "pt": {"cab_res": "| Conta | Candidata | Conceito mais largo | Ganho no primeiro passo | Entrou | Ganho quando entrou |",
+           "sim": "sim", "nao": "não", "conta_tag": "| Conta | Tag | ",
+           "resumo": "Pelo valor anual, a cobertura da despesa financeira passa de {j_antes} para {j_depois} no conjunto de "
+                     "{primeiro} a {ultimo} e, em {df_ano}, de {j_ano_antes} para {j_ano_depois}; {j_largo} entregas ficam "
+                     "cobertas só por uma tag de conceito mais largo, com a marca. A do caixa operacional passa de {c_antes} "
+                     "para {c_depois} e, em {co_ano}, de {c_ano_antes} para {c_ano_depois}. Uma parte das companhias não tem "
+                     "dívida nem despesa de juros, e por isso a despesa financeira não chega perto de 100%.",
+           "leitura": "Leitura: em {df_ano}, o uso de `InterestExpense` cai para {ie_ano} e o de `InterestExpenseNonoperating` "
+                      "sobe de {nop_antes} no ano anterior para {nop_ano}; de {co_ini} a {co_fim}, a variante só de operações "
+                      "continuadas chega a {cc_max} dos 10-K, no ano em que o total cai para {nc_min}. As quedas vêm de troca "
+                      "de tag, não de falta do dado."},
+    "en": {"cab_res": "| Account | Candidate | Wider concept | Gain at the first step | Entered | Gain when it entered |",
+           "sim": "yes", "nao": "no", "conta_tag": "| Account | Tag | ",
+           "resumo": "By the annual value, financial expense coverage goes from {j_antes} to {j_depois} over {primeiro} to "
+                     "{ultimo} and, in {df_ano}, from {j_ano_antes} to {j_ano_depois}; {j_largo} filings are covered only by "
+                     "a wider-concept tag, with the flag. Operating cash flow goes from {c_antes} to {c_depois} and, in "
+                     "{co_ano}, from {c_ano_antes} to {c_ano_depois}. Some companies have no debt and no interest expense, "
+                     "so financial expense does not come close to 100%.",
+           "leitura": "Reading: in {df_ano}, the use of `InterestExpense` falls to {ie_ano} and that of "
+                      "`InterestExpenseNonoperating` rises from {nop_antes} in the previous year to {nop_ano}; from {co_ini} "
+                      "to {co_fim}, the continuing-operations-only variant reaches {cc_max} of the 10-Ks, in the year the "
+                      "total falls to {nc_min}. The drops come from a tag change, not from missing data."},
+}  # fmt: skip
+
+
+def _juros_e_caixa(jc: dict[str, Any], lang: str) -> dict[str, str]:
+    """As tabelas e as frases da seção 3.1.3, do JSON da Fase 0 (só contagens)."""
+    t, i = TEXTOS_JC[lang], (lambda v: inteiro(int(v), lang))
+    p1 = lambda x: pct(x, lang, 1)  # noqa: E731
+    anos = [str(a) for a in range(PRIMEIRO, ULTIMO + 1)]
+    juros, caixa = jc["contas"]["despesas_financeiras"], jc["contas"]["caixa_operacional"]
+    n = {a: juros["cobertura_por_ano"][a]["10k"] for a in anos}
+    uso = [t["conta_tag"] + " | ".join(anos) + " |", "| --- | --- | " + " | ".join("---:" for _ in anos) + " |"]
+    for conta, x in (("despesas_financeiras", juros), ("caixa_operacional", caixa)):
+        for tag in (*x["base"], *x["candidatas"]):
+            uso.append(
+                f"| `{conta}` | `{tag}` | " + " | ".join(p1(x["uso_por_ano"][tag][a] / n[a]) for a in anos) + " |"
+            )
+    res = [t["cab_res"], "| --- | --- | --- | ---: | --- | ---: |"]
+    for conta, x in (("despesas_financeiras", juros), ("caixa_operacional", caixa)):
+        amp = x["ampliacao"]
+        for tag in x["candidatas"]:
+            entrou = tag in amp["escolhidas"]
+            res.append(f"| `{conta}` | `{tag}` | {t['sim'] if tag in jc['conceito_largo'] else t['nao']} | "
+                       f"{i(amp['ganho_no_primeiro_passo'].get(tag, 0))} | {t['sim'] if entrou else t['nao']} | "
+                       f"{i(amp['ganhos'][tag]) if entrou else '—'} |")  # fmt: skip
+
+    def frac(x: dict[str, Any], chave: str, ano: str | None = None) -> str:
+        c = x["cobertura_por_ano"]
+        if ano:
+            return p1(c[ano][chave] / c[ano]["10k"])
+        return p1(sum(c[a][chave] for a in anos) / sum(c[a]["10k"] for a in anos))
+
+    df_ano = min(anos, key=lambda a: juros["cobertura_por_ano"][a]["antes"] / n[a])
+    co_ano = min(anos, key=lambda a: caixa["cobertura_por_ano"][a]["antes"] / n[a])
+    nc = caixa["base"][0]
+    cc = caixa["candidatas"][0]
+    co_baixos = [a for a in anos if caixa["uso_por_ano"][nc][a] / n[a] < 0.8]
+    anterior = str(int(df_ano) - 1)
+    v = {"primeiro": str(PRIMEIRO), "ultimo": str(ULTIMO), "df_ano": df_ano, "co_ano": co_ano,
+         "j_antes": frac(juros, "antes"), "j_depois": frac(juros, "depois"), "j_ano_antes": frac(juros, "antes", df_ano),
+         "j_ano_depois": frac(juros, "depois", df_ano), "j_largo": i(sum(juros["cobertura_por_ano"][a]["so_conceito_largo"] for a in anos)),
+         "c_antes": frac(caixa, "antes"), "c_depois": frac(caixa, "depois"), "c_ano_antes": frac(caixa, "antes", co_ano),
+         "c_ano_depois": frac(caixa, "depois", co_ano),
+         "ie_ano": p1(juros["uso_por_ano"]["InterestExpense"][df_ano] / n[df_ano]),
+         "nop_antes": p1(juros["uso_por_ano"]["InterestExpenseNonoperating"].get(anterior, 0) / n.get(anterior, 1)),
+         "nop_ano": p1(juros["uso_por_ano"]["InterestExpenseNonoperating"][df_ano] / n[df_ano]),
+         "co_ini": min(co_baixos) if co_baixos else co_ano, "co_fim": max(co_baixos) if co_baixos else co_ano,
+         "cc_max": p1(max(caixa["uso_por_ano"][cc][a] / n[a] for a in anos)),
+         "nc_min": p1(min(caixa["uso_por_ano"][nc][a] / n[a] for a in anos))}  # fmt: skip
+    marca = lambda tag: f"`{tag}`" + (" (*)" if tag in jc["conceito_largo"] else "")  # noqa: E731
+    return {"tabela_uso": "\n".join(uso), "tabela_juros_caixa": "\n".join(res),
+            "resumo_juros_caixa": t["resumo"].format(**v), "leitura_uso": t["leitura"].format(**v),
+            "ordem_juros": ", ".join(marca(x) for x in juros["ampliacao"]["ordem"]),
+            "ordem_caixa": ", ".join(f"`{x}`" for x in caixa["ampliacao"]["ordem"])}  # fmt: skip
 
 
 def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
@@ -355,7 +463,7 @@ def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
     n_am = sum(sr[a]["10k"] for a in anos)
     sem_amp = sum(sr[a]["sem_receita_ampliada"] for a in anos)
     ficam_amp = [e8[str(a)]["antes_restantes"] for a in range(2012, 2026)]
-    cob_am = m["cobertura_por_ano"]
+    cob_am = m["cobertura_por_ano"]  # a cobertura antes da terceira rodada (o ano da queda dos juros)
     df_ano = min(anos, key=lambda a: cob_am[a]["despesas_financeiras"])
     co_ano = min(anos, key=lambda a: cob_am[a]["caixa_operacional"])
     co_baixos = [a for a in anos if cob_am[a]["caixa_operacional"] < 0.8]
@@ -382,6 +490,7 @@ def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
         "co_min": pct(cob_am[co_ano]["caixa_operacional"], lang, 1), "co_ano": co_ano,
         "co_ini": min(co_baixos), "co_fim": max(co_baixos),
         **_tabelas(m, lang),
+        **_juros_e_caixa(m["juros_e_caixa"], lang),
     }  # fmt: skip
 
 

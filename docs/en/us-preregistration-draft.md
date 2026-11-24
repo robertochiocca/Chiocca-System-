@@ -1,6 +1,6 @@
 # Draft pre-registration of the US study
 
-> **Draft, not a registration.** Written on 2026-11-24 by the agent and updated on the same day with Roberto's decisions on the open points ([Phase 0, section 5.1](us-phase-0.md)), before any US signal was computed. It is still a draft, for review by Claude (claude.ai) and Roberto; nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit), with a target of 2027-01-31 and a fallback of 2027-03-31. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
+> **Draft, not a registration.** Written on 2026-11-24 by the agent and updated on the same day with Roberto's decisions on the open points ([Phase 0, section 5.1](us-phase-0.md)), before any US signal was computed. It is still a draft, for the final review by Claude (claude.ai) and Roberto; nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit), with a target of 2027-01-31 and a fallback of 2027-03-31. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
 
 Basis: [US Phase 0](us-phase-0.md), with the numbers in [`docs/eua_fase0_numeros.json`](../eua_fase0_numeros.json), and the pre-registrations of [study 1](../pre-registro.md), [study 2](study-2-preregistration.md) and [engine v2](engine-v2-preregistration.md), whose rules hold here with only the adaptations in section 3.
 
@@ -24,14 +24,15 @@ The company's own values (no co-registrant or segment), in dollars, in the us-ga
 
 | Account | Tags and rule | Reason |
 | --- | --- | --- |
-| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | those of the Phase 0 proposal, in order of preference | the same concept as the DFP account |
+| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `depreciacao`, `custo_vendas`, `lucro_liquido` | those of the Phase 0 proposal, in order of preference | the same concept as the DFP account |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivities`, `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations`, in this order (section 3.1.3) | the continuing-operations variant covers the 10-Ks that do not report the total; it excludes discontinued-operations cash flows |
 | `receita_liquida` | `Revenues`, `RevenueFromContractWithCustomerExcludingAssessedTax`, `SalesRevenueNet`, `SalesRevenueGoodsNet`, `RevenueFromContractWithCustomerIncludingAssessedTax`, `SalesRevenueServicesNet`, `OilAndGasRevenue`, in this order: the three Phase 0 tags and those the rule in section 3.1.1 chose | with the three tags, revenue covers 66% to 73% of the 2011 to 2024 10-Ks, and the no-revenue rule would remove companies that have revenue in another tag |
 | `resultado_bruto` | `GrossProfit`; if missing, revenue minus cost of sales | in the DFP line 3.03 is mandatory; under US GAAP gross profit is optional (coverage of 35% to 37%) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, which already joins both | v1 adds the two accounts; under US GAAP they come together |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; if missing, net income minus `IncomeLossFromDiscontinuedOperationsNetOfTax`, when present | account 3.09 is after taxes; the pre-tax tag of the Phase 0 proposal is dropped, being a different concept |
 | `emprestimos_cp` | `DebtCurrent`; if missing, the sum of `LongTermDebtCurrent` and `ShortTermBorrowings` present | under US GAAP short-term debt may come in separate lines |
 | `emprestimos_lp` | `LongTermDebtNoncurrent`; if missing, `LongTermDebtAndCapitalLeaseObligations` | the same concept, with the second tag as a fallback |
-| `despesas_financeiras` | `InterestExpense` | recorded limitation: the DFP's financial expense includes FX variation and other charges; the US tag is interest only |
+| `despesas_financeiras` | `InterestExpense`, `InterestExpenseDebt`, `InterestExpenseNonoperating`, `InterestAndDebtExpense` (*), in this order (section 3.1.3); those marked (*) have a wider concept and enter with the flag | recorded limitation: the DFP's financial expense includes FX variation and other charges; the US tags are interest |
 | `fornecedores` | `AccountsPayableCurrent`; if missing, `AccountsPayableAndAccruedLiabilitiesCurrent`, flagged as including accruals | the second tag is wider |
 | `passivo_total` (naive rule) | `Liabilities`; if missing, `LiabilitiesAndStockholdersEquity` minus equity including noncontrolling interest | the naive rule uses total liabilities ÷ total assets, and many companies do not present total liabilities |
 
@@ -99,14 +100,46 @@ The share of sample 10-Ks with each account under the rules in section 3.1: pres
 | `custo_vendas` | 58.1% | 56.0% | 61.6% |
 | `resultado_bruto` | 61.0% | 59.8% | 63.4% |
 | `despesas_vendas_gerais_adm` | 39.6% | 38.6% | 40.7% |
-| `despesas_financeiras` | 53.1% | 17.2% | 60.8% |
+| `despesas_financeiras` | 60.3% | 54.5% | 67.1% |
 | `lucro_operacoes_continuadas` | 97.4% | 95.0% | 99.4% |
 | `lucro_liquido` | 97.0% | 94.1% | 99.4% |
-| `caixa_operacional` | 83.9% | 55.6% | 98.3% |
+| `caixa_operacional` | 98.8% | 97.7% | 99.7% |
 | `depreciacao` | 82.8% | 81.1% | 84.7% |
 | `passivo_total` | 98.0% | 96.8% | 99.2% |
 
-With the widened map, the no-revenue rule removes 12,873 of the 65,096 sample 10-Ks, against 19,409 with the three Phase 0 tags.
+With the widened map, the no-revenue rule removes 12,873 of the 65,096 sample 10-Ks, against 19,409 with the three Phase 0 tags. Financial expense and operating cash flow already use the tags of section 3.1.3.
+
+### 3.1.3 Widening financial expense and operating cash flow
+
+Roberto's request of 2026-11-24: the same rule as for revenue, for the two accounts that were losing coverage. Each account's candidates were written in the code (`AMPLIACOES` and `CONCEITO_LARGO`, in `chiocca/eua/fsds.py`) before any count, all of the same accounting concept: interest on debt; net cash from operating activities, including the continuing-operations-only variant. Those with a wider concept (`InterestAndDebtExpense`, interest and other debt charges, and `InterestCostsIncurred`, which includes capitalized interest) enter with a flag, like the accounts payable one. Net interest (net of interest income) and interest paid (other concepts) and component tags are left out. They enter in order of largest gain, with at least 0.5% of the sample 10-Ks, by the annual value (four quarters) at the report date.
+
+**First, the use of each tag by year** (share of sample 10-Ks with the tag's annual value), to see whether the drops come from a tag change in the taxonomy:
+
+| Account | Tag | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `despesas_financeiras` | `InterestExpense` | 59.5% | 59.2% | 58.6% | 57.8% | 56.2% | 55.2% | 54.8% | 53.5% | 53.6% | 51.9% | 50.3% | 49.0% | 49.2% | 16.9% |
+| `despesas_financeiras` | `InterestExpenseNonoperating` | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.5% | 33.1% |
+| `despesas_financeiras` | `InterestExpenseOperating` | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 1.6% |
+| `despesas_financeiras` | `InterestExpenseDebt` | 4.2% | 3.5% | 3.9% | 3.3% | 3.4% | 3.2% | 3.1% | 3.2% | 3.6% | 3.6% | 3.3% | 2.9% | 2.9% | 3.0% |
+| `despesas_financeiras` | `InterestExpenseBorrowings` | 0.1% | 0.1% | 0.1% | 0.2% | 0.2% | 0.1% | 0.1% | 0.1% | 0.1% | 0.1% | 0.1% | 0.1% | 0.1% | 0.1% |
+| `despesas_financeiras` | `InterestAndDebtExpense` | 3.2% | 3.0% | 3.1% | 3.1% | 3.1% | 3.1% | 2.9% | 2.4% | 2.2% | 1.9% | 2.0% | 2.4% | 2.3% | 2.4% |
+| `despesas_financeiras` | `InterestCostsIncurred` | 0.3% | 0.2% | 0.3% | 0.3% | 0.3% | 0.3% | 0.3% | 0.3% | 0.3% | 0.3% | 0.3% | 0.3% | 0.3% | 0.2% |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivities` | 86.9% | 84.7% | 77.9% | 62.1% | 57.0% | 55.0% | 74.6% | 92.6% | 96.0% | 96.4% | 97.1% | 97.8% | 97.5% | 97.5% |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` | 15.4% | 17.2% | 24.1% | 40.0% | 45.5% | 47.5% | 27.7% | 9.9% | 6.8% | 6.3% | 5.7% | 5.3% | 5.2% | 5.4% |
+
+Reading: in 2024, the use of `InterestExpense` falls to 16.9% and that of `InterestExpenseNonoperating` rises from 0.5% in the previous year to 33.1%; from 2013 to 2017, the continuing-operations-only variant reaches 47.5% of the 10-Ks, in the year the total falls to 55.0%. The drops come from a tag change, not from missing data.
+
+| Account | Candidate | Wider concept | Gain at the first step | Entered | Gain when it entered |
+| --- | --- | --- | ---: | --- | ---: |
+| `despesas_financeiras` | `InterestExpenseNonoperating` | no | 1,392 | yes | 1,387 |
+| `despesas_financeiras` | `InterestExpenseOperating` | no | 67 | no | — |
+| `despesas_financeiras` | `InterestExpenseDebt` | no | 1,822 | yes | 1,822 |
+| `despesas_financeiras` | `InterestExpenseBorrowings` | no | 67 | no | — |
+| `despesas_financeiras` | `InterestAndDebtExpense` | yes | 1,414 | yes | 1,379 |
+| `despesas_financeiras` | `InterestCostsIncurred` | yes | 149 | no | — |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` | no | 9,632 | yes | 9,632 |
+
+By the annual value, financial expense coverage goes from 52.3% to 59.3% over 2011 to 2024 and, in 2024, from 16.9% to 54.8%; 1,379 filings are covered only by a wider-concept tag, with the flag. Operating cash flow goes from 83.2% to 98.0% and, in 2016, from 55.0% to 97.6%. Some companies have no debt and no interest expense, so financial expense does not come close to 100%.
 
 ### 3.2 The rate that replaces the CDI
 
@@ -149,10 +182,10 @@ For the 25 Bao et al. cases (47 company-years) with a 10-K in the SEC data (Phas
 
 ## 8. Predictions written before the data
 
-Revised on 2026-11-24 for the new period (2011 to 2024) and the widened map. No range changed; the reason for each is given next to it.
+Revised on 2026-11-24 for the new period (2011 to 2024) and the widened map, and again after widening financial expense and operating cash flow (section 3.1.3). No range changed; the reason for each is given next to it.
 
-1. **v1 alert rate:** between 25% and 45% of the evaluated non-financial companies in each fiscal year. Reason: the M-score above -1.78 flags a relevant share of US companies, and the DPO decile adds 10%; implied interest fires less than in Brazil, because US interest expense does not include FX variation. **No adjustment:** the new period adds high-rate fiscal years (2022 to 2024), in which implied interest fires less (the cut-off rises with the reference rate), but the M-score and the DPO do not depend on rates, and the range already covers that variation.
-2. **v2 alert rate:** between 10.0% and 11.0% in each fiscal year. **No adjustment:** it comes from the construction of the decile.
+1. **v1 alert rate:** between 25% and 45% of the evaluated non-financial companies in each fiscal year. Reason: the M-score above -1.78 flags a relevant share of US companies, and the DPO decile adds 10%; implied interest fires less than in Brazil, because US interest expense does not include FX variation. **No adjustment:** the new period adds high-rate fiscal years (2022 to 2024), in which implied interest fires less (the cut-off rises with the reference rate), but the M-score and the DPO do not depend on rates, and the range already covers that variation. **No adjustment after section 3.1.3:** with more interest and more operating cash flow available, implied interest and the M-score are computed in more company-years (implied interest above all in 2024), which may raise the alert rate a little in those years, within the range.
+2. **v2 alert rate:** between 10.0% and 11.0% in each fiscal year. **No adjustment:** it comes from the construction of the decile, whatever the coverage.
 3. **Outcome rate:** between 1.5% and 4% of the evaluated company-years. **No adjustment:** with the widened map, 1,312 company-years with an 8-K 4.02 and a 10-K before remain (section 5), from 58 to 136 a year by filing year, against about 4,600 sample 10-Ks per fiscal year before the no-revenue rule: about 2% to 3%.
 4. **v1 DR:** positive, with a rate ratio between 1.1 and 1.5, and "positive association" more likely than not. **No adjustment:** the larger sample only adds power.
 5. **v2 DR:** positive, with a rate ratio between 1.2 and 2.0, and "positive association". **No adjustment.**
@@ -179,7 +212,7 @@ For review by Claude (claude.ai) and Roberto, before registration:
 
 1. The discovery-count tags outside the candidates (section 3.1.1): none enters without a decision by Roberto.
 2. The fiscal year by the report date, as in the DFP; Phase 0 counts use the fiscal year declared by the company (`fy`), and the difference between the two is small.
-3. Two accounts with a drop in coverage, probably from a tag change in the taxonomy (to be checked): `despesas_financeiras` falls to 17.2% in 2024, and `caixa_operacional` stays below 80% from 2013 to 2017 (minimum of 55.6%, in 2016). Without widening, implied interest and the M-score's TATA are not computable in those company-years. Recommendation, for Roberto to decide before registration: the same rule as for revenue (candidates written before counting, minimum gain of 0.5%), with candidates such as `InterestExpenseNonoperating` and `InterestExpenseDebt` for financial expense and `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` for operating cash flow.
+3. The coverage drops of financial expense and operating cash flow: handled in section 3.1.3, by the same rule as for revenue (third round, 2026-11-24).
 4. Reading the whole text, which is registered as it stands after the review.
 
 ## 11. What is left out

@@ -1,6 +1,6 @@
 # Rascunho do pré-registro do estudo dos EUA
 
-> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente e atualizado no mesmo dia com as decisões de Roberto sobre os pontos em aberto ([Fase 0, seção 5.1](eua-fase-0.md)), antes de qualquer sinal americano calculado. Continua rascunho, para a revisão do Claude (claude.ai) e de Roberto; nada aqui vale até o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte), com meta de 31/01/2027 e reserva de 31/03/2027. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
+> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente e atualizado no mesmo dia com as decisões de Roberto sobre os pontos em aberto ([Fase 0, seção 5.1](eua-fase-0.md)), antes de qualquer sinal americano calculado. Continua rascunho, para a revisão final do Claude (claude.ai) e de Roberto; nada aqui vale até o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte), com meta de 31/01/2027 e reserva de 31/03/2027. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
 
 Base: a [Fase 0 dos EUA](eua-fase-0.md), com os números de [`docs/eua_fase0_numeros.json`](eua_fase0_numeros.json), e os pré-registros do [estudo 1](pre-registro.md), do [estudo 2](pre-registro-estudo-2.md) e do [motor v2](pre-registro-motor-v2.md), cujas regras valem aqui com só as adaptações da seção 3.
 
@@ -24,14 +24,15 @@ Valores da própria companhia (sem co-registrante nem segmento), em dólar, na t
 
 | Conta | Tags e regra | Motivo |
 | --- | --- | --- |
-| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | as da proposta da Fase 0, na ordem de preferência | o mesmo conceito da conta da DFP |
+| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `depreciacao`, `custo_vendas`, `lucro_liquido` | as da proposta da Fase 0, na ordem de preferência | o mesmo conceito da conta da DFP |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivities`, `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations`, nessa ordem (seção 3.1.3) | a variante só de operações continuadas cobre os 10-K que não trazem o total; exclui o caixa das operações descontinuadas |
 | `receita_liquida` | `Revenues`, `RevenueFromContractWithCustomerExcludingAssessedTax`, `SalesRevenueNet`, `SalesRevenueGoodsNet`, `RevenueFromContractWithCustomerIncludingAssessedTax`, `SalesRevenueServicesNet`, `OilAndGasRevenue`, nessa ordem: as três da Fase 0 e as que a regra da seção 3.1.1 escolheu | com as três tags, a receita cobre de 66% a 73% dos 10-K de 2011 a 2024, e a regra das sem receita tiraria companhias que têm receita em outra tag |
 | `resultado_bruto` | `GrossProfit`; se ausente, receita menos custo das vendas | na DFP a linha 3.03 é obrigatória; no US GAAP o lucro bruto é opcional (cobertura de 35% a 37%) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, que já junta as duas | o v1 soma as duas contas; no US GAAP elas vêm juntas |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; se ausente, o lucro líquido menos `IncomeLossFromDiscontinuedOperationsNetOfTax`, quando houver | a conta 3.09 é depois dos impostos; a tag antes dos impostos da proposta da Fase 0 sai, por ser outro conceito |
 | `emprestimos_cp` | `DebtCurrent`; se ausente, a soma de `LongTermDebtCurrent` e `ShortTermBorrowings` presentes | no US GAAP a dívida de curto prazo pode vir em linhas separadas |
 | `emprestimos_lp` | `LongTermDebtNoncurrent`; se ausente, `LongTermDebtAndCapitalLeaseObligations` | o mesmo conceito, com a segunda tag como reserva |
-| `despesas_financeiras` | `InterestExpense` | limite registrado: a despesa financeira da DFP inclui variação cambial e outros encargos; a tag americana é só de juros |
+| `despesas_financeiras` | `InterestExpense`, `InterestExpenseDebt`, `InterestExpenseNonoperating`, `InterestAndDebtExpense` (*), nessa ordem (seção 3.1.3); as marcadas com (*) são de conceito mais largo e entram com a marca | limite registrado: a despesa financeira da DFP inclui variação cambial e outros encargos; as tags americanas são de juros |
 | `fornecedores` | `AccountsPayableCurrent`; se ausente, `AccountsPayableAndAccruedLiabilitiesCurrent`, com a marca de que inclui provisões | a segunda tag é mais larga |
 | `passivo_total` (regra boba) | `Liabilities`; se ausente, `LiabilitiesAndStockholdersEquity` menos o patrimônio líquido com minoritários | a regra boba usa passivo total ÷ ativo total, e muitas companhias não apresentam o total do passivo |
 
@@ -99,14 +100,46 @@ A fração dos 10-K da amostra com cada conta pelas regras da seção 3.1: prese
 | `custo_vendas` | 58,1% | 56,0% | 61,6% |
 | `resultado_bruto` | 61,0% | 59,8% | 63,4% |
 | `despesas_vendas_gerais_adm` | 39,6% | 38,6% | 40,7% |
-| `despesas_financeiras` | 53,1% | 17,2% | 60,8% |
+| `despesas_financeiras` | 60,3% | 54,5% | 67,1% |
 | `lucro_operacoes_continuadas` | 97,4% | 95,0% | 99,4% |
 | `lucro_liquido` | 97,0% | 94,1% | 99,4% |
-| `caixa_operacional` | 83,9% | 55,6% | 98,3% |
+| `caixa_operacional` | 98,8% | 97,7% | 99,7% |
 | `depreciacao` | 82,8% | 81,1% | 84,7% |
 | `passivo_total` | 98,0% | 96,8% | 99,2% |
 
-Com o mapa ampliado, a regra das sem receita tira 12.873 dos 65.096 10-K da amostra, contra 19.409 com as três tags da Fase 0.
+Com o mapa ampliado, a regra das sem receita tira 12.873 dos 65.096 10-K da amostra, contra 19.409 com as três tags da Fase 0. A despesa financeira e o caixa operacional já estão com as tags da seção 3.1.3.
+
+### 3.1.3 A ampliação da despesa financeira e do caixa operacional
+
+Pedido de Roberto de 24/11/2026: a mesma regra da receita para as duas contas que perdiam cobertura. As candidatas de cada conta foram escritas no código (`AMPLIACOES` e `CONCEITO_LARGO`, em `chiocca/eua/fsds.py`) antes de qualquer contagem, todas do mesmo conceito contábil: juros da dívida; caixa líquido das atividades operacionais, inclusive a variante só de operações continuadas. As de conceito mais largo (`InterestAndDebtExpense`, juros e outros encargos da dívida, e `InterestCostsIncurred`, que inclui os juros capitalizados) entram com uma marca, como a de fornecedores. Ficam fora os juros líquidos de receita de juros e os juros pagos (outros conceitos) e as tags de componentes. Entram pela ordem de maior ganho, com pelo menos 0,5% dos 10-K da amostra, pelo valor anual (quatro trimestres) na data de referência.
+
+**Antes, o uso de cada tag por ano** (fração dos 10-K da amostra com o valor anual da tag), para ver se as quedas vêm de troca de tag na taxonomia:
+
+| Conta | Tag | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `despesas_financeiras` | `InterestExpense` | 59,5% | 59,2% | 58,6% | 57,8% | 56,2% | 55,2% | 54,8% | 53,5% | 53,6% | 51,9% | 50,3% | 49,0% | 49,2% | 16,9% |
+| `despesas_financeiras` | `InterestExpenseNonoperating` | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,5% | 33,1% |
+| `despesas_financeiras` | `InterestExpenseOperating` | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 0,0% | 1,6% |
+| `despesas_financeiras` | `InterestExpenseDebt` | 4,2% | 3,5% | 3,9% | 3,3% | 3,4% | 3,2% | 3,1% | 3,2% | 3,6% | 3,6% | 3,3% | 2,9% | 2,9% | 3,0% |
+| `despesas_financeiras` | `InterestExpenseBorrowings` | 0,1% | 0,1% | 0,1% | 0,2% | 0,2% | 0,1% | 0,1% | 0,1% | 0,1% | 0,1% | 0,1% | 0,1% | 0,1% | 0,1% |
+| `despesas_financeiras` | `InterestAndDebtExpense` | 3,2% | 3,0% | 3,1% | 3,1% | 3,1% | 3,1% | 2,9% | 2,4% | 2,2% | 1,9% | 2,0% | 2,4% | 2,3% | 2,4% |
+| `despesas_financeiras` | `InterestCostsIncurred` | 0,3% | 0,2% | 0,3% | 0,3% | 0,3% | 0,3% | 0,3% | 0,3% | 0,3% | 0,3% | 0,3% | 0,3% | 0,3% | 0,2% |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivities` | 86,9% | 84,7% | 77,9% | 62,1% | 57,0% | 55,0% | 74,6% | 92,6% | 96,0% | 96,4% | 97,1% | 97,8% | 97,5% | 97,5% |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` | 15,4% | 17,2% | 24,1% | 40,0% | 45,5% | 47,5% | 27,7% | 9,9% | 6,8% | 6,3% | 5,7% | 5,3% | 5,2% | 5,4% |
+
+Leitura: em 2024, o uso de `InterestExpense` cai para 16,9% e o de `InterestExpenseNonoperating` sobe de 0,5% no ano anterior para 33,1%; de 2013 a 2017, a variante só de operações continuadas chega a 47,5% dos 10-K, no ano em que o total cai para 55,0%. As quedas vêm de troca de tag, não de falta do dado.
+
+| Conta | Candidata | Conceito mais largo | Ganho no primeiro passo | Entrou | Ganho quando entrou |
+| --- | --- | --- | ---: | --- | ---: |
+| `despesas_financeiras` | `InterestExpenseNonoperating` | não | 1.392 | sim | 1.387 |
+| `despesas_financeiras` | `InterestExpenseOperating` | não | 67 | não | — |
+| `despesas_financeiras` | `InterestExpenseDebt` | não | 1.822 | sim | 1.822 |
+| `despesas_financeiras` | `InterestExpenseBorrowings` | não | 67 | não | — |
+| `despesas_financeiras` | `InterestAndDebtExpense` | sim | 1.414 | sim | 1.379 |
+| `despesas_financeiras` | `InterestCostsIncurred` | sim | 149 | não | — |
+| `caixa_operacional` | `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` | não | 9.632 | sim | 9.632 |
+
+Pelo valor anual, a cobertura da despesa financeira passa de 52,3% para 59,3% no conjunto de 2011 a 2024 e, em 2024, de 16,9% para 54,8%; 1.379 entregas ficam cobertas só por uma tag de conceito mais largo, com a marca. A do caixa operacional passa de 83,2% para 98,0% e, em 2016, de 55,0% para 97,6%. Uma parte das companhias não tem dívida nem despesa de juros, e por isso a despesa financeira não chega perto de 100%.
 
 ### 3.2 A taxa que substitui o CDI
 
@@ -149,10 +182,10 @@ Para os 25 casos de Bao et al. (47 empresa-anos) com 10-K nos dados da SEC (Fase
 
 ## 8. Previsões escritas antes dos dados
 
-Revistas em 24/11/2026 para o período novo (2011 a 2024) e o mapa ampliado. Nenhuma faixa mudou; o motivo de cada uma vem ao lado.
+Revistas em 24/11/2026 para o período novo (2011 a 2024) e o mapa ampliado, e de novo depois da ampliação da despesa financeira e do caixa operacional (seção 3.1.3). Nenhuma faixa mudou; o motivo de cada uma vem ao lado.
 
-1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial. **Sem ajuste:** o período novo acrescenta exercícios de juros altos (2022 a 2024), em que o juro implícito dispara menos (o corte sobe com a taxa de referência), mas o M-score e o DPO não dependem dos juros, e a faixa já cobre essa variação.
-2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício. **Sem ajuste:** vem da construção do decil.
+1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial. **Sem ajuste:** o período novo acrescenta exercícios de juros altos (2022 a 2024), em que o juro implícito dispara menos (o corte sobe com a taxa de referência), mas o M-score e o DPO não dependem dos juros, e a faixa já cobre essa variação. **Sem ajuste depois da seção 3.1.3:** com mais juros e mais caixa operacional calculáveis, o juro implícito e o M-score passam a ser calculados em mais empresa-anos (o juro implícito, sobretudo em 2024), o que pode subir um pouco a taxa de alerta nesses anos, dentro da faixa.
+2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício. **Sem ajuste:** vem da construção do decil, com qualquer cobertura.
 3. **Taxa do desfecho:** entre 1,5% e 4% das empresa-anos avaliadas. **Sem ajuste:** com o mapa ampliado, ficam 1.312 companhias-ano com 8-K 4.02 e 10-K antes (seção 5), de 58 a 136 por ano de entrega, contra cerca de 4.600 10-K da amostra por exercício antes da regra das sem receita: perto de 2% a 3%.
 4. **DR do v1:** positiva, com razão de taxas entre 1,1 e 1,5, e "associação positiva" mais provável que não. **Sem ajuste:** a amostra maior só reforça o poder.
 5. **DR do v2:** positiva, com razão de taxas entre 1,2 e 2,0, e "associação positiva". **Sem ajuste.**
@@ -179,7 +212,7 @@ Para a revisão do Claude (claude.ai) e de Roberto, antes do registro:
 
 1. As tags da contagem de descoberta fora das candidatas (seção 3.1.1): nenhuma entra sem decisão de Roberto.
 2. O exercício pela data de referência, como na DFP; as contagens da Fase 0 usam o exercício declarado pela companhia (`fy`), e a diferença entre os dois é pequena.
-3. Duas contas com queda de cobertura, provavelmente por troca de tag na taxonomia (a conferir): `despesas_financeiras` cai para 17,2% em 2024, e `caixa_operacional` fica abaixo de 80% de 2013 a 2017 (mínimo de 55,6%, em 2016). Sem ampliação, o juro implícito e o TATA do M-score ficam não calculáveis nessas companhias-ano. Recomendação, para Roberto decidir antes do registro: a mesma regra da receita (candidatas escritas antes de contar, ganho mínimo de 0,5%), com candidatas como `InterestExpenseNonoperating` e `InterestExpenseDebt` para a despesa financeira e `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` para o caixa operacional.
+3. As quedas de cobertura da despesa financeira e do caixa operacional: tratadas na seção 3.1.3, pela mesma regra da receita (terceira rodada, 24/11/2026).
 4. A leitura do texto inteiro, que é registrado como estiver depois da revisão.
 
 ## 11. O que fica de fora
