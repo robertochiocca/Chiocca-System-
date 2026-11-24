@@ -6,9 +6,10 @@ numpy nem o pandas: é uma implementação à parte, com frações exatas nas bo
 reproduzir estes valores. Limite: as duas implementações partem do mesmo texto e foram escritas com ajuda de IA; a
 conferência pega erro de implementação, não erro no texto.
 
-Um grupo FICTÍCIO de 14 companhias com 10-K do exercício de 2022 (data de referência 31/12/2022), em linhas no formato
-dos Financial Statement Data Sets (`sub.txt`, `num.txt` e `pre.txt`), e uma taxa de referência fictícia. Dez companhias
-são avaliadas; as outras quatro testam as exclusões (financeira, SPAC, sem receita e sem versão pública até o corte).
+Um grupo FICTÍCIO de 20 companhias com 10-K do exercício de 2022 (data de referência 31/12/2022), em linhas no formato
+dos Financial Statement Data Sets (`sub.txt`, `num.txt` e `pre.txt`), e uma taxa de referência fictícia. Dezesseis
+companhias são avaliadas; as outras quatro testam as exclusões (financeira, SPAC, sem receita e sem versão pública até o
+corte).
 
 Regras de implementação que o texto registrado não detalha e que este exemplo fixa (o código segue as mesmas):
 (i)   valor de uma tag numa data: só da própria companhia (`coreg` e `segments` vazios), em USD, na taxonomia us-gaap,
