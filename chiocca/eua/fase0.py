@@ -512,9 +512,9 @@ T: dict[str, dict[str, Any]] = {
         "descrição à parte, sem teste. O 8-K 4.02 é público, gratuito, cobre o período inteiro com XBRL e tem casos "
         "suficientes para medir alguma coisa; o AAER é raro demais de 2009 a 2014 para um teste e mede outra coisa (a ação "
         "da SEC).",
-        "s_pendentes": "### 5.3 Para o rascunho do pré-registro",
-        "rascunho": "O [rascunho do pré-registro dos EUA](pre-registro-eua-rascunho.md), de 24/11/2026, trata destes "
-        "pontos; não é registro.",
+        "s_pendentes": "### 5.3 Para o pré-registro",
+        "rascunho": "O [pré-registro do estudo dos EUA](pre-registro-eua.md), registrado em 24/11/2026, trata destes "
+        "pontos.",
         "decisoes": [
             "**Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. A regra é "
             "escrita antes de qualquer sinal, com a versão pública na data (seção 2.3).",
@@ -753,9 +753,9 @@ T: dict[str, dict[str, Any]] = {
         "description, with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to "
         "measure something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC "
         "action).",
-        "s_pendentes": "### 5.3 For the pre-registration draft",
-        "rascunho": "The [draft US pre-registration](us-preregistration-draft.md), of 2026-11-24, takes up these points; "
-        "it is not a registration.",
+        "s_pendentes": "### 5.3 For the pre-registration",
+        "rascunho": "The [US study pre-registration](us-preregistration.md), registered on 2026-11-24, takes up these "
+        "points.",
         "decisoes": [
             "**Which fiscal year the case affects.** The items field does not say which statements stopped being "
             "reliable. The rule is written before any signal, with the public version at the date (section 2.3).",

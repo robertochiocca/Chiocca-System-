@@ -1,9 +1,10 @@
-"""Rascunho do pré-registro do estudo dos EUA (pedido de 24/11/2026, item 4): não é registro. Escrito antes de qualquer
-sinal americano calculado, com as decisões de Roberto de 24/11/2026 (Fase 0, seção 5.1). Os números citados da Fase 0
-saem de `docs/eua_fase0_numeros.json` (`render`); o resto do texto são regras e datas. Um teste confere que os
-documentos em PT e EN são a saída deste módulo.
+"""Pré-registro do estudo dos EUA, registrado em 24/11/2026, antes de qualquer sinal americano calculado, com as
+decisões de Roberto (Fase 0, seção 5.1) e os três ajustes da revisão final (seção 14 do texto). Os números citados da
+Fase 0 saem de `docs/eua_fase0_numeros.json` (`render`); o resto do texto são regras e datas. Um teste confere que os
+documentos em PT e EN são a saída deste módulo, e o carimbo (`docs/carimbos/eua-registro.txt`) guarda o SHA-256 do
+texto em PT como está no commit de registro. Os arquivos do antigo rascunho viram um aviso (`AVISOS`).
 
-Uso: python -m chiocca.eua.rascunho
+Uso: python -m chiocca.eua.pre_registro
 """
 
 from __future__ import annotations
@@ -15,16 +16,28 @@ from chiocca.base import RAIZ
 from chiocca.eua import fase0, fsds
 from chiocca.formato import inteiro, pct
 
-DOCS = {
+DOCS = {"pt": RAIZ / "docs" / "pre-registro-eua.md", "en": RAIZ / "docs" / "en" / "us-preregistration.md"}
+RASCUNHOS = {
     "pt": RAIZ / "docs" / "pre-registro-eua-rascunho.md",
     "en": RAIZ / "docs" / "en" / "us-preregistration-draft.md",
+}
+AVISOS = {
+    "pt": "# Rascunho do pré-registro do estudo dos EUA\n\n> Este rascunho foi registrado em 24/11/2026. O texto em vigor é "
+    "o [pré-registro do estudo dos EUA](pre-registro-eua.md); o histórico do rascunho fica no Git.\n",
+    "en": "# Draft pre-registration of the US study\n\n> This draft was registered on 2026-11-24. The text in force is the "
+    "[US study pre-registration](us-preregistration.md); the draft's history stays in Git.\n",
+}
+COMMIT_DE_REGISTRO: str | None = None  # anotado no commit seguinte ao de registro, sem mudar nenhuma regra
+ANOTACAO = {
+    "pt": "- Hash do commit de registro: `{c}` (anotado no commit seguinte, sem mudar nenhuma regra acima).\n",
+    "en": "- Hash of the registration commit: `{c}` (noted in the next commit, without changing any rule above).\n",
 }
 PRIMEIRO, ULTIMO = 2011, 2024  # exercícios da amostra (ano da data de referência), decisão de 24/11/2026
 SEMENTE = 20270430
 
-PT = """# Rascunho do pré-registro do estudo dos EUA
+PT = """# Pré-registro do estudo dos EUA
 
-> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente, com as decisões de Roberto ([Fase 0, seção 5.1](eua-fase-0.md)) e os três ajustes da revisão final (seções 3.1.1, 7 e 10), antes de qualquer sinal americano calculado. Nada aqui vale até o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte). A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
+> **Registrado em 24/11/2026.** Redigido pelo agente com as decisões de Roberto ([Fase 0, seção 5.1](eua-fase-0.md)) e revisado por Roberto com o Claude (claude.ai), que aprovou o registro com os três ajustes da seção 14. O commit que introduz este arquivo é o registro, e o hash dele é anotado no commit seguinte, sem mudar nenhuma regra, como no estudo 2 e no motor v2. Nenhum sinal americano foi calculado antes do registro. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
 
 Base: a [Fase 0 dos EUA](eua-fase-0.md), com os números de [`docs/eua_fase0_numeros.json`](eua_fase0_numeros.json), e os pré-registros do [estudo 1](pre-registro.md), do [estudo 2](pre-registro-estudo-2.md) e do [motor v2](pre-registro-motor-v2.md), cujas regras valem aqui com só as adaptações da seção 3.
 
@@ -179,11 +192,26 @@ O exercício é o ano da data de referência, como na DFP; as contagens da Fase 
 ## 12. O que fica de fora
 
 As financeiras, a DVA e o leitor (seção 3.4); qualquer lista ou ordem de companhias por alerta; qualquer recomendação de investimento; e, até decisão de Roberto, a frente dos EUA no README e no produto.
+
+## 13. Registro
+
+- Data: 24/11/2026.
+- Commit: o que introduz esta versão com este nome. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+{anotacao}- Carimbo de tempo, como no estudo 2 e no motor v2: `docs/carimbos/eua-registro.txt`, com o hash do commit de registro e o SHA-256 deste arquivo em PT, como está no commit de registro, carimbado com o OpenTimestamps; o `.ots` vai para o repositório, e o `ots upgrade` é feito depois da confirmação no Bitcoin.
+- Congelamento: o código do estudo e o script do exemplo da seção 7 entram num registro de SHA-256 próprio do estudo, antes do cálculo único (seção 10).
+
+## 14. Revisão de Roberto (24/11/2026)
+
+Roberto leu o texto inteiro, com a revisão do Claude (claude.ai), e aprovou o registro com três ajustes. O texto lido foi o do commit `8c529c7fd215e268304570296a1aaf5332e0acb2`; os ajustes entraram no commit `08d15363cbe7191bfe2a661e86f88fafa1228f8d`, antes do registro, sem mudar nenhuma outra regra.
+
+1. **Tags fora das candidatas:** nenhuma entra; as listas de candidatas escritas antes da contagem são as finais (seções 3.1.1 e 3.1.3).
+2. **O exemplo calculado à mão (seção 7):** um 10-K fictício em XBRL, com valores escolhidos, passando pelo mapa das contas (inclusive as reservas e as marcas), pela versão pública no corte e pelos sinais do v1 e do v2, num script separado, escrito antes do código do estudo; o código tem de reproduzir os valores, e o script entra no registro de SHA-256 do estudo.
+3. **A ordem e o calendário (seção 10):** primeiro o registro do texto; depois o código, testado só em dados sintéticos e no exemplo à mão; o congelamento; e só então o cálculo único; com meta e reserva.
 """
 
-EN = """# Draft pre-registration of the US study
+EN = """# US study pre-registration
 
-> **Draft, not a registration.** Written on 2026-11-24 by the agent, with Roberto's decisions ([Phase 0, section 5.1](us-phase-0.md)) and the three adjustments of the final review (sections 3.1.1, 7 and 10), before any US signal was computed. Nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit). The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
+> **Registered on 2026-11-24.** Written by the agent with Roberto's decisions ([Phase 0, section 5.1](us-phase-0.md)) and reviewed by Roberto with Claude (claude.ai), who approved the registration with the three adjustments in section 14. The commit that introduces this file is the registration, and its hash is noted in the next commit, without changing any rule, as in study 2 and engine v2. No US signal was computed before registration. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
 
 Basis: [US Phase 0](us-phase-0.md), with the numbers in [`docs/eua_fase0_numeros.json`](../eua_fase0_numeros.json), and the pre-registrations of [study 1](../pre-registro.md), [study 2](study-2-preregistration.md) and [engine v2](engine-v2-preregistration.md), whose rules hold here with only the adaptations in section 3.
 
@@ -338,6 +366,21 @@ The fiscal year is the year of the report date, as in the DFP; Phase 0 counts us
 ## 12. What is left out
 
 Financial companies, the DVA and the reader (section 3.4); any list or ordering of companies by alert; any investment recommendation; and, until Roberto decides, the US front in the README and the product.
+
+## 13. Registration
+
+- Date: 2026-11-24.
+- Commit: the one that introduces this version under this name. Its hash is noted here in the next commit, without changing any rule above.
+{anotacao}- Timestamp, as in study 2 and engine v2: `docs/carimbos/eua-registro.txt`, with the hash of the registration commit and the SHA-256 of this file in PT, as it is in the registration commit, stamped with OpenTimestamps; the `.ots` goes into the repository, and `ots upgrade` is run after confirmation on Bitcoin.
+- Freeze: the study code and the script of the section 7 example go into a SHA-256 registry of the study's own, before the single computation (section 10).
+
+## 14. Roberto's review (2026-11-24)
+
+Roberto read the whole text, with Claude's (claude.ai) review, and approved the registration with three adjustments. The text read was the one in commit `8c529c7fd215e268304570296a1aaf5332e0acb2`; the adjustments went in with commit `08d15363cbe7191bfe2a661e86f88fafa1228f8d`, before registration, without changing any other rule.
+
+1. **Tags outside the candidates:** none enters; the candidate lists written before the count are final (sections 3.1.1 and 3.1.3).
+2. **The hand-computed example (section 7):** a fictitious XBRL 10-K, with chosen values, going through the account map (including the fallbacks and the flags), the public version at the cut-off and the v1 and v2 signals, in a separate script, written before the study code; the code must reproduce the values, and the script goes into the study's SHA-256 registry.
+3. **The order and the timeline (section 10):** first the registration of the text; then the code, tested only on synthetic data and on the hand-computed example; the freeze; and only then the single computation; with a target and a fallback.
 """
 
 T = {"pt": PT, "en": EN}
@@ -460,7 +503,7 @@ def _juros_e_caixa(jc: dict[str, Any], lang: str) -> dict[str, str]:
 
 
 def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
-    """Os números da Fase 0 citados no rascunho, formatados para a língua."""
+    """Os números da Fase 0 citados no pré-registro, formatados para a língua."""
     f, i = d["fsds"], (lambda v: inteiro(int(v), lang))
     p0 = lambda x: pct(x, lang, 0)  # noqa: E731
     anos = [str(a) for a in range(PRIMEIRO, ULTIMO + 1)]
@@ -507,14 +550,16 @@ def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
 
 
 def render(d: dict[str, Any], lang: str) -> str:
-    return T[lang].format(**valores(d, lang))
+    anotacao = ANOTACAO[lang].format(c=COMMIT_DE_REGISTRO) if COMMIT_DE_REGISTRO else ""
+    return T[lang].format(**valores(d, lang), anotacao=anotacao)
 
 
 def main() -> None:
     d = json.loads(fase0.SAIDA.read_text(encoding="utf-8"))
     for lang, caminho in DOCS.items():
         caminho.write_text(render(d, lang), encoding="utf-8")
-    print("gravado:", ", ".join(str(c.relative_to(RAIZ)) for c in DOCS.values()))
+        RASCUNHOS[lang].write_text(AVISOS[lang], encoding="utf-8")
+    print("gravado:", ", ".join(str(c.relative_to(RAIZ)) for c in (*DOCS.values(), *RASCUNHOS.values())))
 
 
 if __name__ == "__main__":

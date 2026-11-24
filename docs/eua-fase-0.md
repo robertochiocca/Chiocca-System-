@@ -295,9 +295,9 @@ Companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K (seção 4.2), 
 
 **Recomendação do Claude (claude.ai), acolhida por Roberto em 24/11/2026:** o 8-K com o item 4.02 como desfecho principal, o mesmo conceito da republicação do estudo 2, e os AAERs de 2009 a 2014 como descrição à parte, sem teste. O 8-K 4.02 é público, gratuito, cobre o período inteiro com XBRL e tem casos suficientes para medir alguma coisa; o AAER é raro demais de 2009 a 2014 para um teste e mede outra coisa (a ação da SEC).
 
-### 5.3 Para o rascunho do pré-registro
+### 5.3 Para o pré-registro
 
-O [rascunho do pré-registro dos EUA](pre-registro-eua-rascunho.md), de 24/11/2026, trata destes pontos; não é registro.
+O [pré-registro do estudo dos EUA](pre-registro-eua.md), registrado em 24/11/2026, trata destes pontos.
 
 1. **Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. A regra é escrita antes de qualquer sinal, com a versão pública na data (seção 2.3).
 2. **O que não dá sem dados pagos.** Os anos errados dos AAERs depois de 2014 (CFRM); o gvkey e os dados da Compustat (WRDS); as republicações da Audit Analytics, que incluiriam as republicações sem 8-K 4.02 ("little r"). A ligação gvkey–CIK do era-py não informa a origem.

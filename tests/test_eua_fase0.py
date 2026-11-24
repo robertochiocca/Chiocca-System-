@@ -325,19 +325,46 @@ def test_exclusoes_dos_8k_pelo_ultimo_10k_antes() -> None:
     assert tuple(c[k] for k in chaves) == (1, 1, 0, 1, 2, 2)
 
 
-# ---- rascunho do pré-registro dos EUA (pedido de 24/11/2026, item 4) ----
+# ---- pré-registro dos EUA, registrado em 24/11/2026 (antes, o rascunho do item 4 do mesmo dia) ----
 
 
 @pytest.mark.parametrize("lang", ["pt", "en"])
-def test_rascunho_igual_a_saida_do_script(lang: str) -> None:
-    from chiocca.eua import rascunho
+def test_pre_registro_igual_a_saida_do_script(lang: str) -> None:
+    from chiocca.eua import pre_registro
 
-    texto = rascunho.DOCS[lang].read_text(encoding="utf-8")
-    assert texto == rascunho.render(D, lang)
-    assert ("Rascunho, não é registro" if lang == "pt" else "Draft, not a registration") in texto
+    texto = pre_registro.DOCS[lang].read_text(encoding="utf-8")
+    assert texto == pre_registro.render(D, lang)
     assert not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", texto)  # nenhum e-mail
     for proibido in ("fraude comprovada", "proven fraud", "recomendação de compra", "buy recommendation"):
         assert proibido not in texto.lower(), proibido
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_pre_registro_registrado_com_a_revisao_de_roberto(lang: str) -> None:
+    """Pedido de 24/11/2026 (quarta rodada): o texto registrado não tem a palavra "rascunho", tem a revisão de Roberto
+    com os três ajustes, e os arquivos do rascunho viraram um aviso que aponta para o registro."""
+    from chiocca.eua import pre_registro
+
+    doc = pre_registro.DOCS[lang].read_text(encoding="utf-8")
+    assert ("rascunho" if lang == "pt" else "draft") not in doc.lower()
+    if lang == "pt":
+        assert doc.startswith("# Pré-registro do estudo dos EUA\n") and "**Registrado em 24/11/2026.**" in doc
+        assert "## 14. Revisão de Roberto (24/11/2026)" in doc and "- Data: 24/11/2026." in doc
+        frase = (
+            "Roberto leu o texto inteiro, com a revisão do Claude (claude.ai), e aprovou o registro com três ajustes"
+        )
+    else:
+        assert doc.startswith("# US study pre-registration\n") and "**Registered on 2026-11-24.**" in doc
+        assert "## 14. Roberto's review (2026-11-24)" in doc and "- Date: 2026-11-24." in doc
+        frase = (
+            "Roberto read the whole text, with Claude's (claude.ai) review, and approved the registration with three "
+            "adjustments"
+        )
+    revisao = doc.split("\n## 14.", 1)[1]
+    assert frase in revisao and revisao.count("\n1. ") == 1 and "\n3. " in revisao and "\n4. " not in revisao
+    assert "docs/carimbos/eua-registro.txt" in doc and "OpenTimestamps" in doc
+    assert pre_registro.RASCUNHOS[lang].read_text(encoding="utf-8") == pre_registro.AVISOS[lang]
+    assert pre_registro.DOCS[lang].name in pre_registro.AVISOS[lang]
 
 
 def test_rascunho_antes_de_qualquer_sinal_americano() -> None:
