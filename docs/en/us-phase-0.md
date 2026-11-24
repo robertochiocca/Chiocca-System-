@@ -295,9 +295,9 @@ Company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K (sectio
 
 **Recommendation from Claude (claude.ai), accepted by Roberto on 2026-11-24:** the 8-K with Item 4.02 as the main outcome, the same concept as study 2's restatement, and the 2009 to 2014 AAERs as a separate description, with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to measure something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC action).
 
-### 5.3 For the pre-registration draft
+### 5.3 For the pre-registration
 
-The [draft US pre-registration](us-preregistration-draft.md), of 2026-11-24, takes up these points; it is not a registration.
+The [US study pre-registration](us-preregistration.md), registered on 2026-11-24, takes up these points.
 
 1. **Which fiscal year the case affects.** The items field does not say which statements stopped being reliable. The rule is written before any signal, with the public version at the date (section 2.3).
 2. **What cannot be done without paid data.** Misstated years of AAERs after 2014 (CFRM); the gvkey and Compustat data (WRDS); Audit Analytics restatements, which would include restatements without an 8-K 4.02 ("little r"). The era-py gvkey–CIK link does not state its source.
@@ -306,11 +306,10 @@ The [draft US pre-registration](us-preregistration-draft.md), of 2026-11-24, tak
 
 | Step | Target | Fallback |
 | --- | --- | --- |
-| Roberto's decisions (section 5.1). | 2026-11-24 | 2026-11-24 |
-| Review of the pre-registration draft by Claude (claude.ai) and Roberto; no signal computed. | 2026-12-15 | 2026-12-15 |
-| Study code written and tested on synthetic data only; coverage of the widened map counted. | 2027-01-15 | 2027-01-31 |
-| Pre-registration registered and timestamped; code frozen. | 2027-01-31 | 2027-03-31 |
-| Single computation, after the timestamp, with the SEC data and the 8-Ks downloaded on the day. | 2027-02-28 | 2027-04-30 |
-| Report in PT and EN, separate from Brazil's study 2. | 2027-03-31 | 2027-05-31 |
+| Roberto's decisions and final review of the pre-registration by Claude (claude.ai) and Roberto. | 2026-11-24 | 2026-11-24 |
+| Pre-registration registered and timestamped. | 2026-12-05 | 2027-01-31 |
+| Hand-computed example, code tested only on synthetic data and on the example, and freeze. | 2027-01-15 | 2027-03-31 |
+| Single computation, after the freeze, with the SEC data and the 8-Ks downloaded on the day. | 2027-01-31 | 2027-04-30 |
+| Report in PT and EN, separate from Brazil's study 2. | 2027-02-28 | 2027-05-31 |
 
 Sources for the conditions and the critique: sites.google.com/usc.edu/aaerdataset (Buy the Data); econjwatch.org (Walker, 2021 and 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form 8-K, Item 4.02; Financial Statement Data Sets; EDGAR, submissions.zip).

@@ -1,9 +1,10 @@
-"""Rascunho do pré-registro do estudo dos EUA (pedido de 24/11/2026, item 4): não é registro. Escrito antes de qualquer
-sinal americano calculado, com as decisões de Roberto de 24/11/2026 (Fase 0, seção 5.1). Os números citados da Fase 0
-saem de `docs/eua_fase0_numeros.json` (`render`); o resto do texto são regras e datas. Um teste confere que os
-documentos em PT e EN são a saída deste módulo.
+"""Pré-registro do estudo dos EUA, registrado em 24/11/2026, antes de qualquer sinal americano calculado, com as
+decisões de Roberto (Fase 0, seção 5.1) e os três ajustes da revisão final (seção 14 do texto). Os números citados da
+Fase 0 saem de `docs/eua_fase0_numeros.json` (`render`); o resto do texto são regras e datas. Um teste confere que os
+documentos em PT e EN são a saída deste módulo, e o carimbo (`docs/carimbos/eua-registro.txt`) guarda o SHA-256 do
+texto em PT como está no commit de registro. Os arquivos do antigo rascunho viram um aviso (`AVISOS`).
 
-Uso: python -m chiocca.eua.rascunho
+Uso: python -m chiocca.eua.pre_registro
 """
 
 from __future__ import annotations
@@ -15,16 +16,28 @@ from chiocca.base import RAIZ
 from chiocca.eua import fase0, fsds
 from chiocca.formato import inteiro, pct
 
-DOCS = {
+DOCS = {"pt": RAIZ / "docs" / "pre-registro-eua.md", "en": RAIZ / "docs" / "en" / "us-preregistration.md"}
+RASCUNHOS = {
     "pt": RAIZ / "docs" / "pre-registro-eua-rascunho.md",
     "en": RAIZ / "docs" / "en" / "us-preregistration-draft.md",
+}
+AVISOS = {
+    "pt": "# Rascunho do pré-registro do estudo dos EUA\n\n> Este rascunho foi registrado em 24/11/2026. O texto em vigor é "
+    "o [pré-registro do estudo dos EUA](pre-registro-eua.md); o histórico do rascunho fica no Git.\n",
+    "en": "# Draft pre-registration of the US study\n\n> This draft was registered on 2026-11-24. The text in force is the "
+    "[US study pre-registration](us-preregistration.md); the draft's history stays in Git.\n",
+}
+COMMIT_DE_REGISTRO: str | None = "a527b9eca9ab0f087b04f1c97ed737bc63188456"  # anotado no commit seguinte ao de registro
+ANOTACAO = {
+    "pt": "- Hash do commit de registro: `{c}` (anotado no commit seguinte, sem mudar nenhuma regra acima).\n",
+    "en": "- Hash of the registration commit: `{c}` (noted in the next commit, without changing any rule above).\n",
 }
 PRIMEIRO, ULTIMO = 2011, 2024  # exercícios da amostra (ano da data de referência), decisão de 24/11/2026
 SEMENTE = 20270430
 
-PT = """# Rascunho do pré-registro do estudo dos EUA
+PT = """# Pré-registro do estudo dos EUA
 
-> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente e atualizado no mesmo dia com as decisões de Roberto sobre os pontos em aberto ([Fase 0, seção 5.1](eua-fase-0.md)), antes de qualquer sinal americano calculado. Continua rascunho, para a revisão do Claude (claude.ai) e de Roberto; nada aqui vale até o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte), com meta de 31/01/2027 e reserva de 31/03/2027. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
+> **Registrado em 24/11/2026.** Redigido pelo agente com as decisões de Roberto ([Fase 0, seção 5.1](eua-fase-0.md)) e revisado por Roberto com o Claude (claude.ai), que aprovou o registro com os três ajustes da seção 14. O commit que introduz este arquivo é o registro, e o hash dele é anotado no commit seguinte, sem mudar nenhuma regra, como no estudo 2 e no motor v2. Nenhum sinal americano foi calculado antes do registro. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
 
 Base: a [Fase 0 dos EUA](eua-fase-0.md), com os números de [`docs/eua_fase0_numeros.json`](eua_fase0_numeros.json), e os pré-registros do [estudo 1](pre-registro.md), do [estudo 2](pre-registro-estudo-2.md) e do [motor v2](pre-registro-motor-v2.md), cujas regras valem aqui com só as adaptações da seção 3.
 
@@ -48,14 +61,15 @@ Valores da própria companhia (sem co-registrante nem segmento), em dólar, na t
 
 | Conta | Tags e regra | Motivo |
 | --- | --- | --- |
-| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | as da proposta da Fase 0, na ordem de preferência | o mesmo conceito da conta da DFP |
+| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `depreciacao`, `custo_vendas`, `lucro_liquido` | as da proposta da Fase 0, na ordem de preferência | o mesmo conceito da conta da DFP |
+| `caixa_operacional` | {ordem_caixa}, nessa ordem (seção 3.1.3) | a variante só de operações continuadas cobre os 10-K que não trazem o total; exclui o caixa das operações descontinuadas |
 | `receita_liquida` | {ordem_receita}, nessa ordem: as três da Fase 0 e as que a regra da seção 3.1.1 escolheu | com as três tags, a receita cobre de {rec_min} a {rec_max} dos 10-K de {primeiro} a {ultimo}, e a regra das sem receita tiraria companhias que têm receita em outra tag |
 | `resultado_bruto` | `GrossProfit`; se ausente, receita menos custo das vendas | na DFP a linha 3.03 é obrigatória; no US GAAP o lucro bruto é opcional (cobertura de {bruto_min} a {bruto_max}) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, que já junta as duas | o v1 soma as duas contas; no US GAAP elas vêm juntas |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; se ausente, o lucro líquido menos `IncomeLossFromDiscontinuedOperationsNetOfTax`, quando houver | a conta 3.09 é depois dos impostos; a tag antes dos impostos da proposta da Fase 0 sai, por ser outro conceito |
 | `emprestimos_cp` | `DebtCurrent`; se ausente, a soma de `LongTermDebtCurrent` e `ShortTermBorrowings` presentes | no US GAAP a dívida de curto prazo pode vir em linhas separadas |
 | `emprestimos_lp` | `LongTermDebtNoncurrent`; se ausente, `LongTermDebtAndCapitalLeaseObligations` | o mesmo conceito, com a segunda tag como reserva |
-| `despesas_financeiras` | `InterestExpense` | limite registrado: a despesa financeira da DFP inclui variação cambial e outros encargos; a tag americana é só de juros |
+| `despesas_financeiras` | {ordem_juros}, nessa ordem (seção 3.1.3); as marcadas com (*) são de conceito mais largo e entram com a marca | limite registrado: a despesa financeira da DFP inclui variação cambial e outros encargos; as tags americanas são de juros |
 | `fornecedores` | `AccountsPayableCurrent`; se ausente, `AccountsPayableAndAccruedLiabilitiesCurrent`, com a marca de que inclui provisões | a segunda tag é mais larga |
 | `passivo_total` (regra boba) | `Liabilities`; se ausente, `LiabilitiesAndStockholdersEquity` menos o patrimônio líquido com minoritários | a regra boba usa passivo total ÷ ativo total, e muitas companhias não apresentam o total do passivo |
 
@@ -69,7 +83,7 @@ Decisão de Roberto de 24/11/2026: as tags da receita são escolhidas só pelas 
 
 Entraram {n_escolhidas} tags. **A lista final da receita, nesta ordem de preferência: {ordem_receita}.**
 
-Contagem de descoberta, só para transparência: entre os {sem_tres} 10-K da amostra sem nenhuma das três tags da Fase 0, as 15 tags us-gaap mais frequentes com "Revenue" ou "Sales" no nome (valor anual na data de referência). As que estão fora das candidatas não entram pela regra; se alguma for de receita total, entrar exige uma decisão de Roberto antes do registro (seção 10).
+Contagem de descoberta, só para transparência: entre os {sem_tres} 10-K da amostra sem nenhuma das três tags da Fase 0, as 15 tags us-gaap mais frequentes com "Revenue" ou "Sales" no nome (valor anual na data de referência). Nenhuma tag fora das candidatas entra, mesmo que pareça de receita total: as listas de candidatas escritas antes da contagem são as finais (ajuste de Roberto de 24/11/2026).
 
 {tabela_descoberta}
 
@@ -79,7 +93,21 @@ A fração dos 10-K da amostra com cada conta pelas regras da seção 3.1: prese
 
 {tabela_cobertura}
 
-Com o mapa ampliado, a regra das sem receita tira {sem_amp} dos {n_am} 10-K da amostra, contra {sem_f0} com as três tags da Fase 0.
+Com o mapa ampliado, a regra das sem receita tira {sem_amp} dos {n_am} 10-K da amostra, contra {sem_f0} com as três tags da Fase 0. A despesa financeira e o caixa operacional já estão com as tags da seção 3.1.3.
+
+### 3.1.3 A ampliação da despesa financeira e do caixa operacional
+
+Pedido de Roberto de 24/11/2026: a mesma regra da receita para as duas contas que perdiam cobertura. As candidatas de cada conta foram escritas no código (`AMPLIACOES` e `CONCEITO_LARGO`, em `chiocca/eua/fsds.py`) antes de qualquer contagem, todas do mesmo conceito contábil: juros da dívida; caixa líquido das atividades operacionais, inclusive a variante só de operações continuadas. As de conceito mais largo (`InterestAndDebtExpense`, juros e outros encargos da dívida, e `InterestCostsIncurred`, que inclui os juros capitalizados) entram com uma marca, como a de fornecedores. Ficam fora os juros líquidos de receita de juros e os juros pagos (outros conceitos) e as tags de componentes. Entram pela ordem de maior ganho, com pelo menos {ganho_min} dos 10-K da amostra, pelo valor anual (quatro trimestres) na data de referência. Nenhuma tag fora das candidatas entra: as listas escritas antes da contagem são as finais.
+
+**Antes, o uso de cada tag por ano** (fração dos 10-K da amostra com o valor anual da tag), para ver se as quedas vêm de troca de tag na taxonomia:
+
+{tabela_uso}
+
+{leitura_uso}
+
+{tabela_juros_caixa}
+
+{resumo_juros_caixa}
 
 ### 3.2 A taxa que substitui o CDI
 
@@ -114,18 +142,27 @@ As financeiras ficam fora (decisão de Roberto de 24/11/2026): o mapa não tem a
 - **Resultado:** "associação positiva" se o limite inferior do intervalo unilateral de 95% da DR ficar acima de zero; senão, "sem evidência de associação".
 - **Regra boba lado a lado:** o decil mais endividado (passivo total ÷ ativo total) de cada exercício, como no estudo 1, com a mesma DR e o bootstrap pareado (as mesmas reamostragens): "o motor separa melhor que a regra boba" só se o limite inferior da diferença ficar acima de zero.
 - **O v2 pareado com o v1:** como na emenda 5 do estudo 2. O alerta do v2 sai de todas as empresa-anos que o v2 avalia; as medidas são calculadas nas empresa-anos avaliadas pelo v1; "o v2 separa melhor que o v1" só se o limite inferior da diferença pareada ficar acima de zero; senão, sem vencedor declarado.
-- **Descritivas:** as métricas de ranking do estudo 2 (precisão e lift no topo de 1%, 5% e 10% e NDCG@k), cada exercício separado e os AAERs (seção 7). Só agregados: nenhuma lista de companhias por alerta.
+- **Descritivas:** as métricas de ranking do estudo 2 (precisão e lift no topo de 1%, 5% e 10% e NDCG@k), cada exercício separado e os AAERs (seção 8). Só agregados: nenhuma lista de companhias por alerta.
 
-## 7. Os AAERs de 2009 a 2014: descrição à parte
+## 7. O exemplo calculado à mão
+
+Antes de qualquer código do estudo, um exemplo calculado à mão, num script separado (`tests/referencia/gerar_exemplo_eua.py`), fora do pacote `chiocca` e sem importá-lo, como os exemplos do estudo 1 e do motor v2, com aritmética exata nas bordas:
+
+- **Um 10-K fictício em XBRL:** linhas no formato de `sub.txt`, `num.txt` e `pre.txt`, com valores escolhidos, de um grupo pequeno de companhias fictícias não financeiras, no exercício e no anterior, de modo que cada regra do mapa das contas (seção 3.1) apareça pelo menos uma vez: a primeira tag de cada conta e as reservas (a receita por uma tag da ampliação, o lucro bruto derivado, o lucro das operações continuadas pelo lucro líquido, a dívida de curto prazo pela soma, a despesa financeira por uma tag da ampliação e por `InterestAndDebtExpense`, com a marca, o caixa operacional pela variante das operações continuadas, fornecedores pela tag mais larga, com a marca, e o passivo total pela diferença); números de co-registrante, de segmento, em outra moeda e de outra data, que não podem entrar; e uma conta faltante, que deixa um sinal não calculável.
+- **A versão pública no corte (seção 3.3):** o 10-K original e emendas com números das contas, uma entregue até o corte, que vira a versão usada, e outra depois do corte, que não entra, e uma emenda sem esses números, que não muda a versão.
+- **Os sinais do v1 e do v2 (seção 2):** os oito componentes e o M-score, o salto do DPO, o juro implícito contra uma taxa de referência fictícia, o desvio de Benford, os percentis, o escore e os alertas do v1, do v2 e da regra boba, num grupo pequeno o bastante para conferir à mão.
+- **A conferência:** o código do estudo tem de reproduzir os valores do script, com um teste, e o script entra no registro de SHA-256 do estudo, no congelamento (seção 10). Limite, como no motor v2: as duas implementações partem do mesmo texto; a conferência pega erro de implementação, não erro no texto.
+
+## 8. Os AAERs de 2009 a 2014: descrição à parte
 
 Para os {casos} casos de Bao et al. ({ea} empresa-anos) com 10-K nos dados da SEC (Fase 0, seção 4.1): quantos casos o v1, o v2 e a regra boba alertaram em pelo menos um exercício afetado, com a versão pública no corte. Só contagens, sem teste e sem lista. Em 2009 e 2010, só as companhias maiores entregavam em XBRL.
 
-## 8. Previsões escritas antes dos dados
+## 9. Previsões escritas antes dos dados
 
-Revistas em 24/11/2026 para o período novo ({primeiro} a {ultimo}) e o mapa ampliado. Nenhuma faixa mudou; o motivo de cada uma vem ao lado.
+Revistas em 24/11/2026 para o período novo ({primeiro} a {ultimo}) e o mapa ampliado, e de novo depois da ampliação da despesa financeira e do caixa operacional (seção 3.1.3). Nenhuma faixa mudou; o motivo de cada uma vem ao lado.
 
-1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial. **Sem ajuste:** o período novo acrescenta exercícios de juros altos (2022 a 2024), em que o juro implícito dispara menos (o corte sobe com a taxa de referência), mas o M-score e o DPO não dependem dos juros, e a faixa já cobre essa variação.
-2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício. **Sem ajuste:** vem da construção do decil.
+1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial. **Sem ajuste:** o período novo acrescenta exercícios de juros altos (2022 a 2024), em que o juro implícito dispara menos (o corte sobe com a taxa de referência), mas o M-score e o DPO não dependem dos juros, e a faixa já cobre essa variação. **Sem ajuste depois da seção 3.1.3:** com mais juros e mais caixa operacional calculáveis, o juro implícito e o M-score passam a ser calculados em mais empresa-anos (o juro implícito, sobretudo em {df_ano}), o que pode subir um pouco a taxa de alerta nesses anos, dentro da faixa.
+2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício. **Sem ajuste:** vem da construção do decil, com qualquer cobertura.
 3. **Taxa do desfecho:** entre 1,5% e 4% das empresa-anos avaliadas. **Sem ajuste:** com o mapa ampliado, ficam {antes_ficam_amp} companhias-ano com 8-K 4.02 e 10-K antes (seção 5), de {ficam_amp_min} a {ficam_amp_max} por ano de entrega, contra cerca de {media_am} 10-K da amostra por exercício antes da regra das sem receita: perto de 2% a 3%.
 4. **DR do v1:** positiva, com razão de taxas entre 1,1 e 1,5, e "associação positiva" mais provável que não. **Sem ajuste:** a amostra maior só reforça o poder.
 5. **DR do v2:** positiva, com razão de taxas entre 1,2 e 2,0, e "associação positiva". **Sem ajuste.**
@@ -133,36 +170,48 @@ Revistas em 24/11/2026 para o período novo ({primeiro} a {ultimo}) e o mapa amp
 7. **O v2 contra a regra boba:** sem vencedor declarado. Motivo: o endividamento também se associa a republicações, pela dificuldade financeira. **Sem ajuste.**
 8. **AAERs:** dos {casos} casos, entre 30% e 60% em alerta no v1 e entre 10% e 30% no v2 em pelo menos um exercício afetado. **Sem ajuste:** a descrição dos AAERs não depende do período da amostra.
 
-## 9. Calendário: meta e reserva
+## 10. Ordem e calendário: meta e reserva
+
+A ordem é fixa: (1) o registro deste texto; (2) o exemplo calculado à mão (seção 7), antes de qualquer código do estudo; (3) o código do estudo, testado só em dados sintéticos e no exemplo à mão, sem nenhum sinal calculado em dados reais; (4) o congelamento, com o registro de SHA-256 do código e do script do exemplo; (5) só então o cálculo único, com os dados da SEC e os 8-K baixados de novo no dia; (6) o relatório.
 
 | Etapa | Meta | Reserva |
 | --- | --- | --- |
-| Decisões de Roberto e este rascunho. | 24/11/2026 | 24/11/2026 |
-| Revisão do rascunho pelo Claude (claude.ai) e por Roberto; nenhum sinal calculado. | 15/12/2026 | 15/12/2026 |
-| Código do estudo escrito e testado só em dados sintéticos; nenhum sinal americano calculado. | 15/01/2027 | 31/01/2027 |
-| Registro do pré-registro e carimbo; código congelado com registro de SHA-256. | 31/01/2027 | 31/03/2027 |
-| Cálculo único, depois do carimbo, com os dados da SEC e os 8-K baixados de novo no dia. | 28/02/2027 | 30/04/2027 |
-| Relatório em PT e EN, separado do estudo 2 do Brasil. | 31/03/2027 | 31/05/2027 |
+| Registro deste texto e carimbo. | 05/12/2026 | 31/01/2027 |
+| Exemplo à mão, código testado só em dados sintéticos e no exemplo, e congelamento. | 15/01/2027 | 31/03/2027 |
+| Cálculo único, depois do congelamento. | 31/01/2027 | 30/04/2027 |
+| Relatório em PT e EN, separado do estudo 2 do Brasil. | 28/02/2027 | 31/05/2027 |
 
-## 10. Decisões de Roberto de 24/11/2026 e o que falta antes do registro
+A reserva mantém as datas da reserva da versão revisada (31/01/2027, 31/03/2027, 30/04/2027 e 31/05/2027), na ordem nova.
 
-Decidido: (a) as financeiras ficam fora (seção 3.4); (b) as tags da receita são escolhidas só pelas contagens de cobertura, e a lista final entra no texto registrado (seção 3.1.1); (c) a amostra vai até o exercício de {ultimo}, com os dados da SEC e os 8-K baixados de novo no dia do cálculo; (d) a semente é {semente}; (e) os arquivos da SEC ficam fora do Git, com o SHA-256 no manifesto e o download por script; (f) o calendário tem meta e reserva (seção 9).
+## 11. Decisões de Roberto de 24/11/2026
 
-Para a revisão do Claude (claude.ai) e de Roberto, antes do registro:
+(a) As financeiras ficam fora (seção 3.4); (b) as tags da receita são escolhidas só pelas contagens de cobertura, e a lista final está na seção 3.1.1; (c) a amostra vai até o exercício de {ultimo}, com os dados da SEC e os 8-K baixados de novo no dia do cálculo; (d) a semente é {semente}; (e) os arquivos da SEC ficam fora do Git, com o SHA-256 no manifesto e o download por script; (f) a despesa financeira e o caixa operacional pela mesma regra da receita (seção 3.1.3); (g) nenhuma tag fora das candidatas entra (seções 3.1.1 e 3.1.3); (h) o exemplo calculado à mão (seção 7); (i) a ordem e o calendário, com meta e reserva (seção 10).
 
-1. As tags da contagem de descoberta fora das candidatas (seção 3.1.1): nenhuma entra sem decisão de Roberto.
-2. O exercício pela data de referência, como na DFP; as contagens da Fase 0 usam o exercício declarado pela companhia (`fy`), e a diferença entre os dois é pequena.
-3. Duas contas com queda de cobertura, provavelmente por troca de tag na taxonomia (a conferir): `despesas_financeiras` cai para {df_min} em {df_ano}, e `caixa_operacional` fica abaixo de 80% de {co_ini} a {co_fim} (mínimo de {co_min}, em {co_ano}). Sem ampliação, o juro implícito e o TATA do M-score ficam não calculáveis nessas companhias-ano. Recomendação, para Roberto decidir antes do registro: a mesma regra da receita (candidatas escritas antes de contar, ganho mínimo de {ganho_min}), com candidatas como `InterestExpenseNonoperating` e `InterestExpenseDebt` para a despesa financeira e `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` para o caixa operacional.
-4. A leitura do texto inteiro, que é registrado como estiver depois da revisão.
+O exercício é o ano da data de referência, como na DFP; as contagens da Fase 0 usam o exercício declarado pela companhia (`fy`), e a diferença entre os dois é pequena.
 
-## 11. O que fica de fora
+## 12. O que fica de fora
 
 As financeiras, a DVA e o leitor (seção 3.4); qualquer lista ou ordem de companhias por alerta; qualquer recomendação de investimento; e, até decisão de Roberto, a frente dos EUA no README e no produto.
+
+## 13. Registro
+
+- Data: 24/11/2026.
+- Commit: o que introduz esta versão com este nome. O hash é anotado aqui no commit seguinte, sem mudar nenhuma regra acima.
+{anotacao}- Carimbo de tempo, como no estudo 2 e no motor v2: `docs/carimbos/eua-registro.txt`, com o hash do commit de registro e o SHA-256 deste arquivo em PT, como está no commit de registro, carimbado com o OpenTimestamps; o `.ots` vai para o repositório, e o `ots upgrade` é feito depois da confirmação no Bitcoin.
+- Congelamento: o código do estudo e o script do exemplo da seção 7 entram num registro de SHA-256 próprio do estudo, antes do cálculo único (seção 10).
+
+## 14. Revisão de Roberto (24/11/2026)
+
+Roberto leu o texto inteiro, com a revisão do Claude (claude.ai), e aprovou o registro com três ajustes. O texto lido foi o do commit `8c529c7fd215e268304570296a1aaf5332e0acb2`; os ajustes entraram no commit `08d15363cbe7191bfe2a661e86f88fafa1228f8d`, antes do registro, sem mudar nenhuma outra regra.
+
+1. **Tags fora das candidatas:** nenhuma entra; as listas de candidatas escritas antes da contagem são as finais (seções 3.1.1 e 3.1.3).
+2. **O exemplo calculado à mão (seção 7):** um 10-K fictício em XBRL, com valores escolhidos, passando pelo mapa das contas (inclusive as reservas e as marcas), pela versão pública no corte e pelos sinais do v1 e do v2, num script separado, escrito antes do código do estudo; o código tem de reproduzir os valores, e o script entra no registro de SHA-256 do estudo.
+3. **A ordem e o calendário (seção 10):** primeiro o registro do texto; depois o código, testado só em dados sintéticos e no exemplo à mão; o congelamento; e só então o cálculo único; com meta e reserva.
 """
 
-EN = """# Draft pre-registration of the US study
+EN = """# US study pre-registration
 
-> **Draft, not a registration.** Written on 2026-11-24 by the agent and updated on the same day with Roberto's decisions on the open points ([Phase 0, section 5.1](us-phase-0.md)), before any US signal was computed. It is still a draft, for review by Claude (claude.ai) and Roberto; nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit), with a target of 2027-01-31 and a fallback of 2027-03-31. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
+> **Registered on 2026-11-24.** Written by the agent with Roberto's decisions ([Phase 0, section 5.1](us-phase-0.md)) and reviewed by Roberto with Claude (claude.ai), who approved the registration with the three adjustments in section 14. The commit that introduces this file is the registration, and its hash is noted in the next commit, without changing any rule, as in study 2 and engine v2. No US signal was computed before registration. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
 
 Basis: [US Phase 0](us-phase-0.md), with the numbers in [`docs/eua_fase0_numeros.json`](../eua_fase0_numeros.json), and the pre-registrations of [study 1](../pre-registro.md), [study 2](study-2-preregistration.md) and [engine v2](engine-v2-preregistration.md), whose rules hold here with only the adaptations in section 3.
 
@@ -186,14 +235,15 @@ The company's own values (no co-registrant or segment), in dollars, in the us-ga
 
 | Account | Tags and rule | Reason |
 | --- | --- | --- |
-| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | those of the Phase 0 proposal, in order of preference | the same concept as the DFP account |
+| `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `depreciacao`, `custo_vendas`, `lucro_liquido` | those of the Phase 0 proposal, in order of preference | the same concept as the DFP account |
+| `caixa_operacional` | {ordem_caixa}, in this order (section 3.1.3) | the continuing-operations variant covers the 10-Ks that do not report the total; it excludes discontinued-operations cash flows |
 | `receita_liquida` | {ordem_receita}, in this order: the three Phase 0 tags and those the rule in section 3.1.1 chose | with the three tags, revenue covers {rec_min} to {rec_max} of the {primeiro} to {ultimo} 10-Ks, and the no-revenue rule would remove companies that have revenue in another tag |
 | `resultado_bruto` | `GrossProfit`; if missing, revenue minus cost of sales | in the DFP line 3.03 is mandatory; under US GAAP gross profit is optional (coverage of {bruto_min} to {bruto_max}) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, which already joins both | v1 adds the two accounts; under US GAAP they come together |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; if missing, net income minus `IncomeLossFromDiscontinuedOperationsNetOfTax`, when present | account 3.09 is after taxes; the pre-tax tag of the Phase 0 proposal is dropped, being a different concept |
 | `emprestimos_cp` | `DebtCurrent`; if missing, the sum of `LongTermDebtCurrent` and `ShortTermBorrowings` present | under US GAAP short-term debt may come in separate lines |
 | `emprestimos_lp` | `LongTermDebtNoncurrent`; if missing, `LongTermDebtAndCapitalLeaseObligations` | the same concept, with the second tag as a fallback |
-| `despesas_financeiras` | `InterestExpense` | recorded limitation: the DFP's financial expense includes FX variation and other charges; the US tag is interest only |
+| `despesas_financeiras` | {ordem_juros}, in this order (section 3.1.3); those marked (*) have a wider concept and enter with the flag | recorded limitation: the DFP's financial expense includes FX variation and other charges; the US tags are interest |
 | `fornecedores` | `AccountsPayableCurrent`; if missing, `AccountsPayableAndAccruedLiabilitiesCurrent`, flagged as including accruals | the second tag is wider |
 | `passivo_total` (naive rule) | `Liabilities`; if missing, `LiabilitiesAndStockholdersEquity` minus equity including noncontrolling interest | the naive rule uses total liabilities ÷ total assets, and many companies do not present total liabilities |
 
@@ -207,7 +257,7 @@ Roberto's decision of 2026-11-24: the revenue tags are chosen by coverage counts
 
 {n_escolhidas} tags entered. **The final revenue list, in this order of preference: {ordem_receita}.**
 
-Discovery count, for transparency only: among the {sem_tres} sample 10-Ks with none of the three Phase 0 tags, the 15 most frequent us-gaap tags with "Revenue" or "Sales" in the name (annual value at the report date). Those outside the candidates do not enter by the rule; if any is a total-revenue tag, entering requires a decision by Roberto before registration (section 10).
+Discovery count, for transparency only: among the {sem_tres} sample 10-Ks with none of the three Phase 0 tags, the 15 most frequent us-gaap tags with "Revenue" or "Sales" in the name (annual value at the report date). No tag outside the candidates enters, even if it looks like total revenue: the candidate lists written before the count are final (Roberto's adjustment of 2026-11-24).
 
 {tabela_descoberta}
 
@@ -217,7 +267,21 @@ The share of sample 10-Ks with each account under the rules in section 3.1: pres
 
 {tabela_cobertura}
 
-With the widened map, the no-revenue rule removes {sem_amp} of the {n_am} sample 10-Ks, against {sem_f0} with the three Phase 0 tags.
+With the widened map, the no-revenue rule removes {sem_amp} of the {n_am} sample 10-Ks, against {sem_f0} with the three Phase 0 tags. Financial expense and operating cash flow already use the tags of section 3.1.3.
+
+### 3.1.3 Widening financial expense and operating cash flow
+
+Roberto's request of 2026-11-24: the same rule as for revenue, for the two accounts that were losing coverage. Each account's candidates were written in the code (`AMPLIACOES` and `CONCEITO_LARGO`, in `chiocca/eua/fsds.py`) before any count, all of the same accounting concept: interest on debt; net cash from operating activities, including the continuing-operations-only variant. Those with a wider concept (`InterestAndDebtExpense`, interest and other debt charges, and `InterestCostsIncurred`, which includes capitalized interest) enter with a flag, like the accounts payable one. Net interest (net of interest income) and interest paid (other concepts) and component tags are left out. They enter in order of largest gain, with at least {ganho_min} of the sample 10-Ks, by the annual value (four quarters) at the report date. No tag outside the candidates enters: the lists written before the count are final.
+
+**First, the use of each tag by year** (share of sample 10-Ks with the tag's annual value), to see whether the drops come from a tag change in the taxonomy:
+
+{tabela_uso}
+
+{leitura_uso}
+
+{tabela_juros_caixa}
+
+{resumo_juros_caixa}
 
 ### 3.2 The rate that replaces the CDI
 
@@ -252,18 +316,27 @@ Financial companies stay out (Roberto's decision of 2026-11-24): the map has no 
 - **Result:** "positive association" if the lower bound of the one-sided 95% interval of the DR is above zero; otherwise, "no evidence of association".
 - **Naive rule side by side:** the most leveraged decile (total liabilities ÷ total assets) of each fiscal year, as in study 1, with the same DR and the paired bootstrap (the same resamples): "the engine separates better than the naive rule" only if the lower bound of the difference is above zero.
 - **v2 paired with v1:** as in study 2's amendment 5. v2's alert comes from all company-years v2 evaluates; the measures are computed on the company-years evaluated by v1; "v2 separates better than v1" only if the lower bound of the paired difference is above zero; otherwise, no winner declared.
-- **Descriptive:** study 2's ranking metrics (precision and lift at the top 1%, 5% and 10% and NDCG@k), each fiscal year separately and the AAERs (section 7). Aggregates only: no list of companies by alert.
+- **Descriptive:** study 2's ranking metrics (precision and lift at the top 1%, 5% and 10% and NDCG@k), each fiscal year separately and the AAERs (section 8). Aggregates only: no list of companies by alert.
 
-## 7. The 2009 to 2014 AAERs: a separate description
+## 7. The hand-computed example
+
+Before any study code, a hand-computed example, in a separate script (`tests/referencia/gerar_exemplo_eua.py`), outside the `chiocca` package and without importing it, like the study 1 and engine v2 examples, with exact arithmetic at the boundaries:
+
+- **A fictitious XBRL 10-K:** rows in the format of `sub.txt`, `num.txt` and `pre.txt`, with chosen values, for a small group of fictitious non-financial companies, in the fiscal year and the previous one, so that each rule of the account map (section 3.1) appears at least once: the first tag of each account and the fallbacks (revenue through a widening tag, derived gross profit, income from continuing operations through net income, short-term debt by the sum, financial expense through a widening tag and through `InterestAndDebtExpense`, with the flag, operating cash flow through the continuing-operations variant, accounts payable through the wider tag, with the flag, and total liabilities by the difference); co-registrant, segment, other-currency and other-date numbers, which must not enter; and a missing account, which leaves a signal not computable.
+- **The public version at the cut-off (section 3.3):** the original 10-K and amendments with account numbers, one filed by the cut-off, which becomes the version used, and another after the cut-off, which does not enter, and an amendment without those numbers, which does not change the version.
+- **The v1 and v2 signals (section 2):** the eight components and the M-score, the DPO jump, implied interest against a fictitious reference rate, the Benford deviation, the percentiles, the score and the alerts of v1, v2 and the naive rule, in a group small enough to check by hand.
+- **The check:** the study code must reproduce the script's values, with a test, and the script goes into the study's SHA-256 registry at the freeze (section 10). Limitation, as in engine v2: both implementations start from the same text; the check catches implementation errors, not errors in the text.
+
+## 8. The 2009 to 2014 AAERs: a separate description
 
 For the {casos} Bao et al. cases ({ea} company-years) with a 10-K in the SEC data (Phase 0, section 4.1): how many cases v1, v2 and the naive rule alerted in at least one affected fiscal year, with the version public at the cut-off. Counts only, with no test and no list. In 2009 and 2010, only the largest companies filed in XBRL.
 
-## 8. Predictions written before the data
+## 9. Predictions written before the data
 
-Revised on 2026-11-24 for the new period ({primeiro} to {ultimo}) and the widened map. No range changed; the reason for each is given next to it.
+Revised on 2026-11-24 for the new period ({primeiro} to {ultimo}) and the widened map, and again after widening financial expense and operating cash flow (section 3.1.3). No range changed; the reason for each is given next to it.
 
-1. **v1 alert rate:** between 25% and 45% of the evaluated non-financial companies in each fiscal year. Reason: the M-score above -1.78 flags a relevant share of US companies, and the DPO decile adds 10%; implied interest fires less than in Brazil, because US interest expense does not include FX variation. **No adjustment:** the new period adds high-rate fiscal years (2022 to 2024), in which implied interest fires less (the cut-off rises with the reference rate), but the M-score and the DPO do not depend on rates, and the range already covers that variation.
-2. **v2 alert rate:** between 10.0% and 11.0% in each fiscal year. **No adjustment:** it comes from the construction of the decile.
+1. **v1 alert rate:** between 25% and 45% of the evaluated non-financial companies in each fiscal year. Reason: the M-score above -1.78 flags a relevant share of US companies, and the DPO decile adds 10%; implied interest fires less than in Brazil, because US interest expense does not include FX variation. **No adjustment:** the new period adds high-rate fiscal years (2022 to 2024), in which implied interest fires less (the cut-off rises with the reference rate), but the M-score and the DPO do not depend on rates, and the range already covers that variation. **No adjustment after section 3.1.3:** with more interest and more operating cash flow available, implied interest and the M-score are computed in more company-years (implied interest above all in {df_ano}), which may raise the alert rate a little in those years, within the range.
+2. **v2 alert rate:** between 10.0% and 11.0% in each fiscal year. **No adjustment:** it comes from the construction of the decile, whatever the coverage.
 3. **Outcome rate:** between 1.5% and 4% of the evaluated company-years. **No adjustment:** with the widened map, {antes_ficam_amp} company-years with an 8-K 4.02 and a 10-K before remain (section 5), from {ficam_amp_min} to {ficam_amp_max} a year by filing year, against about {media_am} sample 10-Ks per fiscal year before the no-revenue rule: about 2% to 3%.
 4. **v1 DR:** positive, with a rate ratio between 1.1 and 1.5, and "positive association" more likely than not. **No adjustment:** the larger sample only adds power.
 5. **v2 DR:** positive, with a rate ratio between 1.2 and 2.0, and "positive association". **No adjustment.**
@@ -271,31 +344,43 @@ Revised on 2026-11-24 for the new period ({primeiro} to {ultimo}) and the widene
 7. **v2 against the naive rule:** no winner declared. Reason: leverage is also associated with restatements, through financial distress. **No adjustment.**
 8. **AAERs:** of the {casos} cases, between 30% and 60% in alert under v1 and between 10% and 30% under v2 in at least one affected fiscal year. **No adjustment:** the AAER description does not depend on the sample period.
 
-## 9. Timeline: target and fallback
+## 10. Order and timeline: target and fallback
+
+The order is fixed: (1) registration of this text; (2) the hand-computed example (section 7), before any study code; (3) the study code, tested only on synthetic data and on the hand-computed example, with no signal computed on real data; (4) the freeze, with the SHA-256 registry of the code and of the example script; (5) only then the single computation, with the SEC data and the 8-Ks downloaded again on the day; (6) the report.
 
 | Step | Target | Fallback |
 | --- | --- | --- |
-| Roberto's decisions and this draft. | 2026-11-24 | 2026-11-24 |
-| Review of the draft by Claude (claude.ai) and Roberto; no signal computed. | 2026-12-15 | 2026-12-15 |
-| Study code written and tested on synthetic data only; no US signal computed. | 2027-01-15 | 2027-01-31 |
-| Pre-registration registered and timestamped; code frozen with a SHA-256 registry. | 2027-01-31 | 2027-03-31 |
-| Single computation, after the timestamp, with the SEC data and the 8-Ks downloaded again on the day. | 2027-02-28 | 2027-04-30 |
-| Report in PT and EN, separate from Brazil's study 2. | 2027-03-31 | 2027-05-31 |
+| Registration of this text and timestamp. | 2026-12-05 | 2027-01-31 |
+| Hand-computed example, code tested only on synthetic data and on the example, and freeze. | 2027-01-15 | 2027-03-31 |
+| Single computation, after the freeze. | 2027-01-31 | 2027-04-30 |
+| Report in PT and EN, separate from Brazil's study 2. | 2027-02-28 | 2027-05-31 |
 
-## 10. Roberto's decisions of 2026-11-24 and what is left before registration
+The fallback keeps the dates of the reviewed version's fallback (2027-01-31, 2027-03-31, 2027-04-30 and 2027-05-31), in the new order.
 
-Decided: (a) financial companies stay out (section 3.4); (b) the revenue tags are chosen by coverage counts only, and the final list goes into the registered text (section 3.1.1); (c) the sample goes to fiscal {ultimo}, with the SEC data and the 8-Ks downloaded again on the day of the computation; (d) the seed is {semente}; (e) the SEC files stay outside Git, with their SHA-256 in the manifest and the download by script; (f) the timeline has a target and a fallback (section 9).
+## 11. Roberto's decisions of 2026-11-24
 
-For review by Claude (claude.ai) and Roberto, before registration:
+(a) Financial companies stay out (section 3.4); (b) the revenue tags are chosen by coverage counts only, and the final list is in section 3.1.1; (c) the sample goes to fiscal {ultimo}, with the SEC data and the 8-Ks downloaded again on the day of the computation; (d) the seed is {semente}; (e) the SEC files stay outside Git, with their SHA-256 in the manifest and the download by script; (f) financial expense and operating cash flow by the same rule as revenue (section 3.1.3); (g) no tag outside the candidates enters (sections 3.1.1 and 3.1.3); (h) the hand-computed example (section 7); (i) the order and the timeline, with a target and a fallback (section 10).
 
-1. The discovery-count tags outside the candidates (section 3.1.1): none enters without a decision by Roberto.
-2. The fiscal year by the report date, as in the DFP; Phase 0 counts use the fiscal year declared by the company (`fy`), and the difference between the two is small.
-3. Two accounts with a drop in coverage, probably from a tag change in the taxonomy (to be checked): `despesas_financeiras` falls to {df_min} in {df_ano}, and `caixa_operacional` stays below 80% from {co_ini} to {co_fim} (minimum of {co_min}, in {co_ano}). Without widening, implied interest and the M-score's TATA are not computable in those company-years. Recommendation, for Roberto to decide before registration: the same rule as for revenue (candidates written before counting, minimum gain of {ganho_min}), with candidates such as `InterestExpenseNonoperating` and `InterestExpenseDebt` for financial expense and `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` for operating cash flow.
-4. Reading the whole text, which is registered as it stands after the review.
+The fiscal year is the year of the report date, as in the DFP; Phase 0 counts use the fiscal year declared by the company (`fy`), and the difference between the two is small.
 
-## 11. What is left out
+## 12. What is left out
 
 Financial companies, the DVA and the reader (section 3.4); any list or ordering of companies by alert; any investment recommendation; and, until Roberto decides, the US front in the README and the product.
+
+## 13. Registration
+
+- Date: 2026-11-24.
+- Commit: the one that introduces this version under this name. Its hash is noted here in the next commit, without changing any rule above.
+{anotacao}- Timestamp, as in study 2 and engine v2: `docs/carimbos/eua-registro.txt`, with the hash of the registration commit and the SHA-256 of this file in PT, as it is in the registration commit, stamped with OpenTimestamps; the `.ots` goes into the repository, and `ots upgrade` is run after confirmation on Bitcoin.
+- Freeze: the study code and the script of the section 7 example go into a SHA-256 registry of the study's own, before the single computation (section 10).
+
+## 14. Roberto's review (2026-11-24)
+
+Roberto read the whole text, with Claude's (claude.ai) review, and approved the registration with three adjustments. The text read was the one in commit `8c529c7fd215e268304570296a1aaf5332e0acb2`; the adjustments went in with commit `08d15363cbe7191bfe2a661e86f88fafa1228f8d`, before registration, without changing any other rule.
+
+1. **Tags outside the candidates:** none enters; the candidate lists written before the count are final (sections 3.1.1 and 3.1.3).
+2. **The hand-computed example (section 7):** a fictitious XBRL 10-K, with chosen values, going through the account map (including the fallbacks and the flags), the public version at the cut-off and the v1 and v2 signals, in a separate script, written before the study code; the code must reproduce the values, and the script goes into the study's SHA-256 registry.
+3. **The order and the timeline (section 10):** first the registration of the text; then the code, tested only on synthetic data and on the hand-computed example; the freeze; and only then the single computation; with a target and a fallback.
 """
 
 T = {"pt": PT, "en": EN}
@@ -328,7 +413,7 @@ def _tabelas(m: dict[str, Any], lang: str) -> dict[str, str]:
     descoberta += [f"| `{t}` | {i(n)} | {c['sim'] if t in m['candidatas'] or t in fsds.MAPA['receita_liquida'] else c['nao']} |"
                    for t, n in m["descoberta"]]  # fmt: skip
     anos = [str(a) for a in range(PRIMEIRO, ULTIMO + 1)]
-    cob = m["cobertura_por_ano"]
+    cob = m["juros_e_caixa"]["cobertura_por_ano_regras_novas"]
     n = sum(cob[a]["10k"] for a in anos)
     cobertura = [c["cobertura"].format(primeiro=PRIMEIRO, ultimo=ULTIMO), "| --- | ---: | ---: | ---: |"]
     for conta in CONTAS_COBERTURA:
@@ -339,8 +424,86 @@ def _tabelas(m: dict[str, Any], lang: str) -> dict[str, str]:
             "tabela_cobertura": "\n".join(cobertura)}  # fmt: skip
 
 
+TEXTOS_JC = {
+    "pt": {"cab_res": "| Conta | Candidata | Conceito mais largo | Ganho no primeiro passo | Entrou | Ganho quando entrou |",
+           "sim": "sim", "nao": "não", "conta_tag": "| Conta | Tag | ",
+           "resumo": "Pelo valor anual, a cobertura da despesa financeira passa de {j_antes} para {j_depois} no conjunto de "
+                     "{primeiro} a {ultimo} e, em {df_ano}, de {j_ano_antes} para {j_ano_depois}; {j_largo} entregas ficam "
+                     "cobertas só por uma tag de conceito mais largo, com a marca. A do caixa operacional passa de {c_antes} "
+                     "para {c_depois} e, em {co_ano}, de {c_ano_antes} para {c_ano_depois}. Uma parte das companhias não tem "
+                     "dívida nem despesa de juros, e por isso a despesa financeira não chega perto de 100%.",
+           "leitura": "Leitura: em {df_ano}, o uso de `InterestExpense` cai para {ie_ano} e o de `InterestExpenseNonoperating` "
+                      "sobe de {nop_antes} no ano anterior para {nop_ano}; de {co_ini} a {co_fim}, a variante só de operações "
+                      "continuadas chega a {cc_max} dos 10-K, no ano em que o total cai para {nc_min}. As quedas vêm de troca "
+                      "de tag, não de falta do dado."},
+    "en": {"cab_res": "| Account | Candidate | Wider concept | Gain at the first step | Entered | Gain when it entered |",
+           "sim": "yes", "nao": "no", "conta_tag": "| Account | Tag | ",
+           "resumo": "By the annual value, financial expense coverage goes from {j_antes} to {j_depois} over {primeiro} to "
+                     "{ultimo} and, in {df_ano}, from {j_ano_antes} to {j_ano_depois}; {j_largo} filings are covered only by "
+                     "a wider-concept tag, with the flag. Operating cash flow goes from {c_antes} to {c_depois} and, in "
+                     "{co_ano}, from {c_ano_antes} to {c_ano_depois}. Some companies have no debt and no interest expense, "
+                     "so financial expense does not come close to 100%.",
+           "leitura": "Reading: in {df_ano}, the use of `InterestExpense` falls to {ie_ano} and that of "
+                      "`InterestExpenseNonoperating` rises from {nop_antes} in the previous year to {nop_ano}; from {co_ini} "
+                      "to {co_fim}, the continuing-operations-only variant reaches {cc_max} of the 10-Ks, in the year the "
+                      "total falls to {nc_min}. The drops come from a tag change, not from missing data."},
+}  # fmt: skip
+
+
+def _juros_e_caixa(jc: dict[str, Any], lang: str) -> dict[str, str]:
+    """As tabelas e as frases da seção 3.1.3, do JSON da Fase 0 (só contagens)."""
+    t, i = TEXTOS_JC[lang], (lambda v: inteiro(int(v), lang))
+    p1 = lambda x: pct(x, lang, 1)  # noqa: E731
+    anos = [str(a) for a in range(PRIMEIRO, ULTIMO + 1)]
+    juros, caixa = jc["contas"]["despesas_financeiras"], jc["contas"]["caixa_operacional"]
+    n = {a: juros["cobertura_por_ano"][a]["10k"] for a in anos}
+    uso = [t["conta_tag"] + " | ".join(anos) + " |", "| --- | --- | " + " | ".join("---:" for _ in anos) + " |"]
+    for conta, x in (("despesas_financeiras", juros), ("caixa_operacional", caixa)):
+        for tag in (*x["base"], *x["candidatas"]):
+            uso.append(
+                f"| `{conta}` | `{tag}` | " + " | ".join(p1(x["uso_por_ano"][tag][a] / n[a]) for a in anos) + " |"
+            )
+    res = [t["cab_res"], "| --- | --- | --- | ---: | --- | ---: |"]
+    for conta, x in (("despesas_financeiras", juros), ("caixa_operacional", caixa)):
+        amp = x["ampliacao"]
+        for tag in x["candidatas"]:
+            entrou = tag in amp["escolhidas"]
+            res.append(f"| `{conta}` | `{tag}` | {t['sim'] if tag in jc['conceito_largo'] else t['nao']} | "
+                       f"{i(amp['ganho_no_primeiro_passo'].get(tag, 0))} | {t['sim'] if entrou else t['nao']} | "
+                       f"{i(amp['ganhos'][tag]) if entrou else '—'} |")  # fmt: skip
+
+    def frac(x: dict[str, Any], chave: str, ano: str | None = None) -> str:
+        c = x["cobertura_por_ano"]
+        if ano:
+            return p1(c[ano][chave] / c[ano]["10k"])
+        return p1(sum(c[a][chave] for a in anos) / sum(c[a]["10k"] for a in anos))
+
+    df_ano = min(anos, key=lambda a: juros["cobertura_por_ano"][a]["antes"] / n[a])
+    co_ano = min(anos, key=lambda a: caixa["cobertura_por_ano"][a]["antes"] / n[a])
+    nc = caixa["base"][0]
+    cc = caixa["candidatas"][0]
+    co_baixos = [a for a in anos if caixa["uso_por_ano"][nc][a] / n[a] < 0.8]
+    anterior = str(int(df_ano) - 1)
+    v = {"primeiro": str(PRIMEIRO), "ultimo": str(ULTIMO), "df_ano": df_ano, "co_ano": co_ano,
+         "j_antes": frac(juros, "antes"), "j_depois": frac(juros, "depois"), "j_ano_antes": frac(juros, "antes", df_ano),
+         "j_ano_depois": frac(juros, "depois", df_ano), "j_largo": i(sum(juros["cobertura_por_ano"][a]["so_conceito_largo"] for a in anos)),
+         "c_antes": frac(caixa, "antes"), "c_depois": frac(caixa, "depois"), "c_ano_antes": frac(caixa, "antes", co_ano),
+         "c_ano_depois": frac(caixa, "depois", co_ano),
+         "ie_ano": p1(juros["uso_por_ano"]["InterestExpense"][df_ano] / n[df_ano]),
+         "nop_antes": p1(juros["uso_por_ano"]["InterestExpenseNonoperating"].get(anterior, 0) / n.get(anterior, 1)),
+         "nop_ano": p1(juros["uso_por_ano"]["InterestExpenseNonoperating"][df_ano] / n[df_ano]),
+         "co_ini": min(co_baixos) if co_baixos else co_ano, "co_fim": max(co_baixos) if co_baixos else co_ano,
+         "cc_max": p1(max(caixa["uso_por_ano"][cc][a] / n[a] for a in anos)),
+         "nc_min": p1(min(caixa["uso_por_ano"][nc][a] / n[a] for a in anos))}  # fmt: skip
+    marca = lambda tag: f"`{tag}`" + (" (*)" if tag in jc["conceito_largo"] else "")  # noqa: E731
+    return {"tabela_uso": "\n".join(uso), "tabela_juros_caixa": "\n".join(res),
+            "resumo_juros_caixa": t["resumo"].format(**v), "leitura_uso": t["leitura"].format(**v),
+            "ordem_juros": ", ".join(marca(x) for x in juros["ampliacao"]["ordem"]),
+            "ordem_caixa": ", ".join(f"`{x}`" for x in caixa["ampliacao"]["ordem"])}  # fmt: skip
+
+
 def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
-    """Os números da Fase 0 citados no rascunho, formatados para a língua."""
+    """Os números da Fase 0 citados no pré-registro, formatados para a língua."""
     f, i = d["fsds"], (lambda v: inteiro(int(v), lang))
     p0 = lambda x: pct(x, lang, 0)  # noqa: E731
     anos = [str(a) for a in range(PRIMEIRO, ULTIMO + 1)]
@@ -355,7 +518,7 @@ def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
     n_am = sum(sr[a]["10k"] for a in anos)
     sem_amp = sum(sr[a]["sem_receita_ampliada"] for a in anos)
     ficam_amp = [e8[str(a)]["antes_restantes"] for a in range(2012, 2026)]
-    cob_am = m["cobertura_por_ano"]
+    cob_am = m["cobertura_por_ano"]  # a cobertura antes da terceira rodada (o ano da queda dos juros)
     df_ano = min(anos, key=lambda a: cob_am[a]["despesas_financeiras"])
     co_ano = min(anos, key=lambda a: cob_am[a]["caixa_operacional"])
     co_baixos = [a for a in anos if cob_am[a]["caixa_operacional"] < 0.8]
@@ -382,18 +545,21 @@ def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
         "co_min": pct(cob_am[co_ano]["caixa_operacional"], lang, 1), "co_ano": co_ano,
         "co_ini": min(co_baixos), "co_fim": max(co_baixos),
         **_tabelas(m, lang),
+        **_juros_e_caixa(m["juros_e_caixa"], lang),
     }  # fmt: skip
 
 
 def render(d: dict[str, Any], lang: str) -> str:
-    return T[lang].format(**valores(d, lang))
+    anotacao = ANOTACAO[lang].format(c=COMMIT_DE_REGISTRO) if COMMIT_DE_REGISTRO else ""
+    return T[lang].format(**valores(d, lang), anotacao=anotacao)
 
 
 def main() -> None:
     d = json.loads(fase0.SAIDA.read_text(encoding="utf-8"))
     for lang, caminho in DOCS.items():
         caminho.write_text(render(d, lang), encoding="utf-8")
-    print("gravado:", ", ".join(str(c.relative_to(RAIZ)) for c in DOCS.values()))
+        RASCUNHOS[lang].write_text(AVISOS[lang], encoding="utf-8")
+    print("gravado:", ", ".join(str(c.relative_to(RAIZ)) for c in (*DOCS.values(), *RASCUNHOS.values())))
 
 
 if __name__ == "__main__":

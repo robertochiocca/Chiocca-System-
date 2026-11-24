@@ -27,6 +27,10 @@ Registrado em 08/11/2026, para o pré-registro novo do estudo 2, antes de abrir 
 - Intervalo de 24 meses entre o período de calibração e o de teste.
 - Regra no pré-registro para casos que se estendem por vários anos, com teste automático para ano de dados faltando e para identificador de caso trocado: foi o erro que Walker apontou em 2021 em Bao et al. (2020) e que o erratum de 2022 reconheceu.
 
+## Estudo dos EUA (fora do produto)
+
+- **Estado (24/11/2026):** a [Fase 0](eua-fase-0.md) contou os dados da SEC e os rótulos, e o [pré-registro do estudo dos EUA](pre-registro-eua.md) foi registrado em 24/11/2026 (commit `a527b9eca9ab0f087b04f1c97ed737bc63188456`; hash anotado no commit `14b78c5897083ee47cc962704230b55db47d7e55`; carimbo OpenTimestamps no commit `7c45d5344acc60f871d1f59747968938a386923b`), antes de qualquer sinal americano. Desfecho principal: o 8-K com o item 4.02, por episódio; os AAERs de 2009 a 2014 só como descrição. Próximos passos, na ordem registrada: o exemplo à mão, o código testado só em dados sintéticos e no exemplo, o congelamento (meta de 15/01/2027), o cálculo único (meta de 31/01/2027) e o relatório (meta de 28/02/2027). Nada dos EUA entra no README nem no produto antes do cálculo único e da fase "EUA no produto", no [plano](plano-v2.md).
+
 ## Produto: indicadores de contexto (registrado em 08/11/2026)
 
 Só contexto, sem alerta, e só depois de especificados no plano:

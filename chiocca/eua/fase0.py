@@ -52,9 +52,10 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
             fsds.cobertura_tags(
                 z,
                 subs[subs.trimestre == z.stem],
-                tags=[*fsds.TAGS, *fsds.TAGS_EXTRAS],
+                tags=[*fsds.TAGS, *fsds.TAGS_EXTRAS, *(t for t in fsds.TAGS_AMPLIACOES if t not in fsds.TAGS)],
                 formularios=("10-K", "10-K/A"),
                 receitas_anuais=True,
+                tags_anuais=fsds.TAGS_AMPLIACOES,
             )
             for z in baixados
         ],
@@ -138,19 +139,47 @@ REGRAS_RASCUNHO: dict[str, tuple[tuple[str, ...], ...]] = {
 ANOS_AMOSTRA = [str(a) for a in range(2011, ULTIMO_EXERCICIO + 1)]  # a amostra do rascunho: exercícios de 2011 a 2024
 
 
-def _cobre(linha: Any, conta: str, receita_ok: bool) -> bool:
+def _cobre(
+    linha: Any, conta: str, receita_ok: bool, regras: dict[str, tuple[tuple[str, ...], ...]] | None = None
+) -> bool:
     """Se a entrega cobre a conta pelas regras do rascunho (alguma alternativa com todas as partes presentes)."""
+    regras = REGRAS_RASCUNHO if regras is None else regras
 
     def parte(x: str) -> bool:
         if x == "receita":
             return receita_ok
-        if x in REGRAS_RASCUNHO:
-            return _cobre(linha, x, receita_ok)
+        if x in regras:
+            return _cobre(linha, x, receita_ok, regras)
         return bool(linha[x])
 
     if conta == "receita_liquida":
         return receita_ok
-    return any(all(parte(x) for x in alternativa) for alternativa in REGRAS_RASCUNHO[conta])
+    return any(all(parte(x) for x in alternativa) for alternativa in regras[conta])
+
+
+def _juros_e_caixa(amostra: Any) -> tuple[dict[str, Any], dict[str, tuple[tuple[str, ...], ...]]]:
+    """Terceira rodada (24/11/2026), só contagens, nos 10-K da amostra: o uso de cada tag (a base e as candidatas de
+    `fsds.AMPLIACOES`) por ano, pelo valor anual na data de referência; a regra gulosa da receita aplicada a cada conta;
+    a cobertura antes e depois, por ano, e quantas entregas só ficam cobertas por uma tag de conceito mais largo. Devolve
+    também as regras do rascunho com as tags que entraram."""
+    out: dict[str, Any] = {"conceito_largo": list(fsds.CONCEITO_LARGO), "ganho_minimo": fsds.GANHO_MINIMO, "contas": {}}
+    regras = dict(REGRAS_RASCUNHO)
+    for conta, a in fsds.AMPLIACOES.items():
+        tags = (*a["base"], *a["candidatas"])
+        uso = {t: {str(fy): int(sum(t in d for d in g.anuais_extras)) for fy, g in amostra.groupby("fy")} for t in tags}
+        amp = fsds.ampliar_receita(amostra.anuais_extras, base=a["base"], candidatas=a["candidatas"])
+        estreitas = [t for t in amp["ordem"] if t not in fsds.CONCEITO_LARGO]
+        cobertura = {
+            str(fy): {"10k": len(g), "antes": int(sum(bool(set(d) & set(a["base"])) for d in g.anuais_extras)),
+                      "depois": int(sum(bool(set(d) & set(amp["ordem"])) for d in g.anuais_extras)),
+                      "so_conceito_largo": int(sum(bool(set(d) & set(amp["ordem"])) and not set(d) & set(estreitas)
+                                                   for d in g.anuais_extras))}
+            for fy, g in amostra.groupby("fy")
+        }  # fmt: skip
+        out["contas"][conta] = {"base": list(a["base"]), "candidatas": list(a["candidatas"]), "uso_por_ano": uso,
+                                "ampliacao": amp, "cobertura_por_ano": cobertura}  # fmt: skip
+        regras[conta] = tuple((t,) for t in amp["ordem"])
+    return out, regras
 
 
 def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: Any) -> dict[str, Any]:
@@ -162,9 +191,10 @@ def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: 
     originais = tabela[tabela.form == "10-K"].set_index("adsh")
     k = dez_k.set_index("adsh")
     k = k.join(originais.drop(columns=["form", "fy", "receita"]), how="left")
-    for c in [*fsds.TAGS, *fsds.TAGS_EXTRAS]:
+    for c in dict.fromkeys([*fsds.TAGS, *fsds.TAGS_EXTRAS, *fsds.TAGS_AMPLIACOES]):
         k[c] = k[c].astype("boolean").fillna(False).astype(bool)
     k["receitas_anuais"] = [d if isinstance(d, dict) else {} for d in k.receitas_anuais]
+    k["anuais_extras"] = [d if isinstance(d, dict) else {} for d in k.anuais_extras]
     amostra = k[k.fy.isin(ANOS_AMOSTRA) & ~k.financeira & ~k.spac]
     amp = fsds.ampliar_receita(amostra.receitas_anuais)
     base = set(fsds.MAPA["receita_liquida"])
@@ -174,12 +204,19 @@ def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: 
     k["sem_receita_ampliada"] = fsds.sem_receita(k.receita_ampliada)
     amostra = k[k.fy.isin(ANOS_AMOSTRA) & ~k.financeira & ~k.spac]
     contas = ["receita_liquida", *REGRAS_RASCUNHO]
+    juros_caixa, regras_novas = _juros_e_caixa(amostra)
     cobertura: dict[str, Any] = {}
+    cobertura_nova: dict[str, Any] = {}
     for fy, g in amostra.groupby("fy"):
         ok = ~g.sem_receita_ampliada
+        linhas = list(zip((linha for _, linha in g.iterrows()), ok))
         cobertura[str(fy)] = {"10k": len(g)} | {
-            c: float(sum(_cobre(linha, c, bool(r)) for (_, linha), r in zip(g.iterrows(), ok)) / len(g)) for c in contas
+            c: float(sum(_cobre(linha, c, bool(r)) for linha, r in linhas) / len(g)) for c in contas
         }
+        cobertura_nova[str(fy)] = {"10k": len(g)} | {
+            c: float(sum(_cobre(linha, c, bool(r), regras_novas) for linha, r in linhas) / len(g)) for c in contas
+        }
+    juros_caixa["cobertura_por_ano_regras_novas"] = cobertura_nova
     sem_receita = {
         str(fy): {"10k": len(g), "sem_receita_fase0": int(g.sem_receita.sum()),
                   "sem_receita_ampliada": int(g.sem_receita_ampliada.sum())}
@@ -207,6 +244,7 @@ def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: 
         "cobertura_por_ano": cobertura,
         "sem_receita_por_ano": sem_receita,
         "exclusoes_8k": {a: {c: x[c] for c in chaves} for a, x in it.items()},
+        "juros_e_caixa": juros_caixa,
     }
 
 
@@ -474,9 +512,9 @@ T: dict[str, dict[str, Any]] = {
         "descrição à parte, sem teste. O 8-K 4.02 é público, gratuito, cobre o período inteiro com XBRL e tem casos "
         "suficientes para medir alguma coisa; o AAER é raro demais de 2009 a 2014 para um teste e mede outra coisa (a ação "
         "da SEC).",
-        "s_pendentes": "### 5.3 Para o rascunho do pré-registro",
-        "rascunho": "O [rascunho do pré-registro dos EUA](pre-registro-eua-rascunho.md), de 24/11/2026, trata destes "
-        "pontos; não é registro.",
+        "s_pendentes": "### 5.3 Para o pré-registro",
+        "rascunho": "O [pré-registro do estudo dos EUA](pre-registro-eua.md), registrado em 24/11/2026, trata destes "
+        "pontos.",
         "decisoes": [
             "**Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. A regra é "
             "escrita antes de qualquer sinal, com a versão pública na data (seção 2.3).",
@@ -487,24 +525,23 @@ T: dict[str, dict[str, Any]] = {
         "s_calendario": "### 5.4 Calendário: meta e reserva",
         "cab_cal": "| Etapa | Meta | Reserva |",
         "calendario": [
-            ("Decisões de Roberto (seção 5.1).", "2026-11-24", "2026-11-24"),
             (
-                "Revisão do rascunho do pré-registro pelo Claude (claude.ai) e por Roberto; nenhum sinal calculado.",
-                "2026-12-15",
-                "2026-12-15",
+                "Decisões de Roberto e revisão final do pré-registro pelo Claude (claude.ai) e por Roberto.",
+                "2026-11-24",
+                "2026-11-24",
             ),
+            ("Registro do pré-registro e carimbo.", "2026-12-05", "2027-01-31"),
             (
-                "Código do estudo escrito e testado só em dados sintéticos; a cobertura do mapa ampliado contada.",
+                "Exemplo calculado à mão, código testado só em dados sintéticos e no exemplo, e congelamento.",
                 "2027-01-15",
-                "2027-01-31",
+                "2027-03-31",
             ),
-            ("Registro do pré-registro e carimbo; código congelado.", "2027-01-31", "2027-03-31"),
             (
-                "Cálculo único, depois do carimbo, com os dados da SEC e os 8-K baixados no dia.",
-                "2027-02-28",
+                "Cálculo único, depois do congelamento, com os dados da SEC e os 8-K baixados no dia.",
+                "2027-01-31",
                 "2027-04-30",
             ),
-            ("Relatório em PT e EN, separado do estudo 2 do Brasil.", "2027-03-31", "2027-05-31"),
+            ("Relatório em PT e EN, separado do estudo 2 do Brasil.", "2027-02-28", "2027-05-31"),
         ],
         "fontes": "Fontes das condições e da crítica: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
         "econjwatch.org (Walker, 2021 e 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form 8-K, "
@@ -716,9 +753,9 @@ T: dict[str, dict[str, Any]] = {
         "description, with no test. The 8-K 4.02 is public, free, covers the whole XBRL period and has enough cases to "
         "measure something; the AAER is too rare from 2009 to 2014 for a test and measures something else (the SEC "
         "action).",
-        "s_pendentes": "### 5.3 For the pre-registration draft",
-        "rascunho": "The [draft US pre-registration](us-preregistration-draft.md), of 2026-11-24, takes up these points; "
-        "it is not a registration.",
+        "s_pendentes": "### 5.3 For the pre-registration",
+        "rascunho": "The [US study pre-registration](us-preregistration.md), registered on 2026-11-24, takes up these "
+        "points.",
         "decisoes": [
             "**Which fiscal year the case affects.** The items field does not say which statements stopped being "
             "reliable. The rule is written before any signal, with the public version at the date (section 2.3).",
@@ -729,24 +766,23 @@ T: dict[str, dict[str, Any]] = {
         "s_calendario": "### 5.4 Timeline: target and fallback",
         "cab_cal": "| Step | Target | Fallback |",
         "calendario": [
-            ("Roberto's decisions (section 5.1).", "2026-11-24", "2026-11-24"),
             (
-                "Review of the pre-registration draft by Claude (claude.ai) and Roberto; no signal computed.",
-                "2026-12-15",
-                "2026-12-15",
+                "Roberto's decisions and final review of the pre-registration by Claude (claude.ai) and Roberto.",
+                "2026-11-24",
+                "2026-11-24",
             ),
+            ("Pre-registration registered and timestamped.", "2026-12-05", "2027-01-31"),
             (
-                "Study code written and tested on synthetic data only; coverage of the widened map counted.",
+                "Hand-computed example, code tested only on synthetic data and on the example, and freeze.",
                 "2027-01-15",
-                "2027-01-31",
+                "2027-03-31",
             ),
-            ("Pre-registration registered and timestamped; code frozen.", "2027-01-31", "2027-03-31"),
             (
-                "Single computation, after the timestamp, with the SEC data and the 8-Ks downloaded on the day.",
-                "2027-02-28",
+                "Single computation, after the freeze, with the SEC data and the 8-Ks downloaded on the day.",
+                "2027-01-31",
                 "2027-04-30",
             ),
-            ("Report in PT and EN, separate from Brazil's study 2.", "2027-03-31", "2027-05-31"),
+            ("Report in PT and EN, separate from Brazil's study 2.", "2027-02-28", "2027-05-31"),
         ],
         "fontes": "Sources for the conditions and the critique: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
         "econjwatch.org (Walker, 2021 and 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form "

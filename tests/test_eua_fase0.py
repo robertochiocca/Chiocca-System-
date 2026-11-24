@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import subprocess
@@ -325,19 +326,46 @@ def test_exclusoes_dos_8k_pelo_ultimo_10k_antes() -> None:
     assert tuple(c[k] for k in chaves) == (1, 1, 0, 1, 2, 2)
 
 
-# ---- rascunho do pré-registro dos EUA (pedido de 24/11/2026, item 4) ----
+# ---- pré-registro dos EUA, registrado em 24/11/2026 (antes, o rascunho do item 4 do mesmo dia) ----
 
 
 @pytest.mark.parametrize("lang", ["pt", "en"])
-def test_rascunho_igual_a_saida_do_script(lang: str) -> None:
-    from chiocca.eua import rascunho
+def test_pre_registro_igual_a_saida_do_script(lang: str) -> None:
+    from chiocca.eua import pre_registro
 
-    texto = rascunho.DOCS[lang].read_text(encoding="utf-8")
-    assert texto == rascunho.render(D, lang)
-    assert ("Rascunho, não é registro" if lang == "pt" else "Draft, not a registration") in texto
+    texto = pre_registro.DOCS[lang].read_text(encoding="utf-8")
+    assert texto == pre_registro.render(D, lang)
     assert not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", texto)  # nenhum e-mail
     for proibido in ("fraude comprovada", "proven fraud", "recomendação de compra", "buy recommendation"):
         assert proibido not in texto.lower(), proibido
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_pre_registro_registrado_com_a_revisao_de_roberto(lang: str) -> None:
+    """Pedido de 24/11/2026 (quarta rodada): o texto registrado não tem a palavra "rascunho", tem a revisão de Roberto
+    com os três ajustes, e os arquivos do rascunho viraram um aviso que aponta para o registro."""
+    from chiocca.eua import pre_registro
+
+    doc = pre_registro.DOCS[lang].read_text(encoding="utf-8")
+    assert ("rascunho" if lang == "pt" else "draft") not in doc.lower()
+    if lang == "pt":
+        assert doc.startswith("# Pré-registro do estudo dos EUA\n") and "**Registrado em 24/11/2026.**" in doc
+        assert "## 14. Revisão de Roberto (24/11/2026)" in doc and "- Data: 24/11/2026." in doc
+        frase = (
+            "Roberto leu o texto inteiro, com a revisão do Claude (claude.ai), e aprovou o registro com três ajustes"
+        )
+    else:
+        assert doc.startswith("# US study pre-registration\n") and "**Registered on 2026-11-24.**" in doc
+        assert "## 14. Roberto's review (2026-11-24)" in doc and "- Date: 2026-11-24." in doc
+        frase = (
+            "Roberto read the whole text, with Claude's (claude.ai) review, and approved the registration with three "
+            "adjustments"
+        )
+    revisao = doc.split("\n## 14.", 1)[1]
+    assert frase in revisao and revisao.count("\n1. ") == 1 and "\n3. " in revisao and "\n4. " not in revisao
+    assert "docs/carimbos/eua-registro.txt" in doc and "OpenTimestamps" in doc
+    assert pre_registro.RASCUNHOS[lang].read_text(encoding="utf-8") == pre_registro.AVISOS[lang]
+    assert pre_registro.DOCS[lang].name in pre_registro.AVISOS[lang]
 
 
 def test_rascunho_antes_de_qualquer_sinal_americano() -> None:
@@ -384,3 +412,86 @@ def test_mapa_ampliado_coerente() -> None:
     for a, x in m["exclusoes_8k"].items():
         assert x["companhias_com_10k_fsds_antes"] == D["fsds"]["itens_8k"][a]["companhias_com_10k_fsds_antes"]
         assert x["antes_restantes"] >= D["fsds"]["itens_8k"][a]["antes_restantes"]  # o mapa ampliado só devolve
+
+
+# ---- ampliação de despesas_financeiras e de caixa_operacional (pedido de 24/11/2026, terceira rodada) ----
+
+
+def test_tags_anuais_e_candidatas_de_juros_e_caixa(tmp_path: Path) -> None:
+    z = _zip(tmp_path)
+    t = fsds.cobertura_tags(z, fsds.submissoes(z), tags_anuais=("Revenues", "Assets")).set_index("adsh")
+    assert t.at["0001", "anuais_extras"] == {"Revenues": 500.0}  # o ativo é de saldo (qtrs 0), não anual
+    a = fsds.AMPLIACOES
+    assert a["despesas_financeiras"]["base"] == ("InterestExpense",)
+    assert a["caixa_operacional"]["candidatas"] == ("NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",)
+    assert set(fsds.CONCEITO_LARGO) <= set(a["despesas_financeiras"]["candidatas"])
+    for proibida in ("InterestPaidNet", "InterestIncomeExpenseNet", "InterestExpenseLongTermDebt"):
+        assert proibida not in fsds.TAGS_AMPLIACOES  # outro conceito ou componente
+    anuais = pd.Series(
+        [{"InterestExpense": 1.0}, {"InterestExpenseNonoperating": 2.0}, {"InterestAndDebtExpense": 3.0}]
+    )
+    r = fsds.ampliar_receita(anuais, base=a["despesas_financeiras"]["base"],
+                             candidatas=a["despesas_financeiras"]["candidatas"], ganho_minimo=0.3)  # fmt: skip
+    assert r["escolhidas"] == ["InterestExpenseNonoperating", "InterestAndDebtExpense"]
+
+
+def test_juros_e_caixa_coerente() -> None:
+    jc = D["fsds"]["mapa_ampliado"]["juros_e_caixa"]
+    sr = D["fsds"]["mapa_ampliado"]["sem_receita_por_ano"]
+    for conta, x in jc["contas"].items():
+        amp = x["ampliacao"]
+        assert amp["ordem"][: len(x["base"])] == x["base"] and set(amp["escolhidas"]) <= set(x["candidatas"])
+        assert all(g >= jc["ganho_minimo"] * amp["entregas"] for g in amp["ganhos"].values())
+        for a, c in x["cobertura_por_ano"].items():
+            assert (
+                c["10k"] == sr[a]["10k"]
+                and c["antes"] <= c["depois"] <= c["10k"]
+                and c["so_conceito_largo"] <= c["depois"]
+            )
+            assert all(x["uso_por_ano"][t][a] <= c["10k"] for t in x["uso_por_ano"])
+    for a, c in jc["cobertura_por_ano_regras_novas"].items():
+        velha = D["fsds"]["mapa_ampliado"]["cobertura_por_ano"][a]
+        assert (
+            c["despesas_financeiras"] >= velha["despesas_financeiras"]
+            and c["caixa_operacional"] >= velha["caixa_operacional"]
+        )
+        assert c["receita_liquida"] == velha["receita_liquida"]
+
+
+COMMIT_DE_REGISTRO_EUA = "a527b9eca9ab0f087b04f1c97ed737bc63188456"  # o registro do pré-registro do estudo dos EUA
+
+
+@pytest.mark.parametrize("lang", ["pt", "en"])
+def test_hash_do_commit_de_registro_anotado(lang: str) -> None:
+    from chiocca.eua import pre_registro
+
+    doc = pre_registro.DOCS[lang].read_text(encoding="utf-8")
+    assert pre_registro.COMMIT_DE_REGISTRO == COMMIT_DE_REGISTRO_EUA
+    rotulo = "Hash do commit de registro" if lang == "pt" else "Hash of the registration commit"
+    assert doc.count(f"{rotulo}: `{COMMIT_DE_REGISTRO_EUA}`") == 1
+
+
+# ---- carimbo OpenTimestamps do registro (docs/carimbos/eua-registro.txt e o .ots; `ots upgrade` depois) ----
+CARIMBO_EUA = RAIZ / "docs" / "carimbos" / "eua-registro.txt"
+CABECALHO_OTS = b"\x00OpenTimestamps\x00\x00Proof\x00\xbf\x89\xe2\xe8\x84\xe8\x92\x94"
+
+
+def _pre_registro_como_no_registro() -> bytes:
+    """O texto em PT como estava no commit de registro: tira só a anotação do hash, feita no commit seguinte."""
+    from chiocca.eua import pre_registro
+
+    doc = pre_registro.DOCS["pt"].read_text(encoding="utf-8")
+    anotacao = pre_registro.ANOTACAO["pt"].format(c=COMMIT_DE_REGISTRO_EUA)
+    assert doc.count(anotacao) == 1
+    return doc.replace(anotacao, "").encode("utf-8")
+
+
+def test_carimbo_do_registro_dos_eua() -> None:
+    linhas = [x.split("  ", 1) for x in CARIMBO_EUA.read_text(encoding="utf-8").splitlines() if not x.startswith("#")]
+    assert linhas[0][0] == COMMIT_DE_REGISTRO_EUA
+    assert {c: h for h, c in linhas[1:]} == {
+        "docs/pre-registro-eua.md": hashlib.sha256(_pre_registro_como_no_registro()).hexdigest()
+    }
+    ots = CARIMBO_EUA.with_name(CARIMBO_EUA.name + ".ots").read_bytes()
+    assert ots.startswith(CABECALHO_OTS) and ots[len(CABECALHO_OTS)] == 1 and ots[len(CABECALHO_OTS) + 1] == 0x08
+    assert ots[len(CABECALHO_OTS) + 2 : len(CABECALHO_OTS) + 34] == hashlib.sha256(CARIMBO_EUA.read_bytes()).digest()

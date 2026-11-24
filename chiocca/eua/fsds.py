@@ -100,6 +100,31 @@ GANHO_MINIMO = 0.005
 # Tags fora do mapa dos sinais, só para a cobertura das regras do rascunho (passivo total da regra boba).
 TAGS_EXTRAS: tuple[str, ...] = ("Liabilities", "LiabilitiesAndStockholdersEquity")
 
+# Ampliação de `despesas_financeiras` e de `caixa_operacional` (pedido de 24/11/2026, terceira rodada), pela mesma regra
+# da receita. Escritas antes de qualquer contagem: as tags us-gaap do mesmo conceito contábil (juros da dívida; caixa
+# líquido das atividades operacionais, inclusive a variante só de operações continuadas). As de conceito mais largo
+# entram com uma marca (`CONCEITO_LARGO`), como a de fornecedores. Ficam fora os juros líquidos de receita de juros e os
+# juros pagos (outros conceitos) e as tags de componentes (só da dívida de longo prazo, só com partes relacionadas).
+AMPLIACOES: dict[str, dict[str, tuple[str, ...]]] = {
+    "despesas_financeiras": {
+        "base": MAPA["despesas_financeiras"],
+        "candidatas": (
+            "InterestExpenseNonoperating",
+            "InterestExpenseOperating",
+            "InterestExpenseDebt",
+            "InterestExpenseBorrowings",
+            "InterestAndDebtExpense",  # juros e outros encargos da dívida: mais largo
+            "InterestCostsIncurred",  # inclui os juros capitalizados: mais largo
+        ),
+    },
+    "caixa_operacional": {
+        "base": MAPA["caixa_operacional"],
+        "candidatas": ("NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",),
+    },
+}
+CONCEITO_LARGO: tuple[str, ...] = ("InterestAndDebtExpense", "InterestCostsIncurred")
+TAGS_AMPLIACOES: tuple[str, ...] = tuple(t for a in AMPLIACOES.values() for t in (*a["base"], *a["candidatas"]))
+
 
 class ColunaAusente(ValueError):
     pass
@@ -210,13 +235,15 @@ def cobertura_tags(
     tags: list[str] = TAGS,
     formularios: tuple[str, ...] = ("10-K",),
     receitas_anuais: bool = False,
+    tags_anuais: tuple[str, ...] = (),
 ) -> pd.DataFrame:
     """Para cada entrega do trimestre nos formulários pedidos (o 10-K original, por padrão), as tags (das candidatas)
     com valor em dólar na data de referência da entrega, da companhia (sem co-registrante), na taxonomia us-gaap; e a
     receita do exercício (`receita`: o valor anual, de quatro trimestres, da primeira tag de `receita_liquida` do mapa
     que a entrega traz, ou vazio), para a regra das sem receita, a mesma do estudo 1: receita ausente ou zero. Com
     `receitas_anuais`, também o valor anual de cada tag us-gaap cujo nome tem "Revenue" ou "Sales" (`receitas_anuais`,
-    um dicionário tag -> valor), para a ampliação do mapa da receita pela cobertura (só contagens)."""
+    um dicionário tag -> valor), para a ampliação do mapa da receita pela cobertura (só contagens); e o valor anual de
+    cada uma das `tags_anuais` (`anuais_extras`, outro dicionário), para as outras ampliações."""
     alvo = sub[sub.form.isin(formularios)].set_index("adsh")
     with zipfile.ZipFile(zip_caminho) as z:
         with z.open("num.txt") as f:
@@ -226,11 +253,14 @@ def cobertura_tags(
     presentes: dict[str, set[str]] = defaultdict(set)
     receitas: dict[str, dict[str, float]] = defaultdict(dict)
     anuais: dict[str, dict[str, float]] = defaultdict(dict)
+    extras: dict[str, dict[str, float]] = defaultdict(dict)
     tags_receita = MAPA["receita_liquida"]
     with zipfile.ZipFile(zip_caminho) as z:
         for bloco in pd.read_csv(z.open("num.txt"), sep="\t", dtype=str, keep_default_na=False, usecols=usar,
                                  chunksize=500_000):  # fmt: skip
-            nome = bloco.tag.isin(tags) | (bloco.tag.str.contains(r"Revenue|Sales") if receitas_anuais else False)
+            nome = bloco.tag.isin([*tags, *tags_anuais])
+            if receitas_anuais:
+                nome = nome | bloco.tag.str.contains(r"Revenue|Sales")
             b = bloco[bloco.adsh.isin(alvo.index) & nome & bloco.version.str.startswith("us-gaap")
                       & (bloco.uom == "USD")]  # fmt: skip
             for col in ("coreg", "segments"):
@@ -242,7 +272,12 @@ def cobertura_tags(
                 for a, t, v in zip(ra.adsh, ra.tag, pd.to_numeric(ra.value, errors="coerce")):
                     if pd.notna(v):
                         anuais[a].setdefault(t, float(v))
-                b = b[b.tag.isin(tags)]
+            if tags_anuais:
+                rx = b[b.tag.isin(tags_anuais) & (b.qtrs == "4")]
+                for a, t, v in zip(rx.adsh, rx.tag, pd.to_numeric(rx.value, errors="coerce")):
+                    if pd.notna(v):
+                        extras[a].setdefault(t, float(v))
+            b = b[b.tag.isin(tags)]
             for a, t in zip(b.adsh, b.tag):
                 presentes[a].add(t)
             r = b[b.tag.isin(tags_receita) & (b.qtrs == "4")]
@@ -256,10 +291,12 @@ def cobertura_tags(
     return pd.DataFrame(
         [
             {"adsh": a, "form": alvo.at[a, "form"], "fy": alvo.at[a, "fy"], **{t: t in presentes[a] for t in tags},
-             "receita": receita(a), **({"receitas_anuais": dict(anuais[a])} if receitas_anuais else {})}
+             "receita": receita(a), **({"receitas_anuais": dict(anuais[a])} if receitas_anuais else {}),
+             **({"anuais_extras": dict(extras[a])} if tags_anuais else {})}
             for a in alvo.index
         ],
-        columns=["adsh", "form", "fy", *tags, "receita", *(["receitas_anuais"] if receitas_anuais else [])],
+        columns=["adsh", "form", "fy", *tags, "receita", *(["receitas_anuais"] if receitas_anuais else []),
+                 *(["anuais_extras"] if tags_anuais else [])],
     )  # fmt: skip
 
 
@@ -267,9 +304,9 @@ def ampliar_receita(anuais: pd.Series, base: tuple[str, ...] = MAPA["receita_liq
                     candidatas: tuple[str, ...] = RECEITA_CANDIDATAS, ganho_minimo: float = GANHO_MINIMO
                     ) -> dict[str, Any]:  # fmt: skip
     """A regra gulosa da ampliação, sobre os dicionários tag -> valor anual de cada 10-K da amostra: parte das tags de
-    `base` e, a cada passo, acrescenta a candidata que cobre mais entregas ainda sem receita, se o ganho for de pelo
+    `base` e, a cada passo, acrescenta a candidata que cobre mais entregas ainda sem valor, se o ganho for de pelo
     menos `ganho_minimo` das entregas. Devolve a ordem final, o ganho de cada tag que entrou e o de cada candidata no
-    primeiro passo (só contagens)."""
+    primeiro passo (só contagens). Serve à receita (os padrões) e às outras contas (`AMPLIACOES`)."""
     tem = [set(d) for d in anuais]
     n = len(tem)
     cobertas = [bool(t & set(base)) for t in tem]
