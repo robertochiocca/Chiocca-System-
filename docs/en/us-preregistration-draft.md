@@ -1,6 +1,6 @@
 # Draft pre-registration of the US study
 
-> **Draft, not a registration.** Written on 2026-11-24 by the agent and updated on the same day with Roberto's decisions on the open points ([Phase 0, section 5.1](us-phase-0.md)), before any US signal was computed. It is still a draft, for the final review by Claude (claude.ai) and Roberto; nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit), with a target of 2027-01-31 and a fallback of 2027-03-31. The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
+> **Draft, not a registration.** Written on 2026-11-24 by the agent, with Roberto's decisions ([Phase 0, section 5.1](us-phase-0.md)) and the three adjustments of the final review (sections 3.1.1, 7 and 10), before any US signal was computed. Nothing here holds until the text is registered (the commit that introduces it as the registration and the hash noted in the next commit). The US front stays out of the README and the product. Alert, not accusation: an 8-K with Item 4.02 is a statement that published financial statements can no longer be relied upon, not an accusation of fraud; no alert by company is published.
 
 Basis: [US Phase 0](us-phase-0.md), with the numbers in [`docs/eua_fase0_numeros.json`](../eua_fase0_numeros.json), and the pre-registrations of [study 1](../pre-registro.md), [study 2](study-2-preregistration.md) and [engine v2](engine-v2-preregistration.md), whose rules hold here with only the adaptations in section 3.
 
@@ -61,7 +61,7 @@ Roberto's decision of 2026-11-24: the revenue tags are chosen by coverage counts
 
 4 tags entered. **The final revenue list, in this order of preference: `Revenues`, `RevenueFromContractWithCustomerExcludingAssessedTax`, `SalesRevenueNet`, `SalesRevenueGoodsNet`, `RevenueFromContractWithCustomerIncludingAssessedTax`, `SalesRevenueServicesNet`, `OilAndGasRevenue`.**
 
-Discovery count, for transparency only: among the 17,440 sample 10-Ks with none of the three Phase 0 tags, the 15 most frequent us-gaap tags with "Revenue" or "Sales" in the name (annual value at the report date). Those outside the candidates do not enter by the rule; if any is a total-revenue tag, entering requires a decision by Roberto before registration (section 10).
+Discovery count, for transparency only: among the 17,440 sample 10-Ks with none of the three Phase 0 tags, the 15 most frequent us-gaap tags with "Revenue" or "Sales" in the name (annual value at the report date). No tag outside the candidates enters, even if it looks like total revenue: the candidate lists written before the count are final (Roberto's adjustment of 2026-11-24).
 
 | Tag | 10-Ks without the three tags with it | Candidate |
 | --- | ---: | --- |
@@ -111,7 +111,7 @@ With the widened map, the no-revenue rule removes 12,873 of the 65,096 sample 10
 
 ### 3.1.3 Widening financial expense and operating cash flow
 
-Roberto's request of 2026-11-24: the same rule as for revenue, for the two accounts that were losing coverage. Each account's candidates were written in the code (`AMPLIACOES` and `CONCEITO_LARGO`, in `chiocca/eua/fsds.py`) before any count, all of the same accounting concept: interest on debt; net cash from operating activities, including the continuing-operations-only variant. Those with a wider concept (`InterestAndDebtExpense`, interest and other debt charges, and `InterestCostsIncurred`, which includes capitalized interest) enter with a flag, like the accounts payable one. Net interest (net of interest income) and interest paid (other concepts) and component tags are left out. They enter in order of largest gain, with at least 0.5% of the sample 10-Ks, by the annual value (four quarters) at the report date.
+Roberto's request of 2026-11-24: the same rule as for revenue, for the two accounts that were losing coverage. Each account's candidates were written in the code (`AMPLIACOES` and `CONCEITO_LARGO`, in `chiocca/eua/fsds.py`) before any count, all of the same accounting concept: interest on debt; net cash from operating activities, including the continuing-operations-only variant. Those with a wider concept (`InterestAndDebtExpense`, interest and other debt charges, and `InterestCostsIncurred`, which includes capitalized interest) enter with a flag, like the accounts payable one. Net interest (net of interest income) and interest paid (other concepts) and component tags are left out. They enter in order of largest gain, with at least 0.5% of the sample 10-Ks, by the annual value (four quarters) at the report date. No tag outside the candidates enters: the lists written before the count are final.
 
 **First, the use of each tag by year** (share of sample 10-Ks with the tag's annual value), to see whether the drops come from a tag change in the taxonomy:
 
@@ -174,13 +174,22 @@ Financial companies stay out (Roberto's decision of 2026-11-24): the map has no 
 - **Result:** "positive association" if the lower bound of the one-sided 95% interval of the DR is above zero; otherwise, "no evidence of association".
 - **Naive rule side by side:** the most leveraged decile (total liabilities ÷ total assets) of each fiscal year, as in study 1, with the same DR and the paired bootstrap (the same resamples): "the engine separates better than the naive rule" only if the lower bound of the difference is above zero.
 - **v2 paired with v1:** as in study 2's amendment 5. v2's alert comes from all company-years v2 evaluates; the measures are computed on the company-years evaluated by v1; "v2 separates better than v1" only if the lower bound of the paired difference is above zero; otherwise, no winner declared.
-- **Descriptive:** study 2's ranking metrics (precision and lift at the top 1%, 5% and 10% and NDCG@k), each fiscal year separately and the AAERs (section 7). Aggregates only: no list of companies by alert.
+- **Descriptive:** study 2's ranking metrics (precision and lift at the top 1%, 5% and 10% and NDCG@k), each fiscal year separately and the AAERs (section 8). Aggregates only: no list of companies by alert.
 
-## 7. The 2009 to 2014 AAERs: a separate description
+## 7. The hand-computed example
+
+Before any study code, a hand-computed example, in a separate script (`tests/referencia/gerar_exemplo_eua.py`), outside the `chiocca` package and without importing it, like the study 1 and engine v2 examples, with exact arithmetic at the boundaries:
+
+- **A fictitious XBRL 10-K:** rows in the format of `sub.txt`, `num.txt` and `pre.txt`, with chosen values, for a small group of fictitious non-financial companies, in the fiscal year and the previous one, so that each rule of the account map (section 3.1) appears at least once: the first tag of each account and the fallbacks (revenue through a widening tag, derived gross profit, income from continuing operations through net income, short-term debt by the sum, financial expense through a widening tag and through `InterestAndDebtExpense`, with the flag, operating cash flow through the continuing-operations variant, accounts payable through the wider tag, with the flag, and total liabilities by the difference); co-registrant, segment, other-currency and other-date numbers, which must not enter; and a missing account, which leaves a signal not computable.
+- **The public version at the cut-off (section 3.3):** the original 10-K and amendments with account numbers, one filed by the cut-off, which becomes the version used, and another after the cut-off, which does not enter, and an amendment without those numbers, which does not change the version.
+- **The v1 and v2 signals (section 2):** the eight components and the M-score, the DPO jump, implied interest against a fictitious reference rate, the Benford deviation, the percentiles, the score and the alerts of v1, v2 and the naive rule, in a group small enough to check by hand.
+- **The check:** the study code must reproduce the script's values, with a test, and the script goes into the study's SHA-256 registry at the freeze (section 10). Limitation, as in engine v2: both implementations start from the same text; the check catches implementation errors, not errors in the text.
+
+## 8. The 2009 to 2014 AAERs: a separate description
 
 For the 25 Bao et al. cases (47 company-years) with a 10-K in the SEC data (Phase 0, section 4.1): how many cases v1, v2 and the naive rule alerted in at least one affected fiscal year, with the version public at the cut-off. Counts only, with no test and no list. In 2009 and 2010, only the largest companies filed in XBRL.
 
-## 8. Predictions written before the data
+## 9. Predictions written before the data
 
 Revised on 2026-11-24 for the new period (2011 to 2024) and the widened map, and again after widening financial expense and operating cash flow (section 3.1.3). No range changed; the reason for each is given next to it.
 
@@ -193,28 +202,25 @@ Revised on 2026-11-24 for the new period (2011 to 2024) and the widened map, and
 7. **v2 against the naive rule:** no winner declared. Reason: leverage is also associated with restatements, through financial distress. **No adjustment.**
 8. **AAERs:** of the 25 cases, between 30% and 60% in alert under v1 and between 10% and 30% under v2 in at least one affected fiscal year. **No adjustment:** the AAER description does not depend on the sample period.
 
-## 9. Timeline: target and fallback
+## 10. Order and timeline: target and fallback
+
+The order is fixed: (1) registration of this text; (2) the hand-computed example (section 7), before any study code; (3) the study code, tested only on synthetic data and on the hand-computed example, with no signal computed on real data; (4) the freeze, with the SHA-256 registry of the code and of the example script; (5) only then the single computation, with the SEC data and the 8-Ks downloaded again on the day; (6) the report.
 
 | Step | Target | Fallback |
 | --- | --- | --- |
-| Roberto's decisions and this draft. | 2026-11-24 | 2026-11-24 |
-| Review of the draft by Claude (claude.ai) and Roberto; no signal computed. | 2026-12-15 | 2026-12-15 |
-| Study code written and tested on synthetic data only; no US signal computed. | 2027-01-15 | 2027-01-31 |
-| Pre-registration registered and timestamped; code frozen with a SHA-256 registry. | 2027-01-31 | 2027-03-31 |
-| Single computation, after the timestamp, with the SEC data and the 8-Ks downloaded again on the day. | 2027-02-28 | 2027-04-30 |
-| Report in PT and EN, separate from Brazil's study 2. | 2027-03-31 | 2027-05-31 |
+| Registration of this text and timestamp. | 2026-12-05 | 2027-01-31 |
+| Hand-computed example, code tested only on synthetic data and on the example, and freeze. | 2027-01-15 | 2027-03-31 |
+| Single computation, after the freeze. | 2027-01-31 | 2027-04-30 |
+| Report in PT and EN, separate from Brazil's study 2. | 2027-02-28 | 2027-05-31 |
 
-## 10. Roberto's decisions of 2026-11-24 and what is left before registration
+The fallback keeps the dates of the reviewed version's fallback (2027-01-31, 2027-03-31, 2027-04-30 and 2027-05-31), in the new order.
 
-Decided: (a) financial companies stay out (section 3.4); (b) the revenue tags are chosen by coverage counts only, and the final list goes into the registered text (section 3.1.1); (c) the sample goes to fiscal 2024, with the SEC data and the 8-Ks downloaded again on the day of the computation; (d) the seed is 20270430; (e) the SEC files stay outside Git, with their SHA-256 in the manifest and the download by script; (f) the timeline has a target and a fallback (section 9).
+## 11. Roberto's decisions of 2026-11-24
 
-For review by Claude (claude.ai) and Roberto, before registration:
+(a) Financial companies stay out (section 3.4); (b) the revenue tags are chosen by coverage counts only, and the final list is in section 3.1.1; (c) the sample goes to fiscal 2024, with the SEC data and the 8-Ks downloaded again on the day of the computation; (d) the seed is 20270430; (e) the SEC files stay outside Git, with their SHA-256 in the manifest and the download by script; (f) financial expense and operating cash flow by the same rule as revenue (section 3.1.3); (g) no tag outside the candidates enters (sections 3.1.1 and 3.1.3); (h) the hand-computed example (section 7); (i) the order and the timeline, with a target and a fallback (section 10).
 
-1. The discovery-count tags outside the candidates (section 3.1.1): none enters without a decision by Roberto.
-2. The fiscal year by the report date, as in the DFP; Phase 0 counts use the fiscal year declared by the company (`fy`), and the difference between the two is small.
-3. The coverage drops of financial expense and operating cash flow: handled in section 3.1.3, by the same rule as for revenue (third round, 2026-11-24).
-4. Reading the whole text, which is registered as it stands after the review.
+The fiscal year is the year of the report date, as in the DFP; Phase 0 counts use the fiscal year declared by the company (`fy`), and the difference between the two is small.
 
-## 11. What is left out
+## 12. What is left out
 
 Financial companies, the DVA and the reader (section 3.4); any list or ordering of companies by alert; any investment recommendation; and, until Roberto decides, the US front in the README and the product.

@@ -306,11 +306,10 @@ The [draft US pre-registration](us-preregistration-draft.md), of 2026-11-24, tak
 
 | Step | Target | Fallback |
 | --- | --- | --- |
-| Roberto's decisions (section 5.1). | 2026-11-24 | 2026-11-24 |
-| Review of the pre-registration draft by Claude (claude.ai) and Roberto; no signal computed. | 2026-12-15 | 2026-12-15 |
-| Study code written and tested on synthetic data only; coverage of the widened map counted. | 2027-01-15 | 2027-01-31 |
-| Pre-registration registered and timestamped; code frozen. | 2027-01-31 | 2027-03-31 |
-| Single computation, after the timestamp, with the SEC data and the 8-Ks downloaded on the day. | 2027-02-28 | 2027-04-30 |
-| Report in PT and EN, separate from Brazil's study 2. | 2027-03-31 | 2027-05-31 |
+| Roberto's decisions and final review of the pre-registration by Claude (claude.ai) and Roberto. | 2026-11-24 | 2026-11-24 |
+| Pre-registration registered and timestamped. | 2026-12-05 | 2027-01-31 |
+| Hand-computed example, code tested only on synthetic data and on the example, and freeze. | 2027-01-15 | 2027-03-31 |
+| Single computation, after the freeze, with the SEC data and the 8-Ks downloaded on the day. | 2027-01-31 | 2027-04-30 |
+| Report in PT and EN, separate from Brazil's study 2. | 2027-02-28 | 2027-05-31 |
 
 Sources for the conditions and the critique: sites.google.com/usc.edu/aaerdataset (Buy the Data); econjwatch.org (Walker, 2021 and 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form 8-K, Item 4.02; Financial Statement Data Sets; EDGAR, submissions.zip).

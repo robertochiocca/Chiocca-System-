@@ -306,11 +306,10 @@ O [rascunho do pré-registro dos EUA](pre-registro-eua-rascunho.md), de 24/11/20
 
 | Etapa | Meta | Reserva |
 | --- | --- | --- |
-| Decisões de Roberto (seção 5.1). | 24/11/2026 | 24/11/2026 |
-| Revisão do rascunho do pré-registro pelo Claude (claude.ai) e por Roberto; nenhum sinal calculado. | 15/12/2026 | 15/12/2026 |
-| Código do estudo escrito e testado só em dados sintéticos; a cobertura do mapa ampliado contada. | 15/01/2027 | 31/01/2027 |
-| Registro do pré-registro e carimbo; código congelado. | 31/01/2027 | 31/03/2027 |
-| Cálculo único, depois do carimbo, com os dados da SEC e os 8-K baixados no dia. | 28/02/2027 | 30/04/2027 |
-| Relatório em PT e EN, separado do estudo 2 do Brasil. | 31/03/2027 | 31/05/2027 |
+| Decisões de Roberto e revisão final do pré-registro pelo Claude (claude.ai) e por Roberto. | 24/11/2026 | 24/11/2026 |
+| Registro do pré-registro e carimbo. | 05/12/2026 | 31/01/2027 |
+| Exemplo calculado à mão, código testado só em dados sintéticos e no exemplo, e congelamento. | 15/01/2027 | 31/03/2027 |
+| Cálculo único, depois do congelamento, com os dados da SEC e os 8-K baixados no dia. | 31/01/2027 | 30/04/2027 |
+| Relatório em PT e EN, separado do estudo 2 do Brasil. | 28/02/2027 | 31/05/2027 |
 
 Fontes das condições e da crítica: sites.google.com/usc.edu/aaerdataset (Buy the Data); econjwatch.org (Walker, 2021 e 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form 8-K, item 4.02; Financial Statement Data Sets; EDGAR, submissions.zip).

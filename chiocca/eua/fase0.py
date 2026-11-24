@@ -525,24 +525,23 @@ T: dict[str, dict[str, Any]] = {
         "s_calendario": "### 5.4 Calendário: meta e reserva",
         "cab_cal": "| Etapa | Meta | Reserva |",
         "calendario": [
-            ("Decisões de Roberto (seção 5.1).", "2026-11-24", "2026-11-24"),
             (
-                "Revisão do rascunho do pré-registro pelo Claude (claude.ai) e por Roberto; nenhum sinal calculado.",
-                "2026-12-15",
-                "2026-12-15",
+                "Decisões de Roberto e revisão final do pré-registro pelo Claude (claude.ai) e por Roberto.",
+                "2026-11-24",
+                "2026-11-24",
             ),
+            ("Registro do pré-registro e carimbo.", "2026-12-05", "2027-01-31"),
             (
-                "Código do estudo escrito e testado só em dados sintéticos; a cobertura do mapa ampliado contada.",
+                "Exemplo calculado à mão, código testado só em dados sintéticos e no exemplo, e congelamento.",
                 "2027-01-15",
-                "2027-01-31",
+                "2027-03-31",
             ),
-            ("Registro do pré-registro e carimbo; código congelado.", "2027-01-31", "2027-03-31"),
             (
-                "Cálculo único, depois do carimbo, com os dados da SEC e os 8-K baixados no dia.",
-                "2027-02-28",
+                "Cálculo único, depois do congelamento, com os dados da SEC e os 8-K baixados no dia.",
+                "2027-01-31",
                 "2027-04-30",
             ),
-            ("Relatório em PT e EN, separado do estudo 2 do Brasil.", "2027-03-31", "2027-05-31"),
+            ("Relatório em PT e EN, separado do estudo 2 do Brasil.", "2027-02-28", "2027-05-31"),
         ],
         "fontes": "Fontes das condições e da crítica: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
         "econjwatch.org (Walker, 2021 e 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form 8-K, "
@@ -767,24 +766,23 @@ T: dict[str, dict[str, Any]] = {
         "s_calendario": "### 5.4 Timeline: target and fallback",
         "cab_cal": "| Step | Target | Fallback |",
         "calendario": [
-            ("Roberto's decisions (section 5.1).", "2026-11-24", "2026-11-24"),
             (
-                "Review of the pre-registration draft by Claude (claude.ai) and Roberto; no signal computed.",
-                "2026-12-15",
-                "2026-12-15",
+                "Roberto's decisions and final review of the pre-registration by Claude (claude.ai) and Roberto.",
+                "2026-11-24",
+                "2026-11-24",
             ),
+            ("Pre-registration registered and timestamped.", "2026-12-05", "2027-01-31"),
             (
-                "Study code written and tested on synthetic data only; coverage of the widened map counted.",
+                "Hand-computed example, code tested only on synthetic data and on the example, and freeze.",
                 "2027-01-15",
-                "2027-01-31",
+                "2027-03-31",
             ),
-            ("Pre-registration registered and timestamped; code frozen.", "2027-01-31", "2027-03-31"),
             (
-                "Single computation, after the timestamp, with the SEC data and the 8-Ks downloaded on the day.",
-                "2027-02-28",
+                "Single computation, after the freeze, with the SEC data and the 8-Ks downloaded on the day.",
+                "2027-01-31",
                 "2027-04-30",
             ),
-            ("Report in PT and EN, separate from Brazil's study 2.", "2027-03-31", "2027-05-31"),
+            ("Report in PT and EN, separate from Brazil's study 2.", "2027-02-28", "2027-05-31"),
         ],
         "fontes": "Sources for the conditions and the critique: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
         "econjwatch.org (Walker, 2021 and 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form "
