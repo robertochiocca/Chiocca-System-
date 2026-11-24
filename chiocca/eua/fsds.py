@@ -75,6 +75,31 @@ MAPA: dict[str, tuple[str, ...]] = {
 }
 TAGS = sorted({t for ts in MAPA.values() for t in ts})
 
+# Ampliação do mapa da receita (decisão de Roberto de 24/11/2026: as tags são escolhidas só pelas contagens de
+# cobertura). Escritas antes de qualquer contagem: as tags us-gaap de receita total (não componentes, custos nem
+# saldos) que podem entrar depois das três da proposta da Fase 0. A regra (`ampliar_receita`): entram em ordem gulosa,
+# pelo maior ganho de cobertura nos 10-K da amostra (não financeiras, sem as SPACs, exercícios de 2011 a 2024), e cada
+# uma só entra se acrescentar pelo menos `GANHO_MINIMO` dessas entregas.
+RECEITA_CANDIDATAS: tuple[str, ...] = (
+    "RevenueFromContractWithCustomerIncludingAssessedTax",
+    "SalesRevenueGoodsNet",
+    "SalesRevenueServicesNet",
+    "SalesRevenueGoodsGross",
+    "RevenuesExcludingInterestAndDividends",
+    "RegulatedAndUnregulatedOperatingRevenue",
+    "ElectricUtilityRevenue",
+    "OilAndGasRevenue",
+    "RevenueMineralSales",
+    "RealEstateRevenueNet",
+    "OperatingLeasesIncomeStatementLeaseRevenue",
+    "OperatingLeaseLeaseIncome",
+    "HealthCareOrganizationRevenue",
+    "ContractsRevenue",
+)
+GANHO_MINIMO = 0.005
+# Tags fora do mapa dos sinais, só para a cobertura das regras do rascunho (passivo total da regra boba).
+TAGS_EXTRAS: tuple[str, ...] = ("Liabilities", "LiabilitiesAndStockholdersEquity")
+
 
 class ColunaAusente(ValueError):
     pass
@@ -179,12 +204,19 @@ def versoes_por_ano(sub: pd.DataFrame, com_numeros: set[str], anos_depois: tuple
     return out
 
 
-def cobertura_tags(zip_caminho: Path, sub: pd.DataFrame, tags: list[str] = TAGS,
-                   formularios: tuple[str, ...] = ("10-K",)) -> pd.DataFrame:  # fmt: skip
+def cobertura_tags(
+    zip_caminho: Path,
+    sub: pd.DataFrame,
+    tags: list[str] = TAGS,
+    formularios: tuple[str, ...] = ("10-K",),
+    receitas_anuais: bool = False,
+) -> pd.DataFrame:
     """Para cada entrega do trimestre nos formulários pedidos (o 10-K original, por padrão), as tags (das candidatas)
     com valor em dólar na data de referência da entrega, da companhia (sem co-registrante), na taxonomia us-gaap; e a
     receita do exercício (`receita`: o valor anual, de quatro trimestres, da primeira tag de `receita_liquida` do mapa
-    que a entrega traz, ou vazio), para a regra das sem receita, a mesma do estudo 1: receita ausente ou zero."""
+    que a entrega traz, ou vazio), para a regra das sem receita, a mesma do estudo 1: receita ausente ou zero. Com
+    `receitas_anuais`, também o valor anual de cada tag us-gaap cujo nome tem "Revenue" ou "Sales" (`receitas_anuais`,
+    um dicionário tag -> valor), para a ampliação do mapa da receita pela cobertura (só contagens)."""
     alvo = sub[sub.form.isin(formularios)].set_index("adsh")
     with zipfile.ZipFile(zip_caminho) as z:
         with z.open("num.txt") as f:
@@ -193,16 +225,24 @@ def cobertura_tags(zip_caminho: Path, sub: pd.DataFrame, tags: list[str] = TAGS,
     usar = COLUNAS_NUM + ["value"] + [c for c in ("coreg", "segments") if c in cabecalho]
     presentes: dict[str, set[str]] = defaultdict(set)
     receitas: dict[str, dict[str, float]] = defaultdict(dict)
+    anuais: dict[str, dict[str, float]] = defaultdict(dict)
     tags_receita = MAPA["receita_liquida"]
     with zipfile.ZipFile(zip_caminho) as z:
         for bloco in pd.read_csv(z.open("num.txt"), sep="\t", dtype=str, keep_default_na=False, usecols=usar,
                                  chunksize=500_000):  # fmt: skip
-            b = bloco[bloco.adsh.isin(alvo.index) & bloco.tag.isin(tags) & bloco.version.str.startswith("us-gaap")
+            nome = bloco.tag.isin(tags) | (bloco.tag.str.contains(r"Revenue|Sales") if receitas_anuais else False)
+            b = bloco[bloco.adsh.isin(alvo.index) & nome & bloco.version.str.startswith("us-gaap")
                       & (bloco.uom == "USD")]  # fmt: skip
             for col in ("coreg", "segments"):
                 if col in b.columns:
                     b = b[b[col] == ""]
             b = b[b.ddate.values == alvo.loc[b.adsh, "period"].values]
+            if receitas_anuais:
+                ra = b[b.tag.str.contains(r"Revenue|Sales") & (b.qtrs == "4")]
+                for a, t, v in zip(ra.adsh, ra.tag, pd.to_numeric(ra.value, errors="coerce")):
+                    if pd.notna(v):
+                        anuais[a].setdefault(t, float(v))
+                b = b[b.tag.isin(tags)]
             for a, t in zip(b.adsh, b.tag):
                 presentes[a].add(t)
             r = b[b.tag.isin(tags_receita) & (b.qtrs == "4")]
@@ -216,11 +256,45 @@ def cobertura_tags(zip_caminho: Path, sub: pd.DataFrame, tags: list[str] = TAGS,
     return pd.DataFrame(
         [
             {"adsh": a, "form": alvo.at[a, "form"], "fy": alvo.at[a, "fy"], **{t: t in presentes[a] for t in tags},
-             "receita": receita(a)}
+             "receita": receita(a), **({"receitas_anuais": dict(anuais[a])} if receitas_anuais else {})}
             for a in alvo.index
         ],
-        columns=["adsh", "form", "fy", *tags, "receita"],
+        columns=["adsh", "form", "fy", *tags, "receita", *(["receitas_anuais"] if receitas_anuais else [])],
     )  # fmt: skip
+
+
+def ampliar_receita(anuais: pd.Series, base: tuple[str, ...] = MAPA["receita_liquida"],
+                    candidatas: tuple[str, ...] = RECEITA_CANDIDATAS, ganho_minimo: float = GANHO_MINIMO
+                    ) -> dict[str, Any]:  # fmt: skip
+    """A regra gulosa da ampliação, sobre os dicionários tag -> valor anual de cada 10-K da amostra: parte das tags de
+    `base` e, a cada passo, acrescenta a candidata que cobre mais entregas ainda sem receita, se o ganho for de pelo
+    menos `ganho_minimo` das entregas. Devolve a ordem final, o ganho de cada tag que entrou e o de cada candidata no
+    primeiro passo (só contagens)."""
+    tem = [set(d) for d in anuais]
+    n = len(tem)
+    cobertas = [bool(t & set(base)) for t in tem]
+    escolhidas: list[str] = []
+    ganhos: dict[str, int] = {}
+    primeiro_passo: dict[str, int] = {}
+    restantes = list(candidatas)
+    while restantes:
+        ganho = {c: sum(1 for t, cob in zip(tem, cobertas) if not cob and c in t) for c in restantes}
+        if not primeiro_passo:
+            primeiro_passo = dict(ganho)
+        melhor = max(restantes, key=lambda c: (ganho[c], -restantes.index(c)))
+        if n == 0 or ganho[melhor] < ganho_minimo * n:
+            break
+        escolhidas.append(melhor)
+        ganhos[melhor] = ganho[melhor]
+        cobertas = [cob or melhor in t for t, cob in zip(tem, cobertas)]
+        restantes.remove(melhor)
+    return {"ordem": [*base, *escolhidas], "escolhidas": escolhidas, "ganhos": ganhos,
+            "ganho_no_primeiro_passo": primeiro_passo, "entregas": n}  # fmt: skip
+
+
+def receita_ampliada(anuais: dict[str, float], ordem: list[str]) -> float | None:
+    """O valor anual da primeira tag da ordem final que a entrega traz."""
+    return next((anuais[t] for t in ordem if t in anuais), None)
 
 
 def sem_receita(receita: pd.Series) -> pd.Series:

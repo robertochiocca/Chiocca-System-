@@ -1,6 +1,6 @@
 # Rascunho do pré-registro do estudo dos EUA
 
-> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente, com as decisões de Roberto da mesma data ([Fase 0, seção 5.1](eua-fase-0.md)), antes de qualquer sinal americano calculado. Nada aqui vale até Roberto revisar e o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte), até 31/03/2027. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
+> **Rascunho, não é registro.** Escrito em 24/11/2026 pelo agente e atualizado no mesmo dia com as decisões de Roberto sobre os pontos em aberto ([Fase 0, seção 5.1](eua-fase-0.md)), antes de qualquer sinal americano calculado. Continua rascunho, para a revisão do Claude (claude.ai) e de Roberto; nada aqui vale até o texto ser registrado (o commit que o introduz como registro e o hash anotado no commit seguinte), com meta de 31/01/2027 e reserva de 31/03/2027. A frente dos EUA fica fora do README e do produto. Alerta, não acusação: um 8-K com o item 4.02 é uma declaração de que demonstrações publicadas não valem mais, não uma acusação de fraude; nenhum alerta por companhia é publicado.
 
 Base: a [Fase 0 dos EUA](eua-fase-0.md), com os números de [`docs/eua_fase0_numeros.json`](eua_fase0_numeros.json), e os pré-registros do [estudo 1](pre-registro.md), do [estudo 2](pre-registro-estudo-2.md) e do [motor v2](pre-registro-motor-v2.md), cujas regras valem aqui com só as adaptações da seção 3.
 
@@ -25,7 +25,7 @@ Valores da própria companhia (sem co-registrante nem segmento), em dólar, na t
 | Conta | Tags e regra | Motivo |
 | --- | --- | --- |
 | `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | as da proposta da Fase 0, na ordem de preferência | o mesmo conceito da conta da DFP |
-| `receita_liquida` | as três da Fase 0 e as tags que a ampliação acrescentar antes do registro, escolhidas só pela cobertura (contagens) | a receita cobre de 66% a 73% dos 10-K de 2011 a 2024 com as três tags; sem a ampliação, a regra das sem receita tiraria companhias que têm receita |
+| `receita_liquida` | `Revenues`, `RevenueFromContractWithCustomerExcludingAssessedTax`, `SalesRevenueNet`, `SalesRevenueGoodsNet`, `RevenueFromContractWithCustomerIncludingAssessedTax`, `SalesRevenueServicesNet`, `OilAndGasRevenue`, nessa ordem: as três da Fase 0 e as que a regra da seção 3.1.1 escolheu | com as três tags, a receita cobre de 66% a 73% dos 10-K de 2011 a 2024, e a regra das sem receita tiraria companhias que têm receita em outra tag |
 | `resultado_bruto` | `GrossProfit`; se ausente, receita menos custo das vendas | na DFP a linha 3.03 é obrigatória; no US GAAP o lucro bruto é opcional (cobertura de 35% a 37%) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, que já junta as duas | o v1 soma as duas contas; no US GAAP elas vêm juntas |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; se ausente, o lucro líquido menos `IncomeLossFromDiscontinuedOperationsNetOfTax`, quando houver | a conta 3.09 é depois dos impostos; a tag antes dos impostos da proposta da Fase 0 sai, por ser outro conceito |
@@ -35,7 +35,78 @@ Valores da própria companhia (sem co-registrante nem segmento), em dólar, na t
 | `fornecedores` | `AccountsPayableCurrent`; se ausente, `AccountsPayableAndAccruedLiabilitiesCurrent`, com a marca de que inclui provisões | a segunda tag é mais larga |
 | `passivo_total` (regra boba) | `Liabilities`; se ausente, `LiabilitiesAndStockholdersEquity` menos o patrimônio líquido com minoritários | a regra boba usa passivo total ÷ ativo total, e muitas companhias não apresentam o total do passivo |
 
-O desvio de Benford usa os valores diferentes de zero do exercício na demonstração do balanço, do resultado e do fluxo de caixa do 10-K (pela coluna `stmt` de `pre.txt`: BS, IS e CF), o equivalente americano de BPA, BPP, DRE e DFC, com o mínimo de 20 números do v2. A DVA não existe nos EUA: o DEPI do v2 é o do v1, pela depreciação do fluxo de caixa. Antes do registro, a cobertura de cada conta com as regras acima é contada (só contagens) e entra no texto registrado.
+O desvio de Benford usa os valores diferentes de zero do exercício na demonstração do balanço, do resultado e do fluxo de caixa do 10-K (pela coluna `stmt` de `pre.txt`: BS, IS e CF), o equivalente americano de BPA, BPP, DRE e DFC, com o mínimo de 20 números do v2. A DVA não existe nos EUA: o DEPI do v2 é o do v1, pela depreciação do fluxo de caixa. A cobertura de cada conta com as regras acima está na seção 3.1.2 (só contagens).
+
+### 3.1.1 A ampliação da receita, só pela cobertura
+
+Decisão de Roberto de 24/11/2026: as tags da receita são escolhidas só pelas contagens de cobertura, e a lista final entra no texto registrado. A lista de candidatas e a regra foram escritas no código (`RECEITA_CANDIDATAS` e `ampliar_receita`, em `chiocca/eua/fsds.py`) antes de qualquer contagem: só tags us-gaap de receita total, sem componentes, custos ou saldos. Partindo das três tags da Fase 0, entra a cada passo a candidata que cobre mais 10-K da amostra ainda sem receita (não financeiras, sem as SPACs, exercícios de 2011 a 2024: 65.096 10-K), se o ganho for de pelo menos 0,5% dessas entregas. O valor é o anual (quatro trimestres) na data de referência.
+
+| Candidata | Ganho no primeiro passo | Entrou | Ganho quando entrou |
+| --- | ---: | --- | ---: |
+| `RevenueFromContractWithCustomerIncludingAssessedTax` | 2.457 | sim | 2.457 |
+| `SalesRevenueGoodsNet` | 2.635 | sim | 2.635 |
+| `SalesRevenueServicesNet` | 1.061 | sim | 1.047 |
+| `SalesRevenueGoodsGross` | 88 | não | — |
+| `RevenuesExcludingInterestAndDividends` | 8 | não | — |
+| `RegulatedAndUnregulatedOperatingRevenue` | 227 | não | — |
+| `ElectricUtilityRevenue` | 86 | não | — |
+| `OilAndGasRevenue` | 502 | sim | 501 |
+| `RevenueMineralSales` | 76 | não | — |
+| `RealEstateRevenueNet` | 51 | não | — |
+| `OperatingLeasesIncomeStatementLeaseRevenue` | 38 | não | — |
+| `OperatingLeaseLeaseIncome` | 0 | não | — |
+| `HealthCareOrganizationRevenue` | 113 | não | — |
+| `ContractsRevenue` | 189 | não | — |
+
+Entraram 4 tags. **A lista final da receita, nesta ordem de preferência: `Revenues`, `RevenueFromContractWithCustomerExcludingAssessedTax`, `SalesRevenueNet`, `SalesRevenueGoodsNet`, `RevenueFromContractWithCustomerIncludingAssessedTax`, `SalesRevenueServicesNet`, `OilAndGasRevenue`.**
+
+Contagem de descoberta, só para transparência: entre os 17.440 10-K da amostra sem nenhuma das três tags da Fase 0, as 15 tags us-gaap mais frequentes com "Revenue" ou "Sales" no nome (valor anual na data de referência). As que estão fora das candidatas não entram pela regra; se alguma for de receita total, entrar exige uma decisão de Roberto antes do registro (seção 10).
+
+| Tag | 10-K sem as três tags com ela | Candidata |
+| --- | ---: | --- |
+| `SalesRevenueGoodsNet` | 2.635 | sim |
+| `RevenueFromContractWithCustomerIncludingAssessedTax` | 2.457 | sim |
+| `IncreaseDecreaseInDeferredRevenue` | 1.472 | não |
+| `SalesRevenueServicesNet` | 1.061 | sim |
+| `CostOfRevenue` | 802 | não |
+| `OilAndGasRevenue` | 502 | sim |
+| `OilAndGasSalesRevenue` | 267 | não |
+| `RegulatedAndUnregulatedOperatingRevenue` | 227 | sim |
+| `ContractsRevenue` | 189 | sim |
+| `GainLossOnSalesOfAssetsAndAssetImpairmentCharges` | 161 | não |
+| `RevenueFromRelatedParties` | 150 | não |
+| `GainsLossesOnSalesOfAssets` | 147 | não |
+| `UnregulatedOperatingRevenue` | 135 | não |
+| `RegulatedOperatingRevenueGas` | 131 | não |
+| `OtherSalesRevenueNet` | 131 | não |
+
+### 3.1.2 A cobertura do mapa ampliado
+
+A fração dos 10-K da amostra com cada conta pelas regras da seção 3.1: presença do valor na data de referência, como na seção 2.4 da Fase 0, e, para a receita, o valor anual diferente de zero. No conjunto de 2011 a 2024, e o menor e o maior ano. Só contagens.
+
+| Conta | 2011 a 2024 | Menor ano | Maior ano |
+| --- | ---: | ---: | ---: |
+| `receita_liquida` | 80,2% | 77,1% | 83,5% |
+| `ativo_total` | 98,6% | 97,7% | 99,6% |
+| `ativo_circulante` | 94,9% | 93,6% | 96,7% |
+| `contas_a_receber` | 69,2% | 66,9% | 71,0% |
+| `imobilizado` | 80,8% | 73,3% | 86,0% |
+| `passivo_circulante` | 94,3% | 92,8% | 96,4% |
+| `fornecedores` | 87,2% | 84,4% | 89,2% |
+| `emprestimos_cp` | 31,7% | 29,3% | 34,0% |
+| `emprestimos_lp` | 39,9% | 37,6% | 42,8% |
+| `patrimonio_liquido` | 96,4% | 95,2% | 97,9% |
+| `custo_vendas` | 58,1% | 56,0% | 61,6% |
+| `resultado_bruto` | 61,0% | 59,8% | 63,4% |
+| `despesas_vendas_gerais_adm` | 39,6% | 38,6% | 40,7% |
+| `despesas_financeiras` | 53,1% | 17,2% | 60,8% |
+| `lucro_operacoes_continuadas` | 97,4% | 95,0% | 99,4% |
+| `lucro_liquido` | 97,0% | 94,1% | 99,4% |
+| `caixa_operacional` | 83,9% | 55,6% | 98,3% |
+| `depreciacao` | 82,8% | 81,1% | 84,7% |
+| `passivo_total` | 98,0% | 96,8% | 99,2% |
+
+Com o mapa ampliado, a regra das sem receita tira 12.873 dos 65.096 10-K da amostra, contra 19.409 com as três tags da Fase 0.
 
 ### 3.2 A taxa que substitui o CDI
 
@@ -47,26 +118,26 @@ A mesma regra do estudo 1 (emenda 5, `chiocca.corte.data_corte`): o último dia 
 
 ### 3.4 O que não se adapta
 
-As financeiras: o mapa não tem as contas delas, e por isso o grupo das financeiras e o peso de ganhos não recorrentes não existem neste estudo. A DVA (seção 3.1). O leitor de documentos.
+As financeiras ficam fora (decisão de Roberto de 24/11/2026): o mapa não tem as contas delas, e por isso o grupo das financeiras e o peso de ganhos não recorrentes não existem neste estudo. A DVA (seção 3.1). O leitor de documentos.
 
 ## 4. Amostra e exclusões
 
 - **Universo:** os 10-K originais dos Financial Statement Data Sets com data de referência de 2011 a 2024 (o exercício é o ano da data de referência, como na DFP). 2011, porque o XBRL vale para todas as companhias a partir dos períodos depois de 15/06/2011; 2024, porque a janela de 12 meses desse exercício já terminou, em 30/04/2026 (decisão de Roberto de 24/11/2026).
 - **Exclusões, nesta ordem, cada uma contada no relatório:** (1) sem versão pública com XBRL até o corte; (2) as financeiras pela SIC, de 6000 a 6999, exceto 6770 (seção 3.4); (3) as SPACs, SIC 6770, regra explícita decidida por Roberto em 24/11/2026; (4) as sem receita (receita ausente ou zero, a regra do estudo 1, pelo mapa ampliado); (5) as sem nenhum sinal calculável. A SIC e a receita são as da versão usada.
-- **O tamanho, pela Fase 0 (exercício declarado, mapa da Fase 0):** de 2011 a 2024, 86.766 10-K originais: 18.628 de financeiras, 3.042 de SPACs (2.905 delas já sem receita) e 19.409 das demais sem receita (um teto, porque o mapa da receita da Fase 0 não foi ampliado); ficam 45.687.
+- **O tamanho, pela Fase 0 (exercício declarado, mapa da Fase 0):** de 2011 a 2024, 86.766 10-K originais: 18.628 de financeiras, 3.042 de SPACs (2.905 delas já sem receita) e 19.409 das demais sem receita pelo mapa da Fase 0; ficam 45.687. Com o mapa ampliado (seção 3.1.2), as demais sem receita são 12.873, e ficam 52.223.
 
 ## 5. O desfecho: o 8-K com o item 4.02, por caso
 
 - **Episódio (o caso):** o primeiro 8-K de uma companhia com o item 4.02 no campo de itens do EDGAR abre um episódio; todo 8-K ou 8-K/A com o item 4.02 da mesma companhia nos 365 dias seguintes pertence a ele; depois disso, um novo 8-K 4.02 abre outro episódio. Cada episódio conta uma vez, a resposta à crítica de Walker e de Gow a Bao et al. (Fase 0, seção 5.1).
 - **Janela:** a empresa-ano t é positiva se um episódio se abre depois do corte de t e até 12 meses depois dele. As janelas de exercícios seguidos da mesma companhia não se sobrepõem, e cada episódio cai em no máximo uma empresa-ano. Os episódios fora de qualquer empresa-ano da amostra entram só na descrição.
 - **Fonte:** o campo de itens do histórico de entregas do EDGAR (`submissions.zip`), baixado de novo no dia do cálculo, com o SHA-256 no manifesto, e só os 8-K entregues até 30/04/2026, o fim da janela do exercício de 2024.
-- **O tamanho, pela Fase 0:** de 2009 a 30/04/2026, 2.386 companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K: 263 de financeiras, 363 de SPACs e 617 das demais sem receita pelo mapa da Fase 0; ficam 1.143, de 48 a 111 por ano de entrega de 2012 a 2025.
+- **O tamanho, pela Fase 0:** de 2009 a 30/04/2026, 2.386 companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K: 263 de financeiras, 363 de SPACs e 617 das demais sem receita pelo mapa da Fase 0; ficam 1.143, de 48 a 111 por ano de entrega de 2012 a 2025. Com o mapa ampliado, ficam 1.312, de 58 a 136 por ano.
 - **Limites:** o item 4.02 não diz quais demonstrações deixaram de valer: o desfecho é uma declaração de não confiabilidade nos 12 meses seguintes, sem garantia de que trata do exercício t. As republicações sem 8-K ("little r") ficam de fora. Nada disso é chamado de fraude.
 
 ## 6. Métricas: as do estudo 2
 
 - **Medida principal:** a diferença de risco DR = P(positiva | em alerta) − P(positiva | fora de alerta), nas empresa-anos avaliadas pelo v1, com todos os exercícios juntos; também a razão de taxas.
-- **Bootstrap por companhia:** sorteiam-se companhias com reposição, cada uma com todas as suas empresa-anos; 10.000 reamostragens, com a semente 20270430; o intervalo é o percentil unilateral de 95%. As funções são `taxas`, `dr`, `bootstrap_por_companhia` e `limite_inferior` de `chiocca/v2/estudo2/secundaria.py`, chamadas sem mudar nenhuma linha.
+- **Bootstrap por companhia:** sorteiam-se companhias com reposição, cada uma com todas as suas empresa-anos; 10.000 reamostragens, com a semente 20270430 (decisão de Roberto de 24/11/2026); o intervalo é o percentil unilateral de 95%. As funções são `taxas`, `dr`, `bootstrap_por_companhia` e `limite_inferior` de `chiocca/v2/estudo2/secundaria.py`, chamadas sem mudar nenhuma linha.
 - **Resultado:** "associação positiva" se o limite inferior do intervalo unilateral de 95% da DR ficar acima de zero; senão, "sem evidência de associação".
 - **Regra boba lado a lado:** o decil mais endividado (passivo total ÷ ativo total) de cada exercício, como no estudo 1, com a mesma DR e o bootstrap pareado (as mesmas reamostragens): "o motor separa melhor que a regra boba" só se o limite inferior da diferença ficar acima de zero.
 - **O v2 pareado com o v1:** como na emenda 5 do estudo 2. O alerta do v2 sai de todas as empresa-anos que o v2 avalia; as medidas são calculadas nas empresa-anos avaliadas pelo v1; "o v2 separa melhor que o v1" só se o limite inferior da diferença pareada ficar acima de zero; senão, sem vencedor declarado.
@@ -78,33 +149,38 @@ Para os 25 casos de Bao et al. (47 empresa-anos) com 10-K nos dados da SEC (Fase
 
 ## 8. Previsões escritas antes dos dados
 
-1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial.
-2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício, pela construção do decil.
-3. **Taxa do desfecho:** entre 1,5% e 4% das empresa-anos avaliadas. Motivo: as contagens da seção 5, cerca de uma centena de companhias-ano por ano, contra alguns milhares de avaliadas.
-4. **DR do v1:** positiva, com razão de taxas entre 1,1 e 1,5, e "associação positiva" mais provável que não, pelo tamanho da amostra.
-5. **DR do v2:** positiva, com razão de taxas entre 1,2 e 2,0, e "associação positiva".
-6. **O v2 pareado com o v1:** diferença positiva, com o limite inferior acima de zero ("o v2 separa melhor que o v1"). Motivo: o grupo em alerta do v2 é menor e mais extremo.
-7. **O v2 contra a regra boba:** sem vencedor declarado. Motivo: o endividamento também se associa a republicações, pela dificuldade financeira.
-8. **AAERs:** dos 25 casos, entre 30% e 60% em alerta no v1 e entre 10% e 30% no v2 em pelo menos um exercício afetado.
+Revistas em 24/11/2026 para o período novo (2011 a 2024) e o mapa ampliado. Nenhuma faixa mudou; o motivo de cada uma vem ao lado.
 
-## 9. Calendário até maio de 2027
+1. **Taxa de alerta do v1:** entre 25% e 45% das não financeiras avaliadas em cada exercício. Motivo: o M-score acima de -1,78 marca parte relevante das companhias americanas, e o decil do DPO soma 10%; o juro implícito dispara menos que no Brasil, porque a despesa de juros americana não inclui variação cambial. **Sem ajuste:** o período novo acrescenta exercícios de juros altos (2022 a 2024), em que o juro implícito dispara menos (o corte sobe com a taxa de referência), mas o M-score e o DPO não dependem dos juros, e a faixa já cobre essa variação.
+2. **Taxa de alerta do v2:** entre 10,0% e 11,0% em cada exercício. **Sem ajuste:** vem da construção do decil.
+3. **Taxa do desfecho:** entre 1,5% e 4% das empresa-anos avaliadas. **Sem ajuste:** com o mapa ampliado, ficam 1.312 companhias-ano com 8-K 4.02 e 10-K antes (seção 5), de 58 a 136 por ano de entrega, contra cerca de 4.600 10-K da amostra por exercício antes da regra das sem receita: perto de 2% a 3%.
+4. **DR do v1:** positiva, com razão de taxas entre 1,1 e 1,5, e "associação positiva" mais provável que não. **Sem ajuste:** a amostra maior só reforça o poder.
+5. **DR do v2:** positiva, com razão de taxas entre 1,2 e 2,0, e "associação positiva". **Sem ajuste.**
+6. **O v2 pareado com o v1:** diferença positiva, com o limite inferior acima de zero ("o v2 separa melhor que o v1"). Motivo: o grupo em alerta do v2 é menor e mais extremo. **Sem ajuste.**
+7. **O v2 contra a regra boba:** sem vencedor declarado. Motivo: o endividamento também se associa a republicações, pela dificuldade financeira. **Sem ajuste.**
+8. **AAERs:** dos 25 casos, entre 30% e 60% em alerta no v1 e entre 10% e 30% no v2 em pelo menos um exercício afetado. **Sem ajuste:** a descrição dos AAERs não depende do período da amostra.
 
-| Até | Etapa |
-| --- | --- |
-| 24/11/2026 | Decisões de Roberto: o rótulo, o desfecho por caso e as exclusões. Este rascunho. |
-| 15/12/2026 | Revisão de Roberto deste rascunho; nenhum sinal calculado. |
-| 31/01/2027 | Código do estudo escrito e testado só em dados sintéticos; a cobertura do mapa ampliado contada (só contagens); nenhum sinal americano calculado. |
-| 31/03/2027 | Registro do pré-registro e carimbo; código congelado com registro de SHA-256. |
-| 30/04/2027 | Cálculo único, depois do carimbo, com os arquivos da SEC baixados de novo no dia. |
-| 31/05/2027 | Relatório em PT e EN, separado do estudo 2 do Brasil. |
+## 9. Calendário: meta e reserva
 
-## 10. Pontos em aberto para Roberto, antes do registro
+| Etapa | Meta | Reserva |
+| --- | --- | --- |
+| Decisões de Roberto e este rascunho. | 24/11/2026 | 24/11/2026 |
+| Revisão do rascunho pelo Claude (claude.ai) e por Roberto; nenhum sinal calculado. | 15/12/2026 | 15/12/2026 |
+| Código do estudo escrito e testado só em dados sintéticos; nenhum sinal americano calculado. | 15/01/2027 | 31/01/2027 |
+| Registro do pré-registro e carimbo; código congelado com registro de SHA-256. | 31/01/2027 | 31/03/2027 |
+| Cálculo único, depois do carimbo, com os dados da SEC e os 8-K baixados de novo no dia. | 28/02/2027 | 30/04/2027 |
+| Relatório em PT e EN, separado do estudo 2 do Brasil. | 31/03/2027 | 31/05/2027 |
 
-1. A exclusão das financeiras (seção 3.4).
-2. As tags da ampliação da receita e as derivações da seção 3.1, escolhidas pela cobertura.
-3. Decidido por Roberto em 24/11/2026: a amostra vai até o exercício de 2024, com os 8-K até 30/04/2026.
-4. A semente (20270430, a data do cálculo único).
-5. O arquivo dos dados: os arquivos da SEC passam de 6 GB e ficam fora do Git, com o SHA-256 no manifesto e o download por script.
+## 10. Decisões de Roberto de 24/11/2026 e o que falta antes do registro
+
+Decidido: (a) as financeiras ficam fora (seção 3.4); (b) as tags da receita são escolhidas só pelas contagens de cobertura, e a lista final entra no texto registrado (seção 3.1.1); (c) a amostra vai até o exercício de 2024, com os dados da SEC e os 8-K baixados de novo no dia do cálculo; (d) a semente é 20270430; (e) os arquivos da SEC ficam fora do Git, com o SHA-256 no manifesto e o download por script; (f) o calendário tem meta e reserva (seção 9).
+
+Para a revisão do Claude (claude.ai) e de Roberto, antes do registro:
+
+1. As tags da contagem de descoberta fora das candidatas (seção 3.1.1): nenhuma entra sem decisão de Roberto.
+2. O exercício pela data de referência, como na DFP; as contagens da Fase 0 usam o exercício declarado pela companhia (`fy`), e a diferença entre os dois é pequena.
+3. Duas contas com queda de cobertura, provavelmente por troca de tag na taxonomia (a conferir): `despesas_financeiras` cai para 17,2% em 2024, e `caixa_operacional` fica abaixo de 80% de 2013 a 2017 (mínimo de 55,6%, em 2016). Sem ampliação, o juro implícito e o TATA do M-score ficam não calculáveis nessas companhias-ano. Recomendação, para Roberto decidir antes do registro: a mesma regra da receita (candidatas escritas antes de contar, ganho mínimo de 0,5%), com candidatas como `InterestExpenseNonoperating` e `InterestExpenseDebt` para a despesa financeira e `NetCashProvidedByUsedInOperatingActivitiesContinuingOperations` para o caixa operacional.
+4. A leitura do texto inteiro, que é registrado como estiver depois da revisão.
 
 ## 11. O que fica de fora
 

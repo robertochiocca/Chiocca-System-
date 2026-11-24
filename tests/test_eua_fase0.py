@@ -345,3 +345,42 @@ def test_rascunho_antes_de_qualquer_sinal_americano() -> None:
     for p in sorted((RAIZ / "chiocca" / "eua").glob("*.py")):
         texto = p.read_text(encoding="utf-8")
         assert not re.search(r"chiocca\.sinais|chiocca\.v2\.motor_v2|from chiocca import sinais", texto), p.name
+
+
+# ---- ampliação do mapa da receita, só pela cobertura (pedido de 24/11/2026, segunda rodada) ----
+
+
+def test_receitas_anuais_por_entrega(tmp_path: Path) -> None:
+    z = _zip(tmp_path)
+    t = fsds.cobertura_tags(z, fsds.submissoes(z), receitas_anuais=True).set_index("adsh")
+    assert t.at["0001", "receitas_anuais"] == {"Revenues": 500.0}
+    assert t.at["0002", "receitas_anuais"] == {"SalesRevenueNet": 70.0}  # a de co-registrante e a em euro não contam
+
+
+def test_regra_gulosa_da_receita() -> None:
+    anuais = pd.Series(
+        [{"Revenues": 1.0}, {"SalesRevenueGoodsNet": 2.0}, {"SalesRevenueGoodsNet": 3.0, "ContractsRevenue": 1.0},
+         {"ContractsRevenue": 4.0}, {"AdvertisingRevenue": 5.0}, {}]
+    )  # fmt: skip
+    r = fsds.ampliar_receita(anuais, ganho_minimo=0.2)
+    assert r["escolhidas"] == ["SalesRevenueGoodsNet"]  # 2 de 6; depois, ContractsRevenue só ganha 1 (< 20%)
+    assert r["ordem"][:3] == list(fsds.MAPA["receita_liquida"]) and r["ganhos"] == {"SalesRevenueGoodsNet": 2}
+    assert r["ganho_no_primeiro_passo"]["ContractsRevenue"] == 2 and r["entregas"] == 6
+    assert "AdvertisingRevenue" not in fsds.RECEITA_CANDIDATAS  # componente, não receita total
+    assert fsds.receita_ampliada({"ContractsRevenue": 4.0, "Revenues": 9.0}, r["ordem"]) == 9.0
+
+
+def test_mapa_ampliado_coerente() -> None:
+    m = D["fsds"]["mapa_ampliado"]
+    anos = [str(a) for a in range(2011, 2025)]
+    ex, sr, amp = D["fsds"]["exclusoes_10k"], m["sem_receita_por_ano"], m["ampliacao"]
+    for a in anos:  # a amostra do rascunho: não financeiras, sem as SPACs
+        assert sr[a]["10k"] == ex[a]["sem_receita_demais"] + ex[a]["restantes"]
+        assert sr[a]["sem_receita_ampliada"] <= sr[a]["sem_receita_fase0"]
+        assert all(0 <= v <= 1 for k, v in m["cobertura_por_ano"][a].items() if k != "10k")
+    assert amp["ordem"][:3] == list(fsds.MAPA["receita_liquida"]) and set(amp["escolhidas"]) <= set(m["candidatas"])
+    assert all(g >= m["ganho_minimo"] * amp["entregas"] for g in amp["ganhos"].values())
+    assert amp["entregas"] == sum(sr[a]["10k"] for a in anos) and m["candidatas"] == list(fsds.RECEITA_CANDIDATAS)
+    for a, x in m["exclusoes_8k"].items():
+        assert x["companhias_com_10k_fsds_antes"] == D["fsds"]["itens_8k"][a]["companhias_com_10k_fsds_antes"]
+        assert x["antes_restantes"] >= D["fsds"]["itens_8k"][a]["antes_restantes"]  # o mapa ampliado só devolve

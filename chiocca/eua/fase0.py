@@ -48,7 +48,16 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
     estruturas = {z.stem: fsds.estrutura(z) for z in baixados}
     subs = pd.concat([fsds.submissoes(z) for z in baixados], ignore_index=True)
     tabela = pd.concat(
-        [fsds.cobertura_tags(z, subs[subs.trimestre == z.stem], formularios=("10-K", "10-K/A")) for z in baixados],
+        [
+            fsds.cobertura_tags(
+                z,
+                subs[subs.trimestre == z.stem],
+                tags=[*fsds.TAGS, *fsds.TAGS_EXTRAS],
+                formularios=("10-K", "10-K/A"),
+                receitas_anuais=True,
+            )
+            for z in baixados
+        ],
         ignore_index=True,
     )
     emendas = tabela[tabela.form == "10-K/A"]
@@ -97,6 +106,107 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
         "aaer": rotulos.com_10k(firmas, ligacoes, anos_10k),
         "itens_8k": itens_8k,
         "exclusoes_10k": _no_periodo(_exclusoes_10k(dez_k)),
+        "mapa_ampliado": _mapa_ampliado(dez_k, tabela, primeiro_10k, subs),
+    }
+
+
+# As regras do rascunho do pré-registro (seção 3.1) para a cobertura do mapa ampliado: cada conta e as tags (ou a
+# derivação) que a cobrem. Só presença do valor na data de referência, como na seção 2.4; a receita é o valor anual.
+REGRAS_RASCUNHO: dict[str, tuple[tuple[str, ...], ...]] = {
+    "ativo_total": (("Assets",),),
+    "ativo_circulante": (("AssetsCurrent",),),
+    "contas_a_receber": (("AccountsReceivableNetCurrent",), ("ReceivablesNetCurrent",)),
+    "imobilizado": (("PropertyPlantAndEquipmentNet",),),
+    "passivo_circulante": (("LiabilitiesCurrent",),),
+    "fornecedores": (("AccountsPayableCurrent",), ("AccountsPayableAndAccruedLiabilitiesCurrent",)),
+    "emprestimos_cp": (("DebtCurrent",), ("LongTermDebtCurrent",), ("ShortTermBorrowings",)),
+    "emprestimos_lp": (("LongTermDebtNoncurrent",), ("LongTermDebtAndCapitalLeaseObligations",)),
+    "patrimonio_liquido": (
+        ("StockholdersEquity",),
+        ("StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",),
+    ),
+    "custo_vendas": (("CostOfRevenue",), ("CostOfGoodsAndServicesSold",), ("CostOfGoodsSold",)),
+    "resultado_bruto": (("GrossProfit",), ("receita", "custo_vendas")),
+    "despesas_vendas_gerais_adm": (("SellingGeneralAndAdministrativeExpense",),),
+    "despesas_financeiras": (("InterestExpense",),),
+    "lucro_operacoes_continuadas": (("IncomeLossFromContinuingOperations",), ("NetIncomeLoss",), ("ProfitLoss",)),
+    "lucro_liquido": (("NetIncomeLoss",), ("ProfitLoss",)),
+    "caixa_operacional": (("NetCashProvidedByUsedInOperatingActivities",),),
+    "depreciacao": (("DepreciationDepletionAndAmortization",), ("DepreciationAndAmortization",), ("Depreciation",)),
+    "passivo_total": (("Liabilities",), ("LiabilitiesAndStockholdersEquity", "patrimonio_liquido")),
+}
+ANOS_AMOSTRA = [str(a) for a in range(2011, ULTIMO_EXERCICIO + 1)]  # a amostra do rascunho: exercícios de 2011 a 2024
+
+
+def _cobre(linha: Any, conta: str, receita_ok: bool) -> bool:
+    """Se a entrega cobre a conta pelas regras do rascunho (alguma alternativa com todas as partes presentes)."""
+
+    def parte(x: str) -> bool:
+        if x == "receita":
+            return receita_ok
+        if x in REGRAS_RASCUNHO:
+            return _cobre(linha, x, receita_ok)
+        return bool(linha[x])
+
+    if conta == "receita_liquida":
+        return receita_ok
+    return any(all(parte(x) for x in alternativa) for alternativa in REGRAS_RASCUNHO[conta])
+
+
+def _mapa_ampliado(dez_k: Any, tabela: Any, primeiro_10k: dict[Any, str], subs: Any) -> dict[str, Any]:
+    """Item 4 do pedido de 24/11/2026 (segunda rodada), só contagens: a ampliação do mapa da receita pela regra gulosa
+    de `fsds.ampliar_receita`, a contagem de descoberta, a cobertura de cada conta pelas regras do rascunho e as
+    exclusões com o mapa ampliado, nos 10-K da amostra (não financeiras, sem as SPACs, exercícios de 2011 a 2024)."""
+    from collections import Counter
+
+    originais = tabela[tabela.form == "10-K"].set_index("adsh")
+    k = dez_k.set_index("adsh")
+    k = k.join(originais.drop(columns=["form", "fy", "receita"]), how="left")
+    for c in [*fsds.TAGS, *fsds.TAGS_EXTRAS]:
+        k[c] = k[c].astype("boolean").fillna(False).astype(bool)
+    k["receitas_anuais"] = [d if isinstance(d, dict) else {} for d in k.receitas_anuais]
+    amostra = k[k.fy.isin(ANOS_AMOSTRA) & ~k.financeira & ~k.spac]
+    amp = fsds.ampliar_receita(amostra.receitas_anuais)
+    base = set(fsds.MAPA["receita_liquida"])
+    sem_base = [d for d in amostra.receitas_anuais if not (set(d) & base)]
+    descoberta = Counter(t for d in sem_base for t in d).most_common(15)
+    k["receita_ampliada"] = [fsds.receita_ampliada(d, amp["ordem"]) for d in k.receitas_anuais]
+    k["sem_receita_ampliada"] = fsds.sem_receita(k.receita_ampliada)
+    amostra = k[k.fy.isin(ANOS_AMOSTRA) & ~k.financeira & ~k.spac]
+    contas = ["receita_liquida", *REGRAS_RASCUNHO]
+    cobertura: dict[str, Any] = {}
+    for fy, g in amostra.groupby("fy"):
+        ok = ~g.sem_receita_ampliada
+        cobertura[str(fy)] = {"10k": len(g)} | {
+            c: float(sum(_cobre(linha, c, bool(r)) for (_, linha), r in zip(g.iterrows(), ok)) / len(g)) for c in contas
+        }
+    sem_receita = {
+        str(fy): {"10k": len(g), "sem_receita_fase0": int(g.sem_receita.sum()),
+                  "sem_receita_ampliada": int(g.sem_receita_ampliada.sum())}
+        for fy, g in amostra.groupby("fy")
+    }  # fmt: skip
+    historico: dict[int, list[tuple[str, bool, bool, bool]]] = {}
+    for c, f, s_rec, s_6770, s_fin in sorted(
+        zip(k.cik.astype(int), k.filed, k.sem_receita_ampliada, k.spac, k.financeira)
+    ):
+        historico.setdefault(c, []).append((f, bool(s_rec), bool(s_6770), bool(s_fin)))
+    it = itens.contagens(
+        itens.entregas(),
+        {int(c): d for c, d in primeiro_10k.items()},
+        sic_6770={int(c) for c in subs.cik[subs.sic == "6770"]},
+        historico=historico,
+    )
+    chaves = ("companhias_com_10k_fsds_antes", "antes_financeiras", "antes_sic_6770", "antes_sem_receita_demais",
+              "antes_restantes")  # fmt: skip
+    return {
+        "candidatas": list(fsds.RECEITA_CANDIDATAS),
+        "ganho_minimo": fsds.GANHO_MINIMO,
+        "ampliacao": amp,
+        "descoberta": [[t, n] for t, n in descoberta],
+        "entregas_sem_as_tres_tags": len(sem_base),
+        "cobertura_por_ano": cobertura,
+        "sem_receita_por_ano": sem_receita,
+        "exclusoes_8k": {a: {c: x[c] for c in chaves} for a, x in it.items()},
     }
 
 
