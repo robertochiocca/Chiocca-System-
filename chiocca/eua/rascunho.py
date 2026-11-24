@@ -19,7 +19,7 @@ DOCS = {
     "pt": RAIZ / "docs" / "pre-registro-eua-rascunho.md",
     "en": RAIZ / "docs" / "en" / "us-preregistration-draft.md",
 }
-PRIMEIRO, ULTIMO = 2011, 2021  # exercícios da amostra (ano da data de referência)
+PRIMEIRO, ULTIMO = 2011, 2024  # exercícios da amostra (ano da data de referência), decisão de 24/11/2026
 SEMENTE = 20270430
 
 PT = """# Rascunho do pré-registro do estudo dos EUA
@@ -32,7 +32,7 @@ Base: a [Fase 0 dos EUA](eua-fase-0.md), com os números de [`docs/eua_fase0_num
 
 Com os 10-K como eram na época, os alertas do motor v1 e do motor v2, congelados no Brasil, e a regra boba separam as empresa-anos seguidas de um 8-K com o item 4.02 nos 12 meses depois do corte das que não foram? E o v2 separa melhor que o v1?
 
-**Rótulo: retrospectivo.** Os dados de {primeiro} a 2023 já são públicos, e as contagens de 8-K 4.02 por ano já apareceram na Fase 0, sem nenhuma ligação com sinal. O teste é limpo porque as regras são fixas (sem treino), foram escritas e congeladas no Brasil, e este texto é registrado antes de qualquer sinal americano.
+**Rótulo: retrospectivo.** Os dados de {primeiro} a 30/04/2026 já são públicos, e as contagens de 8-K 4.02 por ano já apareceram na Fase 0, sem nenhuma ligação com sinal. O teste é limpo porque as regras são fixas (sem treino), foram escritas e congeladas no Brasil, e este texto é registrado antes de qualquer sinal americano.
 
 ## 2. Os sinais: o v1 e o v2 congelados
 
@@ -75,16 +75,16 @@ As financeiras: o mapa não tem as contas delas, e por isso o grupo das financei
 
 ## 4. Amostra e exclusões
 
-- **Universo:** os 10-K originais dos Financial Statement Data Sets com data de referência de {primeiro} a {ultimo} (o exercício é o ano da data de referência, como na DFP). {primeiro}, porque o XBRL vale para todas as companhias a partir dos períodos depois de 15/06/2011; {ultimo}, porque a janela do desfecho do exercício seguinte passaria de 31/12/2023, o limite dos dados da Fase 0.
+- **Universo:** os 10-K originais dos Financial Statement Data Sets com data de referência de {primeiro} a {ultimo} (o exercício é o ano da data de referência, como na DFP). {primeiro}, porque o XBRL vale para todas as companhias a partir dos períodos depois de 15/06/2011; {ultimo}, porque a janela de 12 meses desse exercício já terminou, em 30/04/2026 (decisão de Roberto de 24/11/2026).
 - **Exclusões, nesta ordem, cada uma contada no relatório:** (1) sem versão pública com XBRL até o corte; (2) as financeiras pela SIC, de 6000 a 6999, exceto 6770 (seção 3.4); (3) as SPACs, SIC 6770, regra explícita decidida por Roberto em 24/11/2026; (4) as sem receita (receita ausente ou zero, a regra do estudo 1, pelo mapa ampliado); (5) as sem nenhum sinal calculável. A SIC e a receita são as da versão usada.
-- **O tamanho, pela Fase 0 (exercício declarado, mapa da Fase 0):** de {primeiro} a {ultimo}, {n10k} 10-K originais; a regra das sem receita tiraria no máximo {sem_rec} (um teto, porque o mapa da receita ainda não foi ampliado), {sem_rec_fin} deles de financeiras; as SPACs são {spac}, das quais {spac_sem} já sem receita.
+- **O tamanho, pela Fase 0 (exercício declarado, mapa da Fase 0):** de {primeiro} a {ultimo}, {n10k} 10-K originais: {fin} de financeiras, {spac} de SPACs ({spac_sem} delas já sem receita) e {sem_dem} das demais sem receita (um teto, porque o mapa da receita da Fase 0 não foi ampliado); ficam {ficam10k}.
 
 ## 5. O desfecho: o 8-K com o item 4.02, por caso
 
 - **Episódio (o caso):** o primeiro 8-K de uma companhia com o item 4.02 no campo de itens do EDGAR abre um episódio; todo 8-K ou 8-K/A com o item 4.02 da mesma companhia nos 365 dias seguintes pertence a ele; depois disso, um novo 8-K 4.02 abre outro episódio. Cada episódio conta uma vez, a resposta à crítica de Walker e de Gow a Bao et al. (Fase 0, seção 5.1).
 - **Janela:** a empresa-ano t é positiva se um episódio se abre depois do corte de t e até 12 meses depois dele. As janelas de exercícios seguidos da mesma companhia não se sobrepõem, e cada episódio cai em no máximo uma empresa-ano. Os episódios fora de qualquer empresa-ano da amostra entram só na descrição.
-- **Fonte:** o campo de itens do histórico de entregas do EDGAR (`submissions.zip`), baixado de novo no dia do cálculo, com o SHA-256 no manifesto, e só os 8-K entregues até 31/12/2023.
-- **O tamanho, pela Fase 0:** de 2009 a 2023, {antes} companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K; {antes_spac} delas de SPACs e {antes_sem} sem receita pelo mapa da Fase 0; ficam {antes_ficam} depois das duas regras, de {ficam_min} a {ficam_max} por ano de 2012 a 2023.
+- **Fonte:** o campo de itens do histórico de entregas do EDGAR (`submissions.zip`), baixado de novo no dia do cálculo, com o SHA-256 no manifesto, e só os 8-K entregues até 30/04/2026, o fim da janela do exercício de {ultimo}.
+- **O tamanho, pela Fase 0:** de 2009 a 30/04/2026, {antes} companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K: {antes_fin} de financeiras, {antes_spac} de SPACs e {antes_sem} das demais sem receita pelo mapa da Fase 0; ficam {antes_ficam}, de {ficam_min} a {ficam_max} por ano de entrega de 2012 a 2025.
 - **Limites:** o item 4.02 não diz quais demonstrações deixaram de valer: o desfecho é uma declaração de não confiabilidade nos 12 meses seguintes, sem garantia de que trata do exercício t. As republicações sem 8-K ("little r") ficam de fora. Nada disso é chamado de fraude.
 
 ## 6. Métricas: as do estudo 2
@@ -126,7 +126,7 @@ Para os {casos} casos de Bao et al. ({ea} empresa-anos) com 10-K nos dados da SE
 
 1. A exclusão das financeiras (seção 3.4).
 2. As tags da ampliação da receita e as derivações da seção 3.1, escolhidas pela cobertura.
-3. O fim da amostra em {ultimo}, com os dados até 31/12/2023, ou um limite mais tarde para os dados dos EUA (o lacre do Brasil não trata deles; o limite de 2023 veio do pedido da Fase 0).
+3. Decidido por Roberto em 24/11/2026: a amostra vai até o exercício de {ultimo}, com os 8-K até 30/04/2026.
 4. A semente ({semente}, a data do cálculo único).
 5. O arquivo dos dados: os arquivos da SEC passam de 6 GB e ficam fora do Git, com o SHA-256 no manifesto e o download por script.
 
@@ -145,7 +145,7 @@ Basis: [US Phase 0](us-phase-0.md), with the numbers in [`docs/eua_fase0_numeros
 
 With the 10-Ks as they were at the time, do the alerts of engine v1 and engine v2, frozen in Brazil, and the naive rule separate the company-years followed by an 8-K with Item 4.02 within 12 months after the cut-off from those that were not? And does v2 separate better than v1?
 
-**Label: retrospective.** The data from {primeiro} to 2023 are already public, and the counts of 8-K 4.02 by year already appeared in Phase 0, with no link to any signal. The test is clean because the rules are fixed (no training), were written and frozen in Brazil, and this text is registered before any US signal.
+**Label: retrospective.** The data from {primeiro} to 2026-04-30 are already public, and the counts of 8-K 4.02 by year already appeared in Phase 0, with no link to any signal. The test is clean because the rules are fixed (no training), were written and frozen in Brazil, and this text is registered before any US signal.
 
 ## 2. The signals: v1 and v2, frozen
 
@@ -188,16 +188,16 @@ Financial companies: the map has no accounts for them, so the financial group an
 
 ## 4. Sample and exclusions
 
-- **Universe:** the original 10-Ks in the Financial Statement Data Sets with a report date from {primeiro} to {ultimo} (the fiscal year is the year of the report date, as in the DFP). {primeiro}, because XBRL applies to all companies from periods after 2011-06-15; {ultimo}, because the outcome window of the next fiscal year would go past 2023-12-31, the Phase 0 data limit.
+- **Universe:** the original 10-Ks in the Financial Statement Data Sets with a report date from {primeiro} to {ultimo} (the fiscal year is the year of the report date, as in the DFP). {primeiro}, because XBRL applies to all companies from periods after 2011-06-15; {ultimo}, because the 12-month window of that fiscal year has already ended, on 2026-04-30 (Roberto's decision of 2026-11-24).
 - **Exclusions, in this order, each counted in the report:** (1) no public XBRL version by the cut-off; (2) financial companies by SIC, 6000 to 6999, except 6770 (section 3.4); (3) SPACs, SIC 6770, an explicit rule decided by Roberto on 2026-11-24; (4) companies without revenue (revenue missing or zero, the study 1 rule, by the widened map); (5) those with no computable signal. SIC and revenue are those of the version used.
-- **The size, from Phase 0 (declared fiscal year, Phase 0 map):** from {primeiro} to {ultimo}, {n10k} original 10-Ks; the no-revenue rule would remove at most {sem_rec} (a ceiling, because the revenue map has not been widened yet), {sem_rec_fin} of them financial; the SPACs are {spac}, of which {spac_sem} already without revenue.
+- **The size, from Phase 0 (declared fiscal year, Phase 0 map):** from {primeiro} to {ultimo}, {n10k} original 10-Ks: {fin} financial, {spac} SPACs ({spac_sem} of them already without revenue) and {sem_dem} others without revenue (a ceiling, because the Phase 0 revenue map was not widened); {ficam10k} remain.
 
 ## 5. The outcome: the 8-K with Item 4.02, per case
 
 - **Episode (the case):** a company's first 8-K with Item 4.02 in the EDGAR items field opens an episode; every 8-K or 8-K/A with Item 4.02 from the same company within the next 365 days belongs to it; after that, a new 8-K 4.02 opens another episode. Each episode counts once, the answer to Walker's and Gow's critique of Bao et al. (Phase 0, section 5.1).
 - **Window:** company-year t is positive if an episode opens after the cut-off of t and within 12 months of it. The windows of consecutive fiscal years of the same company do not overlap, and each episode falls into at most one company-year. Episodes outside any sample company-year enter the description only.
-- **Source:** the items field of the EDGAR filing history (`submissions.zip`), downloaded again on the day of the computation, with its SHA-256 in the manifest, and only the 8-Ks filed through 2023-12-31.
-- **The size, from Phase 0:** from 2009 to 2023, {antes} company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K; {antes_spac} of them SPACs and {antes_sem} without revenue by the Phase 0 map; {antes_ficam} remain after both rules, from {ficam_min} to {ficam_max} a year from 2012 to 2023.
+- **Source:** the items field of the EDGAR filing history (`submissions.zip`), downloaded again on the day of the computation, with its SHA-256 in the manifest, and only the 8-Ks filed through 2026-04-30, the end of the window of fiscal {ultimo}.
+- **The size, from Phase 0:** from 2009 to 2026-04-30, {antes} company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K: {antes_fin} financial, {antes_spac} SPACs and {antes_sem} others without revenue by the Phase 0 map; {antes_ficam} remain, from {ficam_min} to {ficam_max} a year by filing year from 2012 to 2025.
 - **Limitations:** Item 4.02 does not say which statements stopped being reliable: the outcome is a non-reliance statement within the next 12 months, with no guarantee that it concerns fiscal year t. Restatements without an 8-K ("little r") are left out. None of this is called fraud.
 
 ## 6. Metrics: those of study 2
@@ -239,7 +239,7 @@ For the {casos} Bao et al. cases ({ea} company-years) with a 10-K in the SEC dat
 
 1. The exclusion of financial companies (section 3.4).
 2. The tags of the revenue widening and the derivations in section 3.1, chosen by coverage.
-3. The end of the sample at {ultimo}, with data through 2023-12-31, or a later limit for the US data (Brazil's seal does not cover them; the 2023 limit came from the Phase 0 request).
+3. Decided by Roberto on 2026-11-24: the sample goes to fiscal {ultimo}, with the 8-Ks through 2026-04-30.
 4. The seed ({semente}, the date of the single computation).
 5. The data archive: the SEC files exceed 6 GB and stay outside Git, with their SHA-256 in the manifest and the download by script.
 
@@ -260,16 +260,18 @@ def valores(d: dict[str, Any], lang: str) -> dict[str, str]:
     soma = lambda k: sum(ex[a][k] for a in anos)  # noqa: E731
     rec = [cob[a]["contas"]["receita_liquida"] for a in anos]
     bruto = [cob[a]["contas"]["resultado_bruto"] for a in anos]
-    ficam = [it[str(a)]["antes_restantes"] for a in range(2012, 2024)]
+    ficam = [it[str(a)]["antes_restantes"] for a in range(2012, 2026)]
     tot = lambda k: sum(x[k] for x in it.values())  # noqa: E731
     return {
         "primeiro": str(PRIMEIRO), "ultimo": str(ULTIMO), "semente": str(SEMENTE),
         "rec_min": p0(min(rec)), "rec_max": p0(max(rec)), "bruto_min": p0(min(bruto)), "bruto_max": p0(max(bruto)),
         "p90": i(max(pe[a]["prazo_p90_dias"] for a in anos)),
-        "n10k": i(soma("10k")), "sem_rec": i(soma("sem_receita")), "sem_rec_fin": i(soma("sem_receita_financeiras")),
-        "spac": i(soma("sic_6770")), "spac_sem": i(soma("sic_6770_sem_receita")),
-        "antes": i(tot("companhias_com_10k_fsds_antes")), "antes_spac": i(tot("antes_sic_6770")),
-        "antes_sem": i(tot("antes_sem_receita")), "antes_ficam": i(tot("antes_restantes")),
+        "n10k": i(soma("10k")), "fin": i(soma("financeiras")), "spac": i(soma("sic_6770")),
+        "spac_sem": i(soma("sic_6770_sem_receita")), "sem_dem": i(soma("sem_receita_demais")),
+        "ficam10k": i(soma("restantes")),
+        "antes": i(tot("companhias_com_10k_fsds_antes")), "antes_fin": i(tot("antes_financeiras")),
+        "antes_spac": i(tot("antes_sic_6770")), "antes_sem": i(tot("antes_sem_receita_demais")),
+        "antes_ficam": i(tot("antes_restantes")),
         "ficam_min": i(min(ficam)), "ficam_max": i(max(ficam)),
         "casos": i(f["aaer"]["casos_com_10k"]), "ea": i(f["aaer"]["empresa_anos_com_10k"]),
     }  # fmt: skip

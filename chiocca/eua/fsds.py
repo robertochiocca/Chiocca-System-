@@ -7,11 +7,13 @@ entrega e se a entrega foi depois emendada) e `num.txt` (uma linha por número: 
 trimestres cobertos, a unidade e o valor). As colunas usadas são conferidas em cada arquivo antes de qualquer conta
 (`exige`); a estrutura completa de cada arquivo é registrada como veio (`estrutura`).
 
-Nada de 2024 em diante: só os trimestres de entrega até 2023T4 (`TRIMESTRES`). Os 10-K dos exercícios de 2023, quase
-todos entregues em 2024, ficam de fora, e a cobertura de 2023 sai incompleta.
+Limite (decisão de Roberto de 24/11/2026): os exercícios dos EUA vão até 2024 (data de referência até 31/12/2024); os
+trimestres de entrega vão até 2025T4 (`TRIMESTRES`), para pegar os 10-K do exercício de 2024 entregues com atraso e
+as emendas. O lacre dos exercícios brasileiros de 2024 em diante não trata dos dados dos EUA.
 
-O código foi escrito e testado com um arquivo sintético no formato descrito acima e rodou nos 60 trimestres da SEC em
-23/11/2026, baixados com o User-Agent da variável de ambiente (`chiocca.eua.sec`).
+O código foi escrito e testado com um arquivo sintético no formato descrito acima e rodou nos trimestres da SEC,
+baixados com o User-Agent da variável de ambiente (`chiocca.eua.sec`): de 2009T1 a 2023T4 em 23/11/2026 e de 2024T1
+a 2025T4 em 24/11/2026.
 
 O ano de cada 10-K para ligar aos AAERs (`ano`) segue a convenção da Compustat, usada por Bao et al. (2020): o ano da
 data de referência, ou o ano anterior quando o exercício termina de janeiro a maio. O exercício fiscal declarado pela
@@ -32,7 +34,8 @@ import pandas as pd
 from chiocca.eua.sec import DADOS, Cliente
 
 URL = "https://www.sec.gov/files/dera/data/financial-statement-data-sets/{t}.zip"
-TRIMESTRES = [f"{a}q{q}" for a in range(2009, 2024) for q in range(1, 5)]
+ULTIMO_TRIMESTRE_ANO = 2025  # entregas até 31/12/2025 (exercícios até 2024 e as entregas atrasadas)
+TRIMESTRES = [f"{a}q{q}" for a in range(2009, ULTIMO_TRIMESTRE_ANO + 1) for q in range(1, 5)]
 PASTA = DADOS / "fsds"
 COLUNAS_SUB = ["adsh", "cik", "sic", "form", "period", "fy", "fp", "filed", "prevrpt"]
 COLUNAS_NUM = ["adsh", "tag", "version", "ddate", "qtrs", "uom"]
@@ -88,8 +91,8 @@ def baixar(cliente: Cliente, trimestres: Iterable[str] = TRIMESTRES, pasta: Path
     como erro, sem parar o resto)."""
     linhas = []
     for t in trimestres:
-        if not t[:4].isdigit() or int(t[:4]) > 2023:
-            raise ValueError(f"{t}: nada de 2024 em diante")
+        if not t[:4].isdigit() or int(t[:4]) > ULTIMO_TRIMESTRE_ANO:
+            raise ValueError(f"{t}: depois do limite de {ULTIMO_TRIMESTRE_ANO}")
         destino = pasta / f"{t}.zip"
         if not destino.exists():
             linhas.append(cliente.baixar(URL.format(t=t), destino))
@@ -159,8 +162,8 @@ def versao_publica(sub: pd.DataFrame, com_numeros: set[str], corte: str) -> pd.D
 
 
 def versoes_por_ano(sub: pd.DataFrame, com_numeros: set[str], anos_depois: tuple[int, ...] = (1, 2),
-                    ultimo_corte: str = "20231231") -> dict[str, Any]:  # fmt: skip
-    """Por exercício e por corte em 31/12 de t+1 e de t+2 (só cortes até 2023): quantas companhias têm uma versão
+                    ultimo_corte: str = "20251231") -> dict[str, Any]:  # fmt: skip
+    """Por exercício e por corte em 31/12 de t+1 e de t+2 (só cortes até 2025): quantas companhias têm uma versão
     pública e em quantas ela é uma emenda, e não o 10-K original."""
     out: dict[str, Any] = {}
     fys = sorted({int(x) for x in sub[sub.form == "10-K"].fy if x.isdigit()})

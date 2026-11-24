@@ -7,8 +7,10 @@ A fonte é o campo de itens (`items`) do histórico de entregas de cada companhi
 complementares `-submissions-NNN.json`). Só contagens: nenhum valor de sinal, acerto, alerta ou ranking, e nenhum
 nome de companhia ou de pessoa é guardado (só o CIK, em memória).
 
-Nada de 2024 em diante: só as entregas com data até 31/12/2023 entram nas contas (o arquivo da SEC é um retrato do dia
-em que foi baixado e traz entregas até essa data).
+Limite (decisão de Roberto de 24/11/2026): as entregas de 2009 até 30/04/2026 (`ULTIMA_DATA`), o fim da janela de
+12 meses depois do corte do último exercício (2024, com fim em 31/12/2024 e corte em 30/04/2025). O arquivo da SEC é um
+retrato do dia em que foi baixado e traz entregas até essa data; as posteriores são descartadas antes de qualquer
+conta.
 """
 
 from __future__ import annotations
@@ -25,7 +27,7 @@ from chiocca.eua.sec import DADOS, Cliente
 URL = "https://www.sec.gov/Archives/edgar/daily-index/bulkdata/submissions.zip"
 ARQUIVO = DADOS / "edgar" / "submissions.zip"
 PRIMEIRO_ANO = 2009
-ULTIMO_ANO = 2023
+ULTIMA_DATA = "2026-04-30"
 ITEM = "4.02"
 
 
@@ -61,20 +63,20 @@ def entregas(caminho: Path = ARQUIVO, formularios: Iterable[str] = ("8-K", "8-K/
             else:  # arquivo complementar: CIK##########-submissions-NNN.json
                 cik, bloco = int(nome[3:13]), dados
             for adsh, dia, form, itens in _colunas(bloco):
-                if form in alvo and PRIMEIRO_ANO <= int(dia[:4]) <= ULTIMO_ANO:
+                if form in alvo and PRIMEIRO_ANO <= int(dia[:4]) and dia[:10] <= ULTIMA_DATA:
                     yield {"cik": cik, "adsh": adsh, "data": dia, "form": form, "itens": itens or ""}
 
 
 def contagens(linhas: Iterable[dict[str, Any]], ciks_10k: dict[int, str], sic_6770: set[int] | None = None,
-              historico: dict[int, list[tuple[str, bool, bool]]] | None = None) -> dict[str, Any]:  # fmt: skip
+              historico: dict[int, list[tuple[str, bool, bool, bool]]] | None = None) -> dict[str, Any]:  # fmt: skip
     """Por ano de entrega: os 8-K e 8-K/A com o item 4.02, as companhias e os casos novos, quantos se ligam a um CIK
     com 10-K nos dados da SEC (`ciks_10k`: CIK -> data, AAAAMMDD, do primeiro 10-K nos Financial Statement Data Sets)
     e quantos 10-K e 10-K/A. Um caso é uma companhia com 8-K 4.02 num ano; o primeiro caso da companhia desde 2009 é
     contado à parte (cada companhia uma vez). `sic_6770`: os CIKs com o código SIC 6770 (blank checks, as SPACs) nos
     dados da SEC. `historico`: por CIK, os 10-K originais nos dados da SEC em ordem de entrega, com a data (AAAAMMDD),
-    se o exercício está sem receita e se a entrega tem o SIC 6770; com ele, para cada companhia-ano com 10-K antes do
-    8-K, o último 10-K entregue até o primeiro 8-K 4.02 do ano posterior ao primeiro 10-K diz quantas a regra das sem
-    receita e a regra das SPACs tirariam (só contagens)."""
+    se o exercício está sem receita, se a entrega tem o SIC 6770 e se é de financeira; com ele, para cada companhia-ano
+    com 10-K antes do 8-K, o último 10-K entregue até o primeiro 8-K 4.02 do ano posterior ao primeiro 10-K diz quantas
+    as exclusões tirariam (só contagens)."""
     sic_6770 = sic_6770 or set()
     primeiro_do_ano: dict[tuple[str, int], str] = {}
     por_ano: dict[str, dict[str, Any]] = defaultdict(lambda: defaultdict(set))
@@ -118,20 +120,27 @@ def contagens(linhas: Iterable[dict[str, Any]], ciks_10k: dict[int, str], sic_67
 
 
 def _exclusoes(ano: str, ciks: set[int], primeiro_do_ano: dict[tuple[str, int], str],
-               historico: dict[int, list[tuple[str, bool, bool]]]) -> dict[str, int]:  # fmt: skip
+               historico: dict[int, list[tuple[str, bool, bool, bool]]]) -> dict[str, int]:  # fmt: skip
     """Das companhias-ano com 10-K antes do 8-K, pelo último 10-K entregue até o primeiro 8-K 4.02 do ano posterior ao
-    primeiro 10-K: quantas estão sem receita, quantas têm o SIC 6770, quantas das SPACs a regra das sem receita já tira
-    e quantas sobram."""
-    sem, spac, spac_sem, sobram = 0, 0, 0, 0
+    primeiro 10-K, com as exclusões na ordem do rascunho do pré-registro: as financeiras (SIC 6000 a 6999, sem as
+    SPACs), as SPACs (SIC 6770), quantas delas a regra das sem receita já tira, as demais sem receita e as que ficam."""
+    fin, spac, spac_sem, sem_todas, sem_demais, sobram = 0, 0, 0, 0, 0, 0
     for c in ciks:
         dia = primeiro_do_ano[(ano, c)].replace("-", "")
         anteriores = [h for h in historico.get(c, []) if h[0] <= dia]
         if not anteriores:
             continue
-        _, s_rec, s_6770 = anteriores[-1]
-        sem += s_rec
-        spac += s_6770
-        spac_sem += s_rec and s_6770
-        sobram += not (s_rec or s_6770)
-    return {"antes_sem_receita": sem, "antes_sic_6770": spac, "antes_sic_6770_sem_receita": spac_sem,
+        _, s_rec, s_6770, s_fin = anteriores[-1]
+        sem_todas += s_rec
+        if s_fin:
+            fin += 1
+        elif s_6770:
+            spac += 1
+            spac_sem += s_rec
+        elif s_rec:
+            sem_demais += 1
+        else:
+            sobram += 1
+    return {"antes_financeiras": fin, "antes_sic_6770": spac, "antes_sic_6770_sem_receita": spac_sem,
+            "antes_sem_receita": sem_todas, "antes_sem_receita_demais": sem_demais,
             "antes_restantes": sobram}  # fmt: skip

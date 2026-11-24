@@ -1,6 +1,7 @@
 """Fase 0 dos EUA (pedido de 23/11/2026, parte 3): só inventário e contagens.
 
-- Os documentos PT e EN saem do JSON versionado; os números do JSON são coerentes entre si e com o limite (nada de 2024
+- Os documentos PT e EN saem do JSON versionado; os números do JSON são coerentes entre si e com o limite (exercícios
+  dos EUA até 2024, entregas até 2025 e 8-K até 30/04/2026, decisão de 24/11/2026; nada de 2024
   em diante).
 - O manifesto de SHA-256 bate com o JSON (e com a roda do era-py, quando ela está no ambiente).
 - O User-Agent da SEC vem só da variável de ambiente: sem ela, nada é baixado; nenhum arquivo versionado traz um
@@ -34,8 +35,9 @@ def test_documento_igual_a_saida_do_script(lang: str) -> None:
 
 def test_numeros_coerentes_e_dentro_do_limite() -> None:
     r, b = D["rotulos"], D["rotulos"]["bao_et_al"]
-    assert D["limite"] == {"ultimo_ano": 2023, "trimestres_fsds": ["2009q1", "2023q4"]}
-    assert fsds.TRIMESTRES[-1] == "2023q4" and len(fsds.TRIMESTRES) == D["acesso_sec"]["fsds_previstos"]
+    assert D["limite"] == {"ultimo_exercicio": 2024, "trimestres_fsds": ["2009q1", "2025q4"],
+                           "ultima_data_8k": "2026-04-30", "ultimo_ano_indice_aaer": 2023}  # fmt: skip
+    assert fsds.TRIMESTRES[-1] == "2025q4" and len(fsds.TRIMESTRES) == D["acesso_sec"]["fsds_previstos"]
     idx = r["indice_sec"]
     assert idx["ultimo_ano"] <= 2023 and max(int(a) for a in idx["por_ano"]) <= 2023
     assert sum(idx["por_ano"].values()) == idx["aaers"] >= idx["numeros_distintos"]
@@ -97,13 +99,13 @@ def test_fora_do_produto_e_do_readme() -> None:
         assert "pre-registro-eua" not in texto and "us-preregistration" not in texto
 
 
-def test_nada_de_2024_em_diante() -> None:
+def test_nada_depois_do_limite() -> None:
     class Falso:
         def baixar(self, url: str, destino: Path) -> dict[str, Any]:
             raise AssertionError("não devia baixar")
 
-    with pytest.raises(ValueError, match="2024"):
-        fsds.baixar(Falso(), ["2024q1"])  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="2025"):
+        fsds.baixar(Falso(), ["2026q1"])  # type: ignore[arg-type]
 
 
 # ---- inventário dos Financial Statement Data Sets, num arquivo sintético ----
@@ -193,7 +195,7 @@ def _submissions(tmp_path: Path) -> Path:
             ("a1", "2012-03-01", "8-K", "4.02,9.01"),
             ("a2", "2012-05-01", "8-K/A", "4.02"),
             ("a3", "2011-03-01", "10-K", ""),
-            ("a4", "2024-02-01", "8-K", "4.02"),  # depois de 2023: fora
+            ("a4", "2026-05-01", "8-K", "4.02"),  # depois de 30/04/2026: fora
             ("a5", "2012-06-01", "10-K/A", ""),
         ])}}))  # fmt: skip
         f.writestr("CIK0000000100-submissions-001.json", json.dumps(bloco([
@@ -219,7 +221,7 @@ def test_8k_402_por_ano(tmp_path: Path) -> None:
                          "companhias_novas_8k_402": 1,
                          "companhias_com_10k_fsds": 1, "companhias_com_10k_fsds_antes": 1, "10k_edgar": 0,
                          "10k_a_edgar": 1}  # fmt: skip
-    assert c["2011"]["10k_edgar"] == 1 and "2024" not in c
+    assert c["2011"]["10k_edgar"] == 1 and "2026" not in c
 
 
 def test_versao_publica_e_aaers_com_10k(tmp_path: Path) -> None:
@@ -244,33 +246,35 @@ def test_versao_publica_e_aaers_com_10k(tmp_path: Path) -> None:
 
 def test_numeros_da_sec_coerentes_e_dentro_do_limite() -> None:
     f = D["fsds"]
-    assert f is not None and D["acesso_sec"]["fsds_baixados"] == D["acesso_sec"]["fsds_previstos"] == 60
-    assert f["trimestres_baixados"] == 60 and f["trimestres_sem_entregas"] == ["2009q1"]
+    assert f is not None and D["acesso_sec"]["fsds_baixados"] == D["acesso_sec"]["fsds_previstos"] == 68
+    assert f["trimestres_baixados"] == 68 and f["trimestres_sem_entregas"] == ["2009q1"]
     for chave in ("por_exercicio", "versoes", "cobertura", "companhias_com_10k_por_ano_compustat"):
-        assert all(2009 <= int(a) <= 2023 for a in f[chave]), chave
-    assert all(2009 <= int(a) <= 2023 for a in f["itens_8k"]) and all(2009 <= int(a) <= 2023 for a in f["por_entrega"])
+        assert all(2009 <= int(a) <= 2024 for a in f[chave]), chave
+    assert all(2009 <= int(a) <= 2026 for a in f["itens_8k"]) and all(2009 <= int(a) <= 2025 for a in f["por_entrega"])
     for a, x in f["itens_8k"].items():
         assert x["companhias_com_10k_fsds_antes"] <= x["companhias_com_10k_fsds"] <= x["companhias_8k_402"]
         assert x["companhias_8k_402"] <= x["8k_402"] and x["companhias_novas_8k_402"] <= x["companhias_8k_402"]
         assert x["companhias_8k_402_sic_6770"] <= x["companhias_8k_402"]
-        assert f["por_entrega"][a]["10k_a"] <= x["10k_a_edgar"]  # os 10-K/A com XBRL estão entre os do EDGAR
+        if a in f["por_entrega"]:  # os dados da SEC vão até 2025; os 8-K, até 30/04/2026
+            assert f["por_entrega"][a]["10k_a"] <= x["10k_a_edgar"]  # os 10-K/A com XBRL estão entre os do EDGAR
     for a, x in f["por_exercicio"].items():
         assert x["entregas_10k_a_com_numeros"] <= x["entregas_10k_a"] and x["companhias_com_10k"] <= x["entregas_10k"]
         assert x["prazo_p10_dias"] <= x["prazo_mediano_dias"] <= x["prazo_p90_dias"]
     for a, v in f["versoes"].items():
-        assert all(k["emenda"] <= k["companhias"] for k in v.values()) and all(int(a) + int(k[2]) <= 2023 for k in v)
+        assert all(k["emenda"] <= k["companhias"] for k in v.values()) and all(int(a) + int(k[2]) <= 2025 for k in v)
     for a, c in f["cobertura"].items():
         assert set(c["contas"]) == set(fsds.MAPA) and all(
             0 <= x <= 1 for x in [*c["contas"].values(), *c["tags"].values()]
         )
     for a, x in f["exclusoes_10k"].items():  # decisões de 24/11/2026: só contagens
-        assert 2009 <= int(a) <= 2023 and x["10k"] == f["por_exercicio"][a]["entregas_10k"]
+        assert 2009 <= int(a) <= 2024 and x["10k"] == f["por_exercicio"][a]["entregas_10k"]
         assert x["sic_6770_sem_receita"] <= min(x["sic_6770"], x["sem_receita"]) and x["sem_receita"] <= x["10k"]
         assert x["sem_receita_financeiras"] <= x["sem_receita"]
+        assert x["10k"] == x["financeiras"] + x["sic_6770"] + x["sem_receita_demais"] + x["restantes"]
     for a, x in f["itens_8k"].items():
         assert x["antes_sic_6770_sem_receita"] <= min(x["antes_sic_6770"], x["antes_sem_receita"])
-        assert x["antes_restantes"] == x["companhias_com_10k_fsds_antes"] - x["antes_sem_receita"] - (
-            x["antes_sic_6770"] - x["antes_sic_6770_sem_receita"]
+        assert x["companhias_com_10k_fsds_antes"] == (
+            x["antes_financeiras"] + x["antes_sic_6770"] + x["antes_sem_receita_demais"] + x["antes_restantes"]
         )
     aa, b = f["aaer"], D["rotulos"]["bao_et_al"]
     assert sum(aa["empresa_anos_com_10k_por_ano"].values()) == aa["empresa_anos_com_10k"]
@@ -306,17 +310,19 @@ def test_exclusoes_dos_8k_pelo_ultimo_10k_antes() -> None:
         {"cik": 4, "adsh": "w2", "data": "2021-10-01", "form": "8-K", "itens": "4.02"},  # depois: este conta
     ]
     historico = {
-        1: [("20200301", False, True), ("20210801", True, True)],  # SPAC; o 10-K de agosto vem depois do 1º 8-K
-        2: [("20210301", True, False)],  # sem receita
-        3: [("20210301", False, False)],  # fica
-        4: [("20210301", False, False)],  # fica, pelo 8-K de outubro
+        1: [("20200301", False, True, False), ("20210801", True, True, False)],  # SPAC; o 10-K de agosto vem depois
+        2: [("20210301", True, False, False)],  # sem receita
+        3: [("20210301", False, False, False)],  # fica
+        4: [("20210301", False, False, False)],  # fica, pelo 8-K de outubro
+        5: [("20210301", True, False, True)],  # financeira (sem receita também, mas sai como financeira)
     }
-    primeiros = {1: "20200301", 2: "20210301", 3: "20210301", 4: "20210301"}
+    linhas.append({"cik": 5, "adsh": "v1", "data": "2021-08-01", "form": "8-K", "itens": "4.02"})
+    primeiros = {1: "20200301", 2: "20210301", 3: "20210301", 4: "20210301", 5: "20210301"}
     c = itens.contagens(linhas, primeiros, {1}, historico)["2021"]
-    assert c["companhias_com_10k_fsds_antes"] == 4
-    assert (c["antes_sem_receita"], c["antes_sic_6770"], c["antes_sic_6770_sem_receita"], c["antes_restantes"]) == (
-        1, 1, 0, 2,
-    )  # fmt: skip
+    assert c["companhias_com_10k_fsds_antes"] == 5
+    chaves = ("antes_financeiras", "antes_sic_6770", "antes_sic_6770_sem_receita", "antes_sem_receita_demais",
+              "antes_restantes", "antes_sem_receita")  # fmt: skip
+    assert tuple(c[k] for k in chaves) == (1, 1, 0, 1, 2, 2)
 
 
 # ---- rascunho do pré-registro dos EUA (pedido de 24/11/2026, item 4) ----

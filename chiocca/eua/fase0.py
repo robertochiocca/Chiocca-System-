@@ -32,9 +32,12 @@ def _colunas_por_trimestre(estruturas: dict[str, dict[str, Any]]) -> list[dict[s
     return out
 
 
+ULTIMO_EXERCICIO = 2024  # decisão de Roberto de 24/11/2026: exercícios dos EUA até 2024
+
+
 def _no_periodo(por_ano: dict[str, Any]) -> dict[str, Any]:
-    """Só os exercícios de 2009 a 2023 (um exercício declarado fora disso, numa entrega até 2023, fica de fora)."""
-    return {a: v for a, v in por_ano.items() if rotulos.PRIMEIRO_ANO_XBRL <= int(a) <= rotulos.ULTIMO_ANO}
+    """Só os exercícios de 2009 a 2024 (um exercício declarado fora disso, numa entrega até 2025, fica de fora)."""
+    return {a: v for a, v in por_ano.items() if rotulos.PRIMEIRO_ANO_XBRL <= int(a) <= ULTIMO_EXERCICIO}
 
 
 def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
@@ -64,9 +67,11 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
     dez_k = originais.merge(tabela[tabela.form == "10-K"][["adsh", "receita"]], on="adsh", how="left")
     dez_k = dez_k.assign(sem_receita=fsds.sem_receita(dez_k.receita), spac=dez_k.sic == "6770",
                          financeira=dez_k.sic.str.match(r"^6\d{3}$") & (dez_k.sic != "6770"))  # fmt: skip
-    historico: dict[int, list[tuple[str, bool, bool]]] = {}
-    for c, f, s_rec, s_6770 in sorted(zip(dez_k.cik.astype(int), dez_k.filed, dez_k.sem_receita, dez_k.spac)):
-        historico.setdefault(c, []).append((f, bool(s_rec), bool(s_6770)))
+    historico: dict[int, list[tuple[str, bool, bool, bool]]] = {}
+    for c, f, s_rec, s_6770, s_fin in sorted(
+        zip(dez_k.cik.astype(int), dez_k.filed, dez_k.sem_receita, dez_k.spac, dez_k.financeira)
+    ):
+        historico.setdefault(c, []).append((f, bool(s_rec), bool(s_6770), bool(s_fin)))
     itens_8k = itens.contagens(
         itens.entregas(),
         {int(c): d for c, d in primeiro_10k.items()},
@@ -96,9 +101,9 @@ def calcula_fsds(baixados: list[Any]) -> dict[str, Any]:
 
 
 def _exclusoes_10k(dez_k: Any) -> dict[str, Any]:
-    """Por exercício (`fy`), só contagens: os 10-K originais, os sem receita (receita ausente ou zero, a regra do
-    estudo 1), os das financeiras pela SIC (6000 a 6999, sem as SPACs), os das SPACs (SIC 6770) e quantas SPACs a regra
-    das sem receita já tira."""
+    """Por exercício (`fy`), só contagens, com as exclusões na ordem do rascunho do pré-registro: os 10-K originais, os
+    das financeiras pela SIC (6000 a 6999, sem as SPACs), os das SPACs (SIC 6770) e quantos deles a regra das sem
+    receita já tira, os demais sem receita (receita ausente ou zero, a regra do estudo 1) e os que ficam."""
     out: dict[str, Any] = {}
     for fy, g in dez_k[dez_k.fy.str.isdigit()].groupby("fy"):
         out[str(fy)] = {
@@ -107,6 +112,9 @@ def _exclusoes_10k(dez_k: Any) -> dict[str, Any]:
             "sem_receita_financeiras": int((g.sem_receita & g.financeira).sum()),
             "sic_6770": int(g.spac.sum()),
             "sic_6770_sem_receita": int((g.spac & g.sem_receita).sum()),
+            "financeiras": int(g.financeira.sum()),
+            "sem_receita_demais": int((g.sem_receita & ~g.financeira & ~g.spac).sum()),
+            "restantes": int((~g.sem_receita & ~g.financeira & ~g.spac).sum()),
         }
     return out
 
@@ -124,7 +132,12 @@ def calcula() -> dict[str, Any]:
     edgar = itens.ARQUIVO.relative_to(sec.DADOS).as_posix()
     out: dict[str, Any] = {
         "o_que_e": "Fase 0 dos EUA (pedido de 23/11/2026): só inventário e contagens, sem nenhum sinal",
-        "limite": {"ultimo_ano": rotulos.ULTIMO_ANO, "trimestres_fsds": [fsds.TRIMESTRES[0], fsds.TRIMESTRES[-1]]},
+        "limite": {
+            "ultimo_exercicio": ULTIMO_EXERCICIO,
+            "trimestres_fsds": [fsds.TRIMESTRES[0], fsds.TRIMESTRES[-1]],
+            "ultima_data_8k": itens.ULTIMA_DATA,
+            "ultimo_ano_indice_aaer": rotulos.ULTIMO_ANO,
+        },
         "acesso_sec": {
             "variavel": sec.VARIAVEL,
             "fsds_baixados": len(baixados),
@@ -142,14 +155,15 @@ def calcula() -> dict[str, Any]:
     return out
 
 
-ANOS = [str(a) for a in range(rotulos.PRIMEIRO_ANO_XBRL, rotulos.ULTIMO_ANO + 1)]
+ANOS = [str(a) for a in range(rotulos.PRIMEIRO_ANO_XBRL, ULTIMO_EXERCICIO + 1)]
 
 T: dict[str, dict[str, Any]] = {
     "pt": {
         "titulo": "# Fase 0 dos EUA: reconhecimento dos dados",
         "aviso": "> **Reconhecimento, sem nenhum sinal calculado.** Objetivo: saber se dá para fazer, nos EUA, um estudo "
         "pré-registrado com os dados como eram na época, testando os sinais do v1 e do v2 do Chiocca e a regra boba contra um "
-        "rótulo público de demonstrações erradas. Só inventário e contagens; nada de 2024 em diante; nenhum nome de pessoa "
+        "rótulo público de demonstrações erradas. Só inventário e contagens; nos EUA, os exercícios até 2024 (decisão de "
+        "Roberto de 24/11/2026), e nada dos exercícios brasileiros de 2024 em diante; nenhum nome de pessoa "
         "física nem de companhia; nenhum valor de sinal, acerto, alerta ou ranking. A frente dos EUA fica fora do README e do "
         "produto até decisão de Roberto.",
         "s_acesso": "## 1. Acesso à SEC",
@@ -166,7 +180,7 @@ T: dict[str, dict[str, Any]] = {
         "variável definida, rode `python -m chiocca.eua.fase0 --baixar`.",
         "s_fsds": "## 2. Balanços: os Financial Statement Data Sets da SEC",
         "fsds": "Os números das demonstrações em XBRL, num zip por trimestre de entrega desde 2009 (aqui, de {t0} a {t1}: "
-        "os 10-K dos exercícios de 2023, quase todos entregues em 2024, ficam de fora). Os dois arquivos usados são "
+        "os exercícios até 2024, com os 10-K entregues com atraso e as emendas de 2025). Os dois arquivos usados são "
         "`sub.txt` (uma linha por entrega: CIK, formulário, data de referência, exercício fiscal, datas de entrega e se a "
         "entrega foi emendada depois) e `num.txt` (uma linha por número: tag, taxonomia, data, trimestres cobertos, unidade "
         "e valor).",
@@ -193,11 +207,11 @@ T: dict[str, dict[str, Any]] = {
         "s_10k": "### 2.2 10-K e 10-K/A por exercício e datas de entrega",
         "txt_10k": "Por exercício fiscal declarado pela companhia (`fy`). O prazo é a diferença em dias entre a data de "
         "referência e a entrega do 10-K original. As emendas com números são os 10-K/A com alguma tag do mapa na data de "
-        "referência; as demais (a maioria) só trazem a parte III ou a capa. O exercício de 2023 está incompleto: a maior "
-        "parte foi entregue em 2024.",
+        "referência; as demais (a maioria) só trazem a parte III ou a capa. Os exercícios declarados de 2025 em diante "
+        "ficam de fora.",
         "cab_10k": "| Exercício | Companhias com 10-K | 10-K | 10-K/A | 10-K/A com números | 10-K emendados depois | Prazo mediano (dias) | Prazo, 10% a 90% (dias) | Até 90 dias |",
         "s_versao": "### 2.3 A versão pública numa data de corte",
-        "txt_versao": "Por exercício, em 31 de dezembro do ano seguinte (t+1) e do outro (t+2), só cortes até 31/12/2023: quantas "
+        "txt_versao": "Por exercício, em 31 de dezembro do ano seguinte (t+1) e do outro (t+2), só cortes até 31/12/2025: quantas "
         "companhias têm uma versão pública e em quantas ela já é uma emenda com números, e não o 10-K original.",
         "cab_versao": "| Exercício | Companhias em t+1 | Emenda em t+1 | Companhias em t+2 | Emenda em t+2 |",
         "s_mapa": "### 2.4 O mapa das contas para as tags us-gaap e a cobertura por ano",
@@ -264,14 +278,15 @@ T: dict[str, dict[str, Any]] = {
         "cab_402": "| Ano de entrega | 8-K 4.02 | 8-K/A 4.02 | Companhias com 8-K 4.02 | Delas com SIC 6770 (SPACs) | Primeira vez desde 2009 | Com 10-K nos dados da SEC | Com 10-K nos dados da SEC antes do 8-K | 10-K (EDGAR) | 10-K/A (EDGAR) | 10-K/A com XBRL (dados da SEC) |",
         "txt_402_cont": 'Uma companhia conta uma vez por ano; "primeira vez desde 2009" conta cada companhia uma vez no '
         'período. "Com 10-K nos dados da SEC" quer dizer que o CIK tem um 10-K original nos Financial Statement Data Sets '
-        'de 2009q1 a 2023q4; "antes do 8-K", que o primeiro desses 10-K foi entregue até a data do 8-K (há demonstrações em '
-        "XBRL da época para comparar). **De 2009 a 2023: {n8k} 8-K com o item 4.02, de {cias} companhias-ano; {novas} "
+        'de 2009q1 a 2025q4; "antes do 8-K", que o primeiro desses 10-K foi entregue até a data do 8-K (há demonstrações em '
+        "XBRL da época para comparar). **De 2009 a 30/04/2026: {n8k} 8-K com o item 4.02, de {cias} companhias-ano; {novas} "
         "companhias distintas; {com} companhias-ano com 10-K nos dados da SEC, {antes} delas com o 10-K antes do 8-K.** Os "
         "10-K/A são de todos os tipos (a maioria só completa a parte III); a última coluna conta os que estão nos dados da "
         "SEC, por ano de entrega. O pico de 2021 coincide com a declaração da equipe da SEC de 12/04/2021 sobre a "
         "contabilização de warrants das SPACs (companhias de aquisição, sem operação), seguida de muitas republicações: "
         "{spac_2021} das {cias_2021} companhias com 8-K 4.02 em 2021 têm o código SIC 6770 (blank checks) nos dados da SEC; "
-        "de 2009 a 2023, {spac} companhias-ano.",
+        "de 2009 a 30/04/2026, {spac} companhias-ano. O ano de 2026 vai só até 30/04/2026, o fim da janela do "
+        "exercício de 2024.",
         "s_decisoes": "## 5. Decisões",
         "s_decididas": "### 5.1 Decisões de Roberto (24/11/2026)",
         "decididas": [
@@ -284,6 +299,17 @@ T: dict[str, dict[str, Any]] = {
             "**Exclusões por regra explícita:** as SPACs (código SIC 6770, blank checks, nos dados da SEC), além das sem "
             "receita (receita ausente ou zero, a regra do estudo 1). As contagens abaixo dizem quantas SPACs a regra das "
             "sem receita já tiraria; nenhum valor de sinal, acerto ou alerta.",
+            "**Financeiras fora:** as companhias com SIC de 6000 a 6999, sem as SPACs, ficam fora do estudo, porque o mapa "
+            "não tem as contas delas.",
+            "**As tags da receita** são escolhidas só pelas contagens de cobertura, e a lista final entra no texto que for "
+            "registrado.",
+            "**Período:** os exercícios de 2011 a 2024 (data de referência até 31/12/2024), com os dados da SEC e os 8-K "
+            "baixados de novo no dia do cálculo, porque a janela de 12 meses de todos esses exercícios já terminou (a "
+            "última, em 30/04/2026). As contagens desta Fase 0 vão até lá: os 10-K entregues até 31/12/2025 e os 8-K até "
+            "30/04/2026.",
+            "**A semente** do bootstrap é 20270430.",
+            "**Os arquivos da SEC** ficam fora do Git, com o SHA-256 no manifesto e o download por script.",
+            "**Calendário com meta e reserva** (seção 5.4). Nenhum sinal americano é calculado antes do registro.",
         ],
         "txt_excl_10k": "10-K originais por exercício declarado (`fy`). A receita é o valor anual (quatro trimestres) da "
         "primeira tag de `receita_liquida` do mapa que a entrega traz. As financeiras pela SIC (6000 a 6999, sem as SPACs) "
@@ -291,14 +317,14 @@ T: dict[str, dict[str, Any]] = {
         "para as não financeiras. **A contagem das sem receita é um teto:** inclui as companhias cuja receita está em "
         "tags fora do mapa (a cobertura da conta `receita_liquida` fica entre {cob_min} e {cob_max} dos 10-K, seção 2.4); o mapa da "
         "receita é ampliado no pré-registro, antes de qualquer sinal.",
-        "cab_excl_10k": "| Exercício | 10-K | Sem receita | Delas financeiras (SIC 6000 a 6999) | SPACs (SIC 6770) | SPACs já sem receita | SPACs que só a regra nova tira |",
+        "cab_excl_10k": "| Exercício | 10-K | Financeiras (SIC 6000 a 6999, sem as SPACs) | SPACs (SIC 6770) | SPACs já sem receita | Demais sem receita | Ficam |",
         "txt_excl_8k": "Companhias-ano com 8-K 4.02 e 10-K nos dados da SEC antes do 8-K (seção 4.2), pelo último 10-K "
         "entregue até o primeiro 8-K 4.02 do ano posterior ao primeiro 10-K da companhia (a receita e o SIC são os desse 10-K):",
-        "cab_excl_8k": "| Ano de entrega | Com 10-K antes do 8-K | Sem receita | SPACs (SIC 6770) | SPACs já sem receita | Ficam depois das duas regras |",
-        "txt_excl_resumo": "**De 2009 a 2023, {spac} companhias-ano de SPACs com 8-K 4.02 e 10-K antes; a regra das sem "
-        "receita já tiraria {spac_sem}, e a regra explícita tira as outras {spac_resto}. Ficam {ficam} das {total} "
-        "companhias-ano.** Nos 10-K de 2009 a 2023, a regra das sem receita tiraria {sem_10k} das {spac_10k} entregas de "
-        "SPACs.",
+        "cab_excl_8k": "| Ano de entrega | Com 10-K antes do 8-K | Financeiras | SPACs (SIC 6770) | SPACs já sem receita | Demais sem receita | Ficam |",
+        "txt_excl_resumo": "**De 2009 a 30/04/2026, {total} companhias-ano com 8-K 4.02 e 10-K antes: {fin} de financeiras, "
+        "{spac} de SPACs (das quais a regra das sem receita já tiraria {spac_sem}) e {sem} das demais sem receita; ficam "
+        "{ficam}.** Nos 10-K dos exercícios de 2009 a 2024, a regra das sem receita tiraria {sem_10k} das {spac_10k} "
+        "entregas de SPACs.",
         "s_opcoes": "### 5.2 As opções de rótulo comparadas na Fase 0",
         "cab_opcoes": "| Opção | Período | Tamanho | Custo | O que mede |",
         "opcoes": [
@@ -312,7 +338,7 @@ T: dict[str, dict[str, Any]] = {
             ),
             (
                 "8-K com o item 4.02",
-                "entregas de 2009 a 2023 (o item existe desde agosto de 2004)",
+                "entregas de 2009 a 30/04/2026 (o item existe desde agosto de 2004)",
                 "{cias_402} companhias distintas; {com_402} companhias-ano com 10-K nos dados da SEC",
                 "nenhum (EDGAR, " "público)",
                 "a própria companhia ou o auditor declara que demonstrações publicadas não valem mais por causa "
@@ -344,24 +370,31 @@ T: dict[str, dict[str, Any]] = {
         "decisoes": [
             "**Que exercício o caso afeta.** O campo de itens não diz quais demonstrações deixaram de valer. A regra é "
             "escrita antes de qualquer sinal, com a versão pública na data (seção 2.3).",
-            "**Período.** Com o 8-K 4.02, de 2009 (exercícios com XBRL; todas as companhias desde 2011) a 2023 (os 8-K "
-            "entregues até 31/12/2023). Os AAERs ficam de 2009 a 2014, só como descrição.",
             "**O que não dá sem dados pagos.** Os anos errados dos AAERs depois de 2014 (CFRM); o gvkey e os dados da "
             "Compustat (WRDS); as republicações da Audit Analytics, que incluiriam as republicações sem 8-K 4.02 "
             '("little r"). A ligação gvkey–CIK do era-py não informa a origem.',
         ],
-        "s_calendario": "### 5.4 Calendário até maio de 2027",
-        "cab_cal": "| Até | Etapa |",
+        "s_calendario": "### 5.4 Calendário: meta e reserva",
+        "cab_cal": "| Etapa | Meta | Reserva |",
         "calendario": [
-            ("2026-11-24", "Decisões de Roberto: o rótulo, o desfecho por caso e as exclusões (seção 5.1)."),
-            ("2026-12-15", "Rascunho do pré-registro dos EUA revisado por Roberto; nenhum sinal calculado."),
+            ("Decisões de Roberto (seção 5.1).", "2026-11-24", "2026-11-24"),
             (
-                "2027-01-31",
-                "Código do estudo escrito e testado só em dados sintéticos; nenhum sinal americano calculado.",
+                "Revisão do rascunho do pré-registro pelo Claude (claude.ai) e por Roberto; nenhum sinal calculado.",
+                "2026-12-15",
+                "2026-12-15",
             ),
-            ("2027-03-31", "Registro do pré-registro e carimbo; código congelado."),
-            ("2027-04-30", "Cálculo único, depois do carimbo."),
-            ("2027-05-31", "Relatório em PT e EN, separado do estudo 2 do Brasil."),
+            (
+                "Código do estudo escrito e testado só em dados sintéticos; a cobertura do mapa ampliado contada.",
+                "2027-01-15",
+                "2027-01-31",
+            ),
+            ("Registro do pré-registro e carimbo; código congelado.", "2027-01-31", "2027-03-31"),
+            (
+                "Cálculo único, depois do carimbo, com os dados da SEC e os 8-K baixados no dia.",
+                "2027-02-28",
+                "2027-04-30",
+            ),
+            ("Relatório em PT e EN, separado do estudo 2 do Brasil.", "2027-03-31", "2027-05-31"),
         ],
         "fontes": "Fontes das condições e da crítica: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
         "econjwatch.org (Walker, 2021 e 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form 8-K, "
@@ -371,7 +404,8 @@ T: dict[str, dict[str, Any]] = {
         "titulo": "# US Phase 0: data reconnaissance",
         "aviso": "> **Reconnaissance, with no signal computed.** Goal: find out whether a pre-registered US study is feasible, "
         "with the data as they were at the time, testing Chiocca's v1 and v2 signals and the naive rule against a public "
-        "label of misstated financial statements. Inventory and counts only; nothing from 2024 on; no names of individuals "
+        "label of misstated financial statements. Inventory and counts only; in the US, fiscal years through 2024 (Roberto's "
+        "decision of 2026-11-24), and nothing from Brazilian fiscal years 2024 on; no names of individuals "
         "or companies; no signal value, hit, alert or ranking. The US front stays out of the README and the product until "
         "Roberto decides.",
         "s_acesso": "## 1. Access to the SEC",
@@ -388,7 +422,7 @@ T: dict[str, dict[str, Any]] = {
         "downloaded**: with the variable set, run `python -m chiocca.eua.fase0 --baixar`.",
         "s_fsds": "## 2. Balance sheets: the SEC Financial Statement Data Sets",
         "fsds": "The financial statement numbers in XBRL, one zip per filing quarter since 2009 (here, from {t0} to {t1}: "
-        "the 10-Ks for fiscal 2023, almost all filed in 2024, are left out). The two files used are `sub.txt` (one row per "
+        "the fiscal years through 2024, with the late 10-Ks and the amendments of 2025). The two files used are `sub.txt` (one row per "
         "filing: CIK, form, report date, fiscal year, filing dates and whether the filing was later amended) and `num.txt` "
         "(one row per number: tag, taxonomy, date, quarters covered, unit and value).",
         "versoes": "- **10-K and 10-K/A:** the original filing and each amendment are separate filings, each with its "
@@ -414,12 +448,12 @@ T: dict[str, dict[str, Any]] = {
         "s_10k": "### 2.2 10-K and 10-K/A by fiscal year and filing dates",
         "txt_10k": "By the fiscal year the company declares (`fy`). The lag is the number of days between the report date "
         "and the filing of the original 10-K. Amendments with numbers are the 10-K/As with some mapped tag at the report "
-        "date; the others (most of them) carry only Part III or the cover page. Fiscal 2023 is incomplete: most of it was "
-        "filed in 2024.",
+        "date; the others (most of them) carry only Part III or the cover page. Declared fiscal years from 2025 on "
+        "are left out.",
         "cab_10k": "| Fiscal year | Companies with a 10-K | 10-K | 10-K/A | 10-K/A with numbers | 10-Ks later amended | Median lag (days) | Lag, 10% to 90% (days) | Within 90 days |",
         "s_versao": "### 2.3 The public version at a cutoff date",
         "txt_versao": "By fiscal year, on December 31 of the next year (t+1) and of the one after (t+2), only cutoffs "
-        "through 2023-12-31: how many companies have a public version and in how many it is already an amendment with "
+        "through 2025-12-31: how many companies have a public version and in how many it is already an amendment with "
         "numbers, not the original 10-K.",
         "cab_versao": "| Fiscal year | Companies at t+1 | Amendment at t+1 | Companies at t+2 | Amendment at t+2 |",
         "s_mapa": "### 2.4 The map from accounts to us-gaap tags and coverage by year",
@@ -486,14 +520,15 @@ T: dict[str, dict[str, Any]] = {
         "cab_402": "| Filing year | 8-K 4.02 | 8-K/A 4.02 | Companies with an 8-K 4.02 | Of them with SIC 6770 (SPACs) | First time since 2009 | With a 10-K in the SEC data | With a 10-K in the SEC data before the 8-K | 10-K (EDGAR) | 10-K/A (EDGAR) | 10-K/A with XBRL (SEC data) |",
         "txt_402_cont": 'A company counts once per year; "first time since 2009" counts each company once in the period. '
         '"With a 10-K in the SEC data" means the CIK has an original 10-K in the Financial Statement Data Sets from 2009q1 '
-        'to 2023q4; "before the 8-K", that the first of those 10-Ks was filed by the date of the 8-K (there are XBRL '
-        "statements from the time to compare). **From 2009 to 2023: {n8k} 8-Ks with Item 4.02, from {cias} company-years; "
+        'to 2025q4; "before the 8-K", that the first of those 10-Ks was filed by the date of the 8-K (there are XBRL '
+        "statements from the time to compare). **From 2009 to 2026-04-30: {n8k} 8-Ks with Item 4.02, from {cias} company-years; "
         "{novas} distinct companies; {com} company-years with a 10-K in the SEC data, {antes} of them with the 10-K before "
         "the 8-K.** The 10-K/As are of all kinds (most only complete Part III); the last column counts those in the SEC "
         "data, by filing year. The 2021 peak coincides with the SEC staff statement of 2021-04-12 on the accounting for "
         "SPAC warrants (acquisition companies with no operations), followed by many restatements: "
         "{spac_2021} of the {cias_2021} companies with an 8-K 4.02 in 2021 have SIC code 6770 (blank checks) in the SEC "
-        "data; from 2009 to 2023, {spac} company-years.",
+        "data; from 2009 to 2026-04-30, {spac} company-years. The year 2026 only goes to 2026-04-30, the end of the "
+        "window of fiscal 2024.",
         "s_decisoes": "## 5. Decisions",
         "s_decididas": "### 5.1 Roberto's decisions (2026-11-24)",
         "decididas": [
@@ -506,6 +541,17 @@ T: dict[str, dict[str, Any]] = {
             "**Exclusions by explicit rule:** SPACs (SIC code 6770, blank checks, in the SEC data), on top of the companies "
             "without revenue (revenue missing or zero, the study 1 rule). The counts below say how many SPACs the "
             "no-revenue rule would already remove; no signal value, hit or alert.",
+            "**Financial companies out:** companies with SIC 6000 to 6999, without the SPACs, stay out of the study, "
+            "because the map has no accounts for them.",
+            "**The revenue tags** are chosen by coverage counts only, and the final list goes into the text that is "
+            "registered.",
+            "**Period:** fiscal years 2011 to 2024 (report date through 2024-12-31), with the SEC data and the 8-Ks "
+            "downloaded again on the day of the computation, because the 12-month window of all those fiscal years has "
+            "already ended (the last one, on 2026-04-30). This Phase 0's counts go that far: 10-Ks filed through "
+            "2025-12-31 and 8-Ks through 2026-04-30.",
+            "**The bootstrap seed** is 20270430.",
+            "**The SEC files** stay outside Git, with their SHA-256 in the manifest and the download by script.",
+            "**Timeline with a target and a fallback** (section 5.4). No US signal is computed before registration.",
         ],
         "txt_excl_10k": "Original 10-Ks by declared fiscal year (`fy`). Revenue is the annual value (four quarters) of the "
         "first `receita_liquida` tag in the map that the filing has. Financial companies by SIC (6000 to 6999, without "
@@ -513,14 +559,14 @@ T: dict[str, dict[str, Any]] = {
         "to non-financial companies only. **The no-revenue count is a ceiling:** it includes companies whose revenue sits "
         "in tags outside the map (coverage of the `receita_liquida` account is between {cob_min} and {cob_max} of 10-Ks, section 2.4); "
         "the revenue map is widened in the pre-registration, before any signal.",
-        "cab_excl_10k": "| Fiscal year | 10-K | No revenue | Of them financial (SIC 6000 to 6999) | SPACs (SIC 6770) | SPACs already without revenue | SPACs only the new rule removes |",
+        "cab_excl_10k": "| Fiscal year | 10-K | Financial (SIC 6000 to 6999, without SPACs) | SPACs (SIC 6770) | SPACs already without revenue | Others without revenue | Remaining |",
         "txt_excl_8k": "Company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K (section 4.2), by the last "
         "10-K filed by the year's first 8-K 4.02 after the company's first 10-K (revenue and SIC are those of that 10-K):",
-        "cab_excl_8k": "| Filing year | With a 10-K before the 8-K | No revenue | SPACs (SIC 6770) | SPACs already without revenue | Remaining after both rules |",
-        "txt_excl_resumo": "**From 2009 to 2023, {spac} SPAC company-years with an 8-K 4.02 and a 10-K before; the no-revenue "
-        "rule would already remove {spac_sem}, and the explicit rule removes the other {spac_resto}. {ficam} of the "
-        "{total} company-years remain.** In the 2009 to 2023 10-Ks, the no-revenue rule would remove {sem_10k} of the "
-        "{spac_10k} SPAC filings.",
+        "cab_excl_8k": "| Filing year | With a 10-K before the 8-K | Financial | SPACs (SIC 6770) | SPACs already without revenue | Others without revenue | Remaining |",
+        "txt_excl_resumo": "**From 2009 to 2026-04-30, {total} company-years with an 8-K 4.02 and a 10-K before: {fin} "
+        "financial, {spac} SPACs (of which the no-revenue rule would already remove {spac_sem}) and {sem} others without "
+        "revenue; {ficam} remain.** In the 10-Ks of fiscal years 2009 to 2024, the no-revenue rule would remove {sem_10k} "
+        "of the {spac_10k} SPAC filings.",
         "s_opcoes": "### 5.2 The label options compared in Phase 0",
         "cab_opcoes": "| Option | Period | Size | Cost | What it measures |",
         "opcoes": [
@@ -534,7 +580,7 @@ T: dict[str, dict[str, Any]] = {
             ),
             (
                 "8-K with Item 4.02",
-                "filings from 2009 to 2023 (the item exists since August 2004)",
+                "filings from 2009 to 2026-04-30 (the item exists since August 2004)",
                 "{cias_402} distinct companies; {com_402} company-years with a 10-K in the SEC data",
                 "none (EDGAR, " "public)",
                 "the company or its auditor declares that published statements can no longer be relied upon "
@@ -566,21 +612,31 @@ T: dict[str, dict[str, Any]] = {
         "decisoes": [
             "**Which fiscal year the case affects.** The items field does not say which statements stopped being "
             "reliable. The rule is written before any signal, with the public version at the date (section 2.3).",
-            "**Period.** With the 8-K 4.02, from 2009 (fiscal years with XBRL; all companies since 2011) to 2023 (8-Ks "
-            "filed through 2023-12-31). The AAERs stay at 2009 to 2014, as description only.",
             "**What cannot be done without paid data.** Misstated years of AAERs after 2014 (CFRM); the gvkey and "
             "Compustat data (WRDS); Audit Analytics restatements, which would include restatements without an 8-K 4.02 "
             '("little r"). The era-py gvkey–CIK link does not state its source.',
         ],
-        "s_calendario": "### 5.4 Timeline through May 2027",
-        "cab_cal": "| By | Step |",
+        "s_calendario": "### 5.4 Timeline: target and fallback",
+        "cab_cal": "| Step | Target | Fallback |",
         "calendario": [
-            ("2026-11-24", "Roberto's decisions: the label, the outcome per case and the exclusions (section 5.1)."),
-            ("2026-12-15", "Draft of the US pre-registration reviewed by Roberto; no signal computed."),
-            ("2027-01-31", "Study code written and tested on synthetic data only; no US signal computed."),
-            ("2027-03-31", "Pre-registration registered and timestamped; code frozen."),
-            ("2027-04-30", "Single computation, after the timestamp."),
-            ("2027-05-31", "Report in PT and EN, separate from Brazil's study 2."),
+            ("Roberto's decisions (section 5.1).", "2026-11-24", "2026-11-24"),
+            (
+                "Review of the pre-registration draft by Claude (claude.ai) and Roberto; no signal computed.",
+                "2026-12-15",
+                "2026-12-15",
+            ),
+            (
+                "Study code written and tested on synthetic data only; coverage of the widened map counted.",
+                "2027-01-15",
+                "2027-01-31",
+            ),
+            ("Pre-registration registered and timestamped; code frozen.", "2027-01-31", "2027-03-31"),
+            (
+                "Single computation, after the timestamp, with the SEC data and the 8-Ks downloaded on the day.",
+                "2027-02-28",
+                "2027-04-30",
+            ),
+            ("Report in PT and EN, separate from Brazil's study 2.", "2027-03-31", "2027-05-31"),
         ],
         "fontes": "Sources for the conditions and the critique: sites.google.com/usc.edu/aaerdataset (Buy the Data); "
         "econjwatch.org (Walker, 2021 and 2022); iangow.github.io/notes/published/bklyz.html (Gow, 2022); sec.gov (Form "
@@ -642,28 +698,26 @@ def _secao_fsds(d: dict[str, Any], lang: str) -> list[str]:
 
 
 def _secao_exclusoes(f: dict[str, Any], lang: str) -> list[str]:
-    """As contagens das exclusões decididas em 24/11/2026: SPACs (SIC 6770) e sem receita, nos 10-K e nos 8-K 4.02."""
+    """As contagens das exclusões decididas em 24/11/2026, na ordem do rascunho do pré-registro: financeiras, SPACs
+    (SIC 6770) e sem receita, nos 10-K e nos 8-K 4.02."""
     t, i = T[lang], (lambda v: inteiro(int(v), lang))
     ex, it = f["exclusoes_10k"], f["itens_8k"]
     cob = [v["contas"]["receita_liquida"] for v in f["cobertura"].values()]
     linhas = ["", t["txt_excl_10k"].format(cob_min=pct(min(cob), lang, 0), cob_max=pct(max(cob), lang, 0)), ""]
-    tab = [[a, i(x["10k"]), i(x["sem_receita"]), i(x["sem_receita_financeiras"]), i(x["sic_6770"]),
-            i(x["sic_6770_sem_receita"]), i(x["sic_6770"] - x["sic_6770_sem_receita"])]
-           for a, x in ex.items()]  # fmt: skip
-    soma = {k: sum(x[k] for x in ex.values()) for k in next(iter(ex.values()))}
-    tab.append([t["total"], *(f"**{i(soma[k])}**" for k in ("10k", "sem_receita", "sem_receita_financeiras",
-                                                            "sic_6770", "sic_6770_sem_receita")),
-                f"**{i(soma['sic_6770'] - soma['sic_6770_sem_receita'])}**"])  # fmt: skip
+    chaves = ("10k", "financeiras", "sic_6770", "sic_6770_sem_receita", "sem_receita_demais", "restantes")
+    tab = [[a, *(i(x[k]) for k in chaves)] for a, x in ex.items()]
+    soma = {k: sum(x[k] for x in ex.values()) for k in chaves}
+    tab.append([t["total"], *(f"**{i(soma[k])}**" for k in chaves)])
     linhas += _tabela(t["cab_excl_10k"], tab, "-::::::") + ["", t["txt_excl_8k"], ""]
-    chaves = ("companhias_com_10k_fsds_antes", "antes_sem_receita", "antes_sic_6770", "antes_sic_6770_sem_receita",
-              "antes_restantes")  # fmt: skip
-    tab = [[a, *(i(x[k]) for k in chaves)] for a, x in it.items()]
-    s8 = {k: sum(x[k] for x in it.values()) for k in chaves}
-    tab.append([t["total"], *(f"**{i(s8[k])}**" for k in chaves)])
-    linhas += _tabela(t["cab_excl_8k"], tab, "-:::::")
-    resumo = t["txt_excl_resumo"].format(spac=i(s8["antes_sic_6770"]), spac_sem=i(s8["antes_sic_6770_sem_receita"]),
-                                         spac_resto=i(s8["antes_sic_6770"] - s8["antes_sic_6770_sem_receita"]),
-                                         ficam=i(s8["antes_restantes"]), total=i(s8["companhias_com_10k_fsds_antes"]),
+    chaves8 = ("companhias_com_10k_fsds_antes", "antes_financeiras", "antes_sic_6770", "antes_sic_6770_sem_receita",
+               "antes_sem_receita_demais", "antes_restantes")  # fmt: skip
+    tab = [[a, *(i(x[k]) for k in chaves8)] for a, x in it.items()]
+    s8 = {k: sum(x[k] for x in it.values()) for k in chaves8}
+    tab.append([t["total"], *(f"**{i(s8[k])}**" for k in chaves8)])
+    linhas += _tabela(t["cab_excl_8k"], tab, "-::::::")
+    resumo = t["txt_excl_resumo"].format(total=i(s8["companhias_com_10k_fsds_antes"]), fin=i(s8["antes_financeiras"]),
+                                         spac=i(s8["antes_sic_6770"]), spac_sem=i(s8["antes_sic_6770_sem_receita"]),
+                                         sem=i(s8["antes_sem_receita_demais"]), ficam=i(s8["antes_restantes"]),
                                          sem_10k=i(soma["sic_6770_sem_receita"]), spac_10k=i(soma["sic_6770"]))  # fmt: skip
     return linhas + ["", resumo, ""]
 
@@ -751,8 +805,8 @@ def render(d: dict[str, Any], lang: str) -> str:
                                         for o, per, tam, custo, mede in t["opcoes"]], "-----")  # fmt: skip
     linhas += ["", t["recomendacao"], "", t["s_pendentes"], "", t["rascunho"], ""]
     linhas += [f"{k}. {x}" for k, x in enumerate(t["decisoes"], start=1)]
-    linhas += ["", t["s_calendario"], "", t["cab_cal"], "| --- | --- |"]
-    linhas += [f"| {data(dia, lang)} | {etapa} |" for dia, etapa in t["calendario"]]
+    linhas += ["", t["s_calendario"], "", t["cab_cal"], "| --- | --- | --- |"]
+    linhas += [f"| {etapa} | {data(meta, lang)} | {data(reserva, lang)} |" for etapa, meta, reserva in t["calendario"]]
     linhas += ["", t["fontes"]]
     return "\n".join(linhas) + "\n"
 

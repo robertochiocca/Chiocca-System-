@@ -8,7 +8,7 @@ Basis: [US Phase 0](us-phase-0.md), with the numbers in [`docs/eua_fase0_numeros
 
 With the 10-Ks as they were at the time, do the alerts of engine v1 and engine v2, frozen in Brazil, and the naive rule separate the company-years followed by an 8-K with Item 4.02 within 12 months after the cut-off from those that were not? And does v2 separate better than v1?
 
-**Label: retrospective.** The data from 2011 to 2023 are already public, and the counts of 8-K 4.02 by year already appeared in Phase 0, with no link to any signal. The test is clean because the rules are fixed (no training), were written and frozen in Brazil, and this text is registered before any US signal.
+**Label: retrospective.** The data from 2011 to 2026-04-30 are already public, and the counts of 8-K 4.02 by year already appeared in Phase 0, with no link to any signal. The test is clean because the rules are fixed (no training), were written and frozen in Brazil, and this text is registered before any US signal.
 
 ## 2. The signals: v1 and v2, frozen
 
@@ -25,7 +25,7 @@ The company's own values (no co-registrant or segment), in dollars, in the us-ga
 | Account | Tags and rule | Reason |
 | --- | --- | --- |
 | `ativo_total`, `ativo_circulante`, `contas_a_receber`, `imobilizado`, `passivo_circulante`, `patrimonio_liquido`, `caixa_operacional`, `depreciacao`, `custo_vendas`, `lucro_liquido` | those of the Phase 0 proposal, in order of preference | the same concept as the DFP account |
-| `receita_liquida` | the three Phase 0 tags and the tags the widening adds before registration, chosen by coverage only (counts) | revenue covers 66% to 73% of the 2011 to 2021 10-Ks with the three tags; without the widening, the no-revenue rule would remove companies that have revenue |
+| `receita_liquida` | the three Phase 0 tags and the tags the widening adds before registration, chosen by coverage only (counts) | revenue covers 66% to 73% of the 2011 to 2024 10-Ks with the three tags; without the widening, the no-revenue rule would remove companies that have revenue |
 | `resultado_bruto` | `GrossProfit`; if missing, revenue minus cost of sales | in the DFP line 3.03 is mandatory; under US GAAP gross profit is optional (coverage of 35% to 37%) |
 | `despesas_vendas` + `despesas_gerais_adm` | `SellingGeneralAndAdministrativeExpense`, which already joins both | v1 adds the two accounts; under US GAAP they come together |
 | `lucro_operacoes_continuadas` | `IncomeLossFromContinuingOperations`; if missing, net income minus `IncomeLossFromDiscontinuedOperationsNetOfTax`, when present | account 3.09 is after taxes; the pre-tax tag of the Phase 0 proposal is dropped, being a different concept |
@@ -43,7 +43,7 @@ The Effective Federal Funds Rate, daily series DFF on FRED (Federal Reserve Bank
 
 ### 3.3 The cut-off date
 
-The same rule as study 1 (amendment 5, `chiocca.corte.data_corte`): the last day of the fourth month after the fiscal year end. Reason: the 10-K deadline is 60, 75 or 90 days, depending on size, and, from 2011 to 2021, the latest-filed tenth of 10-Ks came out up to 107 days after the report date (Phase 0, section 2.2). The version used is the one public at the cut-off: the last filing by that date between the original 10-K and the 10-K/As with account numbers (Phase 0, section 2.3). A company with no XBRL 10-K by the cut-off is out for that fiscal year, as in Brazil.
+The same rule as study 1 (amendment 5, `chiocca.corte.data_corte`): the last day of the fourth month after the fiscal year end. Reason: the 10-K deadline is 60, 75 or 90 days, depending on size, and, from 2011 to 2024, the latest-filed tenth of 10-Ks came out up to 107 days after the report date (Phase 0, section 2.2). The version used is the one public at the cut-off: the last filing by that date between the original 10-K and the 10-K/As with account numbers (Phase 0, section 2.3). A company with no XBRL 10-K by the cut-off is out for that fiscal year, as in Brazil.
 
 ### 3.4 What is not adapted
 
@@ -51,16 +51,16 @@ Financial companies: the map has no accounts for them, so the financial group an
 
 ## 4. Sample and exclusions
 
-- **Universe:** the original 10-Ks in the Financial Statement Data Sets with a report date from 2011 to 2021 (the fiscal year is the year of the report date, as in the DFP). 2011, because XBRL applies to all companies from periods after 2011-06-15; 2021, because the outcome window of the next fiscal year would go past 2023-12-31, the Phase 0 data limit.
+- **Universe:** the original 10-Ks in the Financial Statement Data Sets with a report date from 2011 to 2024 (the fiscal year is the year of the report date, as in the DFP). 2011, because XBRL applies to all companies from periods after 2011-06-15; 2024, because the 12-month window of that fiscal year has already ended, on 2026-04-30 (Roberto's decision of 2026-11-24).
 - **Exclusions, in this order, each counted in the report:** (1) no public XBRL version by the cut-off; (2) financial companies by SIC, 6000 to 6999, except 6770 (section 3.4); (3) SPACs, SIC 6770, an explicit rule decided by Roberto on 2026-11-24; (4) companies without revenue (revenue missing or zero, the study 1 rule, by the widened map); (5) those with no computable signal. SIC and revenue are those of the version used.
-- **The size, from Phase 0 (declared fiscal year, Phase 0 map):** from 2011 to 2021, 69,225 original 10-Ks; the no-revenue rule would remove at most 26,715 (a ceiling, because the revenue map has not been widened yet), 8,632 of them financial; the SPACs are 2,224, of which 2,103 already without revenue.
+- **The size, from Phase 0 (declared fiscal year, Phase 0 map):** from 2011 to 2024, 86,766 original 10-Ks: 18,628 financial, 3,042 SPACs (2,905 of them already without revenue) and 19,409 others without revenue (a ceiling, because the Phase 0 revenue map was not widened); 45,687 remain.
 
 ## 5. The outcome: the 8-K with Item 4.02, per case
 
 - **Episode (the case):** a company's first 8-K with Item 4.02 in the EDGAR items field opens an episode; every 8-K or 8-K/A with Item 4.02 from the same company within the next 365 days belongs to it; after that, a new 8-K 4.02 opens another episode. Each episode counts once, the answer to Walker's and Gow's critique of Bao et al. (Phase 0, section 5.1).
 - **Window:** company-year t is positive if an episode opens after the cut-off of t and within 12 months of it. The windows of consecutive fiscal years of the same company do not overlap, and each episode falls into at most one company-year. Episodes outside any sample company-year enter the description only.
-- **Source:** the items field of the EDGAR filing history (`submissions.zip`), downloaded again on the day of the computation, with its SHA-256 in the manifest, and only the 8-Ks filed through 2023-12-31.
-- **The size, from Phase 0:** from 2009 to 2023, 2,029 company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K; 332 of them SPACs and 975 without revenue by the Phase 0 map; 1,048 remain after both rules, from 54 to 127 a year from 2012 to 2023.
+- **Source:** the items field of the EDGAR filing history (`submissions.zip`), downloaded again on the day of the computation, with its SHA-256 in the manifest, and only the 8-Ks filed through 2026-04-30, the end of the window of fiscal 2024.
+- **The size, from Phase 0:** from 2009 to 2026-04-30, 2,386 company-years with an 8-K 4.02 and a 10-K in the SEC data before the 8-K: 263 financial, 363 SPACs and 617 others without revenue by the Phase 0 map; 1,143 remain, from 48 to 111 a year by filing year from 2012 to 2025.
 - **Limitations:** Item 4.02 does not say which statements stopped being reliable: the outcome is a non-reliance statement within the next 12 months, with no guarantee that it concerns fiscal year t. Restatements without an 8-K ("little r") are left out. None of this is called fraud.
 
 ## 6. Metrics: those of study 2
@@ -102,7 +102,7 @@ For the 25 Bao et al. cases (47 company-years) with a 10-K in the SEC data (Phas
 
 1. The exclusion of financial companies (section 3.4).
 2. The tags of the revenue widening and the derivations in section 3.1, chosen by coverage.
-3. The end of the sample at 2021, with data through 2023-12-31, or a later limit for the US data (Brazil's seal does not cover them; the 2023 limit came from the Phase 0 request).
+3. Decided by Roberto on 2026-11-24: the sample goes to fiscal 2024, with the 8-Ks through 2026-04-30.
 4. The seed (20270430, the date of the single computation).
 5. The data archive: the SEC files exceed 6 GB and stay outside Git, with their SHA-256 in the manifest and the download by script.
 
