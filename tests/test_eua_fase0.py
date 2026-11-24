@@ -369,8 +369,11 @@ def test_pre_registro_registrado_com_a_revisao_de_roberto(lang: str) -> None:
 
 
 def test_rascunho_antes_de_qualquer_sinal_americano() -> None:
-    """Nenhum módulo da frente dos EUA importa as funções de sinal ou o motor antes do registro."""
+    """Só o código do estudo (`estudo.py`), escrito depois do registro e do exemplo calculado à mão (seção 10 do
+    pré-registro dos EUA), importa as funções de sinal e o motor; nenhum outro módulo da frente dos EUA."""
     for p in sorted((RAIZ / "chiocca" / "eua").glob("*.py")):
+        if p.name == "estudo.py":
+            continue
         texto = p.read_text(encoding="utf-8")
         assert not re.search(r"chiocca\.sinais|chiocca\.v2\.motor_v2|from chiocca import sinais", texto), p.name
 

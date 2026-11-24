@@ -24,6 +24,7 @@ PARES = [
     ("docs/estudo-2-plano.md", "docs/en/study-2-plan.md"),
     ("docs/pre-registro-estudo-2.md", "docs/en/study-2-preregistration.md"),
     ("docs/pre-registro-eua.md", "docs/en/us-preregistration.md"),
+    ("docs/eua-notas-de-procedimento.md", "docs/en/us-procedure-notes.md"),
     ("README.md", "README.en.md"),
     ("docs/historico.md", "docs/en/history.md"),
     ("docs/como-reproduzir.md", "docs/en/how-to-reproduce.md"),
